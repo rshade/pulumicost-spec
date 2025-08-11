@@ -1,0 +1,323 @@
+# CodeRabbit Configuration
+# https://coderabbit.ai/docs/configuration
+
+# Global settings
+global:
+  # Enable CodeRabbit for this repository
+  enabled: true
+  
+  # Set the default language for the project
+  language: go
+  
+  # Configure the AI model to use
+  model: gpt-4
+  
+  # Set the maximum number of suggestions per file
+  max_suggestions_per_file: 10
+  
+  # Set the maximum number of files to process per PR
+  max_files_per_pr: 50
+
+# Review settings
+review:
+  # Enable automatic code review
+  enabled: true
+  
+  # Review title and description
+  title: "🤖 AI Code Review"
+  description: |
+    This PR has been automatically reviewed by CodeRabbit AI.
+    
+    **Review Summary:**
+    - Code quality and best practices
+    - Security considerations
+    - Performance optimizations
+    - Documentation improvements
+    
+    Please review the suggestions and apply them as needed.
+  
+  # Review template
+  template: |
+    ## 🤖 AI Code Review
+    
+    ### Summary
+    {{summary}}
+    
+    ### Key Findings
+    {{key_findings}}
+    
+    ### Suggestions
+    {{suggestions}}
+    
+    ### Security Considerations
+    {{security_notes}}
+    
+    ### Performance Notes
+    {{performance_notes}}
+  
+  # File patterns to include in review
+  include_patterns:
+    - "**/*.go"
+    - "**/*.proto"
+    - "**/*.yaml"
+    - "**/*.yml"
+    - "**/*.json"
+    - "**/*.md"
+    - "Makefile"
+    - "go.mod"
+    - "go.sum"
+    - "buf.yaml"
+    - "buf.gen.yaml"
+  
+  # File patterns to exclude from review
+  exclude_patterns:
+    - "**/vendor/**"
+    - "**/node_modules/**"
+    - "**/.git/**"
+    - "**/examples/**"
+    - "**/sdk/go/proto/**"  # Generated protobuf files
+    - "**/*_test.go"  # Test files (optional)
+    - "**/go.sum"  # Exclude go.sum from review
+  
+  # Review rules and guidelines
+  rules:
+    - name: "Go Best Practices"
+      description: "Follow Go coding standards and best practices"
+      enabled: true
+    
+    - name: "Protobuf Standards"
+      description: "Ensure protobuf files follow best practices"
+      enabled: true
+    
+    - name: "Security Review"
+      description: "Check for security vulnerabilities and best practices"
+      enabled: true
+    
+    - name: "Performance Review"
+      description: "Identify potential performance improvements"
+      enabled: true
+    
+    - name: "Documentation"
+      description: "Ensure code is well-documented"
+      enabled: true
+
+# Suggest settings
+suggest:
+  # Enable automatic code suggestions
+  enabled: true
+  
+  # Suggest title and description
+  title: "💡 AI Code Suggestions"
+  description: |
+    CodeRabbit AI has provided some suggestions to improve your code.
+    
+    These are optional improvements that you can apply if you find them helpful.
+  
+  # Suggestion template
+  template: |
+    ## 💡 AI Code Suggestion
+    
+    **Context:** {{context}}
+    
+    **Suggestion:** {{suggestion}}
+    
+    **Reasoning:** {{reasoning}}
+    
+    **Impact:** {{impact}}
+
+# Language-specific settings
+languages:
+  go:
+    # Go-specific review settings
+    enabled: true
+    
+    # Go linting rules to consider
+    lint_rules:
+      - "gofmt"
+      - "golint"
+      - "govet"
+      - "errcheck"
+      - "staticcheck"
+      - "gosec"
+    
+    # Go best practices to check
+    best_practices:
+      - "error handling"
+      - "naming conventions"
+      - "package organization"
+      - "interface design"
+      - "concurrency patterns"
+      - "memory management"
+  
+  protobuf:
+    # Protobuf-specific review settings
+    enabled: true
+    
+    # Protobuf best practices to check
+    best_practices:
+      - "message naming"
+      - "field numbering"
+      - "service design"
+      - "import organization"
+      - "documentation"
+
+# Security settings
+security:
+  # Enable security scanning
+  enabled: true
+  
+  # Security checks to perform
+  checks:
+    - "dependency vulnerabilities"
+    - "hardcoded secrets"
+    - "insecure configurations"
+    - "input validation"
+    - "authentication patterns"
+    - "authorization checks"
+
+# Performance settings
+performance:
+  # Enable performance analysis
+  enabled: true
+  
+  # Performance checks to perform
+  checks:
+    - "algorithm efficiency"
+    - "memory usage"
+    - "concurrent operations"
+    - "I/O operations"
+    - "resource management"
+
+# Documentation settings
+documentation:
+  # Enable documentation review
+  enabled: true
+  
+  # Documentation checks to perform
+  checks:
+    - "README completeness"
+    - "code comments"
+    - "API documentation"
+    - "example usage"
+    - "changelog updates"
+
+# Commit message settings
+commit_message:
+  # Enable commit message suggestions
+  enabled: true
+  
+  # Commit message format
+  format: "conventional"
+  
+  # Commit message template
+  template: |
+    {{type}}({{scope}}): {{description}}
+    
+    {{body}}
+    
+    {{footer}}
+
+# PR settings
+pull_request:
+  # Enable PR description suggestions
+  enabled: true
+  
+  # PR description template
+  template: |
+    ## Description
+    
+    {{description}}
+    
+    ## Changes Made
+    
+    {{changes}}
+    
+    ## Testing
+    
+    {{testing}}
+    
+    ## Checklist
+    
+    - [ ] Code follows project standards
+    - [ ] Tests pass
+    - [ ] Documentation updated
+    - [ ] No breaking changes (or documented)
+
+# Integration settings
+integrations:
+  # GitHub integration settings
+  github:
+    enabled: true
+    
+    # GitHub-specific settings
+    settings:
+      # Enable status checks
+      status_checks: true
+      
+      # Enable branch protection
+      branch_protection: false
+      
+      # Enable auto-merge (if configured)
+      auto_merge: false
+
+# Notification settings
+notifications:
+  # Enable notifications
+  enabled: true
+  
+  # Notification channels
+  channels:
+    - type: "github"
+      enabled: true
+    
+    - type: "slack"
+      enabled: false
+    
+    - type: "email"
+      enabled: false
+
+# Advanced settings
+advanced:
+  # Enable advanced features
+  enabled: true
+  
+  # Custom prompts for specific file types
+  custom_prompts:
+    - file_pattern: "**/*.proto"
+      prompt: |
+        Review this protobuf file considering:
+        1. Message and service design best practices
+        2. Field numbering and backward compatibility
+        3. Documentation and comments
+        4. Import organization
+        5. Naming conventions
+    
+    - file_pattern: "**/*.go"
+      prompt: |
+        Review this Go file considering:
+        1. Go coding standards and idioms
+        2. Error handling patterns
+        3. Package organization
+        4. Interface design
+        5. Performance considerations
+        6. Security best practices
+    
+    - file_pattern: "Makefile"
+      prompt: |
+        Review this Makefile considering:
+        1. Target organization and naming
+        2. Dependency management
+        3. Documentation and help targets
+        4. Cross-platform compatibility
+        5. Performance optimization
+
+# Experimental features
+experimental:
+  # Enable experimental features
+  enabled: false
+  
+  # Experimental features to enable
+  features:
+    - "advanced_code_analysis"
+    - "custom_models"
+    - "batch_processing"

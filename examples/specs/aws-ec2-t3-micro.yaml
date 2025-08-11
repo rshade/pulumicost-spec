@@ -1,0 +1,14 @@
+provider: aws
+resource_type: ec2
+sku: t3.micro
+region: us-east-1
+billing_mode: per_hour
+rate_per_unit: 0.0104
+currency: USD
+description: "On-demand Linux EC2 t3.micro in us-east-1"
+metric_hints:
+  - metric: vcpu_hours
+    unit: hour
+source: spec
+plugin_metadata:
+  note: "Sample spec for CI/offline tests"

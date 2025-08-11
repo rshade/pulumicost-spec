@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package pulumicost;
+
+option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// ----- Service -----
+
+service CostSource {
+  rpc Name(google.protobuf.Empty) returns (PluginName);
+  rpc Supports(ResourceDescriptor) returns (SupportsResponse);
+  rpc GetActualCost(ActualCostQuery) returns (ActualCostResultList);
+  rpc GetProjectedCost(ResourceDescriptor) returns (PriceInfo);
+  rpc GetPricingSpec(ResourceDescriptor) returns (PricingSpec);
+}
+
+// ----- Messages -----
+
+message PluginName {
+  string name = 1; // e.g., "kubecost", "cloudability"
+}
+
+message SupportsResponse {
+  bool supported = 1;
+  string reason = 2; // Optional: helpful explanation if false
+}
+
+message ResourceDescriptor {
+  string provider      = 1; // "aws" | "azure" | "gcp" | "kubernetes" | "custom"
+  string resource_type = 2; // e.g., "ec2", "s3", "k8s-namespace", "vm"
+  string sku           = 3; // Provider SKU or instance size where applicable
+  string region        = 4; // e.g., "us-east-1"
+  map<string, string> tags = 5; // Label/Tag hints (e.g., app=web)
+}
+
+message ActualCostQuery {
+  string resource_id = 1; // Flexible ID per plugin (e.g., "i-abc123", "namespace/default")
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end   = 3;
+  map<string, string> tags = 4; // Optional extra filters
+}
+
+message ActualCostResult {
+  google.protobuf.Timestamp timestamp = 1; // Point-in-time or bucket start
+  double cost = 2;                          // Total cost in currency for the period/bucket
+  double usage_amount = 3;                  // Optional: usage amount aligned with BillingMode
+  string usage_unit = 4;                    // e.g., "hour", "GB", "request"
+  string source = 5;                        // e.g., "kubecost", "flexera"
+}
+
+message ActualCostResultList {
+  repeated ActualCostResult results = 1;
+}
+
+message PriceInfo {
+  double unit_price = 1;     // price per unit (aligned with PricingSpec.billing_mode)
+  string currency = 2;       // e.g., "USD"
+  double cost_per_month = 3; // convenience field for a typical 30-day month
+  string billing_detail = 4; // e.g., "on-demand", "kubecost-avg-daily"
+}
+
+message UsageMetricHint {
+  string metric = 1; // e.g., "vcpu_hours", "storage_gb", "requests"
+  string unit   = 2; // e.g., "hour", "GB", "count"
+}
+
+message PricingSpec {
+  string provider = 1;
+  string resource_type = 2;
+  string sku = 3;
+  string region = 4;
+
+  // "per_hour" | "per_gb_month" | "per_request" | "flat" | "per_day" | "per_cpu_hour" etc.
+  string billing_mode = 5;
+
+  double rate_per_unit = 6;  // price per unit
+  string currency = 7;       // e.g., "USD"
+  string description = 8;    // Human description
+
+  repeated UsageMetricHint metric_hints = 9;
+
+  // plugin-specific extra metadata (do not rely on stable keys)
+  map<string, string> plugin_metadata = 10;
+
+  // Where the pricing model originated: "aws", "gcp", "azure", "kubecost", "flexera", "cloudability", "spec"
+  string source = 11;
+}

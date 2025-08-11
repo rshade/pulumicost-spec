@@ -1,0 +1,9 @@
+{
+  "resource_id": "namespace/webapp-prod",
+  "start": "2025-01-01T00:00:00Z",
+  "end": "2025-01-31T23:59:59Z",
+  "tags": {
+    "app": "webapp",
+    "env": "production"
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "schedule": ["before 4am on monday"],
+  "timezone": "UTC",
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^google\\.golang\\.org/"],
+      "groupName": "gRPC and protobuf dependencies",
+      "groupSlug": "grpc-protobuf"
+    },
+    {
+      "matchPackagePatterns": ["^github\\.com/"],
+      "groupName": "GitHub dependencies",
+      "groupSlug": "github-deps"
+    },
+    {
+      "matchPackagePatterns": ["^golang\\.org/x/"],
+      "groupName": "Go x packages",
+      "groupSlug": "go-x-packages"
+    },
+    {
+      "matchPackagePatterns": ["^buf\\.build/"],
+      "groupName": "Buf dependencies",
+      "groupSlug": "buf-deps"
+    }
+  ],
+  "go": {
+    "enabled": true
+  },
+  "docker": {
+    "enabled": false
+  },
+  "npm": {
+    "enabled": false
+  },
+  "pip": {
+    "enabled": false
+  },
+  "ruby": {
+    "enabled": false
+  },
+  "maven": {
+    "enabled": false
+  },
+  "gradle": {
+    "enabled": false
+  },
+  "cargo": {
+    "enabled": false
+  },
+  "composer": {
+    "enabled": false
+  },
+  "nuget": {
+    "enabled": false
+  },
+  "bundler": {
+    "enabled": false
+  },
+  "pipenv": {
+    "enabled": false
+  },
+  "poetry": {
+    "enabled": false
+  },
+  "mix": {
+    "enabled": false
+  },
+  "hex": {
+    "enabled": false
+  },
+  "pub": {
+    "enabled": false
+  },
+  "swift": {
+    "enabled": false
+  },
+  "cocoapods": {
+    "enabled": false
+  },
+  "helmv3": {
+    "enabled": false
+  },
+  "terraform": {
+    "enabled": false
+  },
+  "terragrunt": {
+    "enabled": false
+  },
+  "gomod": {
+    "enabled": true,
+    "postUpdateOptions": ["gomodTidy"]
+  },
+  "ignorePaths": [
+    "examples/**"
+  ],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5,
+  "rangeStrategy": "bump",
+  "commitMessageAction": "Update",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "commitMessageScope": "deps",
+  "commitMessagePrefix": "chore(deps):",
+  "commitMessageSuffix": "",
+  "recreateClosed": false,
+  "rebaseWhen": "auto",
+  "rebaseLabel": "rebase",
+  "assignees": [],
+  "reviewers": [],
+  "labels": ["dependencies", "renovate"],
+  "assignAutomerge": false,
+  "automerge": false,
+  "automergeType": "pr",
+  "automergeStrategy": "auto",
+  "platformAutomerge": false,
+  "gitSubmodules": {
+    "enabled": false
+  },
+  "hostRules": [],
+  "onboarding": true,
+  "requireConfig": false,
+  "onboardingConfig": {
+    "extends": ["config:base"]
+  },
+  "configMigration": true,
+  "binarySource": "global",
+  "cacheDir": "/tmp/renovate/cache",
+  "baseDir": "/tmp/renovate/repos",
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "logLevel": "info",
+  "logFile": "/tmp/renovate/renovate.log",
+  "logFileLevel": "debug"
+}

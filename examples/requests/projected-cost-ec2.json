@@ -1,0 +1,10 @@
+{
+  "provider": "aws",
+  "resource_type": "ec2",
+  "sku": "t3.large",
+  "region": "us-west-2",
+  "tags": {
+    "Environment": "staging",
+    "Team": "backend"
+  }
+}

@@ -1,0 +1,14 @@
+provider: kubernetes
+resource_type: k8s-node
+sku: n2-standard-2
+region: us-central1
+billing_mode: per_cpu_hour
+rate_per_unit: 0.048
+currency: USD
+description: "Kubecost CPU-hour modeled rate"
+metric_hints:
+  - metric: cpu_cores
+    unit: hours
+source: kubecost
+plugin_metadata:
+  cluster: prod-cluster
