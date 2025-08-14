@@ -1,38 +1,52 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":semanticCommits",
     ":semanticCommitTypeAll(chore)"
   ],
-  "schedule": ["before 4am on monday"],
+  "schedule": [
+    "before 4am on monday"
+  ],
   "timezone": "UTC",
   "packageRules": [
     {
-      "matchPackagePatterns": ["^google\\.golang\\.org/"],
       "groupName": "gRPC and protobuf dependencies",
-      "groupSlug": "grpc-protobuf"
+      "groupSlug": "grpc-protobuf",
+      "matchPackageNames": [
+        "/^google\\.golang\\.org//"
+      ]
     },
     {
-      "matchPackagePatterns": ["^github\\.com/"],
       "groupName": "GitHub dependencies",
-      "groupSlug": "github-deps"
+      "groupSlug": "github-deps",
+      "matchPackageNames": [
+        "/^github\\.com//"
+      ]
     },
     {
-      "matchPackagePatterns": ["^golang\\.org/x/"],
       "groupName": "Go x packages",
-      "groupSlug": "go-x-packages"
+      "groupSlug": "go-x-packages",
+      "matchPackageNames": [
+        "/^golang\\.org/x//"
+      ]
     },
     {
-      "matchPackagePatterns": ["^buf\\.build/"],
       "groupName": "Buf dependencies",
-      "groupSlug": "buf-deps"
+      "groupSlug": "buf-deps",
+      "matchPackageNames": [
+        "/^buf\\.build//"
+      ]
     }
   ],
-  "enabledManagers": ["gomod"],
+  "enabledManagers": [
+    "gomod"
+  ],
   "gomod": {
     "enabled": true,
-    "postUpdateOptions": ["gomodTidy"]
+    "postUpdateOptions": [
+      "gomodTidy"
+    ]
   },
   "ignorePaths": [
     "examples/**"
@@ -45,12 +59,15 @@
   "commitMessageExtra": "to {{newVersion}}",
   "commitMessagePrefix": "chore(deps):",
   "commitMessageSuffix": "",
-  "recreateClosed": false,
+  "recreateWhen": "auto",
   "rebaseWhen": "auto",
   "rebaseLabel": "rebase",
   "assignees": [],
   "reviewers": [],
-  "labels": ["dependencies", "renovate"],
+  "labels": [
+    "dependencies",
+    "renovate"
+  ],
   "assignAutomerge": false,
   "automerge": false,
   "automergeType": "pr",
@@ -58,9 +75,11 @@
   "platformAutomerge": false,
   "hostRules": [],
   "onboarding": true,
-  "requireConfig": false,
+  "requireConfig": "optional",
   "onboardingConfig": {
-    "extends": ["config:base"]
+    "extends": [
+      "config:recommended"
+    ]
   },
   "configMigration": true,
   "binarySource": "global",
