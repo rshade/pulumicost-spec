@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+package pulumicost.v1;
+
+option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+
+import "google/protobuf/timestamp.proto";
+
+// CostSourceService provides gRPC interface for cost source plugins to implement.
+// This service defines the contract for retrieving actual costs, projected costs,
+// and pricing specifications from various cost data sources.
+service CostSourceService {
+  // Name returns the display name of the cost source plugin.
+  rpc Name(NameRequest) returns (NameResponse);
+  
+  // Supports checks if the cost source supports pricing for a given resource type.
+  rpc Supports(SupportsRequest) returns (SupportsResponse);
+  
+  // GetActualCost retrieves historical cost data for a specific resource.
+  rpc GetActualCost(GetActualCostRequest) returns (GetActualCostResponse);
+  
+  // GetProjectedCost calculates projected cost information for a resource.
+  rpc GetProjectedCost(GetProjectedCostRequest) returns (GetProjectedCostResponse);
+  
+  // GetPricingSpec returns detailed pricing specification for a resource type.
+  rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);
+}
+
+// NameRequest is used for the Name RPC call (empty request).
+message NameRequest {}
+
+// NameResponse contains the plugin name information.
+message NameResponse {
+  // name is the display name of the cost source plugin (e.g., "kubecost", "cloudability")
+  string name = 1;
+}
+
+// SupportsRequest contains the resource descriptor to check support for.
+message SupportsRequest {
+  // resource contains the resource descriptor to check support for
+  ResourceDescriptor resource = 1;
+}
+
+// SupportsResponse indicates whether the cost source supports the requested resource.
+message SupportsResponse {
+  // supported indicates if the resource type is supported by this cost source
+  bool supported = 1;
+  // reason provides optional explanation if supported is false
+  string reason = 2;
+}
+
+// GetActualCostRequest contains parameters for retrieving historical cost data.
+message GetActualCostRequest {
+  // resource_id is a flexible ID per plugin (e.g., "i-abc123", "namespace/default")
+  string resource_id = 1;
+  // start timestamp for the cost query period
+  google.protobuf.Timestamp start = 2;
+  // end timestamp for the cost query period
+  google.protobuf.Timestamp end = 3;
+  // tags provide optional extra filters for cost retrieval
+  map<string, string> tags = 4;
+}
+
+// GetActualCostResponse contains the list of actual cost results.
+message GetActualCostResponse {
+  // results contains the actual cost data points for the requested period
+  repeated ActualCostResult results = 1;
+}
+
+// GetProjectedCostRequest contains the resource descriptor for projected cost calculation.
+message GetProjectedCostRequest {
+  // resource contains the resource descriptor for cost projection
+  ResourceDescriptor resource = 1;
+}
+
+// GetProjectedCostResponse contains projected cost information.
+message GetProjectedCostResponse {
+  // unit_price is the price per unit (aligned with PricingSpec.billing_mode)
+  double unit_price = 1;
+  // currency for the pricing (e.g., "USD")
+  string currency = 2;
+  // cost_per_month is a convenience field for a typical 30-day month
+  double cost_per_month = 3;
+  // billing_detail provides context (e.g., "on-demand", "kubecost-avg-daily")
+  string billing_detail = 4;
+}
+
+// GetPricingSpecRequest contains the resource descriptor for pricing specification.
+message GetPricingSpecRequest {
+  // resource contains the resource descriptor for pricing specification
+  ResourceDescriptor resource = 1;
+}
+
+// GetPricingSpecResponse contains the detailed pricing specification.
+message GetPricingSpecResponse {
+  // spec contains the complete pricing specification for the resource
+  PricingSpec spec = 1;
+}
+
+// ResourceDescriptor describes a cloud resource for cost analysis.
+message ResourceDescriptor {
+  // provider identifies the cloud provider ("aws", "azure", "gcp", "kubernetes", "custom")
+  string provider = 1;
+  // resource_type specifies the resource type (e.g., "ec2", "s3", "k8s-namespace", "vm")
+  string resource_type = 2;
+  // sku is the provider SKU or instance size where applicable
+  string sku = 3;
+  // region specifies the deployment region (e.g., "us-east-1")
+  string region = 4;
+  // tags provide label/tag hints for resource identification (e.g., app=web)
+  map<string, string> tags = 5;
+}
+
+// ActualCostResult represents a single cost data point.
+message ActualCostResult {
+  // timestamp indicates the point-in-time or bucket start for this cost data
+  google.protobuf.Timestamp timestamp = 1;
+  // cost is the total cost in the specified currency for the period/bucket
+  double cost = 2;
+  // usage_amount is the optional usage amount aligned with BillingMode
+  double usage_amount = 3;
+  // usage_unit specifies the unit of usage (e.g., "hour", "GB", "request")
+  string usage_unit = 4;
+  // source identifies the data source (e.g., "kubecost", "flexera")
+  string source = 5;
+}
+
+// UsageMetricHint provides guidance on usage metrics for cost calculation.
+message UsageMetricHint {
+  // metric specifies the usage metric name (e.g., "vcpu_hours", "storage_gb", "requests")
+  string metric = 1;
+  // unit specifies the metric unit (e.g., "hour", "GB", "count")
+  string unit = 2;
+}
+
+// PricingSpec provides detailed pricing information for a specific resource type.
+message PricingSpec {
+  // provider identifies the cloud provider for this pricing specification
+  string provider = 1;
+  // resource_type specifies the type of resource being priced
+  string resource_type = 2;
+  // sku is the specific SKU or instance type identifier
+  string sku = 3;
+  // region specifies the geographic region for pricing
+  string region = 4;
+  // billing_mode defines how the resource is billed 
+  // (e.g., "per_hour", "per_gb_month", "per_request", "flat", "per_day", "per_cpu_hour")
+  string billing_mode = 5;
+  // rate_per_unit is the price per billing unit
+  double rate_per_unit = 6;
+  // currency specifies the pricing currency (e.g., "USD")
+  string currency = 7;
+  // description provides human-readable description of the pricing
+  string description = 8;
+  // metric_hints provide guidance on relevant usage metrics for cost calculation
+  repeated UsageMetricHint metric_hints = 9;
+  // plugin_metadata contains plugin-specific extra metadata (keys are not guaranteed to be stable)
+  map<string, string> plugin_metadata = 10;
+  // source identifies where the pricing model originated 
+  // (e.g., "aws", "gcp", "azure", "kubecost", "flexera", "cloudability", "spec")
+  string source = 11;
+}

@@ -76,3 +76,4 @@ Follow semantic versioning for proto changes:
 - PATCH: Bug fixes, documentation
 
 Tag releases as `v0.1.0`, `v1.0.0`, etc.
+- This is the project for this repo: https://github.com/users/rshade/projects/3

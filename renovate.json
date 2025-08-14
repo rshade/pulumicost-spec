@@ -29,69 +29,7 @@
       "groupSlug": "buf-deps"
     }
   ],
-  "go": {
-    "enabled": true
-  },
-  "docker": {
-    "enabled": false
-  },
-  "npm": {
-    "enabled": false
-  },
-  "pip": {
-    "enabled": false
-  },
-  "ruby": {
-    "enabled": false
-  },
-  "maven": {
-    "enabled": false
-  },
-  "gradle": {
-    "enabled": false
-  },
-  "cargo": {
-    "enabled": false
-  },
-  "composer": {
-    "enabled": false
-  },
-  "nuget": {
-    "enabled": false
-  },
-  "bundler": {
-    "enabled": false
-  },
-  "pipenv": {
-    "enabled": false
-  },
-  "poetry": {
-    "enabled": false
-  },
-  "mix": {
-    "enabled": false
-  },
-  "hex": {
-    "enabled": false
-  },
-  "pub": {
-    "enabled": false
-  },
-  "swift": {
-    "enabled": false
-  },
-  "cocoapods": {
-    "enabled": false
-  },
-  "helmv3": {
-    "enabled": false
-  },
-  "terraform": {
-    "enabled": false
-  },
-  "terragrunt": {
-    "enabled": false
-  },
+  "enabledManagers": ["gomod"],
   "gomod": {
     "enabled": true,
     "postUpdateOptions": ["gomodTidy"]
@@ -105,7 +43,6 @@
   "commitMessageAction": "Update",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}",
-  "commitMessageScope": "deps",
   "commitMessagePrefix": "chore(deps):",
   "commitMessageSuffix": "",
   "recreateClosed": false,
@@ -119,9 +56,6 @@
   "automergeType": "pr",
   "automergeStrategy": "auto",
   "platformAutomerge": false,
-  "gitSubmodules": {
-    "enabled": false
-  },
   "hostRules": [],
   "onboarding": true,
   "requireConfig": false,
@@ -132,8 +66,5 @@
   "binarySource": "global",
   "cacheDir": "/tmp/renovate/cache",
   "baseDir": "/tmp/renovate/repos",
-  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
-  "logLevel": "info",
-  "logFile": "/tmp/renovate/renovate.log",
-  "logFileLevel": "debug"
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>"
 }
