@@ -1,35 +1,215 @@
 {
 "$schema": "https://json-schema.org/draft/2020-12/schema",
 "$id": "https://spec.pulumicost.dev/schemas/pricing_spec.schema.json",
-"title": "PricingSpec",
+"title": "PricingSpec v0.1.0",
+"description": "Comprehensive pricing specification schema for cloud resource cost calculation",
+"version": "0.1.0",
 "type": "object",
 "required": ["provider", "resource_type", "billing_mode", "rate_per_unit", "currency"],
 "properties": {
-    "provider":      { "type": "string", "minLength": 1 },
-    "resource_type": { "type": "string", "minLength": 1 },
-    "sku":           { "type": "string" },
-    "region":        { "type": "string" },
-    "billing_mode":  { "type": "string", "enum": ["per_hour","per_gb_month","per_request","flat","per_day","per_cpu_hour"] },
-    "rate_per_unit": { "type": "number", "minimum": 0 },
-    "currency":      { "type": "string", "minLength": 1 },
-    "description":   { "type": "string" },
+    "provider": { 
+        "type": "string", 
+        "minLength": 1,
+        "enum": ["aws", "azure", "gcp", "kubernetes", "custom"],
+        "description": "Cloud provider identifier"
+    },
+    "resource_type": { 
+        "type": "string", 
+        "minLength": 1,
+        "description": "Type of resource being priced (e.g., 'ec2', 's3', 'vm', 'k8s-namespace')"
+    },
+    "sku": { 
+        "type": "string",
+        "description": "Provider-specific SKU or instance type identifier"
+    },
+    "region": { 
+        "type": "string",
+        "description": "Geographic region for pricing (e.g., 'us-east-1', 'westus2', 'us-central1')"
+    },
+    "billing_mode": { 
+        "type": "string", 
+        "enum": [
+            "per_hour", "per_minute", "per_second", 
+            "per_gb_month", "per_gb_hour", "per_gb_day",
+            "per_request", "per_operation", "per_transaction",
+            "per_execution", "per_invocation",
+            "flat", "per_day", "per_month", "per_year",
+            "per_cpu_hour", "per_cpu_month", "per_vcpu_hour",
+            "per_memory_gb_hour", "per_memory_gb_month",
+            "per_iops", "per_provisioned_iops",
+            "per_rcu", "per_wcu", "per_dtu", "per_ru",
+            "on_demand", "reserved", "spot", "preemptible",
+            "savings_plan", "committed_use", "hybrid_benefit",
+            "per_data_transfer_gb", "per_bandwidth_gb",
+            "per_api_call", "per_lookup", "per_query"
+        ],
+        "description": "Billing model that defines how the resource is charged"
+    },
+    "rate_per_unit": { 
+        "type": "number", 
+        "minimum": 0,
+        "description": "Price per billing unit in the specified currency"
+    },
+    "currency": { 
+        "type": "string", 
+        "minLength": 3,
+        "maxLength": 3,
+        "pattern": "^[A-Z]{3}$",
+        "description": "ISO 4217 currency code (e.g., 'USD', 'EUR', 'GBP')"
+    },
+    "description": { 
+        "type": "string",
+        "description": "Human-readable description of the pricing model"
+    },
     "metric_hints": {
-    "type": "array",
-    "items": {
+        "type": "array",
+        "description": "Guidance on relevant usage metrics for cost calculation",
+        "items": {
+            "type": "object",
+            "required": ["metric", "unit"],
+            "properties": {
+                "metric": { 
+                    "type": "string", 
+                    "minLength": 1,
+                    "description": "Usage metric name (e.g., 'vcpu_hours', 'storage_gb', 'requests')"
+                },
+                "unit": { 
+                    "type": "string", 
+                    "minLength": 1,
+                    "description": "Metric unit (e.g., 'hour', 'GB', 'count', 'millisecond')"
+                },
+                "aggregation_method": {
+                    "type": "string",
+                    "enum": ["sum", "avg", "max", "min", "p95", "p99"],
+                    "description": "How to aggregate this metric over time"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "pricing_tiers": {
+        "type": "array",
+        "description": "Tiered pricing structure for volume-based discounts",
+        "items": {
+            "type": "object",
+            "required": ["min_units", "rate_per_unit"],
+            "properties": {
+                "min_units": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Minimum units for this pricing tier"
+                },
+                "max_units": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Maximum units for this pricing tier (optional for highest tier)"
+                },
+                "rate_per_unit": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Rate per unit for this tier"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "time_aggregation": {
         "type": "object",
-        "required": ["metric","unit"],
+        "description": "Rules for aggregating costs over time periods",
         "properties": {
-        "metric": { "type": "string", "minLength": 1 },
-        "unit":   { "type": "string", "minLength": 1 }
+            "window": {
+                "type": "string",
+                "enum": ["second", "minute", "hour", "day", "month", "year"],
+                "description": "Time window for cost aggregation"
+            },
+            "method": {
+                "type": "string", 
+                "enum": ["sum", "avg", "prorated"],
+                "description": "How to aggregate costs within the time window"
+            },
+            "alignment": {
+                "type": "string",
+                "enum": ["calendar", "billing", "continuous"],
+                "description": "How time windows are aligned"
+            }
         },
         "additionalProperties": false
-    }
+    },
+    "commitment_terms": {
+        "type": "object",
+        "description": "Terms for reserved/committed pricing models",
+        "properties": {
+            "duration": {
+                "type": "string",
+                "enum": ["1_year", "3_year", "spot", "on_demand"],
+                "description": "Commitment duration for reserved pricing"
+            },
+            "payment_option": {
+                "type": "string",
+                "enum": ["all_upfront", "partial_upfront", "no_upfront", "monthly"],
+                "description": "Payment schedule for committed pricing"
+            },
+            "discount_percentage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Discount percentage compared to on-demand pricing"
+            }
+        },
+        "additionalProperties": false
+    },
+    "resource_tags": {
+        "type": "object",
+        "description": "Resource tags for categorization and querying (billing centers, cost centers, environments, etc.)",
+        "additionalProperties": { "type": "string" },
+        "examples": [
+            {
+                "billing_center": "engineering",
+                "cost_center": "CC-1001", 
+                "environment": "production",
+                "team": "platform",
+                "project": "microservices"
+            }
+        ]
     },
     "plugin_metadata": {
-    "type": "object",
-    "additionalProperties": { "type": "string" }
+        "type": "object",
+        "description": "Plugin-specific metadata supporting flexible key-value data structures",
+        "additionalProperties": true,
+        "examples": [
+            {
+                "flexera_billing_center": "Engineering-Prod",
+                "aws_account_id": "123456789012",
+                "reservation_id": "r-1234567890abcdef0",
+                "savings_plan_id": "sp-1234567890abcdef0",
+                "availability_zone": "us-east-1a",
+                "instance_family": "general_purpose",
+                "pricing_tier": "standard",
+                "commitment_discount": 0.4,
+                "upfront_payment": 1000.00,
+                "effective_hourly_rate": 0.025,
+                "pricing_model_details": {
+                    "term_length": "1_year",
+                    "offering_class": "standard",
+                    "tenancy": "shared"
+                }
+            }
+        ]
     },
-    "source": { "type": "string" }
+    "source": { 
+        "type": "string",
+        "description": "Origin of the pricing model (e.g., 'aws', 'gcp', 'azure', 'kubecost', 'spec')"
+    },
+    "effective_date": {
+        "type": "string",
+        "format": "date-time",
+        "description": "When this pricing becomes effective (ISO 8601 format)"
+    },
+    "expiration_date": {
+        "type": "string",
+        "format": "date-time", 
+        "description": "When this pricing expires (ISO 8601 format)"
+    }
 },
 "additionalProperties": false
 }
