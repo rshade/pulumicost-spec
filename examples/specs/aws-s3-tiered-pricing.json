@@ -1,0 +1,63 @@
+{
+  "provider": "aws",
+  "resource_type": "s3",
+  "region": "us-east-1",
+  "billing_mode": "per_gb_month",
+  "rate_per_unit": 0.023,
+  "currency": "USD",
+  "description": "S3 Standard storage with tiered pricing in us-east-1",
+  "metric_hints": [
+    {
+      "metric": "storage_gb",
+      "unit": "GB",
+      "aggregation_method": "avg"
+    },
+    {
+      "metric": "get_requests",
+      "unit": "count",
+      "aggregation_method": "sum"
+    },
+    {
+      "metric": "put_requests",
+      "unit": "count",
+      "aggregation_method": "sum"
+    }
+  ],
+  "pricing_tiers": [
+    {
+      "min_units": 0,
+      "max_units": 50000,
+      "rate_per_unit": 0.023
+    },
+    {
+      "min_units": 50000,
+      "max_units": 450000,
+      "rate_per_unit": 0.022
+    },
+    {
+      "min_units": 450000,
+      "rate_per_unit": 0.021
+    }
+  ],
+  "time_aggregation": {
+    "window": "month",
+    "method": "avg",
+    "alignment": "billing"
+  },
+  "resource_tags": {
+    "billing_center": "engineering",
+    "cost_center": "CC-1001",
+    "environment": "production",
+    "service": "data-lake"
+  },
+  "plugin_metadata": {
+    "aws_account_id": "123456789012",
+    "storage_class": "STANDARD",
+    "versioning_enabled": true,
+    "lifecycle_policies": true,
+    "replication_enabled": false,
+    "encryption": "AES256"
+  },
+  "source": "aws",
+  "effective_date": "2024-01-01T00:00:00Z"
+}

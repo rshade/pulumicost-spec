@@ -99,6 +99,20 @@ func ValidBillingMode(s string) bool {
 	return false
 }
 
+// IsValidBillingMode checks if a billing mode string is valid
+func IsValidBillingMode(s string) bool {
+	return ValidBillingMode(s)
+}
+
+// GetAllBillingModes returns all available billing modes as strings
+func GetAllBillingModes() []string {
+	modes := make([]string, len(AllBillingModes))
+	for i, mode := range AllBillingModes {
+		modes[i] = mode.String()
+	}
+	return modes
+}
+
 // Provider enumeration for validation
 type Provider string
 
