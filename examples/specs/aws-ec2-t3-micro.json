@@ -1,0 +1,39 @@
+{
+  "provider": "aws",
+  "resource_type": "ec2",
+  "sku": "t3.micro",
+  "region": "us-east-1",
+  "billing_mode": "per_hour",
+  "rate_per_unit": 0.0104,
+  "currency": "USD",
+  "description": "On-demand Linux EC2 t3.micro instance in us-east-1",
+  "metric_hints": [
+    {
+      "metric": "vcpu_hours",
+      "unit": "hour",
+      "aggregation_method": "sum"
+    },
+    {
+      "metric": "memory_gb_hours",
+      "unit": "hour",
+      "aggregation_method": "sum"
+    }
+  ],
+  "resource_tags": {
+    "billing_center": "engineering",
+    "cost_center": "CC-1001",
+    "environment": "production",
+    "instance_family": "general_purpose"
+  },
+  "plugin_metadata": {
+    "aws_account_id": "123456789012",
+    "availability_zone": "us-east-1a",
+    "instance_family": "general_purpose",
+    "vcpu_count": 1,
+    "memory_gb": 1,
+    "network_performance": "low_to_moderate",
+    "storage_type": "ebs_only"
+  },
+  "source": "aws",
+  "effective_date": "2024-01-01T00:00:00Z"
+}

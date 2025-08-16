@@ -1,9 +1,18 @@
 PROTO_OUT=sdk/go/proto
+BUF_VERSION=1.32.1
+BUF_BIN=bin/buf
 
 all: generate
 
-generate:
-	buf generate
+generate: $(BUF_BIN)
+	$(BUF_BIN) generate
+
+$(BUF_BIN):
+	@mkdir -p bin
+	@echo "Installing buf $(BUF_VERSION) locally..."
+	@curl -sSL "https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$$(uname -s)-$$(uname -m)" -o $(BUF_BIN)
+	@chmod +x $(BUF_BIN)
+	@echo "buf installed to $(BUF_BIN)"
 
 tidy:
 	go mod tidy
@@ -11,8 +20,22 @@ tidy:
 clean:
 	rm -rf $(PROTO_OUT)
 
+clean-all: clean
+	rm -rf bin
+
 test:
 	go test ./...
+
+buf: $(BUF_BIN)
+
+buf-lint: $(BUF_BIN)
+	$(BUF_BIN) lint
+
+lint: $(BUF_BIN)
+	golangci-lint run
+	$(BUF_BIN) lint
+
+validate: test lint
 
 depend:
 	@echo "Installing Go development tools..."
