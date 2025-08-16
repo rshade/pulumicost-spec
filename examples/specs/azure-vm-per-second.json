@@ -1,0 +1,45 @@
+{
+  "provider": "azure",
+  "resource_type": "vm",
+  "sku": "Standard_B1s",
+  "region": "eastus",
+  "billing_mode": "per_second",
+  "rate_per_unit": 0.00000129,
+  "currency": "USD",
+  "description": "Basic B1s virtual machine with per-second billing in East US",
+  "metric_hints": [
+    {
+      "metric": "vcpu_seconds",
+      "unit": "second",
+      "aggregation_method": "sum"
+    },
+    {
+      "metric": "memory_gb_seconds",
+      "unit": "second",
+      "aggregation_method": "sum"
+    }
+  ],
+  "time_aggregation": {
+    "window": "hour",
+    "method": "sum",
+    "alignment": "calendar"
+  },
+  "resource_tags": {
+    "billing_center": "it-infrastructure",
+    "cost_center": "CC-2002",
+    "environment": "development",
+    "application": "web-server"
+  },
+  "plugin_metadata": {
+    "azure_subscription_id": "12345678-1234-1234-1234-123456789012",
+    "resource_group": "dev-web-servers",
+    "vm_size_family": "Bs",
+    "vcpu_count": 1,
+    "memory_gb": 1,
+    "os_type": "linux",
+    "disk_type": "premium_ssd",
+    "min_billing_increment_seconds": 60
+  },
+  "source": "azure",
+  "effective_date": "2024-01-01T00:00:00Z"
+}

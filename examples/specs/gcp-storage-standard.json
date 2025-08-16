@@ -1,0 +1,58 @@
+{
+  "provider": "gcp",
+  "resource_type": "cloud_storage",
+  "region": "us-central1",
+  "billing_mode": "per_gb_month",
+  "rate_per_unit": 0.02,
+  "currency": "USD",
+  "description": "Standard storage class in us-central1 region",
+  "metric_hints": [
+    {
+      "metric": "storage_gb",
+      "unit": "GB",
+      "aggregation_method": "avg"
+    },
+    {
+      "metric": "requests",
+      "unit": "count",
+      "aggregation_method": "sum"
+    }
+  ],
+  "pricing_tiers": [
+    {
+      "min_units": 0,
+      "max_units": 1024,
+      "rate_per_unit": 0.02
+    },
+    {
+      "min_units": 1024,
+      "max_units": 51200,
+      "rate_per_unit": 0.019
+    },
+    {
+      "min_units": 51200,
+      "rate_per_unit": 0.018
+    }
+  ],
+  "time_aggregation": {
+    "window": "month",
+    "method": "avg",
+    "alignment": "billing"
+  },
+  "resource_tags": {
+    "billing_center": "data-engineering",
+    "cost_center": "CC-3003",
+    "environment": "production",
+    "data_classification": "internal"
+  },
+  "plugin_metadata": {
+    "gcp_project_id": "my-project-123456",
+    "storage_class": "STANDARD",
+    "location_type": "region",
+    "durability": "99.999999999",
+    "availability": "99.95",
+    "bucket_name": "my-production-bucket"
+  },
+  "source": "gcp",
+  "effective_date": "2024-01-01T00:00:00Z"
+}
