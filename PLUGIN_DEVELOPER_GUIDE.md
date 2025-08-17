@@ -33,11 +33,13 @@ This guide provides comprehensive instructions for developing PulumiCost plugins
 
 ## Overview
 
-PulumiCost plugins implement the `CostSourceService` gRPC interface to provide cost data from various sources (cloud providers, cost management tools, custom pricing models). This guide walks through the complete plugin development lifecycle from implementation to distribution.
+PulumiCost plugins implement the `CostSourceService` gRPC interface to provide cost data from
+various sources (cloud providers, cost management tools, custom pricing models).
+This guide walks through the complete plugin development lifecycle from implementation to distribution.
 
 ### Architecture
 
-```
+```text
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   PulumiCost    │    │   Your Plugin    │    │   Cost Source   │
 │     Core        │◄──►│  (gRPC Server)   │◄──►│  (AWS/GCP/etc)  │
@@ -54,13 +56,14 @@ Before starting plugin development, ensure you have:
 
 - Go 1.19+ installed
 - Protocol Buffers compiler (protoc)
-- buf CLI tool (https://docs.buf.build/installation)
+- buf CLI tool (<https://docs.buf.build/installation>)
 - Basic understanding of gRPC and protocol buffers
 - Access to cost data source (API credentials, database, etc.)
 
 ## Implementing CostSource gRPC Service
 
-The `CostSourceService` gRPC interface is the core contract your plugin must implement. This section covers each RPC method in detail.
+The `CostSourceService` gRPC interface is the core contract your plugin must implement.
+This section covers each RPC method in detail.
 
 ### Service Interface
 
@@ -79,10 +82,12 @@ service CostSourceService {
 ### Request/Response Messages
 
 #### Name RPC
+
 Returns the display name of your plugin.
 
 **Request**: `NameRequest` (empty)
 **Response**: `NameResponse`
+
 ```protobuf
 message NameResponse {
   string name = 1; // e.g., "kubecost", "cloudability", "aws-pricing"
@@ -90,14 +95,17 @@ message NameResponse {
 ```
 
 **Implementation Notes**:
+
 - Choose a clear, descriptive name
 - Use lowercase with hyphens for consistency
 - Should be unique across all plugins
 
 #### Supports RPC
+
 Checks if your plugin can provide cost data for a specific resource type.
 
 **Request**: `SupportsRequest`
+
 ```protobuf
 message SupportsRequest {
   ResourceDescriptor resource = 1;
@@ -105,6 +113,7 @@ message SupportsRequest {
 ```
 
 **Response**: `SupportsResponse`
+
 ```protobuf
 message SupportsResponse {
   bool supported = 1;
@@ -113,14 +122,17 @@ message SupportsResponse {
 ```
 
 **Implementation Notes**:
+
 - Check `resource.provider`, `resource.resource_type`, and `resource.region`
 - Return `false` with a descriptive reason for unsupported resources
 - Consider SKU-specific support (some plugins may only support certain instance types)
 
 #### GetActualCost RPC
+
 Retrieves historical cost data for a resource within a time range.
 
 **Request**: `GetActualCostRequest`
+
 ```protobuf
 message GetActualCostRequest {
   string resource_id = 1;         // flexible ID format per plugin
@@ -131,6 +143,7 @@ message GetActualCostRequest {
 ```
 
 **Response**: `GetActualCostResponse`
+
 ```protobuf
 message GetActualCostResponse {
   repeated ActualCostResult results = 1;
@@ -146,15 +159,18 @@ message ActualCostResult {
 ```
 
 **Implementation Notes**:
+
 - `resource_id` format is plugin-specific (e.g., AWS instance ID, K8s namespace)
 - Return time-series data points within the requested range
 - Include usage metrics when available for better cost analysis
 - Handle time zone conversion appropriately
 
 #### GetProjectedCost RPC
+
 Calculates projected cost for a resource based on current pricing.
 
 **Request**: `GetProjectedCostRequest`
+
 ```protobuf
 message GetProjectedCostRequest {
   ResourceDescriptor resource = 1;
@@ -162,6 +178,7 @@ message GetProjectedCostRequest {
 ```
 
 **Response**: `GetProjectedCostResponse`
+
 ```protobuf
 message GetProjectedCostResponse {
   double unit_price = 1;          // price per billing unit
@@ -172,14 +189,17 @@ message GetProjectedCostResponse {
 ```
 
 **Implementation Notes**:
+
 - Calculate based on current pricing tables
 - `cost_per_month` should assume 30.44 days (365.25/12)
 - Include billing context in `billing_detail`
 
 #### GetPricingSpec RPC
+
 Returns detailed pricing specification for a resource type.
 
 **Request**: `GetPricingSpecRequest`
+
 ```protobuf
 message GetPricingSpecRequest {
   ResourceDescriptor resource = 1;
@@ -187,6 +207,7 @@ message GetPricingSpecRequest {
 ```
 
 **Response**: `GetPricingSpecResponse`
+
 ```protobuf
 message GetPricingSpecResponse {
   PricingSpec spec = 1;
@@ -194,6 +215,7 @@ message GetPricingSpecResponse {
 ```
 
 The `PricingSpec` message contains comprehensive pricing details:
+
 ```protobuf
 message PricingSpec {
   string provider = 1;
@@ -211,6 +233,7 @@ message PricingSpec {
 ```
 
 **Implementation Notes**:
+
 - Use standard `billing_mode` values: `per_hour`, `per_gb_month`, `per_request`, `flat`, `per_day`, `per_cpu_hour`
 - Provide helpful `metric_hints` for usage calculation
 - Include plugin-specific metadata for debugging/auditing
@@ -218,12 +241,14 @@ message PricingSpec {
 ### Implementation Requirements
 
 #### Error Handling
+
 - Use standard gRPC status codes
 - Provide descriptive error messages
 - Handle network timeouts gracefully
 - Log errors for debugging
 
 #### Resource Descriptor Validation
+
 ```go
 func validateResourceDescriptor(rd *ResourceDescriptor) error {
     if rd.Provider == "" {
@@ -238,16 +263,19 @@ func validateResourceDescriptor(rd *ResourceDescriptor) error {
 ```
 
 #### Authentication
+
 - Support API keys, OAuth tokens, or service account credentials
 - Load credentials from environment variables or config files
 - Implement credential refresh logic for OAuth
 
 #### Caching
+
 - Cache pricing data to reduce API calls
 - Implement TTL-based cache invalidation
 - Consider regional pricing differences
 
 #### Logging
+
 - Use structured logging (JSON format recommended)
 - Log request/response for debugging
 - Include correlation IDs for tracing
@@ -260,7 +288,7 @@ Plugins must follow a standardized packaging format for consistent deployment an
 
 A PulumiCost plugin follows this directory structure:
 
-```
+```text
 my-plugin/
 ├── pulumicost-plugin.yaml    # Plugin manifest (required)
 ├── bin/                      # Plugin binaries
@@ -368,11 +396,13 @@ Example: `"bin/plugin-{{.OS}}-{{.ARCH}}-{{.VERSION}}"`
 ### Binary Naming Convention
 
 Plugin binaries should follow this naming pattern:
-```
+
+```text
 plugin-<os>-<arch>[-<version>]
 ```
 
 Examples:
+
 - `plugin-linux-amd64`
 - `plugin-darwin-arm64`
 - `plugin-windows-amd64-1.0.0`
@@ -405,16 +435,19 @@ auth:
 Plugins can be distributed in multiple formats:
 
 1. **Tarball** (`.tar.gz`)
+
    ```bash
    tar -czf my-plugin-1.0.0.tar.gz my-plugin/
    ```
 
 2. **ZIP Archive** (`.zip`)
+
    ```bash
    zip -r my-plugin-1.0.0.zip my-plugin/
    ```
 
 3. **Container Image** (Docker)
+
    ```dockerfile
    FROM scratch
    COPY plugin-linux-amd64 /plugin
@@ -447,6 +480,7 @@ pulumicost plugin test my-plugin-1.0.0.tar.gz
 ```
 
 The validation checks:
+
 - Manifest syntax and required fields
 - Binary compatibility and architecture
 - Authentication configuration
@@ -480,253 +514,253 @@ go get google.golang.org/protobuf@latest
 package main
 
 import (
-	"context"
-	"flag"
-	"fmt"
-	"log"
-	"net"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+ "context"
+ "flag"
+ "fmt"
+ "log"
+ "net"
+ "os"
+ "os/signal"
+ "syscall"
+ "time"
 
-	pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	"github.com/rshade/pulumicost-spec/sdk/go/types"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
+ pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ "github.com/rshade/pulumicost-spec/sdk/go/types"
+ "google.golang.org/grpc"
+ "google.golang.org/grpc/codes"
+ "google.golang.org/grpc/status"
+ "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	port = flag.Int("port", 50051, "The server port")
+ port = flag.Int("port", 50051, "The server port")
 )
 
 // server implements the CostSourceService
 type server struct {
-	pb.UnimplementedCostSourceServiceServer
-	name string
+ pb.UnimplementedCostSourceServiceServer
+ name string
 }
 
 // Name returns the plugin name
 func (s *server) Name(ctx context.Context, req *pb.NameRequest) (*pb.NameResponse, error) {
-	log.Println("Name RPC called")
-	return &pb.NameResponse{
-		Name: s.name,
-	}, nil
+ log.Println("Name RPC called")
+ return &pb.NameResponse{
+  Name: s.name,
+ }, nil
 }
 
 // Supports checks if the plugin supports a resource type
 func (s *server) Supports(ctx context.Context, req *pb.SupportsRequest) (*pb.SupportsResponse, error) {
-	log.Printf("Supports RPC called for provider=%s, resource_type=%s", 
-		req.Resource.Provider, req.Resource.ResourceType)
+ log.Printf("Supports RPC called for provider=%s, resource_type=%s", 
+  req.Resource.Provider, req.Resource.ResourceType)
 
-	// This example plugin supports "custom" provider with "vm" and "storage" resources
-	if req.Resource.Provider != "custom" {
-		return &pb.SupportsResponse{
-			Supported: false,
-			Reason:    fmt.Sprintf("Provider %s not supported", req.Resource.Provider),
-		}, nil
-	}
+ // This example plugin supports "custom" provider with "vm" and "storage" resources
+ if req.Resource.Provider != "custom" {
+  return &pb.SupportsResponse{
+   Supported: false,
+   Reason:    fmt.Sprintf("Provider %s not supported", req.Resource.Provider),
+  }, nil
+ }
 
-	switch req.Resource.ResourceType {
-	case "vm", "storage":
-		return &pb.SupportsResponse{
-			Supported: true,
-		}, nil
-	default:
-		return &pb.SupportsResponse{
-			Supported: false,
-			Reason:    fmt.Sprintf("Resource type %s not supported", req.Resource.ResourceType),
-		}, nil
-	}
+ switch req.Resource.ResourceType {
+ case "vm", "storage":
+  return &pb.SupportsResponse{
+   Supported: true,
+  }, nil
+ default:
+  return &pb.SupportsResponse{
+   Supported: false,
+   Reason:    fmt.Sprintf("Resource type %s not supported", req.Resource.ResourceType),
+  }, nil
+ }
 }
 
 // GetActualCost retrieves historical cost data
 func (s *server) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest) (*pb.GetActualCostResponse, error) {
-	log.Printf("GetActualCost RPC called for resource_id=%s", req.ResourceId)
+ log.Printf("GetActualCost RPC called for resource_id=%s", req.ResourceId)
 
-	// Validate request
-	if req.ResourceId == "" {
-		return nil, status.Error(codes.InvalidArgument, "resource_id is required")
-	}
-	if req.Start == nil || req.End == nil {
-		return nil, status.Error(codes.InvalidArgument, "start and end timestamps are required")
-	}
+ // Validate request
+ if req.ResourceId == "" {
+  return nil, status.Error(codes.InvalidArgument, "resource_id is required")
+ }
+ if req.Start == nil || req.End == nil {
+  return nil, status.Error(codes.InvalidArgument, "start and end timestamps are required")
+ }
 
-	// Mock cost data - replace with actual data source integration
-	results := generateMockActualCostData(req.ResourceId, req.Start.AsTime(), req.End.AsTime())
+ // Mock cost data - replace with actual data source integration
+ results := generateMockActualCostData(req.ResourceId, req.Start.AsTime(), req.End.AsTime())
 
-	return &pb.GetActualCostResponse{
-		Results: results,
-	}, nil
+ return &pb.GetActualCostResponse{
+  Results: results,
+ }, nil
 }
 
 // GetProjectedCost calculates projected costs
 func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostRequest) (*pb.GetProjectedCostResponse, error) {
-	log.Printf("GetProjectedCost RPC called for provider=%s, resource_type=%s, sku=%s", 
-		req.Resource.Provider, req.Resource.ResourceType, req.Resource.Sku)
+ log.Printf("GetProjectedCost RPC called for provider=%s, resource_type=%s, sku=%s", 
+  req.Resource.Provider, req.Resource.ResourceType, req.Resource.Sku)
 
-	// Validate resource
-	if err := validateResourceDescriptor(req.Resource); err != nil {
-		return nil, err
-	}
+ // Validate resource
+ if err := validateResourceDescriptor(req.Resource); err != nil {
+  return nil, err
+ }
 
-	// Calculate projected cost based on resource type
-	var unitPrice float64
-	var billingDetail string
+ // Calculate projected cost based on resource type
+ var unitPrice float64
+ var billingDetail string
 
-	switch req.Resource.ResourceType {
-	case "vm":
-		unitPrice = 0.05 // $0.05 per hour
-		billingDetail = "on-demand hourly"
-	case "storage":
-		unitPrice = 0.10 // $0.10 per GB per month
-		billingDetail = "standard storage monthly"
-	default:
-		return nil, status.Error(codes.InvalidArgument, "unsupported resource type")
-	}
+ switch req.Resource.ResourceType {
+ case "vm":
+  unitPrice = 0.05 // $0.05 per hour
+  billingDetail = "on-demand hourly"
+ case "storage":
+  unitPrice = 0.10 // $0.10 per GB per month
+  billingDetail = "standard storage monthly"
+ default:
+  return nil, status.Error(codes.InvalidArgument, "unsupported resource type")
+ }
 
-	// Calculate cost per month (assume 30.44 days)
-	hoursPerMonth := 24 * 30.44
-	var costPerMonth float64
-	if req.Resource.ResourceType == "vm" {
-		costPerMonth = unitPrice * hoursPerMonth
-	} else {
-		costPerMonth = unitPrice // Already monthly rate
-	}
+ // Calculate cost per month (assume 30.44 days)
+ hoursPerMonth := 24 * 30.44
+ var costPerMonth float64
+ if req.Resource.ResourceType == "vm" {
+  costPerMonth = unitPrice * hoursPerMonth
+ } else {
+  costPerMonth = unitPrice // Already monthly rate
+ }
 
-	return &pb.GetProjectedCostResponse{
-		UnitPrice:     unitPrice,
-		Currency:      "USD",
-		CostPerMonth:  costPerMonth,
-		BillingDetail: billingDetail,
-	}, nil
+ return &pb.GetProjectedCostResponse{
+  UnitPrice:     unitPrice,
+  Currency:      "USD",
+  CostPerMonth:  costPerMonth,
+  BillingDetail: billingDetail,
+ }, nil
 }
 
 // GetPricingSpec returns detailed pricing specification
 func (s *server) GetPricingSpec(ctx context.Context, req *pb.GetPricingSpecRequest) (*pb.GetPricingSpecResponse, error) {
-	log.Printf("GetPricingSpec RPC called for provider=%s, resource_type=%s", 
-		req.Resource.Provider, req.Resource.ResourceType)
+ log.Printf("GetPricingSpec RPC called for provider=%s, resource_type=%s", 
+  req.Resource.Provider, req.Resource.ResourceType)
 
-	// Validate resource
-	if err := validateResourceDescriptor(req.Resource); err != nil {
-		return nil, err
-	}
+ // Validate resource
+ if err := validateResourceDescriptor(req.Resource); err != nil {
+  return nil, err
+ }
 
-	// Build pricing spec based on resource type
-	spec := &pb.PricingSpec{
-		Provider:     req.Resource.Provider,
-		ResourceType: req.Resource.ResourceType,
-		Sku:          req.Resource.Sku,
-		Region:       req.Resource.Region,
-		Currency:     "USD",
-		Description:  fmt.Sprintf("Pricing for %s %s", req.Resource.Provider, req.Resource.ResourceType),
-		Source:       s.name,
-		PluginMetadata: map[string]string{
-			"plugin_version": "1.0.0",
-			"last_updated":   time.Now().Format(time.RFC3339),
-		},
-	}
+ // Build pricing spec based on resource type
+ spec := &pb.PricingSpec{
+  Provider:     req.Resource.Provider,
+  ResourceType: req.Resource.ResourceType,
+  Sku:          req.Resource.Sku,
+  Region:       req.Resource.Region,
+  Currency:     "USD",
+  Description:  fmt.Sprintf("Pricing for %s %s", req.Resource.Provider, req.Resource.ResourceType),
+  Source:       s.name,
+  PluginMetadata: map[string]string{
+   "plugin_version": "1.0.0",
+   "last_updated":   time.Now().Format(time.RFC3339),
+  },
+ }
 
-	switch req.Resource.ResourceType {
-	case "vm":
-		spec.BillingMode = string(types.PerHour)
-		spec.RatePerUnit = 0.05
-		spec.MetricHints = []*pb.UsageMetricHint{
-			{
-				Metric: "vcpu_hours",
-				Unit:   "hour",
-			},
-		}
-	case "storage":
-		spec.BillingMode = string(types.PerGBMonth)
-		spec.RatePerUnit = 0.10
-		spec.MetricHints = []*pb.UsageMetricHint{
-			{
-				Metric: "storage_gb_month",
-				Unit:   "GB",
-			},
-		}
-	default:
-		return nil, status.Error(codes.InvalidArgument, "unsupported resource type")
-	}
+ switch req.Resource.ResourceType {
+ case "vm":
+  spec.BillingMode = string(types.PerHour)
+  spec.RatePerUnit = 0.05
+  spec.MetricHints = []*pb.UsageMetricHint{
+   {
+    Metric: "vcpu_hours",
+    Unit:   "hour",
+   },
+  }
+ case "storage":
+  spec.BillingMode = string(types.PerGBMonth)
+  spec.RatePerUnit = 0.10
+  spec.MetricHints = []*pb.UsageMetricHint{
+   {
+    Metric: "storage_gb_month",
+    Unit:   "GB",
+   },
+  }
+ default:
+  return nil, status.Error(codes.InvalidArgument, "unsupported resource type")
+ }
 
-	return &pb.GetPricingSpecResponse{
-		Spec: spec,
-	}, nil
+ return &pb.GetPricingSpecResponse{
+  Spec: spec,
+ }, nil
 }
 
 // validateResourceDescriptor validates the resource descriptor
 func validateResourceDescriptor(rd *pb.ResourceDescriptor) error {
-	if rd == nil {
-		return status.Error(codes.InvalidArgument, "resource descriptor is required")
-	}
-	if rd.Provider == "" {
-		return status.Error(codes.InvalidArgument, "provider is required")
-	}
-	if rd.ResourceType == "" {
-		return status.Error(codes.InvalidArgument, "resource_type is required")
-	}
-	return nil
+ if rd == nil {
+  return status.Error(codes.InvalidArgument, "resource descriptor is required")
+ }
+ if rd.Provider == "" {
+  return status.Error(codes.InvalidArgument, "provider is required")
+ }
+ if rd.ResourceType == "" {
+  return status.Error(codes.InvalidArgument, "resource_type is required")
+ }
+ return nil
 }
 
 // generateMockActualCostData creates sample historical cost data
 func generateMockActualCostData(resourceID string, start, end time.Time) []*pb.ActualCostResult {
-	var results []*pb.ActualCostResult
-	
-	// Generate daily cost data points
-	current := start
-	for current.Before(end) {
-		// Mock cost calculation - replace with actual data source
-		baseCost := 2.40 // $2.40 per day base cost
-		variance := 0.20 * (0.5 - float64(current.Unix()%1000)/1000) // Add some variance
-		dailyCost := baseCost + variance
+ var results []*pb.ActualCostResult
+ 
+ // Generate daily cost data points
+ current := start
+ for current.Before(end) {
+  // Mock cost calculation - replace with actual data source
+  baseCost := 2.40 // $2.40 per day base cost
+  variance := 0.20 * (0.5 - float64(current.Unix()%1000)/1000) // Add some variance
+  dailyCost := baseCost + variance
 
-		results = append(results, &pb.ActualCostResult{
-			Timestamp:   timestamppb.New(current),
-			Cost:        dailyCost,
-			UsageAmount: 24.0, // 24 hours
-			UsageUnit:   "hour",
-			Source:      "my-cost-plugin",
-		})
+  results = append(results, &pb.ActualCostResult{
+   Timestamp:   timestamppb.New(current),
+   Cost:        dailyCost,
+   UsageAmount: 24.0, // 24 hours
+   UsageUnit:   "hour",
+   Source:      "my-cost-plugin",
+  })
 
-		current = current.AddDate(0, 0, 1) // Next day
-	}
+  current = current.AddDate(0, 0, 1) // Next day
+ }
 
-	return results
+ return results
 }
 
 func main() {
-	flag.Parse()
+ flag.Parse()
 
-	// Create gRPC server
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
-	}
+ // Create gRPC server
+ lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+ if err != nil {
+  log.Fatalf("Failed to listen: %v", err)
+ }
 
-	s := grpc.NewServer()
-	pb.RegisterCostSourceServiceServer(s, &server{
-		name: "my-cost-plugin",
-	})
+ s := grpc.NewServer()
+ pb.RegisterCostSourceServiceServer(s, &server{
+  name: "my-cost-plugin",
+ })
 
-	log.Printf("Server listening at %v", lis.Addr())
+ log.Printf("Server listening at %v", lis.Addr())
 
-	// Handle graceful shutdown
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+ // Handle graceful shutdown
+ c := make(chan os.Signal, 1)
+ signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
-	go func() {
-		<-c
-		log.Println("Shutting down gRPC server...")
-		s.GracefulStop()
-	}()
+ go func() {
+  <-c
+  log.Println("Shutting down gRPC server...")
+  s.GracefulStop()
+ }()
 
-	// Start server
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
-	}
+ // Start server
+ if err := s.Serve(lis); err != nil {
+  log.Fatalf("Failed to serve: %v", err)
+ }
 }
 ```
 
@@ -738,17 +772,17 @@ module github.com/yourorg/my-cost-plugin
 go 1.19
 
 require (
-	github.com/rshade/pulumicost-spec/sdk/go/proto v0.1.0
-	google.golang.org/grpc v1.58.3
-	google.golang.org/protobuf v1.31.0
+ github.com/rshade/pulumicost-spec/sdk/go/proto v0.1.0
+ google.golang.org/grpc v1.58.3
+ google.golang.org/protobuf v1.31.0
 )
 
 require (
-	github.com/golang/protobuf v1.5.3 // indirect
-	golang.org/x/net v0.12.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
+ github.com/golang/protobuf v1.5.3 // indirect
+ golang.org/x/net v0.12.0 // indirect
+ golang.org/x/sys v0.10.0 // indirect
+ golang.org/x/text v0.11.0 // indirect
+ google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 )
 ```
 
@@ -835,7 +869,7 @@ grpcurl -plaintext -import-path . -proto proto/pulumicost/v1/costsource.proto \
 
 ### Plugin Package Structure
 
-```
+```text
 my-cost-plugin-1.0.0/
 ├── pulumicost-plugin.yaml
 ├── bin/
@@ -875,256 +909,256 @@ Create unit tests for each RPC method to verify functionality and edge cases.
 package test
 
 import (
-	"context"
-	"testing"
-	"time"
+ "context"
+ "testing"
+ "time"
 
-	pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
+ pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ "github.com/stretchr/testify/assert"
+ "google.golang.org/grpc/codes"
+ "google.golang.org/grpc/status"
+ "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Import your plugin server implementation
 // import "github.com/yourorg/my-cost-plugin"
 
 func TestName(t *testing.T) {
-	server := &server{name: "test-plugin"}
-	
-	resp, err := server.Name(context.Background(), &pb.NameRequest{})
-	
-	assert.NoError(t, err)
-	assert.NotNil(t, resp)
-	assert.Equal(t, "test-plugin", resp.Name)
+ server := &server{name: "test-plugin"}
+ 
+ resp, err := server.Name(context.Background(), &pb.NameRequest{})
+ 
+ assert.NoError(t, err)
+ assert.NotNil(t, resp)
+ assert.Equal(t, "test-plugin", resp.Name)
 }
 
 func TestSupports(t *testing.T) {
-	server := &server{name: "test-plugin"}
-	
-	tests := []struct {
-		name       string
-		resource   *pb.ResourceDescriptor
-		wantSupported bool
-		wantReason    string
-	}{
-		{
-			name: "supported vm resource",
-			resource: &pb.ResourceDescriptor{
-				Provider:     "custom",
-				ResourceType: "vm",
-			},
-			wantSupported: true,
-			wantReason:    "",
-		},
-		{
-			name: "unsupported provider",
-			resource: &pb.ResourceDescriptor{
-				Provider:     "aws",
-				ResourceType: "ec2",
-			},
-			wantSupported: false,
-			wantReason:    "Provider aws not supported",
-		},
-		{
-			name: "unsupported resource type",
-			resource: &pb.ResourceDescriptor{
-				Provider:     "custom",
-				ResourceType: "database",
-			},
-			wantSupported: false,
-			wantReason:    "Resource type database not supported",
-		},
-	}
+ server := &server{name: "test-plugin"}
+ 
+ tests := []struct {
+  name       string
+  resource   *pb.ResourceDescriptor
+  wantSupported bool
+  wantReason    string
+ }{
+  {
+   name: "supported vm resource",
+   resource: &pb.ResourceDescriptor{
+    Provider:     "custom",
+    ResourceType: "vm",
+   },
+   wantSupported: true,
+   wantReason:    "",
+  },
+  {
+   name: "unsupported provider",
+   resource: &pb.ResourceDescriptor{
+    Provider:     "aws",
+    ResourceType: "ec2",
+   },
+   wantSupported: false,
+   wantReason:    "Provider aws not supported",
+  },
+  {
+   name: "unsupported resource type",
+   resource: &pb.ResourceDescriptor{
+    Provider:     "custom",
+    ResourceType: "database",
+   },
+   wantSupported: false,
+   wantReason:    "Resource type database not supported",
+  },
+ }
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := &pb.SupportsRequest{Resource: tt.resource}
-			resp, err := server.Supports(context.Background(), req)
-			
-			assert.NoError(t, err)
-			assert.NotNil(t, resp)
-			assert.Equal(t, tt.wantSupported, resp.Supported)
-			if tt.wantReason != "" {
-				assert.Equal(t, tt.wantReason, resp.Reason)
-			}
-		})
-	}
+ for _, tt := range tests {
+  t.Run(tt.name, func(t *testing.T) {
+   req := &pb.SupportsRequest{Resource: tt.resource}
+   resp, err := server.Supports(context.Background(), req)
+   
+   assert.NoError(t, err)
+   assert.NotNil(t, resp)
+   assert.Equal(t, tt.wantSupported, resp.Supported)
+   if tt.wantReason != "" {
+    assert.Equal(t, tt.wantReason, resp.Reason)
+   }
+  })
+ }
 }
 
 func TestGetActualCost(t *testing.T) {
-	server := &server{name: "test-plugin"}
-	
-	tests := []struct {
-		name      string
-		request   *pb.GetActualCostRequest
-		wantError bool
-		errorCode codes.Code
-	}{
-		{
-			name: "valid request",
-			request: &pb.GetActualCostRequest{
-				ResourceId: "test-resource-123",
-				Start:      timestamppb.New(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)),
-				End:        timestamppb.New(time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)),
-			},
-			wantError: false,
-		},
-		{
-			name: "missing resource id",
-			request: &pb.GetActualCostRequest{
-				Start: timestamppb.New(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)),
-				End:   timestamppb.New(time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)),
-			},
-			wantError: true,
-			errorCode: codes.InvalidArgument,
-		},
-		{
-			name: "missing timestamps",
-			request: &pb.GetActualCostRequest{
-				ResourceId: "test-resource-123",
-			},
-			wantError: true,
-			errorCode: codes.InvalidArgument,
-		},
-	}
+ server := &server{name: "test-plugin"}
+ 
+ tests := []struct {
+  name      string
+  request   *pb.GetActualCostRequest
+  wantError bool
+  errorCode codes.Code
+ }{
+  {
+   name: "valid request",
+   request: &pb.GetActualCostRequest{
+    ResourceId: "test-resource-123",
+    Start:      timestamppb.New(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)),
+    End:        timestamppb.New(time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)),
+   },
+   wantError: false,
+  },
+  {
+   name: "missing resource id",
+   request: &pb.GetActualCostRequest{
+    Start: timestamppb.New(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)),
+    End:   timestamppb.New(time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)),
+   },
+   wantError: true,
+   errorCode: codes.InvalidArgument,
+  },
+  {
+   name: "missing timestamps",
+   request: &pb.GetActualCostRequest{
+    ResourceId: "test-resource-123",
+   },
+   wantError: true,
+   errorCode: codes.InvalidArgument,
+  },
+ }
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			resp, err := server.GetActualCost(context.Background(), tt.request)
-			
-			if tt.wantError {
-				assert.Error(t, err)
-				assert.Nil(t, resp)
-				
-				st, ok := status.FromError(err)
-				assert.True(t, ok)
-				assert.Equal(t, tt.errorCode, st.Code())
-			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, resp)
-				assert.NotEmpty(t, resp.Results)
-				
-				// Verify result structure
-				for _, result := range resp.Results {
-					assert.Greater(t, result.Cost, 0.0)
-					assert.NotEmpty(t, result.Source)
-					assert.NotNil(t, result.Timestamp)
-				}
-			}
-		})
-	}
+ for _, tt := range tests {
+  t.Run(tt.name, func(t *testing.T) {
+   resp, err := server.GetActualCost(context.Background(), tt.request)
+   
+   if tt.wantError {
+    assert.Error(t, err)
+    assert.Nil(t, resp)
+    
+    st, ok := status.FromError(err)
+    assert.True(t, ok)
+    assert.Equal(t, tt.errorCode, st.Code())
+   } else {
+    assert.NoError(t, err)
+    assert.NotNil(t, resp)
+    assert.NotEmpty(t, resp.Results)
+    
+    // Verify result structure
+    for _, result := range resp.Results {
+     assert.Greater(t, result.Cost, 0.0)
+     assert.NotEmpty(t, result.Source)
+     assert.NotNil(t, result.Timestamp)
+    }
+   }
+  })
+ }
 }
 
 func TestGetProjectedCost(t *testing.T) {
-	server := &server{name: "test-plugin"}
-	
-	tests := []struct {
-		name         string
-		resource     *pb.ResourceDescriptor
-		wantError    bool
-		expectedUnit float64
-	}{
-		{
-			name: "vm resource",
-			resource: &pb.ResourceDescriptor{
-				Provider:     "custom",
-				ResourceType: "vm",
-				Sku:          "small",
-				Region:       "us-east-1",
-			},
-			wantError:    false,
-			expectedUnit: 0.05,
-		},
-		{
-			name: "storage resource",
-			resource: &pb.ResourceDescriptor{
-				Provider:     "custom",
-				ResourceType: "storage",
-				Sku:          "standard",
-				Region:       "us-east-1",
-			},
-			wantError:    false,
-			expectedUnit: 0.10,
-		},
-		{
-			name: "unsupported resource",
-			resource: &pb.ResourceDescriptor{
-				Provider:     "custom",
-				ResourceType: "database",
-			},
-			wantError: true,
-		},
-	}
+ server := &server{name: "test-plugin"}
+ 
+ tests := []struct {
+  name         string
+  resource     *pb.ResourceDescriptor
+  wantError    bool
+  expectedUnit float64
+ }{
+  {
+   name: "vm resource",
+   resource: &pb.ResourceDescriptor{
+    Provider:     "custom",
+    ResourceType: "vm",
+    Sku:          "small",
+    Region:       "us-east-1",
+   },
+   wantError:    false,
+   expectedUnit: 0.05,
+  },
+  {
+   name: "storage resource",
+   resource: &pb.ResourceDescriptor{
+    Provider:     "custom",
+    ResourceType: "storage",
+    Sku:          "standard",
+    Region:       "us-east-1",
+   },
+   wantError:    false,
+   expectedUnit: 0.10,
+  },
+  {
+   name: "unsupported resource",
+   resource: &pb.ResourceDescriptor{
+    Provider:     "custom",
+    ResourceType: "database",
+   },
+   wantError: true,
+  },
+ }
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := &pb.GetProjectedCostRequest{Resource: tt.resource}
-			resp, err := server.GetProjectedCost(context.Background(), req)
-			
-			if tt.wantError {
-				assert.Error(t, err)
-				assert.Nil(t, resp)
-			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, resp)
-				assert.Equal(t, tt.expectedUnit, resp.UnitPrice)
-				assert.Equal(t, "USD", resp.Currency)
-				assert.Greater(t, resp.CostPerMonth, 0.0)
-				assert.NotEmpty(t, resp.BillingDetail)
-			}
-		})
-	}
+ for _, tt := range tests {
+  t.Run(tt.name, func(t *testing.T) {
+   req := &pb.GetProjectedCostRequest{Resource: tt.resource}
+   resp, err := server.GetProjectedCost(context.Background(), req)
+   
+   if tt.wantError {
+    assert.Error(t, err)
+    assert.Nil(t, resp)
+   } else {
+    assert.NoError(t, err)
+    assert.NotNil(t, resp)
+    assert.Equal(t, tt.expectedUnit, resp.UnitPrice)
+    assert.Equal(t, "USD", resp.Currency)
+    assert.Greater(t, resp.CostPerMonth, 0.0)
+    assert.NotEmpty(t, resp.BillingDetail)
+   }
+  })
+ }
 }
 
 func TestGetPricingSpec(t *testing.T) {
-	server := &server{name: "test-plugin"}
-	
-	req := &pb.GetPricingSpecRequest{
-		Resource: &pb.ResourceDescriptor{
-			Provider:     "custom",
-			ResourceType: "vm",
-			Sku:          "small",
-			Region:       "us-east-1",
-		},
-	}
-	
-	resp, err := server.GetPricingSpec(context.Background(), req)
-	
-	assert.NoError(t, err)
-	assert.NotNil(t, resp)
-	assert.NotNil(t, resp.Spec)
-	
-	spec := resp.Spec
-	assert.Equal(t, "custom", spec.Provider)
-	assert.Equal(t, "vm", spec.ResourceType)
-	assert.Equal(t, "per_hour", spec.BillingMode)
-	assert.Equal(t, 0.05, spec.RatePerUnit)
-	assert.Equal(t, "USD", spec.Currency)
-	assert.NotEmpty(t, spec.Description)
-	assert.NotEmpty(t, spec.MetricHints)
-	assert.Contains(t, spec.PluginMetadata, "plugin_version")
+ server := &server{name: "test-plugin"}
+ 
+ req := &pb.GetPricingSpecRequest{
+  Resource: &pb.ResourceDescriptor{
+   Provider:     "custom",
+   ResourceType: "vm",
+   Sku:          "small",
+   Region:       "us-east-1",
+  },
+ }
+ 
+ resp, err := server.GetPricingSpec(context.Background(), req)
+ 
+ assert.NoError(t, err)
+ assert.NotNil(t, resp)
+ assert.NotNil(t, resp.Spec)
+ 
+ spec := resp.Spec
+ assert.Equal(t, "custom", spec.Provider)
+ assert.Equal(t, "vm", spec.ResourceType)
+ assert.Equal(t, "per_hour", spec.BillingMode)
+ assert.Equal(t, 0.05, spec.RatePerUnit)
+ assert.Equal(t, "USD", spec.Currency)
+ assert.NotEmpty(t, spec.Description)
+ assert.NotEmpty(t, spec.MetricHints)
+ assert.Contains(t, spec.PluginMetadata, "plugin_version")
 }
 
 // Benchmark tests
 func BenchmarkGetProjectedCost(b *testing.B) {
-	server := &server{name: "test-plugin"}
-	req := &pb.GetProjectedCostRequest{
-		Resource: &pb.ResourceDescriptor{
-			Provider:     "custom",
-			ResourceType: "vm",
-			Sku:          "small",
-			Region:       "us-east-1",
-		},
-	}
-	
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, err := server.GetProjectedCost(context.Background(), req)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
+ server := &server{name: "test-plugin"}
+ req := &pb.GetProjectedCostRequest{
+  Resource: &pb.ResourceDescriptor{
+   Provider:     "custom",
+   ResourceType: "vm",
+   Sku:          "small",
+   Region:       "us-east-1",
+  },
+ }
+ 
+ b.ResetTimer()
+ for i := 0; i < b.N; i++ {
+  _, err := server.GetProjectedCost(context.Background(), req)
+  if err != nil {
+   b.Fatal(err)
+  }
+ }
 }
 ```
 
@@ -1138,94 +1172,94 @@ Test your plugin against the actual gRPC protocol using a client.
 package test
 
 import (
-	"context"
-	"log"
-	"net"
-	"testing"
-	"time"
+ "context"
+ "log"
+ "net"
+ "testing"
+ "time"
 
-	pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/types/known/timestamppb"
+ pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ "github.com/stretchr/testify/assert"
+ "github.com/stretchr/testify/require"
+ "google.golang.org/grpc"
+ "google.golang.org/grpc/credentials/insecure"
+ "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestIntegration(t *testing.T) {
-	// Start server
-	lis, err := net.Listen("tcp", ":0")
-	require.NoError(t, err)
-	
-	s := grpc.NewServer()
-	pb.RegisterCostSourceServiceServer(s, &server{name: "integration-test-plugin"})
-	
-	go func() {
-		if err := s.Serve(lis); err != nil {
-			log.Printf("Server error: %v", err)
-		}
-	}()
-	defer s.Stop()
-	
-	// Connect client
-	conn, err := grpc.NewClient(
-		lis.Addr().String(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	require.NoError(t, err)
-	defer conn.Close()
-	
-	client := pb.NewCostSourceServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	
-	// Test Name RPC
-	nameResp, err := client.Name(ctx, &pb.NameRequest{})
-	require.NoError(t, err)
-	assert.Equal(t, "integration-test-plugin", nameResp.Name)
-	
-	// Test Supports RPC
-	supportsResp, err := client.Supports(ctx, &pb.SupportsRequest{
-		Resource: &pb.ResourceDescriptor{
-			Provider:     "custom",
-			ResourceType: "vm",
-		},
-	})
-	require.NoError(t, err)
-	assert.True(t, supportsResp.Supported)
-	
-	// Test GetProjectedCost RPC
-	projectedResp, err := client.GetProjectedCost(ctx, &pb.GetProjectedCostRequest{
-		Resource: &pb.ResourceDescriptor{
-			Provider:     "custom",
-			ResourceType: "vm",
-			Sku:          "small",
-			Region:       "us-east-1",
-		},
-	})
-	require.NoError(t, err)
-	assert.Greater(t, projectedResp.UnitPrice, 0.0)
-	assert.Equal(t, "USD", projectedResp.Currency)
-	
-	// Test GetActualCost RPC
-	actualResp, err := client.GetActualCost(ctx, &pb.GetActualCostRequest{
-		ResourceId: "test-vm-123",
-		Start:      timestamppb.New(time.Now().AddDate(0, -1, 0)),
-		End:        timestamppb.New(time.Now()),
-	})
-	require.NoError(t, err)
-	assert.NotEmpty(t, actualResp.Results)
-	
-	// Test GetPricingSpec RPC
-	specResp, err := client.GetPricingSpec(ctx, &pb.GetPricingSpecRequest{
-		Resource: &pb.ResourceDescriptor{
-			Provider:     "custom",
-			ResourceType: "vm",
-		},
-	})
-	require.NoError(t, err)
-	assert.NotNil(t, specResp.Spec)
-	assert.Equal(t, "custom", specResp.Spec.Provider)
+ // Start server
+ lis, err := net.Listen("tcp", ":0")
+ require.NoError(t, err)
+ 
+ s := grpc.NewServer()
+ pb.RegisterCostSourceServiceServer(s, &server{name: "integration-test-plugin"})
+ 
+ go func() {
+  if err := s.Serve(lis); err != nil {
+   log.Printf("Server error: %v", err)
+  }
+ }()
+ defer s.Stop()
+ 
+ // Connect client
+ conn, err := grpc.NewClient(
+  lis.Addr().String(),
+  grpc.WithTransportCredentials(insecure.NewCredentials()),
+ )
+ require.NoError(t, err)
+ defer conn.Close()
+ 
+ client := pb.NewCostSourceServiceClient(conn)
+ ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+ defer cancel()
+ 
+ // Test Name RPC
+ nameResp, err := client.Name(ctx, &pb.NameRequest{})
+ require.NoError(t, err)
+ assert.Equal(t, "integration-test-plugin", nameResp.Name)
+ 
+ // Test Supports RPC
+ supportsResp, err := client.Supports(ctx, &pb.SupportsRequest{
+  Resource: &pb.ResourceDescriptor{
+   Provider:     "custom",
+   ResourceType: "vm",
+  },
+ })
+ require.NoError(t, err)
+ assert.True(t, supportsResp.Supported)
+ 
+ // Test GetProjectedCost RPC
+ projectedResp, err := client.GetProjectedCost(ctx, &pb.GetProjectedCostRequest{
+  Resource: &pb.ResourceDescriptor{
+   Provider:     "custom",
+   ResourceType: "vm",
+   Sku:          "small",
+   Region:       "us-east-1",
+  },
+ })
+ require.NoError(t, err)
+ assert.Greater(t, projectedResp.UnitPrice, 0.0)
+ assert.Equal(t, "USD", projectedResp.Currency)
+ 
+ // Test GetActualCost RPC
+ actualResp, err := client.GetActualCost(ctx, &pb.GetActualCostRequest{
+  ResourceId: "test-vm-123",
+  Start:      timestamppb.New(time.Now().AddDate(0, -1, 0)),
+  End:        timestamppb.New(time.Now()),
+ })
+ require.NoError(t, err)
+ assert.NotEmpty(t, actualResp.Results)
+ 
+ // Test GetPricingSpec RPC
+ specResp, err := client.GetPricingSpec(ctx, &pb.GetPricingSpecRequest{
+  Resource: &pb.ResourceDescriptor{
+   Provider:     "custom",
+   ResourceType: "vm",
+  },
+ })
+ require.NoError(t, err)
+ assert.NotNil(t, specResp.Spec)
+ assert.Equal(t, "custom", specResp.Spec.Provider)
 }
 ```
 
@@ -1239,111 +1273,111 @@ Validate that your plugin generates valid PricingSpec documents.
 package test
 
 import (
-	"encoding/json"
-	"testing"
+ "encoding/json"
+ "testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+ "github.com/rshade/pulumicost-spec/sdk/go/types"
+ "github.com/stretchr/testify/assert"
+ "github.com/stretchr/testify/require"
 )
 
 func TestPricingSpecValidation(t *testing.T) {
-	tests := []struct {
-		name    string
-		spec    map[string]interface{}
-		wantErr bool
-	}{
-		{
-			name: "valid vm spec",
-			spec: map[string]interface{}{
-				"provider":      "custom",
-				"resource_type": "vm",
-				"billing_mode":  "per_hour",
-				"rate_per_unit": 0.05,
-				"currency":      "USD",
-				"description":   "Test VM pricing",
-			},
-			wantErr: false,
-		},
-		{
-			name: "missing required fields",
-			spec: map[string]interface{}{
-				"provider":      "custom",
-				"resource_type": "vm",
-				// missing billing_mode, rate_per_unit, currency
-			},
-			wantErr: true,
-		},
-		{
-			name: "invalid billing mode",
-			spec: map[string]interface{}{
-				"provider":      "custom",
-				"resource_type": "vm",
-				"billing_mode":  "invalid_mode",
-				"rate_per_unit": 0.05,
-				"currency":      "USD",
-			},
-			wantErr: true,
-		},
-		{
-			name: "negative rate",
-			spec: map[string]interface{}{
-				"provider":      "custom",
-				"resource_type": "vm",
-				"billing_mode":  "per_hour",
-				"rate_per_unit": -0.05,
-				"currency":      "USD",
-			},
-			wantErr: true,
-		},
-	}
+ tests := []struct {
+  name    string
+  spec    map[string]interface{}
+  wantErr bool
+ }{
+  {
+   name: "valid vm spec",
+   spec: map[string]interface{}{
+    "provider":      "custom",
+    "resource_type": "vm",
+    "billing_mode":  "per_hour",
+    "rate_per_unit": 0.05,
+    "currency":      "USD",
+    "description":   "Test VM pricing",
+   },
+   wantErr: false,
+  },
+  {
+   name: "missing required fields",
+   spec: map[string]interface{}{
+    "provider":      "custom",
+    "resource_type": "vm",
+    // missing billing_mode, rate_per_unit, currency
+   },
+   wantErr: true,
+  },
+  {
+   name: "invalid billing mode",
+   spec: map[string]interface{}{
+    "provider":      "custom",
+    "resource_type": "vm",
+    "billing_mode":  "invalid_mode",
+    "rate_per_unit": 0.05,
+    "currency":      "USD",
+   },
+   wantErr: true,
+  },
+  {
+   name: "negative rate",
+   spec: map[string]interface{}{
+    "provider":      "custom",
+    "resource_type": "vm",
+    "billing_mode":  "per_hour",
+    "rate_per_unit": -0.05,
+    "currency":      "USD",
+   },
+   wantErr: true,
+  },
+ }
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Convert to JSON bytes
-			data, err := json.Marshal(tt.spec)
-			require.NoError(t, err)
-			
-			// Validate using the schema
-			err = types.ValidatePricingSpec(data)
-			
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+ for _, tt := range tests {
+  t.Run(tt.name, func(t *testing.T) {
+   // Convert to JSON bytes
+   data, err := json.Marshal(tt.spec)
+   require.NoError(t, err)
+   
+   // Validate using the schema
+   err = types.ValidatePricingSpec(data)
+   
+   if tt.wantErr {
+    assert.Error(t, err)
+   } else {
+    assert.NoError(t, err)
+   }
+  })
+ }
 }
 
 func TestBillingModeValidation(t *testing.T) {
-	validModes := []string{
-		"per_hour",
-		"per_gb_month",
-		"per_request",
-		"flat",
-		"per_day",
-		"per_cpu_hour",
-	}
-	
-	for _, mode := range validModes {
-		t.Run(mode, func(t *testing.T) {
-			assert.True(t, types.ValidBillingMode(mode))
-		})
-	}
-	
-	invalidModes := []string{
-		"per_second",
-		"hourly",
-		"",
-		"invalid",
-	}
-	
-	for _, mode := range invalidModes {
-		t.Run(mode, func(t *testing.T) {
-			assert.False(t, types.ValidBillingMode(mode))
-		})
-	}
+ validModes := []string{
+  "per_hour",
+  "per_gb_month",
+  "per_request",
+  "flat",
+  "per_day",
+  "per_cpu_hour",
+ }
+ 
+ for _, mode := range validModes {
+  t.Run(mode, func(t *testing.T) {
+   assert.True(t, types.ValidBillingMode(mode))
+  })
+ }
+ 
+ invalidModes := []string{
+  "per_second",
+  "hourly",
+  "",
+  "invalid",
+ }
+ 
+ for _, mode := range invalidModes {
+  t.Run(mode, func(t *testing.T) {
+   assert.False(t, types.ValidBillingMode(mode))
+  })
+ }
 }
 ```
 
@@ -1357,60 +1391,60 @@ Test your plugin under realistic load conditions.
 package test
 
 import (
-	"context"
-	"sync"
-	"testing"
-	"time"
+ "context"
+ "sync"
+ "testing"
+ "time"
 
-	pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	"github.com/stretchr/testify/assert"
+ pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ "github.com/stretchr/testify/assert"
 )
 
 func TestConcurrentRequests(t *testing.T) {
-	server := &server{name: "load-test-plugin"}
-	
-	const numGoroutines = 50
-	const requestsPerGoroutine = 20
-	
-	var wg sync.WaitGroup
-	errorChan := make(chan error, numGoroutines*requestsPerGoroutine)
-	
-	for i := 0; i < numGoroutines; i++ {
-		wg.Add(1)
-		go func(workerID int) {
-			defer wg.Done()
-			
-			for j := 0; j < requestsPerGoroutine; j++ {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				
-				_, err := server.GetProjectedCost(ctx, &pb.GetProjectedCostRequest{
-					Resource: &pb.ResourceDescriptor{
-						Provider:     "custom",
-						ResourceType: "vm",
-						Sku:          "small",
-						Region:       "us-east-1",
-					},
-				})
-				
-				cancel()
-				
-				if err != nil {
-					errorChan <- err
-				}
-			}
-		}(i)
-	}
-	
-	wg.Wait()
-	close(errorChan)
-	
-	// Check for errors
-	var errors []error
-	for err := range errorChan {
-		errors = append(errors, err)
-	}
-	
-	assert.Empty(t, errors, "Expected no errors during load test, got: %v", errors)
+ server := &server{name: "load-test-plugin"}
+ 
+ const numGoroutines = 50
+ const requestsPerGoroutine = 20
+ 
+ var wg sync.WaitGroup
+ errorChan := make(chan error, numGoroutines*requestsPerGoroutine)
+ 
+ for i := 0; i < numGoroutines; i++ {
+  wg.Add(1)
+  go func(workerID int) {
+   defer wg.Done()
+   
+   for j := 0; j < requestsPerGoroutine; j++ {
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    
+    _, err := server.GetProjectedCost(ctx, &pb.GetProjectedCostRequest{
+     Resource: &pb.ResourceDescriptor{
+      Provider:     "custom",
+      ResourceType: "vm",
+      Sku:          "small",
+      Region:       "us-east-1",
+     },
+    })
+    
+    cancel()
+    
+    if err != nil {
+     errorChan <- err
+    }
+   }
+  }(i)
+ }
+ 
+ wg.Wait()
+ close(errorChan)
+ 
+ // Check for errors
+ var errors []error
+ for err := range errorChan {
+  errors = append(errors, err)
+ }
+ 
+ assert.Empty(t, errors, "Expected no errors during load test, got: %v", errors)
 }
 ```
 
@@ -1486,34 +1520,34 @@ jobs:
 package test
 
 import (
-	"time"
-	pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
+ "time"
+ pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func CreateTestResourceDescriptor() *pb.ResourceDescriptor {
-	return &pb.ResourceDescriptor{
-		Provider:     "custom",
-		ResourceType: "vm",
-		Sku:          "small",
-		Region:       "us-east-1",
-		Tags: map[string]string{
-			"environment": "test",
-			"team":        "platform",
-		},
-	}
+ return &pb.ResourceDescriptor{
+  Provider:     "custom",
+  ResourceType: "vm",
+  Sku:          "small",
+  Region:       "us-east-1",
+  Tags: map[string]string{
+   "environment": "test",
+   "team":        "platform",
+  },
+ }
 }
 
 func CreateTestActualCostRequest() *pb.GetActualCostRequest {
-	return &pb.GetActualCostRequest{
-		ResourceId: "test-vm-123",
-		Start:      timestamppb.New(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)),
-		End:        timestamppb.New(time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)),
-		Tags: map[string]string{
-			"app": "web",
-			"env": "production",
-		},
-	}
+ return &pb.GetActualCostRequest{
+  ResourceId: "test-vm-123",
+  Start:      timestamppb.New(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)),
+  End:        timestamppb.New(time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)),
+  Tags: map[string]string{
+   "app": "web",
+   "env": "production",
+  },
+ }
 }
 ```
 
@@ -1529,9 +1563,10 @@ func CreateTestActualCostRequest() *pb.GetActualCostRequest {
 
 ## Best Practices and Common Patterns
 
-Following established patterns ensures your plugin integrates well with the PulumiCost ecosystem and provides a consistent experience.
+Following established patterns ensures your plugin integrates well with the PulumiCost
+ecosystem and provides a consistent experience.
 
-### Error Handling
+### Error Response Handling
 
 #### Use Standard gRPC Status Codes
 
@@ -2177,6 +2212,7 @@ This section covers common issues encountered during plugin development and thei
 **Cause**: Missing or incorrect Go module dependencies.
 
 **Solution**:
+
 ```bash
 # Initialize go module if not done
 go mod init your-plugin-name
@@ -2195,6 +2231,7 @@ go mod tidy
 **Cause**: Missing gRPC dependencies.
 
 **Solution**:
+
 ```bash
 go get google.golang.org/grpc@latest
 go get google.golang.org/protobuf@latest
@@ -2207,6 +2244,7 @@ go get google.golang.org/protobuf@latest
 **Cause**: Using an older version of the protobuf compiler or missing embedded interface.
 
 **Solution**:
+
 ```go
 // Ensure your server struct embeds the unimplemented server
 type server struct {
@@ -2226,6 +2264,7 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 **Cause**: gRPC server not starting or binding to wrong port.
 
 **Solution**:
+
 ```go
 // Check if port is already in use
 func isPortAvailable(port int) bool {
@@ -2252,6 +2291,7 @@ log.Printf("Server listening on %s", lis.Addr().String())
 **Cause**: RPC method not implemented in server struct.
 
 **Solution**:
+
 ```go
 // Ensure all required methods are implemented
 func (s *server) Name(ctx context.Context, req *pb.NameRequest) (*pb.NameResponse, error) {
@@ -2282,6 +2322,7 @@ func (s *server) GetPricingSpec(ctx context.Context, req *pb.GetPricingSpecReque
 **Cause**: Operations taking too long or external API timeouts.
 
 **Solution**:
+
 ```go
 // Set appropriate timeouts
 func (s *server) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest) (*pb.GetActualCostResponse, error) {
@@ -2316,6 +2357,7 @@ func (s *server) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest
 **Cause**: Missing or invalid API credentials.
 
 **Solution**:
+
 ```bash
 # Set required environment variables
 export PLUGIN_API_KEY="your-api-key"
@@ -2354,6 +2396,7 @@ func validateCredentials() error {
 **Cause**: Type mismatch between API response and expected data types.
 
 **Solution**:
+
 ```go
 // Handle flexible JSON parsing
 type APIResponse struct {
@@ -2381,6 +2424,7 @@ func parseFlexibleFloat(v interface{}) (float64, error) {
 **Cause**: Different timestamp formats from external APIs.
 
 **Solution**:
+
 ```go
 func parseFlexibleTime(timeStr string) (*timestamppb.Timestamp, error) {
     formats := []string{
@@ -2529,6 +2573,7 @@ func (cc *CurrencyConverter) Convert(amount float64, from, to string) float64 {
 #### Q: Should I cache pricing data, and for how long?
 
 **A**: Yes, cache pricing data to reduce API calls. Recommended TTLs:
+
 - Static pricing (AWS public pricing): 24 hours
 - Dynamic pricing (spot prices): 5-15 minutes
 - Usage data: 1-5 minutes

@@ -1,16 +1,18 @@
-package testing
+package testing_test
 
 import (
 	"context"
 	"testing"
 
+	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
-// BenchmarkName benchmarks the Name RPC method
+// BenchmarkName benchmarks the Name RPC method.
 func BenchmarkName(b *testing.B) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{}) // Dummy testing.T for harness
 	defer harness.Stop()
 
@@ -18,7 +20,7 @@ func BenchmarkName(b *testing.B) {
 	ctx := context.Background()
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, err := client.Name(ctx, &pbc.NameRequest{})
 		if err != nil {
 			b.Fatalf("Name() failed: %v", err)
@@ -26,19 +28,19 @@ func BenchmarkName(b *testing.B) {
 	}
 }
 
-// BenchmarkSupports benchmarks the Supports RPC method
+// BenchmarkSupports benchmarks the Supports RPC method.
 func BenchmarkSupports(b *testing.B) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
-	resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
 		if err != nil {
 			b.Fatalf("Supports() failed: %v", err)
@@ -46,19 +48,19 @@ func BenchmarkSupports(b *testing.B) {
 	}
 }
 
-// BenchmarkGetActualCost benchmarks the GetActualCost RPC method
+// BenchmarkGetActualCost benchmarks the GetActualCost RPC method.
 func BenchmarkGetActualCost(b *testing.B) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
-	start, end := CreateTimeRange(24)
+	start, end := plugintesting.CreateTimeRange(plugintesting.HoursPerDay)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 			ResourceId: "test-resource",
 			Start:      start,
@@ -70,19 +72,19 @@ func BenchmarkGetActualCost(b *testing.B) {
 	}
 }
 
-// BenchmarkGetProjectedCost benchmarks the GetProjectedCost RPC method
+// BenchmarkGetProjectedCost benchmarks the GetProjectedCost RPC method.
 func BenchmarkGetProjectedCost(b *testing.B) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
-	resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
 			Resource: resource,
 		})
@@ -92,19 +94,19 @@ func BenchmarkGetProjectedCost(b *testing.B) {
 	}
 }
 
-// BenchmarkGetPricingSpec benchmarks the GetPricingSpec RPC method
+// BenchmarkGetPricingSpec benchmarks the GetPricingSpec RPC method.
 func BenchmarkGetPricingSpec(b *testing.B) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
-	resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
 			Resource: resource,
 		})
@@ -114,20 +116,20 @@ func BenchmarkGetPricingSpec(b *testing.B) {
 	}
 }
 
-// BenchmarkAllMethods benchmarks all RPC methods in sequence
+// BenchmarkAllMethods benchmarks all RPC methods in sequence.
 func BenchmarkAllMethods(b *testing.B) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
-	resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
-	start, end := CreateTimeRange(24)
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+	start, end := plugintesting.CreateTimeRange(plugintesting.HoursPerDay)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		// Name
 		_, err := client.Name(ctx, &pbc.NameRequest{})
 		if err != nil {
@@ -168,10 +170,10 @@ func BenchmarkAllMethods(b *testing.B) {
 	}
 }
 
-// BenchmarkConcurrentRequests benchmarks concurrent RPC requests
+// BenchmarkConcurrentRequests benchmarks concurrent RPC requests.
 func BenchmarkConcurrentRequests(b *testing.B) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()
 
@@ -189,34 +191,34 @@ func BenchmarkConcurrentRequests(b *testing.B) {
 	})
 }
 
-// BenchmarkActualCostDataSizes benchmarks GetActualCost with different data sizes
+// BenchmarkActualCostDataSizes benchmarks GetActualCost with different data sizes.
 func BenchmarkActualCostDataSizes(b *testing.B) {
 	testCases := []struct {
-		name      string
-		hours     int
+		name       string
+		hours      int
 		dataPoints int
 	}{
 		{"1Hour", 1, 1},
-		{"24Hours", 24, 24},
+		{"24Hours", plugintesting.HoursPerDay, plugintesting.HoursPerDay},
 		{"7Days", 168, 168},
-		{"30Days", 720, 720},
+		{"30Days", plugintesting.HoursIn30Days, plugintesting.HoursIn30Days},
 	}
 
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
-			plugin := NewMockPlugin()
+			plugin := plugintesting.NewMockPlugin()
 			plugin.ActualCostDataPoints = tc.dataPoints
-			
-			harness := NewTestHarness(plugin)
+
+			harness := plugintesting.NewTestHarness(plugin)
 			harness.Start(&testing.T{})
 			defer harness.Stop()
 
 			client := harness.Client()
 			ctx := context.Background()
-			start, end := CreateTimeRange(tc.hours)
+			start, end := plugintesting.CreateTimeRange(tc.hours)
 
 			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				_, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 					ResourceId: "test-resource",
 					Start:      start,
@@ -230,7 +232,7 @@ func BenchmarkActualCostDataSizes(b *testing.B) {
 	}
 }
 
-// BenchmarkDifferentProviders benchmarks requests across different providers
+// BenchmarkDifferentProviders benchmarks requests across different providers.
 func BenchmarkDifferentProviders(b *testing.B) {
 	providers := []struct {
 		name         string
@@ -246,17 +248,22 @@ func BenchmarkDifferentProviders(b *testing.B) {
 
 	for _, p := range providers {
 		b.Run(p.name, func(b *testing.B) {
-			plugin := NewMockPlugin()
-			harness := NewTestHarness(plugin)
+			plugin := plugintesting.NewMockPlugin()
+			harness := plugintesting.NewTestHarness(plugin)
 			harness.Start(&testing.T{})
 			defer harness.Stop()
 
 			client := harness.Client()
 			ctx := context.Background()
-			resource := CreateResourceDescriptor(p.provider, p.resourceType, p.sku, "us-east-1")
+			resource := plugintesting.CreateResourceDescriptor(
+				p.provider,
+				p.resourceType,
+				p.sku,
+				"us-east-1",
+			)
 
 			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				_, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
 					Resource: resource,
 				})
@@ -268,19 +275,19 @@ func BenchmarkDifferentProviders(b *testing.B) {
 	}
 }
 
-// PerformanceTestSuite provides standardized performance testing
+// PerformanceTestSuite provides standardized performance testing.
 type PerformanceTestSuite struct {
 	impl pbc.CostSourceServiceServer
 }
 
-// NewPerformanceTestSuite creates a new performance test suite
+// NewPerformanceTestSuite creates a new performance test suite.
 func NewPerformanceTestSuite(impl pbc.CostSourceServiceServer) *PerformanceTestSuite {
 	return &PerformanceTestSuite{impl: impl}
 }
 
-// RunPerformanceTests runs a standardized set of performance tests
+// RunPerformanceTests runs a standardized set of performance tests.
 func (pts *PerformanceTestSuite) RunPerformanceTests(t *testing.T) {
-	harness := NewTestHarness(pts.impl)
+	harness := plugintesting.NewTestHarness(pts.impl)
 	harness.Start(t)
 	defer harness.Stop()
 
@@ -288,10 +295,14 @@ func (pts *PerformanceTestSuite) RunPerformanceTests(t *testing.T) {
 	ctx := context.Background()
 
 	// Test Name performance
-	nameMetrics, err := MeasurePerformance("Name", 100, func() error {
-		_, err := client.Name(ctx, &pbc.NameRequest{})
-		return err
-	})
+	nameMetrics, err := plugintesting.MeasurePerformance(
+		"Name",
+		plugintesting.NumPerformanceIterations,
+		func() error {
+			_, err := client.Name(ctx, &pbc.NameRequest{})
+			return err
+		},
+	)
 	if err != nil {
 		t.Fatalf("Name performance test failed: %v", err)
 	}
@@ -299,11 +310,15 @@ func (pts *PerformanceTestSuite) RunPerformanceTests(t *testing.T) {
 		nameMetrics.AvgDuration, nameMetrics.MinDuration, nameMetrics.MaxDuration)
 
 	// Test Supports performance
-	resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
-	supportsMetrics, err := MeasurePerformance("Supports", 100, func() error {
-		_, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
-		return err
-	})
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+	supportsMetrics, err := plugintesting.MeasurePerformance(
+		"Supports",
+		plugintesting.NumPerformanceIterations,
+		func() error {
+			_, callErr := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
+			return callErr
+		},
+	)
 	if err != nil {
 		t.Fatalf("Supports performance test failed: %v", err)
 	}
@@ -311,12 +326,16 @@ func (pts *PerformanceTestSuite) RunPerformanceTests(t *testing.T) {
 		supportsMetrics.AvgDuration, supportsMetrics.MinDuration, supportsMetrics.MaxDuration)
 
 	// Test GetProjectedCost performance
-	projectedMetrics, err := MeasurePerformance("GetProjectedCost", 100, func() error {
-		_, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
-			Resource: resource,
-		})
-		return err
-	})
+	projectedMetrics, err := plugintesting.MeasurePerformance(
+		"GetProjectedCost",
+		plugintesting.NumPerformanceIterations,
+		func() error {
+			_, callErr := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
+				Resource: resource,
+			})
+			return callErr
+		},
+	)
 	if err != nil {
 		t.Fatalf("GetProjectedCost performance test failed: %v", err)
 	}
@@ -324,15 +343,19 @@ func (pts *PerformanceTestSuite) RunPerformanceTests(t *testing.T) {
 		projectedMetrics.AvgDuration, projectedMetrics.MinDuration, projectedMetrics.MaxDuration)
 
 	// Test GetActualCost performance
-	start, end := CreateTimeRange(24)
-	actualMetrics, err := MeasurePerformance("GetActualCost", 50, func() error {
-		_, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
-			ResourceId: "test-resource",
-			Start:      start,
-			End:        end,
-		})
-		return err
-	})
+	start, end := plugintesting.CreateTimeRange(plugintesting.HoursPerDay)
+	actualMetrics, err := plugintesting.MeasurePerformance(
+		"GetActualCost",
+		plugintesting.ReducedIterations,
+		func() error {
+			_, callErr := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+				ResourceId: "test-resource",
+				Start:      start,
+				End:        end,
+			})
+			return callErr
+		},
+	)
 	if err != nil {
 		t.Fatalf("GetActualCost performance test failed: %v", err)
 	}
@@ -340,12 +363,16 @@ func (pts *PerformanceTestSuite) RunPerformanceTests(t *testing.T) {
 		actualMetrics.AvgDuration, actualMetrics.MinDuration, actualMetrics.MaxDuration)
 
 	// Test GetPricingSpec performance
-	specMetrics, err := MeasurePerformance("GetPricingSpec", 100, func() error {
-		_, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
-			Resource: resource,
-		})
-		return err
-	})
+	specMetrics, err := plugintesting.MeasurePerformance(
+		"GetPricingSpec",
+		plugintesting.NumPerformanceIterations,
+		func() error {
+			_, callErr := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
+				Resource: resource,
+			})
+			return callErr
+		},
+	)
 	if err != nil {
 		t.Fatalf("GetPricingSpec performance test failed: %v", err)
 	}

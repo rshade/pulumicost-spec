@@ -1,8 +1,10 @@
 # PulumiCost Specification v0.1.0
 
-**Production-ready specification for cloud cost source plugins**
+## Production-ready specification for cloud cost source plugins
 
-The PulumiCost specification provides a comprehensive, standardized protocol for cost source plugins to integrate with cost management platforms. This specification enables consistent cost data retrieval across AWS, Azure, GCP, Kubernetes, and custom providers.
+The PulumiCost specification provides a comprehensive, standardized protocol for cost source
+plugins to integrate with cost management platforms. This specification enables consistent
+cost data retrieval across AWS, Azure, GCP, Kubernetes, and custom providers.
 
 [![CI](https://github.com/rshade/pulumicost-spec/actions/workflows/ci.yml/badge.svg)](https://github.com/rshade/pulumicost-spec/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rshade/pulumicost-spec/branch/main/graph/badge.svg)](https://codecov.io/gh/rshade/pulumicost-spec)
@@ -11,9 +13,11 @@ The PulumiCost specification provides a comprehensive, standardized protocol for
 
 ## Overview
 
-PulumiCost Specification v0.1.0 is a complete, enterprise-ready protocol for standardizing cloud cost data retrieval. It provides:
+PulumiCost Specification v0.1.0 is a complete, enterprise-ready protocol for
+standardizing cloud cost data retrieval. It provides:
 
 ### Core Features
+
 - **Universal Protocol**: Standardized gRPC interface for cost plugins
 - **Comprehensive Schema**: JSON Schema supporting 44+ billing models across all major cloud providers
 - **Multi-Provider Support**: Native support for AWS, Azure, GCP, Kubernetes, and custom providers
@@ -22,6 +26,7 @@ PulumiCost Specification v0.1.0 is a complete, enterprise-ready protocol for sta
 - **CI/CD Ready**: Complete GitHub Actions pipeline with validation and benchmarks
 
 ### Supported Billing Models
+
 - **Time-based**: per_hour, per_minute, per_second, per_cpu_hour, per_memory_gb_hour
 - **Storage**: per_gb_month, per_gb_hour, per_gb_day, per_iops, per_provisioned_iops
 - **Usage-based**: per_request, per_invocation, per_operation, per_transaction
@@ -31,6 +36,7 @@ PulumiCost Specification v0.1.0 is a complete, enterprise-ready protocol for sta
 - **And more**: [See complete list](schemas/pricing_spec.schema.json)
 
 ### Key Capabilities
+
 - **Tiered Pricing**: Volume-based pricing tiers with automatic discounts
 - **Time Aggregation**: Flexible cost aggregation rules (calendar, billing, continuous)
 - **Commitment Terms**: Reserved instance and spot pricing with discount tracking
@@ -476,18 +482,21 @@ func TestMyPlugin(t *testing.T) {
 Three levels of conformance testing ensure production readiness:
 
 #### Basic Conformance (Required)
+
 - Core functionality validation
 - Error handling requirements
 - Basic response validation
 - **Required for plugin submission**
 
 #### Standard Conformance (Recommended)
+
 - Data consistency validation
 - Performance requirements (response times)
 - Concurrency testing (10+ requests)
 - **Recommended for enterprise deployments**
 
 #### Advanced Conformance (High-Performance)
+
 - Scalability testing (50+ concurrent requests)
 - Large dataset handling (30+ days)
 - Performance benchmarks
@@ -532,19 +541,23 @@ The specification includes 8 comprehensive examples demonstrating all major clou
 ### Cloud Provider Examples
 
 #### AWS (Amazon Web Services)
+
 - **[EC2 t3.micro](examples/specs/aws-ec2-t3-micro.json)**: On-demand instance pricing
 - **[S3 Tiered Storage](examples/specs/aws-s3-tiered-pricing.json)**: Volume-based tiered pricing
 - **[Lambda Functions](examples/specs/aws-lambda-per-invocation.json)**: Serverless execution pricing
 
 #### Azure (Microsoft Azure)
+
 - **[Virtual Machine](examples/specs/azure-vm-per-second.json)**: Per-second billing with time aggregation
 - **[SQL Database](examples/specs/azure-sql-dtu.json)**: DTU-based database pricing
 
 #### GCP (Google Cloud Platform)
+
 - **[Cloud Storage](examples/specs/gcp-storage-standard.json)**: Tiered storage pricing
 - **[Preemptible Instances](examples/specs/gcp-preemptible-spot.json)**: Spot pricing with commitment terms
 
 #### Kubernetes
+
 - **[Namespace CPU](examples/specs/kubernetes-namespace-cpu.json)**: CPU-based pricing via Kubecost
 
 ### Billing Model Examples
@@ -577,6 +590,7 @@ service CostSourceService {
 ### JSON Schema Validation
 
 The [pricing specification schema](schemas/pricing_spec.schema.json) validates:
+
 - **Required fields**: provider, resource_type, billing_mode, rate_per_unit, currency
 - **44+ billing models**: Supporting all major cloud provider patterns
 - **Advanced features**: Tiered pricing, time aggregation, commitment terms
@@ -602,6 +616,7 @@ Complete GitHub Actions pipeline with:
 ## Production Readiness
 
 ### Enterprise Features
+
 - ✅ **Complete specification**: All major cloud providers and billing models
 - ✅ **Multi-level testing**: Basic, Standard, Advanced conformance levels
 - ✅ **Performance validation**: Response time requirements and benchmarks
@@ -642,6 +657,7 @@ git push origin feature-branch
 ```
 
 ### Requirements
+
 - Run `make validate` before submitting PRs
 - All examples must pass schema validation
 - Breaking changes require buf validation
@@ -650,6 +666,7 @@ git push origin feature-branch
 ### Versioning
 
 Semantic versioning for proto changes:
+
 - **MAJOR**: Breaking proto changes
 - **MINOR**: Backward-compatible additions
 - **PATCH**: Bug fixes, documentation updates

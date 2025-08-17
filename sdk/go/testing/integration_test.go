@@ -1,9 +1,11 @@
-package testing
+package testing_test
 
 import (
 	"context"
 	"testing"
 	"time"
+
+	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -11,41 +13,56 @@ import (
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
-// TestBasicPluginFunctionality tests all basic RPC methods of a plugin
+// TestBasicPluginFunctionality tests all basic RPC methods of a plugin.
 func TestBasicPluginFunctionality(t *testing.T) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
 
+	testNameRPC(ctx, t, client, plugin)
+	testSupportsRPC(ctx, t, client)
+	testGetActualCostRPC(ctx, t, client)
+	testGetProjectedCostRPC(ctx, t, client)
+	testGetPricingSpecRPC(ctx, t, client)
+}
+
+func testNameRPC(
+	ctx context.Context,
+	t *testing.T,
+	client pbc.CostSourceServiceClient,
+	plugin *plugintesting.MockPlugin,
+) {
 	t.Run("Name", func(t *testing.T) {
 		resp, err := client.Name(ctx, &pbc.NameRequest{})
 		if err != nil {
 			t.Fatalf("Name() failed: %v", err)
 		}
 
-		if err := ValidateNameResponse(resp); err != nil {
-			t.Errorf("Invalid name response: %v", err)
+		if validationErr := plugintesting.ValidateNameResponse(resp); validationErr != nil {
+			t.Errorf("Invalid name response: %v", validationErr)
 		}
 
 		if resp.GetName() != plugin.PluginName {
 			t.Errorf("Expected name %s, got %s", plugin.PluginName, resp.GetName())
 		}
 	})
+}
 
+func testSupportsRPC(ctx context.Context, t *testing.T, client pbc.CostSourceServiceClient) {
 	t.Run("Supports", func(t *testing.T) {
 		// Test supported resource
-		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 		resp, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
 		if err != nil {
 			t.Fatalf("Supports() failed: %v", err)
 		}
 
-		if err := ValidateSupportsResponse(resp); err != nil {
-			t.Errorf("Invalid supports response: %v", err)
+		if validationErr := plugintesting.ValidateSupportsResponse(resp); validationErr != nil {
+			t.Errorf("Invalid supports response: %v", validationErr)
 		}
 
 		if !resp.GetSupported() {
@@ -55,7 +72,7 @@ func TestBasicPluginFunctionality(t *testing.T) {
 
 	t.Run("SupportsUnsupportedProvider", func(t *testing.T) {
 		// Test unsupported provider
-		resource := CreateResourceDescriptor("unsupported", "some_resource", "", "")
+		resource := plugintesting.CreateResourceDescriptor("unsupported", "some_resource", "", "")
 		resp, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
 		if err != nil {
 			t.Fatalf("Supports() failed: %v", err)
@@ -69,9 +86,11 @@ func TestBasicPluginFunctionality(t *testing.T) {
 			t.Error("Expected reason for unsupported provider")
 		}
 	})
+}
 
+func testGetActualCostRPC(ctx context.Context, t *testing.T, client pbc.CostSourceServiceClient) {
 	t.Run("GetActualCost", func(t *testing.T) {
-		start, end := CreateTimeRange(24)
+		start, end := plugintesting.CreateTimeRange(plugintesting.HoursPerDay)
 		resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 			ResourceId: "test-resource-123",
 			Start:      start,
@@ -84,17 +103,23 @@ func TestBasicPluginFunctionality(t *testing.T) {
 			t.Fatalf("GetActualCost() failed: %v", err)
 		}
 
-		if err := ValidateActualCostResponse(resp); err != nil {
-			t.Errorf("Invalid actual cost response: %v", err)
+		if validationErr := plugintesting.ValidateActualCostResponse(resp); validationErr != nil {
+			t.Errorf("Invalid actual cost response: %v", validationErr)
 		}
 
 		if len(resp.GetResults()) == 0 {
 			t.Error("Expected some cost results")
 		}
 	})
+}
 
+func testGetProjectedCostRPC(
+	ctx context.Context,
+	t *testing.T,
+	client pbc.CostSourceServiceClient,
+) {
 	t.Run("GetProjectedCost", func(t *testing.T) {
-		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 		resp, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
 			Resource: resource,
 		})
@@ -102,17 +127,19 @@ func TestBasicPluginFunctionality(t *testing.T) {
 			t.Fatalf("GetProjectedCost() failed: %v", err)
 		}
 
-		if err := ValidateProjectedCostResponse(resp); err != nil {
-			t.Errorf("Invalid projected cost response: %v", err)
+		if validationErr := plugintesting.ValidateProjectedCostResponse(resp); validationErr != nil {
+			t.Errorf("Invalid projected cost response: %v", validationErr)
 		}
 
 		if resp.GetUnitPrice() <= 0 {
 			t.Errorf("Expected positive unit price, got: %f", resp.GetUnitPrice())
 		}
 	})
+}
 
+func testGetPricingSpecRPC(ctx context.Context, t *testing.T, client pbc.CostSourceServiceClient) {
 	t.Run("GetPricingSpec", func(t *testing.T) {
-		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 		resp, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
 			Resource: resource,
 		})
@@ -120,8 +147,8 @@ func TestBasicPluginFunctionality(t *testing.T) {
 			t.Fatalf("GetPricingSpec() failed: %v", err)
 		}
 
-		if err := ValidatePricingSpecResponse(resp); err != nil {
-			t.Errorf("Invalid pricing spec response: %v", err)
+		if validationErr := plugintesting.ValidatePricingSpecResponse(resp); validationErr != nil {
+			t.Errorf("Invalid pricing spec response: %v", validationErr)
 		}
 
 		spec := resp.GetSpec()
@@ -129,15 +156,19 @@ func TestBasicPluginFunctionality(t *testing.T) {
 			t.Errorf("Expected provider %s, got %s", resource.GetProvider(), spec.GetProvider())
 		}
 		if spec.GetResourceType() != resource.GetResourceType() {
-			t.Errorf("Expected resource type %s, got %s", resource.GetResourceType(), spec.GetResourceType())
+			t.Errorf(
+				"Expected resource type %s, got %s",
+				resource.GetResourceType(),
+				spec.GetResourceType(),
+			)
 		}
 	})
 }
 
-// TestErrorHandling tests various error conditions
+// TestErrorHandling tests various error conditions.
 func TestErrorHandling(t *testing.T) {
-	plugin := ConfigurableErrorMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.ConfigurableErrorMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
@@ -162,7 +193,7 @@ func TestErrorHandling(t *testing.T) {
 
 	t.Run("SupportsError", func(t *testing.T) {
 		plugin.ShouldErrorOnSupports = true
-		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 		_, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
 		if err == nil {
 			t.Error("Expected error from Supports(), got nil")
@@ -171,7 +202,7 @@ func TestErrorHandling(t *testing.T) {
 
 	t.Run("ActualCostError", func(t *testing.T) {
 		plugin.ShouldErrorOnActualCost = true
-		start, end := CreateTimeRange(24)
+		start, end := plugintesting.CreateTimeRange(plugintesting.HoursPerDay)
 		_, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 			ResourceId: "test-resource",
 			Start:      start,
@@ -184,7 +215,7 @@ func TestErrorHandling(t *testing.T) {
 
 	t.Run("ProjectedCostError", func(t *testing.T) {
 		plugin.ShouldErrorOnProjectedCost = true
-		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 		_, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
 			Resource: resource,
 		})
@@ -195,7 +226,7 @@ func TestErrorHandling(t *testing.T) {
 
 	t.Run("PricingSpecError", func(t *testing.T) {
 		plugin.ShouldErrorOnPricingSpec = true
-		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 		_, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
 			Resource: resource,
 		})
@@ -205,10 +236,10 @@ func TestErrorHandling(t *testing.T) {
 	})
 }
 
-// TestInputValidation tests input validation for all methods
+// TestInputValidation tests input validation for all methods.
 func TestInputValidation(t *testing.T) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
@@ -237,7 +268,7 @@ func TestInputValidation(t *testing.T) {
 	})
 
 	t.Run("ActualCostInvalidTimeRange", func(t *testing.T) {
-		end, start := CreateTimeRange(24) // Swapped start and end
+		end, start := plugintesting.CreateTimeRange(plugintesting.HoursPerDay) // Swapped start and end
 		_, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 			ResourceId: "test-resource",
 			Start:      start,
@@ -267,10 +298,10 @@ func TestInputValidation(t *testing.T) {
 	})
 }
 
-// TestMultipleProviders tests plugin behavior with different providers
+// TestMultipleProviders tests plugin behavior with different providers.
 func TestMultipleProviders(t *testing.T) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
@@ -291,64 +322,73 @@ func TestMultipleProviders(t *testing.T) {
 
 	for _, p := range providers {
 		t.Run(p.name, func(t *testing.T) {
-			resource := CreateResourceDescriptor(p.provider, p.resourceType, p.sku, "us-east-1")
-
-			// Test Supports
-			supportsResp, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
-			if err != nil {
-				t.Fatalf("Supports() failed: %v", err)
-			}
-
-			if !supportsResp.GetSupported() {
-				t.Errorf("Provider %s should be supported: %s", p.provider, supportsResp.GetReason())
-			}
-
-			// Test GetProjectedCost
-			projectedResp, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
-				Resource: resource,
-			})
-			if err != nil {
-				t.Fatalf("GetProjectedCost() failed: %v", err)
-			}
-
-			if err := ValidateProjectedCostResponse(projectedResp); err != nil {
-				t.Errorf("Invalid projected cost response for %s: %v", p.provider, err)
-			}
-
-			// Test GetPricingSpec
-			specResp, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
-				Resource: resource,
-			})
-			if err != nil {
-				t.Fatalf("GetPricingSpec() failed: %v", err)
-			}
-
-			spec := specResp.GetSpec()
-			if spec.GetProvider() != p.provider {
-				t.Errorf("Expected provider %s, got %s", p.provider, spec.GetProvider())
-			}
-			if spec.GetResourceType() != p.resourceType {
-				t.Errorf("Expected resource type %s, got %s", p.resourceType, spec.GetResourceType())
-			}
+			testProviderSupport(ctx, t, client, p.provider, p.resourceType, p.sku)
 		})
 	}
 }
 
-// TestConcurrentRequests tests plugin behavior under concurrent load
+func testProviderSupport(
+	ctx context.Context,
+	t *testing.T,
+	client pbc.CostSourceServiceClient,
+	provider, resourceType, sku string,
+) {
+	resource := plugintesting.CreateResourceDescriptor(provider, resourceType, sku, "us-east-1")
+
+	// Test Supports
+	supportsResp, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
+	if err != nil {
+		t.Fatalf("Supports() failed: %v", err)
+	}
+
+	if !supportsResp.GetSupported() {
+		t.Errorf("Provider %s should be supported: %s", provider, supportsResp.GetReason())
+	}
+
+	// Test GetProjectedCost
+	projectedResp, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
+		Resource: resource,
+	})
+	if err != nil {
+		t.Fatalf("GetProjectedCost() failed: %v", err)
+	}
+
+	if validationErr := plugintesting.ValidateProjectedCostResponse(projectedResp); validationErr != nil {
+		t.Errorf("Invalid projected cost response for %s: %v", provider, validationErr)
+	}
+
+	// Test GetPricingSpec
+	specResp, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
+		Resource: resource,
+	})
+	if err != nil {
+		t.Fatalf("GetPricingSpec() failed: %v", err)
+	}
+
+	spec := specResp.GetSpec()
+	if spec.GetProvider() != provider {
+		t.Errorf("Expected provider %s, got %s", provider, spec.GetProvider())
+	}
+	if spec.GetResourceType() != resourceType {
+		t.Errorf("Expected resource type %s, got %s", resourceType, spec.GetResourceType())
+	}
+}
+
+// TestConcurrentRequests tests plugin behavior under concurrent load.
 func TestConcurrentRequests(t *testing.T) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
 
-	const numConcurrentRequests = 10
-	errors := make(chan error, numConcurrentRequests)
+	const numConcurrentRequestsLocal = plugintesting.NumConcurrentRequests
+	errors := make(chan error, numConcurrentRequestsLocal)
 
 	// Run concurrent Name requests
-	for i := 0; i < numConcurrentRequests; i++ {
+	for range numConcurrentRequestsLocal {
 		go func() {
 			_, err := client.Name(ctx, &pbc.NameRequest{})
 			errors <- err
@@ -356,17 +396,17 @@ func TestConcurrentRequests(t *testing.T) {
 	}
 
 	// Check all requests completed successfully
-	for i := 0; i < numConcurrentRequests; i++ {
+	for i := range numConcurrentRequestsLocal {
 		if err := <-errors; err != nil {
 			t.Errorf("Concurrent request %d failed: %v", i, err)
 		}
 	}
 }
 
-// TestResponseTimeouts tests plugin behavior with configured delays
+// TestResponseTimeouts tests plugin behavior with configured delays.
 func TestResponseTimeouts(t *testing.T) {
-	plugin := SlowMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.SlowMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
@@ -392,7 +432,7 @@ func TestResponseTimeouts(t *testing.T) {
 	})
 
 	t.Run("SupportsWithDelay", func(t *testing.T) {
-		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 		start := time.Now()
 		_, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
 		duration := time.Since(start)
@@ -407,21 +447,21 @@ func TestResponseTimeouts(t *testing.T) {
 	})
 }
 
-// TestDataConsistency tests that plugin returns consistent data
+// TestDataConsistency tests that plugin returns consistent data.
 func TestDataConsistency(t *testing.T) {
-	plugin := NewMockPlugin()
-	harness := NewTestHarness(plugin)
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
 	client := harness.Client()
 	ctx := context.Background()
 
-	resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 
 	// Get projected cost multiple times - should be consistent
 	var firstResponse *pbc.GetProjectedCostResponse
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		resp, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
 			Resource: resource,
 		})

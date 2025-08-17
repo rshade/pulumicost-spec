@@ -1,0 +1,51 @@
+version: 2
+language: "en-US"
+reviews:
+  profile: "chill"
+  summaries:
+    high_level: true
+    poem: false
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "work in progress"
+      - "do not merge"
+  path_filters:
+    - "!examples/**"
+    - "!sdk/**"
+    - "!proto/**"
+    - "!node_modules/**"
+    - "**/vendor/**"
+    - "**/.git/**"
+    - "**/sdk/go/proto/**"
+    - "**/*_test.go"
+    - "**/go.sum"
+  workflows:
+    request_changes: true
+  path_instructions:
+    - path: "**/*.go"
+      instructions: |
+        When reviewing Go code, please ensure that:
+        - Code is formatted with gofmt.
+        - Errors are handled properly.
+        - Best practices for concurrency are followed.
+    - path: "**/*.proto"
+      instructions: |
+        When reviewing Protobuf files, please ensure that:
+        - Naming conventions for messages and fields are followed.
+        - Field numbers are unique and sequential.
+chat:
+  auto_reply: true
+knowledge:
+  learnings:
+    scope: "local"
+  issues:
+    scope: "local"
+  pull_requests:
+    scope: "local"
+  mcp:
+    usage: "enabled"
+tools:
+  golangci-lint:
+    enabled: true

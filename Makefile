@@ -31,11 +31,34 @@ buf: $(BUF_BIN)
 buf-lint: $(BUF_BIN)
 	$(BUF_BIN) lint
 
-lint: $(BUF_BIN)
-	golangci-lint run
+lint: $(BUF_BIN) lint-go lint-markdown lint-yaml
+
+lint-go: $(BUF_BIN)
+	PATH=~/go/bin:$$PATH golangci-lint run
 	$(BUF_BIN) lint
 
-validate: test lint
+lint-markdown:
+	npm run lint:markdown
+
+lint-markdown-fix:
+	npm run lint:markdown:fix
+
+lint-yaml:
+	yamllint .github/
+
+lint-yaml-fix:
+	yamllint --fix .github/
+
+validate-schema:
+	npm run validate:schema
+
+validate-examples:
+	npm run validate:examples
+
+validate-npm:
+	npm run validate
+
+validate: test lint validate-npm
 
 depend:
 	@echo "Installing Go development tools..."
