@@ -173,6 +173,37 @@ Follow semantic versioning for proto changes:
 
 Tag releases as `v0.1.0`, `v1.0.0`, etc.
 
+## Changelog Management
+
+**IMPORTANT**: Always maintain the `CHANGELOG.md` file following Keep a Changelog format.
+
+### Changelog Update Process
+
+1. **For each PR/feature**: Add entries to `## [Unreleased]` section
+2. **Before release**: Move unreleased changes to new version section
+3. **Release tagging**: Tag corresponds to changelog version
+
+### Changelog Categories
+
+- **Added** - New features, packages, or major functionality
+- **Changed** - Changes to existing functionality  
+- **Deprecated** - Soon-to-be removed features
+- **Removed** - Removed features
+- **Fixed** - Bug fixes
+- **Security** - Vulnerability fixes
+
+### Changelog Commands
+
+```bash
+# Validate changelog format
+npm run lint:changelog
+
+# Full markdown validation (includes changelog)
+npm run lint:markdown
+```
+
+**Never delete or significantly modify the CHANGELOG.md** - it provides essential project history and release documentation.
+
 - Project board: <https://github.com/users/rshade/projects/3>
 
 ## Common Issues & Solutions
@@ -313,3 +344,159 @@ go test -v -run TestBasicPluginFunctionality
 go test -v -run TestConformance  
 go test -bench=BenchmarkAllMethods
 ```
+
+## Session Learnings and Solutions
+
+### Markdown Linting Configuration
+
+- **Issue**: Markdown linter processing thousands of node_modules files (950+ errors)
+- **Solution**: Create `.markdownlintignore` file and update package.json with exclusions
+- **Commands**:
+
+  ```bash
+  npm run lint:markdown        # Check markdown files
+  npm run lint:markdown:fix    # Auto-fix markdown issues
+  ```
+
+- **Pattern**: Always exclude `node_modules/`, temporary files in both `.markdownlintignore` and package.json
+
+### JSON Schema Validation Issues
+
+- **Issue**: JSON Schema validation failing with invalid keywords and format warnings
+- **Solution**:
+  1. Remove `version` field from schemas (not a valid JSON Schema keyword)
+  2. Use `--strict=false` flag for ajv commands
+  3. Install and configure ajv-formats dependency
+- **Command**: `npm run validate:schema` with `--strict=false` flag
+
+### AJV Compilation Errors
+
+- **Issue**: AJV can't resolve `$schema` references in validation scripts
+- **Solution**: Remove `$schema` field before compilation in `validate_examples.js`
+- **Pattern**: Clean schema objects before AJV compilation to avoid resolution errors
+
+### CI/CD Debugging
+
+- **Commands**:
+
+  ```bash
+  gh run view <run-id> --log-failed     # Get detailed CI failure logs
+  gh pr checks <pr-number>              # Quick PR check status overview
+  gh run view <run-id> --job <job-id> --log-failed  # Specific job logs
+  ```
+
+### Dependency Management
+
+- **Issue**: CI failing due to out-of-sync lock files
+- **Solution**: Always sync dependency files before committing
+- **Workflow**:
+
+  ```bash
+  npm install       # Update package-lock.json
+  go mod tidy       # Update go.mod and go.sum
+  git add package-lock.json go.mod go.sum
+  ```
+
+### Workflow Optimizations
+
+1. **Markdown Fixes**: Run auto-fix first, then manual fixes for remaining issues
+2. **CI Debugging**: Use `gh run view --log-failed` for specific error details
+3. **Dependency Updates**: Always run both `npm install` and `go mod tidy` together
+
+### Directory-Specific CLAUDE.md Files
+
+- **Multiple CLAUDE.md Strategy**: Use `/init` in each important directory for context-aware guidance
+- **Recommended directories for CLAUDE.md**:
+  - `sdk/go/pricing/` (domain logic, billing modes, validation)
+  - `sdk/go/testing/` (testing framework, harness, mocks)
+  - `examples/` (pricing spec patterns, cross-vendor examples)
+  - `schemas/` (JSON schema validation patterns)
+  - `.claude/agents/` (agent configurations and prompts)
+- **Process**: Use `cd <directory> && /init` to create directory-specific guidance
+- **Benefits**: Context-aware content, proper tool detection, inheritance + specialization
+
+### Markdown Linting Advanced Configuration
+
+- **MD024 duplicate headings**: Use `"siblings_only": true` in `.markdownlint.json` to allow duplicate headings across
+  different sections (needed for Keep a Changelog format)
+- **CHANGELOG.md integration**: With proper MD024 configuration, CHANGELOG.md can be included in standard markdown
+  linting pipeline
+- **Configuration pattern**:
+
+  ```json
+  {
+    "MD024": {
+      "siblings_only": true
+    }
+  }
+  ```
+
+## Directory-Specific CLAUDE.md Documentation
+
+This repository uses a **multi-level CLAUDE.md strategy** with specialized guidance files in key directories to provide
+context-aware development assistance. Each directory-specific CLAUDE.md file inherits from this root file and adds
+specialized knowledge for its domain.
+
+### Directory Structure
+
+The following directories contain specialized CLAUDE.md files:
+
+- **`.claude/agents/CLAUDE.md`** - Agent system configuration and specialized agent prompts
+- **`examples/CLAUDE.md`** - Examples directory with validation architecture and cross-provider patterns
+- **`examples/specs/CLAUDE.md`** - Specific PricingSpec JSON examples with billing model coverage
+- **`schemas/CLAUDE.md`** - JSON Schema validation patterns and schema evolution strategies
+- **`sdk/go/CLAUDE.md`** - Go SDK overview with package structure and development patterns
+- **`sdk/go/pricing/CLAUDE.md`** - Pricing package with billing modes, domain types, and validation
+- **`sdk/go/testing/CLAUDE.md`** - Testing framework with harness, mocks, conformance, and benchmarks
+
+### Specialized Content Areas
+
+**Agent Configuration (`.claude/agents/`)**:
+
+- Custom agent configurations for PulumiCost ecosystem development
+- Specialized prompts for technical writing, product management, and senior engineering
+- Agent invocation patterns and result expectations
+
+**Schema and Validation (`schemas/`)**:
+
+- JSON Schema architecture with 44+ billing modes and advanced features
+- Cross-provider validation patterns and schema evolution strategies
+- AJV integration and multi-language validation approaches
+
+**Examples and Documentation (`examples/`)**:
+
+- Cross-provider billing model matrix with AWS, Azure, GCP, and Kubernetes examples
+- Metadata patterns, resource tags, and plugin-specific configuration
+- Validation integration with CI/CD pipeline and quality standards
+
+**Go SDK Development (`sdk/go/`)**:
+
+- Three-package architecture: `pricing/`, `proto/`, and `testing/`
+- Domain type systems with comprehensive billing mode enumerations
+- Testing framework architecture with harness, mocks, and conformance levels
+
+### Usage Patterns
+
+**Context-Aware Development**:
+
+Use `/init` commands in specific directories to access specialized guidance:
+
+```bash
+cd sdk/go/pricing && /init     # Domain types and billing validation
+cd sdk/go/testing && /init     # Testing framework and conformance
+cd examples/specs && /init     # PricingSpec examples and patterns
+cd schemas && /init            # JSON Schema validation
+```
+
+**Inheritance + Specialization**:
+
+- Each directory CLAUDE.md inherits common patterns from root
+- Specialized content focuses on directory-specific architecture and workflows
+- Build commands and development patterns remain consistent across directories
+
+### Directory-Specific Benefits
+
+- **Focused Context**: Relevant architecture patterns and command references
+- **Specialized Workflows**: Directory-appropriate development and testing approaches  
+- **Tool Detection**: Context-aware build commands and validation approaches
+- **Knowledge Preservation**: Captures domain-specific best practices and solutions
