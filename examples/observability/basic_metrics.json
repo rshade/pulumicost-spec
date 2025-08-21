@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Basic Plugin Metrics Example",
+  "description": "Example of basic metrics that all PulumiCost plugins should expose",
+  "type": "object",
+  "properties": {
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Metric name following Prometheus conventions"
+          },
+          "help": {
+            "type": "string", 
+            "description": "Human-readable description of the metric"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["counter", "gauge", "histogram", "summary"],
+            "description": "Type of metric being reported"
+          },
+          "samples": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "labels": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Key-value pairs for metric dimensions"
+                },
+                "value": {
+                  "type": "number",
+                  "description": "Numeric value of the metric sample"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "When the sample was recorded"
+                }
+              },
+              "required": ["labels", "value", "timestamp"]
+            }
+          }
+        },
+        "required": ["name", "help", "type", "samples"]
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the metrics were collected"
+    },
+    "format": {
+      "type": "string",
+      "description": "Format of the metrics data",
+      "default": "json"
+    }
+  },
+  "required": ["metrics", "timestamp"],
+  "examples": [
+    {
+      "metrics": [
+        {
+          "name": "pulumicost_requests_total",
+          "help": "Total number of requests processed by the plugin",
+          "type": "counter",
+          "samples": [
+            {
+              "labels": {
+                "method": "GetActualCost",
+                "provider": "aws",
+                "status": "success"
+              },
+              "value": 1250,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "method": "GetActualCost", 
+                "provider": "aws",
+                "status": "error"
+              },
+              "value": 23,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "method": "GetProjectedCost",
+                "provider": "aws",
+                "status": "success"
+              },
+              "value": 890,
+              "timestamp": "2024-01-15T10:30:00Z"
+            }
+          ]
+        },
+        {
+          "name": "pulumicost_request_duration_seconds",
+          "help": "Request processing duration in seconds",
+          "type": "histogram",
+          "samples": [
+            {
+              "labels": {
+                "method": "GetActualCost",
+                "provider": "aws",
+                "le": "0.1"
+              },
+              "value": 450,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "method": "GetActualCost",
+                "provider": "aws", 
+                "le": "0.5"
+              },
+              "value": 780,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "method": "GetActualCost",
+                "provider": "aws",
+                "le": "1.0"
+              },
+              "value": 1200,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "method": "GetActualCost",
+                "provider": "aws",
+                "le": "+Inf"
+              },
+              "value": 1250,
+              "timestamp": "2024-01-15T10:30:00Z"
+            }
+          ]
+        },
+        {
+          "name": "pulumicost_errors_total",
+          "help": "Total number of errors encountered",
+          "type": "counter",
+          "samples": [
+            {
+              "labels": {
+                "method": "GetActualCost",
+                "provider": "aws",
+                "error_type": "rate_limit"
+              },
+              "value": 12,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "method": "GetActualCost",
+                "provider": "aws",
+                "error_type": "network"
+              },
+              "value": 8,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "method": "GetProjectedCost",
+                "provider": "aws",
+                "error_type": "validation"
+              },
+              "value": 3,
+              "timestamp": "2024-01-15T10:30:00Z"
+            }
+          ]
+        },
+        {
+          "name": "pulumicost_cache_hit_rate_percent",
+          "help": "Percentage of requests served from cache",
+          "type": "gauge",
+          "samples": [
+            {
+              "labels": {
+                "provider": "aws",
+                "cache_type": "pricing_spec"
+              },
+              "value": 87.5,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "provider": "azure",
+                "cache_type": "pricing_spec"
+              },
+              "value": 92.1,
+              "timestamp": "2024-01-15T10:30:00Z"
+            }
+          ]
+        },
+        {
+          "name": "pulumicost_active_connections",
+          "help": "Number of active connections to external services",
+          "type": "gauge",
+          "samples": [
+            {
+              "labels": {
+                "service": "aws_billing_api"
+              },
+              "value": 5,
+              "timestamp": "2024-01-15T10:30:00Z"
+            },
+            {
+              "labels": {
+                "service": "azure_cost_api"
+              },
+              "value": 3,
+              "timestamp": "2024-01-15T10:30:00Z"
+            }
+          ]
+        }
+      ],
+      "timestamp": "2024-01-15T10:30:00Z",
+      "format": "json"
+    }
+  ]
+}
