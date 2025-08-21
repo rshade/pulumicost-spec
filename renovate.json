@@ -11,6 +11,13 @@
   "timezone": "UTC",
   "packageRules": [
     {
+      "matchManagers": ["gomod"],
+      "matchDepNames": ["go"],
+      "matchDepTypes": ["golang"],
+      "allowedVersions": "~1.24",
+      "description": "Pin Go version to 1.24.x, prevent upgrade to 1.25"
+    },
+    {
       "groupName": "gRPC and protobuf dependencies",
       "groupSlug": "grpc-protobuf",
       "matchPackageNames": [
