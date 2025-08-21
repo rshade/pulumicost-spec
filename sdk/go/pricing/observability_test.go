@@ -1,8 +1,10 @@
-package pricing
+package pricing_test
 
 import (
 	"testing"
 	"time"
+
+	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
 )
 
 func TestValidateMetricName(t *testing.T) {
@@ -21,7 +23,7 @@ func TestValidateMetricName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateMetricName(tt.metricName)
+			err := pricing.ValidateMetricName(tt.metricName)
 			if tt.expectError && err == nil {
 				t.Errorf("Expected error for metric name '%s' but got none", tt.metricName)
 			}
@@ -49,7 +51,7 @@ func TestValidateMetricNameStrict(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateMetricNameStrict(tt.metricName)
+			err := pricing.ValidateMetricNameStrict(tt.metricName)
 			if tt.expectError && err == nil {
 				t.Errorf("Expected error for metric name '%s' but got none", tt.metricName)
 			}
@@ -92,7 +94,7 @@ func TestValidateMetricLabels(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ValidateMetricLabels(tt.labels)
+			result := pricing.ValidateMetricLabels(tt.labels)
 			if result.Valid != tt.expectValid {
 				t.Errorf("Expected valid=%v, got %v", tt.expectValid, result.Valid)
 			}
@@ -120,7 +122,7 @@ func TestValidateTraceID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateTraceID(tt.traceID)
+			err := pricing.ValidateTraceID(tt.traceID)
 			if tt.expectError && err == nil {
 				t.Errorf("Expected error for trace ID '%s' but got none", tt.traceID)
 			}
@@ -148,7 +150,7 @@ func TestValidateSpanID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateSpanID(tt.spanID)
+			err := pricing.ValidateSpanID(tt.spanID)
 			if tt.expectError && err == nil {
 				t.Errorf("Expected error for span ID '%s' but got none", tt.spanID)
 			}
@@ -162,46 +164,46 @@ func TestValidateSpanID(t *testing.T) {
 func TestValidateSLIValue(t *testing.T) {
 	tests := []struct {
 		name        string
-		sli         ServiceLevelIndicator
+		sli         pricing.ServiceLevelIndicator
 		value       float64
 		expectError bool
 	}{
 		{
 			name:  "valid percentage",
-			sli:   ServiceLevelIndicator{Name: "availability", Unit: "percentage"},
+			sli:   pricing.ServiceLevelIndicator{Name: "availability", Unit: "percentage"},
 			value: 99.9,
 		},
 		{
 			name:        "percentage too high",
-			sli:         ServiceLevelIndicator{Name: "availability", Unit: "percentage"},
+			sli:         pricing.ServiceLevelIndicator{Name: "availability", Unit: "percentage"},
 			value:       101.0,
 			expectError: true,
 		},
 		{
 			name:        "percentage negative",
-			sli:         ServiceLevelIndicator{Name: "availability", Unit: "percentage"},
+			sli:         pricing.ServiceLevelIndicator{Name: "availability", Unit: "percentage"},
 			value:       -1.0,
 			expectError: true,
 		},
 		{
 			name:  "valid seconds",
-			sli:   ServiceLevelIndicator{Name: "latency", Unit: "seconds"},
+			sli:   pricing.ServiceLevelIndicator{Name: "latency", Unit: "seconds"},
 			value: 1.5,
 		},
 		{
 			name:        "negative seconds",
-			sli:         ServiceLevelIndicator{Name: "latency", Unit: "seconds"},
+			sli:         pricing.ServiceLevelIndicator{Name: "latency", Unit: "seconds"},
 			value:       -1.0,
 			expectError: true,
 		},
 		{
 			name:  "valid ratio",
-			sli:   ServiceLevelIndicator{Name: "error_rate", Unit: "ratio"},
+			sli:   pricing.ServiceLevelIndicator{Name: "error_rate", Unit: "ratio"},
 			value: 0.001,
 		},
 		{
 			name:        "ratio too high",
-			sli:         ServiceLevelIndicator{Name: "error_rate", Unit: "ratio"},
+			sli:         pricing.ServiceLevelIndicator{Name: "error_rate", Unit: "ratio"},
 			value:       1.5,
 			expectError: true,
 		},
@@ -209,7 +211,7 @@ func TestValidateSLIValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateSLIValue(tt.sli, tt.value)
+			err := pricing.ValidateSLIValue(tt.sli, tt.value)
 			if tt.expectError && err == nil {
 				t.Errorf("Expected error for SLI value %f but got none", tt.value)
 			}
@@ -236,7 +238,7 @@ func TestCalculateErrorRate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := CalculateErrorRate(tt.total, tt.successful)
+			result := pricing.CalculateErrorRate(tt.total, tt.successful)
 			if result != tt.expected {
 				t.Errorf("Expected error rate %f, got %f", tt.expected, result)
 			}
@@ -259,7 +261,7 @@ func TestCalculateAvailability(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := CalculateAvailability(tt.uptime, tt.total)
+			result := pricing.CalculateAvailability(tt.uptime, tt.total)
 			if result != tt.expected {
 				t.Errorf("Expected availability %f, got %f", tt.expected, result)
 			}
@@ -283,7 +285,7 @@ func TestFormatDuration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := FormatDuration(tt.duration)
+			result := pricing.FormatDuration(tt.duration)
 			if result != tt.expected {
 				t.Errorf("Expected formatted duration '%s', got '%s'", tt.expected, result)
 			}
@@ -294,32 +296,32 @@ func TestFormatDuration(t *testing.T) {
 func TestGetObservabilityRequirements(t *testing.T) {
 	tests := []struct {
 		name          string
-		level         ConformanceLevel
-		expectedLevel ConformanceLevel
+		level         pricing.ConformanceLevel
+		expectedLevel pricing.ConformanceLevel
 		minMetrics    int
 		minSLIs       int
 		minFeatures   int
 	}{
 		{
 			name:          "basic conformance",
-			level:         ConformanceBasic,
-			expectedLevel: ConformanceBasic,
+			level:         pricing.ConformanceBasic,
+			expectedLevel: pricing.ConformanceBasic,
 			minMetrics:    3,
 			minSLIs:       2,
 			minFeatures:   2,
 		},
 		{
 			name:          "standard conformance",
-			level:         ConformanceStandard,
-			expectedLevel: ConformanceStandard,
+			level:         pricing.ConformanceStandard,
+			expectedLevel: pricing.ConformanceStandard,
 			minMetrics:    6,
 			minSLIs:       4,
 			minFeatures:   4,
 		},
 		{
 			name:          "advanced conformance",
-			level:         ConformanceAdvanced,
-			expectedLevel: ConformanceAdvanced,
+			level:         pricing.ConformanceAdvanced,
+			expectedLevel: pricing.ConformanceAdvanced,
 			minMetrics:    10,
 			minSLIs:       6,
 			minFeatures:   7,
@@ -327,7 +329,7 @@ func TestGetObservabilityRequirements(t *testing.T) {
 		{
 			name:          "invalid level defaults to basic",
 			level:         "invalid",
-			expectedLevel: ConformanceBasic,
+			expectedLevel: pricing.ConformanceBasic,
 			minMetrics:    3,
 			minSLIs:       2,
 			minFeatures:   2,
@@ -336,7 +338,7 @@ func TestGetObservabilityRequirements(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := GetObservabilityRequirements(tt.level)
+			req := pricing.GetObservabilityRequirements(tt.level)
 
 			if req.Level != tt.expectedLevel {
 				t.Errorf("Expected level %s, got %s", tt.expectedLevel, req.Level)
@@ -411,7 +413,7 @@ func TestValidateTimeRange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateTimeRange(tt.start, tt.end)
+			err := pricing.ValidateTimeRange(tt.start, tt.end)
 			if tt.expectError && err == nil {
 				t.Errorf("Expected error for time range but got none")
 			}
@@ -474,7 +476,8 @@ func TestValidateObservabilityMetadata(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			suite := ValidateObservabilityMetadata(tt.traceID, tt.spanID, tt.requestID, tt.processingTimeMs, tt.qualityScore)
+			suite := pricing.ValidateObservabilityMetadata(tt.traceID, tt.spanID, tt.requestID,
+				tt.processingTimeMs, tt.qualityScore)
 
 			if suite.IsValid() != tt.expectValid {
 				t.Errorf("Expected valid=%v, got %v. Errors: %v", tt.expectValid, suite.IsValid(), suite.Errors)
@@ -490,12 +493,12 @@ func TestValidateObservabilityMetadata(t *testing.T) {
 func TestStandardMetricsConstants(t *testing.T) {
 	// Verify all standard metrics are properly defined
 	expectedMetrics := []string{
-		StandardMetrics.RequestsTotal,
-		StandardMetrics.RequestDurationSeconds,
-		StandardMetrics.ErrorsTotal,
-		StandardMetrics.LatencyP95Seconds,
-		StandardMetrics.LatencyP99Seconds,
-		StandardMetrics.CacheHitRatePercent,
+		pricing.StandardMetrics.RequestsTotal,
+		pricing.StandardMetrics.RequestDurationSeconds,
+		pricing.StandardMetrics.ErrorsTotal,
+		pricing.StandardMetrics.LatencyP95Seconds,
+		pricing.StandardMetrics.LatencyP99Seconds,
+		pricing.StandardMetrics.CacheHitRatePercent,
 	}
 
 	for _, metric := range expectedMetrics {
@@ -503,7 +506,7 @@ func TestStandardMetricsConstants(t *testing.T) {
 			t.Errorf("Standard metric is empty")
 		}
 
-		if err := ValidateMetricNameStrict(metric); err != nil {
+		if err := pricing.ValidateMetricNameStrict(metric); err != nil {
 			t.Errorf("Standard metric '%s' fails validation: %v", metric, err)
 		}
 	}
@@ -511,13 +514,13 @@ func TestStandardMetricsConstants(t *testing.T) {
 
 func TestStandardSLIsTargets(t *testing.T) {
 	// Verify all standard SLIs have reasonable targets
-	slis := []ServiceLevelIndicator{
-		StandardSLIs.Availability,
-		StandardSLIs.ErrorRate,
-		StandardSLIs.LatencyP99,
-		StandardSLIs.LatencyP95,
-		StandardSLIs.Throughput,
-		StandardSLIs.DataFreshness,
+	slis := []pricing.ServiceLevelIndicator{
+		pricing.StandardSLIs.Availability,
+		pricing.StandardSLIs.ErrorRate,
+		pricing.StandardSLIs.LatencyP99,
+		pricing.StandardSLIs.LatencyP95,
+		pricing.StandardSLIs.Throughput,
+		pricing.StandardSLIs.DataFreshness,
 	}
 
 	for _, sli := range slis {
@@ -529,7 +532,7 @@ func TestStandardSLIsTargets(t *testing.T) {
 			t.Errorf("SLI '%s' has non-positive target: %f", sli.Name, sli.Target)
 		}
 
-		if err := ValidateSLIValue(sli, sli.Target); err != nil {
+		if err := pricing.ValidateSLIValue(sli, sli.Target); err != nil {
 			t.Errorf("SLI '%s' target value fails validation: %v", sli.Name, err)
 		}
 	}

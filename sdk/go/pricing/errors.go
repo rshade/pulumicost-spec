@@ -192,7 +192,11 @@ func NewConfigurationError(code ErrorCode, message string) *PluginError {
 }
 
 // NewFormattedTransientError creates a transient error with formatted message.
-func NewFormattedTransientError(code ErrorCode, params map[string]string, retryAfter *time.Duration) *PluginError {
+func NewFormattedTransientError(
+	code ErrorCode,
+	params map[string]string,
+	retryAfter *time.Duration,
+) *PluginError {
 	message := FormatErrorMessage(code, params)
 	return NewTransientError(code, message, retryAfter).WithDetails(convertToInterface(params))
 }
@@ -883,7 +887,10 @@ func NewCircuitBreaker(name string, config *CircuitBreakerConfig) (*CircuitBreak
 
 // NewDefaultCircuitBreaker creates a circuit breaker with default configuration.
 func NewDefaultCircuitBreaker(name string) *CircuitBreaker {
-	cb, _ := NewCircuitBreaker(name, NewDefaultCircuitBreakerConfig()) // Default config is always valid
+	cb, _ := NewCircuitBreaker(
+		name,
+		NewDefaultCircuitBreakerConfig(),
+	) // Default config is always valid
 	return cb
 }
 
@@ -1122,8 +1129,11 @@ func (tc *TimeoutConfig) Validate() error {
 
 	for _, methodTimeout := range methodTimeouts {
 		if tc.GlobalTimeout < methodTimeout {
-			return fmt.Errorf("GlobalTimeout (%v) must be at least as large as the largest method timeout (%v)",
-				tc.GlobalTimeout, methodTimeout)
+			return fmt.Errorf(
+				"GlobalTimeout (%v) must be at least as large as the largest method timeout (%v)",
+				tc.GlobalTimeout,
+				methodTimeout,
+			)
 		}
 	}
 
@@ -1173,7 +1183,11 @@ func NewDefaultTimeoutWrapper() *TimeoutWrapper {
 }
 
 // ExecuteWithTimeout executes a function with a method-specific timeout.
-func (tw *TimeoutWrapper) ExecuteWithTimeout(ctx context.Context, method string, fn func(context.Context) error) error {
+func (tw *TimeoutWrapper) ExecuteWithTimeout(
+	ctx context.Context,
+	method string,
+	fn func(context.Context) error,
+) error {
 	timeout := tw.config.GetTimeoutForMethod(method)
 
 	// Create a context with timeout
@@ -1203,7 +1217,10 @@ func (tw *TimeoutWrapper) ExecuteWithTimeout(ctx context.Context, method string,
 }
 
 // ExecuteWithGlobalTimeout executes a function with the global timeout.
-func (tw *TimeoutWrapper) ExecuteWithGlobalTimeout(ctx context.Context, fn func(context.Context) error) error {
+func (tw *TimeoutWrapper) ExecuteWithGlobalTimeout(
+	ctx context.Context,
+	fn func(context.Context) error,
+) error {
 	return tw.ExecuteWithTimeout(ctx, "", fn) // Empty method name uses global timeout
 }
 

@@ -1,6 +1,7 @@
 # PulumiCost Plugin Observability Implementation Guide
 
-This guide provides comprehensive instructions for implementing observability features in PulumiCost plugins, including telemetry, health checks, metrics, and distributed tracing.
+This guide provides comprehensive instructions for implementing observability features in PulumiCost plugins,
+including telemetry, health checks, metrics, and distributed tracing.
 
 ## Table of Contents
 
@@ -19,7 +20,8 @@ This guide provides comprehensive instructions for implementing observability fe
 
 ## Overview
 
-Observability enables monitoring, debugging, and performance optimization of PulumiCost plugins. The specification defines three conformance levels with increasing requirements:
+Observability enables monitoring, debugging, and performance optimization of PulumiCost plugins. The specification
+defines three conformance levels with increasing requirements:
 
 - **Basic**: Essential observability for all plugins
 - **Standard**: Production-ready observability features
@@ -30,51 +32,60 @@ Observability enables monitoring, debugging, and performance optimization of Pul
 ### Basic Conformance (Required for All Plugins)
 
 **Required Features:**
+
 - Health check endpoint
 - Basic metrics collection (requests, errors, latency)
 - Standard error codes and messages
 
 **Required Metrics:**
+
 - `pulumicost_requests_total` - Total requests processed
 - `pulumicost_errors_total` - Total errors encountered  
 - `pulumicost_request_duration_seconds` - Request processing time
 
 **Required SLIs:**
+
 - `availability` - Service availability percentage
 - `error_rate` - Error rate percentage
 
 ### Standard Conformance (Recommended for Production)
 
 **Additional Features:**
+
 - Metrics endpoint with multiple formats
 - SLI reporting endpoint
 - Structured logging
 - Basic tracing context
 
 **Additional Metrics:**
+
 - `pulumicost_latency_p95_seconds` - 95th percentile latency
 - `pulumicost_cache_hit_rate_percent` - Cache effectiveness
 - `pulumicost_active_connections` - Active external connections
 
 **Additional SLIs:**
+
 - `latency_p95` - 95th percentile response time
 - `throughput` - Requests per second
 
 ### Advanced Conformance (High-Performance Requirements)
 
 **Additional Features:**
+
 - Custom metrics registration
 - Full distributed tracing
 - Performance monitoring
 - Resource usage tracking
 
 **Additional Metrics:**
+
 - `pulumicost_latency_p99_seconds` - 99th percentile latency
 - `pulumicost_memory_usage_bytes` - Memory consumption
 - `pulumicost_cpu_usage_percent` - CPU utilization
 - `pulumicost_data_source_latency_seconds` - External API latency
 
 **Additional SLIs:**
+
 - `latency_p99` - 99th percentile response time
 - `data_freshness` - Age of cost data
 
@@ -602,6 +613,7 @@ Resources:
 ### Debugging Steps
 
 1. **Verify Observability Endpoints**
+
    ```bash
    # Test health check
    grpcurl -plaintext localhost:8080 pulumicost.v1.ObservabilityService/HealthCheck
@@ -611,6 +623,7 @@ Resources:
    ```
 
 2. **Check Metric Values**
+
    ```go
    // Validate metric implementation
    if err := pricing.ValidateMetricNameStrict(metricName); err != nil {
@@ -619,6 +632,7 @@ Resources:
    ```
 
 3. **Trace Validation**
+
    ```go
    // Verify trace context
    suite := pricing.ValidateObservabilityMetadata(traceID, spanID, requestID, processingTime, qualityScore)
@@ -647,4 +661,6 @@ if overhead > 5.0 {
 }
 ```
 
-This guide provides a comprehensive foundation for implementing observability in PulumiCost plugins. Follow the conformance levels appropriate for your deployment environment and continuously monitor the effectiveness of your observability implementation.
+This guide provides a comprehensive foundation for implementing observability in PulumiCost plugins. Follow the
+conformance levels appropriate for your deployment environment and continuously monitor the effectiveness of your
+observability implementation.

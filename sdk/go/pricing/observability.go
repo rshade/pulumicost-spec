@@ -1,25 +1,43 @@
 package pricing
 
 import (
+	"errors"
 	"fmt"
 	"time"
+)
+
+// Constants for SLI targets and calculations.
+const (
+	// SLI target values.
+	DefaultAvailabilityTarget  = 99.9  // 99.9% availability
+	DefaultErrorRateTarget     = 0.1   // <0.1% error rate
+	DefaultLatencyP99Target    = 2.0   // <2 seconds
+	DefaultThroughputTarget    = 100.0 // >100 RPS
+	DefaultDataFreshnessTarget = 24.0  // <24 hours old
+
+	// Unit conversion constants.
+	PercentageMultiplier      = 100.0     // Convert ratio to percentage
+	NanosecondsToMicroseconds = 1000.0    // Convert ns to μs
+	NanosecondsToMilliseconds = 1000000.0 // Convert ns to ms
 )
 
 // MetricType represents the different types of metrics that can be collected.
 type MetricType string
 
 const (
-	// Counter metrics increment over time (e.g., request counts, error counts)
+	// MetricTypeCounter represents counter metrics that increment over time (e.g., request counts, error counts).
 	MetricTypeCounter MetricType = "counter"
-	// Gauge metrics represent current values that can go up or down (e.g., active connections)
+	// MetricTypeGauge represents gauge metrics with current values that can go up or down (e.g., active connections).
 	MetricTypeGauge MetricType = "gauge"
-	// Histogram metrics track distributions of values (e.g., response times)
+	// MetricTypeHistogram represents histogram metrics that track distributions of values (e.g., response times).
 	MetricTypeHistogram MetricType = "histogram"
-	// Summary metrics provide quantile calculations
+	// MetricTypeSummary represents summary metrics that provide quantile calculations.
 	MetricTypeSummary MetricType = "summary"
 )
 
 // StandardMetrics defines the core metrics that all plugins should expose.
+//
+//nolint:gochecknoglobals // Standard constants for public API
 var StandardMetrics = struct {
 	// Request metrics
 	RequestsTotal          string
@@ -39,7 +57,7 @@ var StandardMetrics = struct {
 	// Resource metrics
 	ActiveConnections string
 	MemoryUsageBytes  string
-	CpuUsagePercent   string
+	CPUUsagePercent   string
 
 	// Business metrics
 	CostQueriesTotal         string
@@ -60,7 +78,7 @@ var StandardMetrics = struct {
 
 	ActiveConnections: "pulumicost_active_connections",
 	MemoryUsageBytes:  "pulumicost_memory_usage_bytes",
-	CpuUsagePercent:   "pulumicost_cpu_usage_percent",
+	CPUUsagePercent:   "pulumicost_cpu_usage_percent",
 
 	CostQueriesTotal:         "pulumicost_cost_queries_total",
 	CacheHitRatePercent:      "pulumicost_cache_hit_rate_percent",
@@ -68,6 +86,8 @@ var StandardMetrics = struct {
 }
 
 // StandardLabels defines the standard label keys used across metrics.
+//
+//nolint:gochecknoglobals // Standard constants for public API
 var StandardLabels = struct {
 	Method       string
 	Provider     string
@@ -95,6 +115,8 @@ type ServiceLevelIndicator struct {
 }
 
 // StandardSLIs defines the core SLIs that plugins should measure.
+//
+//nolint:gochecknoglobals // Standard constants for public API
 var StandardSLIs = struct {
 	Availability  ServiceLevelIndicator
 	ErrorRate     ServiceLevelIndicator
@@ -107,19 +129,19 @@ var StandardSLIs = struct {
 		Name:        "availability",
 		Description: "Percentage of successful requests over total requests",
 		Unit:        "percentage",
-		Target:      99.9, // 99.9% availability
+		Target:      DefaultAvailabilityTarget,
 	},
 	ErrorRate: ServiceLevelIndicator{
 		Name:        "error_rate",
 		Description: "Percentage of requests that result in errors",
 		Unit:        "percentage",
-		Target:      0.1, // <0.1% error rate
+		Target:      DefaultErrorRateTarget,
 	},
 	LatencyP99: ServiceLevelIndicator{
 		Name:        "latency_p99",
 		Description: "99th percentile response latency",
 		Unit:        "seconds",
-		Target:      2.0, // <2 seconds
+		Target:      DefaultLatencyP99Target,
 	},
 	LatencyP95: ServiceLevelIndicator{
 		Name:        "latency_p95",
@@ -131,13 +153,13 @@ var StandardSLIs = struct {
 		Name:        "throughput",
 		Description: "Requests processed per second",
 		Unit:        "requests_per_second",
-		Target:      100.0, // >100 RPS
+		Target:      DefaultThroughputTarget,
 	},
 	DataFreshness: ServiceLevelIndicator{
 		Name:        "data_freshness",
 		Description: "Age of the most recent cost data",
 		Unit:        "hours",
-		Target:      24.0, // <24 hours old
+		Target:      DefaultDataFreshnessTarget,
 	},
 }
 
@@ -199,13 +221,13 @@ type ValidationResult struct {
 // ValidateMetricName checks if a metric name follows standard conventions.
 func ValidateMetricName(name string) error {
 	if name == "" {
-		return fmt.Errorf("metric name cannot be empty")
+		return errors.New("metric name cannot be empty")
 	}
 
 	// Metric names should follow Prometheus naming conventions
 	// Should contain only [a-zA-Z0-9:_] and not start with digit
 	if len(name) == 0 {
-		return fmt.Errorf("metric name is required")
+		return errors.New("metric name is required")
 	}
 
 	// Basic validation - in practice you'd want more comprehensive regex validation
@@ -228,13 +250,17 @@ func ValidateMetricLabels(labels map[string]string) ValidationResult {
 		}
 
 		if value == "" {
-			result.Warnings = append(result.Warnings, fmt.Sprintf("label '%s' has empty value", key))
+			result.Warnings = append(
+				result.Warnings,
+				fmt.Sprintf("label '%s' has empty value", key),
+			)
 		}
 
 		// Label keys should not start with __
 		if len(key) >= 2 && key[:2] == "__" {
 			result.Valid = false
-			result.Errors = append(result.Errors, fmt.Sprintf("label key '%s' cannot start with '__' (reserved prefix)", key))
+			result.Errors = append(result.Errors,
+				fmt.Sprintf("label key '%s' cannot start with '__' (reserved prefix)", key))
 		}
 	}
 
@@ -246,7 +272,11 @@ func ValidateSLIValue(sli ServiceLevelIndicator, value float64) error {
 	switch sli.Unit {
 	case "percentage":
 		if value < 0 || value > 100 {
-			return fmt.Errorf("percentage SLI '%s' must be between 0 and 100, got %f", sli.Name, value)
+			return fmt.Errorf(
+				"percentage SLI '%s' must be between 0 and 100, got %f",
+				sli.Name,
+				value,
+			)
 		}
 	case "seconds":
 		if value < 0 {
@@ -268,7 +298,7 @@ func CalculateErrorRate(totalRequests, successfulRequests int64) float64 {
 	}
 
 	errorRequests := totalRequests - successfulRequests
-	return float64(errorRequests) / float64(totalRequests) * 100.0
+	return float64(errorRequests) / float64(totalRequests) * PercentageMultiplier
 }
 
 // CalculateAvailability computes availability from uptime and total time.
@@ -277,24 +307,27 @@ func CalculateAvailability(uptimeSeconds, totalSeconds int64) float64 {
 		return 0.0
 	}
 
-	return float64(uptimeSeconds) / float64(totalSeconds) * 100.0
+	return float64(uptimeSeconds) / float64(totalSeconds) * PercentageMultiplier
 }
 
 // FormatDuration formats a duration for human-readable display.
 func FormatDuration(d time.Duration) string {
 	if d < time.Microsecond {
 		return fmt.Sprintf("%.0fns", float64(d.Nanoseconds()))
-	} else if d < time.Millisecond {
-		return fmt.Sprintf("%.1fμs", float64(d.Nanoseconds())/1000.0)
-	} else if d < time.Second {
-		return fmt.Sprintf("%.1fms", float64(d.Nanoseconds())/1000000.0)
-	} else if d < time.Minute {
-		return fmt.Sprintf("%.2fs", d.Seconds())
-	} else if d < time.Hour {
-		return fmt.Sprintf("%.1fm", d.Minutes())
-	} else {
-		return fmt.Sprintf("%.1fh", d.Hours())
 	}
+	if d < time.Millisecond {
+		return fmt.Sprintf("%.1fμs", float64(d.Nanoseconds())/NanosecondsToMicroseconds)
+	}
+	if d < time.Second {
+		return fmt.Sprintf("%.1fms", float64(d.Nanoseconds())/NanosecondsToMilliseconds)
+	}
+	if d < time.Minute {
+		return fmt.Sprintf("%.2fs", d.Seconds())
+	}
+	if d < time.Hour {
+		return fmt.Sprintf("%.1fm", d.Minutes())
+	}
+	return fmt.Sprintf("%.1fh", d.Hours())
 }
 
 // ConformanceLevel represents different levels of observability conformance.
@@ -370,7 +403,7 @@ func GetObservabilityRequirements(level ConformanceLevel) ObservabilityRequireme
 				StandardMetrics.CacheHitRatePercent,
 				StandardMetrics.ActiveConnections,
 				StandardMetrics.MemoryUsageBytes,
-				StandardMetrics.CpuUsagePercent,
+				StandardMetrics.CPUUsagePercent,
 				StandardMetrics.DataSourceLatencySeconds,
 			},
 			RequiredSLIs: []string{

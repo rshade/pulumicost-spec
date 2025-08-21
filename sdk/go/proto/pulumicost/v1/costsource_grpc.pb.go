@@ -309,7 +309,7 @@ type ObservabilityServiceClient interface {
 	// GetMetrics returns current metrics for monitoring plugin performance.
 	GetMetrics(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*GetMetricsResponse, error)
 	// GetServiceLevelIndicators returns current SLI measurements.
-	GetServiceLevelIndicators(ctx context.Context, in *GetSLIRequest, opts ...grpc.CallOption) (*GetSLIResponse, error)
+	GetServiceLevelIndicators(ctx context.Context, in *GetServiceLevelIndicatorsRequest, opts ...grpc.CallOption) (*GetServiceLevelIndicatorsResponse, error)
 }
 
 type observabilityServiceClient struct {
@@ -340,9 +340,9 @@ func (c *observabilityServiceClient) GetMetrics(ctx context.Context, in *GetMetr
 	return out, nil
 }
 
-func (c *observabilityServiceClient) GetServiceLevelIndicators(ctx context.Context, in *GetSLIRequest, opts ...grpc.CallOption) (*GetSLIResponse, error) {
+func (c *observabilityServiceClient) GetServiceLevelIndicators(ctx context.Context, in *GetServiceLevelIndicatorsRequest, opts ...grpc.CallOption) (*GetServiceLevelIndicatorsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetSLIResponse)
+	out := new(GetServiceLevelIndicatorsResponse)
 	err := c.cc.Invoke(ctx, ObservabilityService_GetServiceLevelIndicators_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -363,7 +363,7 @@ type ObservabilityServiceServer interface {
 	// GetMetrics returns current metrics for monitoring plugin performance.
 	GetMetrics(context.Context, *GetMetricsRequest) (*GetMetricsResponse, error)
 	// GetServiceLevelIndicators returns current SLI measurements.
-	GetServiceLevelIndicators(context.Context, *GetSLIRequest) (*GetSLIResponse, error)
+	GetServiceLevelIndicators(context.Context, *GetServiceLevelIndicatorsRequest) (*GetServiceLevelIndicatorsResponse, error)
 	mustEmbedUnimplementedObservabilityServiceServer()
 }
 
@@ -380,7 +380,7 @@ func (UnimplementedObservabilityServiceServer) HealthCheck(context.Context, *Hea
 func (UnimplementedObservabilityServiceServer) GetMetrics(context.Context, *GetMetricsRequest) (*GetMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetrics not implemented")
 }
-func (UnimplementedObservabilityServiceServer) GetServiceLevelIndicators(context.Context, *GetSLIRequest) (*GetSLIResponse, error) {
+func (UnimplementedObservabilityServiceServer) GetServiceLevelIndicators(context.Context, *GetServiceLevelIndicatorsRequest) (*GetServiceLevelIndicatorsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServiceLevelIndicators not implemented")
 }
 func (UnimplementedObservabilityServiceServer) mustEmbedUnimplementedObservabilityServiceServer() {}
@@ -441,7 +441,7 @@ func _ObservabilityService_GetMetrics_Handler(srv interface{}, ctx context.Conte
 }
 
 func _ObservabilityService_GetServiceLevelIndicators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetSLIRequest)
+	in := new(GetServiceLevelIndicatorsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -453,7 +453,7 @@ func _ObservabilityService_GetServiceLevelIndicators_Handler(srv interface{}, ct
 		FullMethod: ObservabilityService_GetServiceLevelIndicators_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ObservabilityServiceServer).GetServiceLevelIndicators(ctx, req.(*GetSLIRequest))
+		return srv.(ObservabilityServiceServer).GetServiceLevelIndicators(ctx, req.(*GetServiceLevelIndicatorsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

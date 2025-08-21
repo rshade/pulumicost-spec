@@ -1,6 +1,7 @@
 package pricing
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"regexp"
@@ -8,32 +9,52 @@ import (
 	"time"
 )
 
+// Constants for validation limits.
+const (
+	// Length limits.
+	MaxMetricNameLength    = 200   // Maximum length for metric names
+	MaxLabelNameLength     = 100   // Maximum length for label names
+	MaxErrorCodeLength     = 50    // Maximum length for error codes
+	MaxComponentNameLength = 100   // Maximum length for component names
+	MaxLogMessageLength    = 10000 // Maximum length for log messages
+	MaxLogFieldValueLength = 1000  // Maximum length for log field values
+	MaxLogFieldsCount      = 50    // Maximum number of log fields
+
+	// Time-related constants.
+	DaysInYear   = 365 // Days in a year
+	HoursInDay   = 24  // Hours in a day
+	MaxRangeDays = 90  // Maximum time range in days
+
+	// Processing time limits.
+	MinutesToMilliseconds = 1000 // Convert minutes to milliseconds
+)
+
 var (
-	// metricNameRegex validates metric names according to Prometheus conventions
+	// metricNameRegex validates metric names according to Prometheus conventions.
 	metricNameRegex = regexp.MustCompile(`^[a-zA-Z_:][a-zA-Z0-9_:]*$`)
 
-	// labelNameRegex validates label names
+	// labelNameRegex validates label names.
 	labelNameRegex = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
 
-	// traceIDRegex validates OpenTelemetry trace IDs (32 hex characters)
+	// traceIDRegex validates OpenTelemetry trace IDs (32 hex characters).
 	traceIDRegex = regexp.MustCompile(`^[0-9a-f]{32}$`)
 
-	// spanIDRegex validates OpenTelemetry span IDs (16 hex characters)
+	// spanIDRegex validates OpenTelemetry span IDs (16 hex characters).
 	spanIDRegex = regexp.MustCompile(`^[0-9a-f]{16}$`)
 )
 
 // ValidateMetricNameStrict performs comprehensive metric name validation.
 func ValidateMetricNameStrict(name string) error {
 	if name == "" {
-		return fmt.Errorf("metric name cannot be empty")
+		return errors.New("metric name cannot be empty")
 	}
 
 	if !metricNameRegex.MatchString(name) {
 		return fmt.Errorf("metric name '%s' must match pattern %s", name, metricNameRegex.String())
 	}
 
-	if len(name) > 200 {
-		return fmt.Errorf("metric name '%s' exceeds maximum length of 200 characters", name)
+	if len(name) > MaxMetricNameLength {
+		return fmt.Errorf("metric name '%s' exceeds maximum length of %d characters", name, MaxMetricNameLength)
 	}
 
 	// Check for reserved prefixes
@@ -50,15 +71,15 @@ func ValidateMetricNameStrict(name string) error {
 // ValidateLabelNameStrict performs comprehensive label name validation.
 func ValidateLabelNameStrict(name string) error {
 	if name == "" {
-		return fmt.Errorf("label name cannot be empty")
+		return errors.New("label name cannot be empty")
 	}
 
 	if !labelNameRegex.MatchString(name) {
 		return fmt.Errorf("label name '%s' must match pattern %s", name, labelNameRegex.String())
 	}
 
-	if len(name) > 100 {
-		return fmt.Errorf("label name '%s' exceeds maximum length of 100 characters", name)
+	if len(name) > MaxLabelNameLength {
+		return fmt.Errorf("label name '%s' exceeds maximum length of %d characters", name, MaxLabelNameLength)
 	}
 
 	// Check for reserved names
@@ -84,7 +105,7 @@ func ValidateTraceID(traceID string) error {
 
 	// Check for all-zero trace ID (invalid)
 	if traceID == "00000000000000000000000000000000" {
-		return fmt.Errorf("trace ID cannot be all zeros")
+		return errors.New("trace ID cannot be all zeros")
 	}
 
 	return nil
@@ -102,7 +123,7 @@ func ValidateSpanID(spanID string) error {
 
 	// Check for all-zero span ID (invalid)
 	if spanID == "0000000000000000" {
-		return fmt.Errorf("span ID cannot be all zeros")
+		return errors.New("span ID cannot be all zeros")
 	}
 
 	return nil
@@ -149,7 +170,7 @@ func ValidateHealthStatus(status string) error {
 func ValidateMetricValue(value float64, metricType MetricType) error {
 	// Check for invalid float values
 	if value != value { // NaN check
-		return fmt.Errorf("metric value cannot be NaN")
+		return errors.New("metric value cannot be NaN")
 	}
 
 	// Counter values must be non-negative and finite
@@ -168,17 +189,17 @@ func ValidateMetricValue(value float64, metricType MetricType) error {
 // ValidateTimeRange ensures a time range is valid for metrics collection.
 func ValidateTimeRange(start, end time.Time) error {
 	if start.IsZero() || end.IsZero() {
-		return fmt.Errorf("start and end times cannot be zero")
+		return errors.New("start and end times cannot be zero")
 	}
 
 	if end.Before(start) {
-		return fmt.Errorf("end time cannot be before start time")
+		return errors.New("end time cannot be before start time")
 	}
 
 	// Check for reasonable time ranges (not too far in the past or future)
 	now := time.Now()
-	maxPastDuration := 365 * 24 * time.Hour // 1 year
-	maxFutureDuration := 24 * time.Hour     // 1 day
+	maxPastDuration := DaysInYear * HoursInDay * time.Hour // 1 year
+	maxFutureDuration := HoursInDay * time.Hour            // 1 day
 
 	if start.Before(now.Add(-maxPastDuration)) {
 		return fmt.Errorf("start time cannot be more than %v in the past", maxPastDuration)
@@ -190,7 +211,7 @@ func ValidateTimeRange(start, end time.Time) error {
 
 	// Check for excessively long time ranges
 	duration := end.Sub(start)
-	maxDuration := 90 * 24 * time.Hour // 90 days
+	maxDuration := MaxRangeDays * HoursInDay * time.Hour // 90 days
 	if duration > maxDuration {
 		return fmt.Errorf("time range duration (%v) exceeds maximum allowed (%v)", duration, maxDuration)
 	}
@@ -201,7 +222,7 @@ func ValidateTimeRange(start, end time.Time) error {
 // ValidateErrorCode checks if an error code follows conventions.
 func ValidateErrorCode(code string) error {
 	if code == "" {
-		return fmt.Errorf("error code cannot be empty")
+		return errors.New("error code cannot be empty")
 	}
 
 	// Error codes should be upper case with underscores
@@ -212,11 +233,12 @@ func ValidateErrorCode(code string) error {
 	// Basic pattern validation
 	validPattern := regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
 	if !validPattern.MatchString(code) {
-		return fmt.Errorf("error code '%s' must start with letter and contain only uppercase letters, numbers, and underscores", code)
+		return fmt.Errorf("error code '%s' must start with letter and contain only "+
+			"uppercase letters, numbers, and underscores", code)
 	}
 
-	if len(code) > 50 {
-		return fmt.Errorf("error code '%s' exceeds maximum length of 50 characters", code)
+	if len(code) > MaxErrorCodeLength {
+		return fmt.Errorf("error code '%s' exceeds maximum length of %d characters", code, MaxErrorCodeLength)
 	}
 
 	return nil
@@ -229,7 +251,7 @@ func ValidateQualityScore(score float64) error {
 	}
 
 	if score != score { // NaN check
-		return fmt.Errorf("quality score cannot be NaN")
+		return errors.New("quality score cannot be NaN")
 	}
 
 	return nil
@@ -242,9 +264,13 @@ func ValidateProcessingTime(processingTimeMs int64) error {
 	}
 
 	// Flag unreasonably long processing times (>10 minutes)
-	maxProcessingTimeMs := int64(10 * 60 * 1000) // 10 minutes
+	maxProcessingTimeMs := int64(10 * 60 * MinutesToMilliseconds) // 10 minutes
 	if processingTimeMs > maxProcessingTimeMs {
-		return fmt.Errorf("processing time %dms exceeds reasonable maximum of %dms", processingTimeMs, maxProcessingTimeMs)
+		return fmt.Errorf(
+			"processing time %dms exceeds reasonable maximum of %dms",
+			processingTimeMs,
+			maxProcessingTimeMs,
+		)
 	}
 
 	return nil
@@ -253,17 +279,24 @@ func ValidateProcessingTime(processingTimeMs int64) error {
 // ValidateComponent checks if a component name is valid for logging.
 func ValidateComponent(component string) error {
 	if component == "" {
-		return fmt.Errorf("component name cannot be empty")
+		return errors.New("component name cannot be empty")
 	}
 
 	// Component names should be lowercase with dots or dashes for hierarchy
 	validPattern := regexp.MustCompile(`^[a-z][a-z0-9\-\.]*$`)
 	if !validPattern.MatchString(component) {
-		return fmt.Errorf("component name '%s' must be lowercase and contain only letters, numbers, dots, and dashes", component)
+		return fmt.Errorf(
+			"component name '%s' must be lowercase and contain only letters, numbers, dots, and dashes",
+			component,
+		)
 	}
 
-	if len(component) > 100 {
-		return fmt.Errorf("component name '%s' exceeds maximum length of 100 characters", component)
+	if len(component) > MaxComponentNameLength {
+		return fmt.Errorf(
+			"component name '%s' exceeds maximum length of %d characters",
+			component,
+			MaxComponentNameLength,
+		)
 	}
 
 	return nil
@@ -312,7 +345,11 @@ func (suite *ObservabilityValidationSuite) Summary() string {
 }
 
 // ValidateObservabilityMetadata performs comprehensive validation of telemetry metadata.
-func ValidateObservabilityMetadata(traceID, spanID, requestID string, processingTimeMs int64, qualityScore float64) *ObservabilityValidationSuite {
+func ValidateObservabilityMetadata(
+	traceID, spanID, requestID string,
+	processingTimeMs int64,
+	qualityScore float64,
+) *ObservabilityValidationSuite {
 	suite := &ObservabilityValidationSuite{}
 
 	suite.AddError(ValidateTraceID(traceID))
@@ -328,14 +365,17 @@ func ValidateObservabilityMetadata(traceID, spanID, requestID string, processing
 	}
 
 	if traceID == "" && spanID != "" {
-		suite.AddError(fmt.Errorf("span ID provided without trace ID"))
+		suite.AddError(errors.New("span ID provided without trace ID"))
 	}
 
 	return suite
 }
 
 // ValidateLogEntry performs comprehensive validation of log entries.
-func ValidateLogEntry(level, message, component, traceID, spanID string, fields map[string]string) *ObservabilityValidationSuite {
+func ValidateLogEntry(
+	level, message, component, traceID, spanID string,
+	fields map[string]string,
+) *ObservabilityValidationSuite {
 	suite := &ObservabilityValidationSuite{}
 
 	suite.AddError(ValidateLogLevel(level))
@@ -344,24 +384,32 @@ func ValidateLogEntry(level, message, component, traceID, spanID string, fields 
 	suite.AddError(ValidateSpanID(spanID))
 
 	if message == "" {
-		suite.AddError(fmt.Errorf("log message cannot be empty"))
+		suite.AddError(errors.New("log message cannot be empty"))
 	}
 
-	if len(message) > 10000 {
-		suite.AddError(fmt.Errorf("log message exceeds maximum length of 10000 characters"))
+	if len(message) > MaxLogMessageLength {
+		suite.AddError(fmt.Errorf("log message exceeds maximum length of %d characters", MaxLogMessageLength))
 	}
 
 	// Validate log fields
 	for key, value := range fields {
 		suite.AddError(ValidateLabelNameStrict(key))
 
-		if len(value) > 1000 {
-			suite.AddWarning(fmt.Sprintf("log field '%s' value exceeds recommended length of 1000 characters", key))
+		if len(value) > MaxLogFieldValueLength {
+			suite.AddWarning(
+				fmt.Sprintf(
+					"log field '%s' value exceeds recommended length of %d characters",
+					key,
+					MaxLogFieldValueLength,
+				),
+			)
 		}
 	}
 
-	if len(fields) > 50 {
-		suite.AddWarning("log entry has more than 50 fields - consider reducing for performance")
+	if len(fields) > MaxLogFieldsCount {
+		suite.AddWarning(
+			fmt.Sprintf("log entry has more than %d fields - consider reducing for performance", MaxLogFieldsCount),
+		)
 	}
 
 	return suite

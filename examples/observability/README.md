@@ -13,14 +13,17 @@ This directory contains comprehensive examples demonstrating observability imple
 
 ### Dashboard Templates
 
-- **[dashboards/grafana-dashboard.json](dashboards/grafana-dashboard.json)** - Grafana dashboard for Prometheus metrics
-- **[dashboards/cloudwatch-dashboard.yaml](dashboards/cloudwatch-dashboard.yaml)** - CloudWatch dashboard CloudFormation template
+- **[dashboards/grafana-dashboard.json](dashboards/grafana-dashboard.json)** - Grafana dashboard for Prometheus
+  metrics
+- **[dashboards/cloudwatch-dashboard.yaml](dashboards/cloudwatch-dashboard.yaml)** - CloudWatch dashboard
+  CloudFormation template
 
 ## Usage
 
 ### Implementing Basic Observability
 
 1. **Health Checks**: Implement the `HealthCheck` RPC method
+
    ```go
    func (p *Plugin) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
        // Check dependencies and return status
@@ -28,6 +31,7 @@ This directory contains comprehensive examples demonstrating observability imple
    ```
 
 2. **Metrics Collection**: Implement the `GetMetrics` RPC method
+
    ```go
    func (p *Plugin) GetMetrics(ctx context.Context, req *pb.GetMetricsRequest) (*pb.GetMetricsResponse, error) {
        // Collect and return metrics
@@ -35,6 +39,7 @@ This directory contains comprehensive examples demonstrating observability imple
    ```
 
 3. **SLI Reporting**: Implement the `GetServiceLevelIndicators` RPC method
+
    ```go
    func (p *Plugin) GetServiceLevelIndicators(ctx context.Context, req *pb.GetSLIRequest) (*pb.GetSLIResponse, error) {
        // Calculate and return SLIs
@@ -44,17 +49,20 @@ This directory contains comprehensive examples demonstrating observability imple
 ### Conformance Levels
 
 #### Basic Conformance (Required)
+
 - Health check endpoint
 - Request count, error count, and latency metrics
 - Availability and error rate SLIs
 
 #### Standard Conformance (Production)
+
 - All basic features
 - Cache hit rate and connection metrics
 - Latency percentiles (P95)
 - Structured logging
 
 #### Advanced Conformance (Enterprise)
+
 - All standard features
 - Custom metrics support
 - Full distributed tracing
@@ -83,6 +91,7 @@ func TestObservability(t *testing.T) {
 #### Prometheus + Grafana
 
 1. Configure Prometheus to scrape metrics:
+
    ```yaml
    scrape_configs:
      - job_name: 'pulumicost-plugin'
@@ -130,21 +139,25 @@ aws cloudformation create-stack \
 ## Best Practices
 
 ### Metric Naming
+
 - Use the `pulumicost_` prefix for all metrics
 - Follow Prometheus naming conventions
 - Keep label cardinality low (<100 unique combinations)
 
 ### Health Checks
+
 - Check critical dependencies (database, external APIs)
 - Return detailed status information
 - Cache results for short periods to reduce overhead
 
 ### Logging
+
 - Use structured logging with consistent fields
 - Include trace context for correlation
 - Sanitize sensitive information
 
 ### Tracing
+
 - Propagate trace context across service boundaries
 - Add meaningful span attributes
 - Use sampling for high-volume scenarios
@@ -152,19 +165,25 @@ aws cloudformation create-stack \
 ## Troubleshooting
 
 ### High Cardinality Issues
+
 If you see performance problems with metrics:
+
 - Reduce the number of unique label values
 - Use sampling for high-volume metrics
 - Consider aggregating metrics at collection time
 
 ### Missing Trace Context
+
 If traces aren't connecting across services:
+
 - Verify OpenTelemetry propagation is configured
 - Check that trace context is being extracted and injected
 - Validate trace and span ID formats
 
 ### Health Check Timeouts
+
 If health checks are timing out:
+
 - Reduce dependency check timeouts
 - Cache health check results
 - Return partial status when some checks fail

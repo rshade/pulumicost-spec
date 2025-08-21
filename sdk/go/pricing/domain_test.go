@@ -76,7 +76,12 @@ func TestValidBillingMode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := pricing.ValidBillingMode(tt.billingMode)
 			if result != tt.expectValid {
-				t.Errorf("pricing.ValidBillingMode(%q) = %v, want %v", tt.billingMode, result, tt.expectValid)
+				t.Errorf(
+					"pricing.ValidBillingMode(%q) = %v, want %v",
+					tt.billingMode,
+					result,
+					tt.expectValid,
+				)
 			}
 		})
 	}
@@ -134,7 +139,12 @@ func TestValidProvider(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := pricing.ValidProvider(tt.provider)
 			if result != tt.expectValid {
-				t.Errorf("pricing.ValidProvider(%q) = %v, want %v", tt.provider, result, tt.expectValid)
+				t.Errorf(
+					"pricing.ValidProvider(%q) = %v, want %v",
+					tt.provider,
+					result,
+					tt.expectValid,
+				)
 			}
 		})
 	}

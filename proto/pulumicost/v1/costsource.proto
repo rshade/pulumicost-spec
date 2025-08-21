@@ -223,7 +223,7 @@ service ObservabilityService {
   rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
   
   // GetServiceLevelIndicators returns current SLI measurements.
-  rpc GetServiceLevelIndicators(GetSLIRequest) returns (GetSLIResponse);
+  rpc GetServiceLevelIndicators(GetServiceLevelIndicatorsRequest) returns (GetServiceLevelIndicatorsResponse);
 }
 
 // HealthCheckRequest is used for the HealthCheck RPC call.
@@ -236,10 +236,10 @@ message HealthCheckRequest {
 message HealthCheckResponse {
   // Status represents the health check status
   enum Status {
-    UNKNOWN = 0;
-    SERVING = 1;
-    NOT_SERVING = 2;
-    SERVICE_UNKNOWN = 3;
+    STATUS_UNSPECIFIED = 0;
+    STATUS_SERVING = 1;
+    STATUS_NOT_SERVING = 2;
+    STATUS_SERVICE_UNKNOWN = 3;
   }
   
   // status indicates the current health status
@@ -283,10 +283,10 @@ message Metric {
 // MetricType represents the type of metric being reported.
 enum MetricType {
   METRIC_TYPE_UNSPECIFIED = 0;
-  COUNTER = 1;
-  GAUGE = 2;
-  HISTOGRAM = 3;
-  SUMMARY = 4;
+  METRIC_TYPE_COUNTER = 1;
+  METRIC_TYPE_GAUGE = 2;
+  METRIC_TYPE_HISTOGRAM = 3;
+  METRIC_TYPE_SUMMARY = 4;
 }
 
 // MetricSample represents a single metric measurement.
@@ -299,16 +299,16 @@ message MetricSample {
   google.protobuf.Timestamp timestamp = 3;
 }
 
-// GetSLIRequest contains parameters for retrieving Service Level Indicators.
-message GetSLIRequest {
+// GetServiceLevelIndicatorsRequest contains parameters for retrieving Service Level Indicators.
+message GetServiceLevelIndicatorsRequest {
   // time_range optionally specifies the time range for SLI calculation
   TimeRange time_range = 1;
   // sli_names optionally filters which SLIs to return (empty for all)
   repeated string sli_names = 2;
 }
 
-// GetSLIResponse contains the current Service Level Indicators.
-message GetSLIResponse {
+// GetServiceLevelIndicatorsResponse contains the current Service Level Indicators.
+message GetServiceLevelIndicatorsResponse {
   // slis contains the current SLI measurements
   repeated ServiceLevelIndicator slis = 1;
   // measurement_time indicates when these SLIs were measured
@@ -334,9 +334,9 @@ message ServiceLevelIndicator {
 // SLIStatus represents whether an SLI is meeting its target.
 enum SLIStatus {
   SLI_STATUS_UNSPECIFIED = 0;
-  MEETING_TARGET = 1;
-  WARNING = 2;
-  CRITICAL = 3;
+  SLI_STATUS_MEETING_TARGET = 1;
+  SLI_STATUS_WARNING = 2;
+  SLI_STATUS_CRITICAL = 3;
 }
 
 // TimeRange represents a time period for metrics and SLI calculations.
