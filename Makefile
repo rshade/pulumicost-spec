@@ -62,7 +62,7 @@ validate: test lint validate-npm
 
 depend:
 	@echo "Installing Go development tools..."
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.3.1
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.4.0
 	@go install golang.org/x/tools/cmd/goimports@latest
 	@go install github.com/fatih/gomodifytags@latest
 	@go install github.com/josharian/impl@latest

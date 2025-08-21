@@ -22,6 +22,154 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ErrorCategory defines the category of plugin errors.
+type ErrorCategory int32
+
+const (
+	ErrorCategory_ERROR_CATEGORY_UNSPECIFIED   ErrorCategory = 0
+	ErrorCategory_ERROR_CATEGORY_TRANSIENT     ErrorCategory = 1 // Temporary failure that may succeed on retry
+	ErrorCategory_ERROR_CATEGORY_PERMANENT     ErrorCategory = 2 // Failure that will not succeed on retry without changes
+	ErrorCategory_ERROR_CATEGORY_CONFIGURATION ErrorCategory = 3 // Error due to invalid configuration or setup
+)
+
+// Enum value maps for ErrorCategory.
+var (
+	ErrorCategory_name = map[int32]string{
+		0: "ERROR_CATEGORY_UNSPECIFIED",
+		1: "ERROR_CATEGORY_TRANSIENT",
+		2: "ERROR_CATEGORY_PERMANENT",
+		3: "ERROR_CATEGORY_CONFIGURATION",
+	}
+	ErrorCategory_value = map[string]int32{
+		"ERROR_CATEGORY_UNSPECIFIED":   0,
+		"ERROR_CATEGORY_TRANSIENT":     1,
+		"ERROR_CATEGORY_PERMANENT":     2,
+		"ERROR_CATEGORY_CONFIGURATION": 3,
+	}
+)
+
+func (x ErrorCategory) Enum() *ErrorCategory {
+	p := new(ErrorCategory)
+	*p = x
+	return p
+}
+
+func (x ErrorCategory) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ErrorCategory) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[0].Descriptor()
+}
+
+func (ErrorCategory) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[0]
+}
+
+func (x ErrorCategory) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ErrorCategory.Descriptor instead.
+func (ErrorCategory) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{0}
+}
+
+// ErrorCode defines standard error codes for plugin operations.
+type ErrorCode int32
+
+const (
+	ErrorCode_ERROR_CODE_UNSPECIFIED ErrorCode = 0
+	// Transient error codes
+	ErrorCode_ERROR_CODE_NETWORK_TIMEOUT     ErrorCode = 1 // Network timeout occurred
+	ErrorCode_ERROR_CODE_SERVICE_UNAVAILABLE ErrorCode = 2 // Service temporarily unavailable
+	ErrorCode_ERROR_CODE_RATE_LIMITED        ErrorCode = 3 // Request was rate limited
+	ErrorCode_ERROR_CODE_TEMPORARY_FAILURE   ErrorCode = 4 // Temporary failure occurred
+	ErrorCode_ERROR_CODE_CIRCUIT_OPEN        ErrorCode = 5 // Circuit breaker is open
+	// Permanent error codes
+	ErrorCode_ERROR_CODE_INVALID_RESOURCE   ErrorCode = 6  // Invalid resource specification
+	ErrorCode_ERROR_CODE_RESOURCE_NOT_FOUND ErrorCode = 7  // Requested resource was not found
+	ErrorCode_ERROR_CODE_INVALID_TIME_RANGE ErrorCode = 8  // Invalid time range parameters
+	ErrorCode_ERROR_CODE_UNSUPPORTED_REGION ErrorCode = 9  // Region is not supported
+	ErrorCode_ERROR_CODE_PERMISSION_DENIED  ErrorCode = 10 // Access is denied
+	ErrorCode_ERROR_CODE_DATA_CORRUPTION    ErrorCode = 11 // Data corruption was detected
+	// Configuration error codes
+	ErrorCode_ERROR_CODE_INVALID_CREDENTIALS   ErrorCode = 12 // Authentication credentials are invalid
+	ErrorCode_ERROR_CODE_MISSING_API_KEY       ErrorCode = 13 // API key is missing
+	ErrorCode_ERROR_CODE_INVALID_ENDPOINT      ErrorCode = 14 // Endpoint configuration is invalid
+	ErrorCode_ERROR_CODE_INVALID_PROVIDER      ErrorCode = 15 // Provider specification is invalid
+	ErrorCode_ERROR_CODE_PLUGIN_NOT_CONFIGURED ErrorCode = 16 // Plugin is not properly configured
+)
+
+// Enum value maps for ErrorCode.
+var (
+	ErrorCode_name = map[int32]string{
+		0:  "ERROR_CODE_UNSPECIFIED",
+		1:  "ERROR_CODE_NETWORK_TIMEOUT",
+		2:  "ERROR_CODE_SERVICE_UNAVAILABLE",
+		3:  "ERROR_CODE_RATE_LIMITED",
+		4:  "ERROR_CODE_TEMPORARY_FAILURE",
+		5:  "ERROR_CODE_CIRCUIT_OPEN",
+		6:  "ERROR_CODE_INVALID_RESOURCE",
+		7:  "ERROR_CODE_RESOURCE_NOT_FOUND",
+		8:  "ERROR_CODE_INVALID_TIME_RANGE",
+		9:  "ERROR_CODE_UNSUPPORTED_REGION",
+		10: "ERROR_CODE_PERMISSION_DENIED",
+		11: "ERROR_CODE_DATA_CORRUPTION",
+		12: "ERROR_CODE_INVALID_CREDENTIALS",
+		13: "ERROR_CODE_MISSING_API_KEY",
+		14: "ERROR_CODE_INVALID_ENDPOINT",
+		15: "ERROR_CODE_INVALID_PROVIDER",
+		16: "ERROR_CODE_PLUGIN_NOT_CONFIGURED",
+	}
+	ErrorCode_value = map[string]int32{
+		"ERROR_CODE_UNSPECIFIED":           0,
+		"ERROR_CODE_NETWORK_TIMEOUT":       1,
+		"ERROR_CODE_SERVICE_UNAVAILABLE":   2,
+		"ERROR_CODE_RATE_LIMITED":          3,
+		"ERROR_CODE_TEMPORARY_FAILURE":     4,
+		"ERROR_CODE_CIRCUIT_OPEN":          5,
+		"ERROR_CODE_INVALID_RESOURCE":      6,
+		"ERROR_CODE_RESOURCE_NOT_FOUND":    7,
+		"ERROR_CODE_INVALID_TIME_RANGE":    8,
+		"ERROR_CODE_UNSUPPORTED_REGION":    9,
+		"ERROR_CODE_PERMISSION_DENIED":     10,
+		"ERROR_CODE_DATA_CORRUPTION":       11,
+		"ERROR_CODE_INVALID_CREDENTIALS":   12,
+		"ERROR_CODE_MISSING_API_KEY":       13,
+		"ERROR_CODE_INVALID_ENDPOINT":      14,
+		"ERROR_CODE_INVALID_PROVIDER":      15,
+		"ERROR_CODE_PLUGIN_NOT_CONFIGURED": 16,
+	}
+)
+
+func (x ErrorCode) Enum() *ErrorCode {
+	p := new(ErrorCode)
+	*p = x
+	return p
+}
+
+func (x ErrorCode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ErrorCode) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[1].Descriptor()
+}
+
+func (ErrorCode) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[1]
+}
+
+func (x ErrorCode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ErrorCode.Descriptor instead.
+func (ErrorCode) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{1}
+}
+
 // NameRequest is used for the Name RPC call (empty request).
 type NameRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -893,6 +1041,97 @@ func (x *PricingSpec) GetSource() string {
 	return ""
 }
 
+// ErrorDetail provides detailed information about an error.
+type ErrorDetail struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// code is the specific error code
+	Code ErrorCode `protobuf:"varint,1,opt,name=code,proto3,enum=pulumicost.v1.ErrorCode" json:"code,omitempty"`
+	// category is the error category (transient, permanent, configuration)
+	Category ErrorCategory `protobuf:"varint,2,opt,name=category,proto3,enum=pulumicost.v1.ErrorCategory" json:"category,omitempty"`
+	// message is the human-readable error message
+	Message string `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	// details contains structured error details
+	Details map[string]string `protobuf:"bytes,4,rep,name=details,proto3" json:"details,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// retry_after_seconds suggests when to retry (for transient errors)
+	RetryAfterSeconds *int32 `protobuf:"varint,5,opt,name=retry_after_seconds,json=retryAfterSeconds,proto3,oneof" json:"retry_after_seconds,omitempty"`
+	// timestamp when the error occurred
+	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErrorDetail) Reset() {
+	*x = ErrorDetail{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErrorDetail) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErrorDetail) ProtoMessage() {}
+
+func (x *ErrorDetail) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErrorDetail.ProtoReflect.Descriptor instead.
+func (*ErrorDetail) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ErrorDetail) GetCode() ErrorCode {
+	if x != nil {
+		return x.Code
+	}
+	return ErrorCode_ERROR_CODE_UNSPECIFIED
+}
+
+func (x *ErrorDetail) GetCategory() ErrorCategory {
+	if x != nil {
+		return x.Category
+	}
+	return ErrorCategory_ERROR_CATEGORY_UNSPECIFIED
+}
+
+func (x *ErrorDetail) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ErrorDetail) GetDetails() map[string]string {
+	if x != nil {
+		return x.Details
+	}
+	return nil
+}
+
+func (x *ErrorDetail) GetRetryAfterSeconds() int32 {
+	if x != nil && x.RetryAfterSeconds != nil {
+		return *x.RetryAfterSeconds
+	}
+	return 0
+}
+
+func (x *ErrorDetail) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
 var File_pulumicost_v1_costsource_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_costsource_proto_rawDesc = "" +
@@ -963,7 +1202,42 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x06source\x18\v \x01(\tR\x06source\x1aA\n" +
 	"\x13PluginMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xc1\x03\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x95\x03\n" +
+	"\vErrorDetail\x12,\n" +
+	"\x04code\x18\x01 \x01(\x0e2\x18.pulumicost.v1.ErrorCodeR\x04code\x128\n" +
+	"\bcategory\x18\x02 \x01(\x0e2\x1c.pulumicost.v1.ErrorCategoryR\bcategory\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\x12A\n" +
+	"\adetails\x18\x04 \x03(\v2'.pulumicost.v1.ErrorDetail.DetailsEntryR\adetails\x123\n" +
+	"\x13retry_after_seconds\x18\x05 \x01(\x05H\x00R\x11retryAfterSeconds\x88\x01\x01\x128\n" +
+	"\ttimestamp\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x1a:\n" +
+	"\fDetailsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x16\n" +
+	"\x14_retry_after_seconds*\x8d\x01\n" +
+	"\rErrorCategory\x12\x1e\n" +
+	"\x1aERROR_CATEGORY_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18ERROR_CATEGORY_TRANSIENT\x10\x01\x12\x1c\n" +
+	"\x18ERROR_CATEGORY_PERMANENT\x10\x02\x12 \n" +
+	"\x1cERROR_CATEGORY_CONFIGURATION\x10\x03*\xbf\x04\n" +
+	"\tErrorCode\x12\x1a\n" +
+	"\x16ERROR_CODE_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aERROR_CODE_NETWORK_TIMEOUT\x10\x01\x12\"\n" +
+	"\x1eERROR_CODE_SERVICE_UNAVAILABLE\x10\x02\x12\x1b\n" +
+	"\x17ERROR_CODE_RATE_LIMITED\x10\x03\x12 \n" +
+	"\x1cERROR_CODE_TEMPORARY_FAILURE\x10\x04\x12\x1b\n" +
+	"\x17ERROR_CODE_CIRCUIT_OPEN\x10\x05\x12\x1f\n" +
+	"\x1bERROR_CODE_INVALID_RESOURCE\x10\x06\x12!\n" +
+	"\x1dERROR_CODE_RESOURCE_NOT_FOUND\x10\a\x12!\n" +
+	"\x1dERROR_CODE_INVALID_TIME_RANGE\x10\b\x12!\n" +
+	"\x1dERROR_CODE_UNSUPPORTED_REGION\x10\t\x12 \n" +
+	"\x1cERROR_CODE_PERMISSION_DENIED\x10\n" +
+	"\x12\x1e\n" +
+	"\x1aERROR_CODE_DATA_CORRUPTION\x10\v\x12\"\n" +
+	"\x1eERROR_CODE_INVALID_CREDENTIALS\x10\f\x12\x1e\n" +
+	"\x1aERROR_CODE_MISSING_API_KEY\x10\r\x12\x1f\n" +
+	"\x1bERROR_CODE_INVALID_ENDPOINT\x10\x0e\x12\x1f\n" +
+	"\x1bERROR_CODE_INVALID_PROVIDER\x10\x0f\x12$\n" +
+	" ERROR_CODE_PLUGIN_NOT_CONFIGURED\x10\x102\xc1\x03\n" +
 	"\x11CostSourceService\x12?\n" +
 	"\x04Name\x12\x1a.pulumicost.v1.NameRequest\x1a\x1b.pulumicost.v1.NameResponse\x12K\n" +
 	"\bSupports\x12\x1e.pulumicost.v1.SupportsRequest\x1a\x1f.pulumicost.v1.SupportsResponse\x12Z\n" +
@@ -983,55 +1257,64 @@ func file_pulumicost_v1_costsource_proto_rawDescGZIP() []byte {
 	return file_pulumicost_v1_costsource_proto_rawDescData
 }
 
-var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_pulumicost_v1_costsource_proto_goTypes = []any{
-	(*NameRequest)(nil),              // 0: pulumicost.v1.NameRequest
-	(*NameResponse)(nil),             // 1: pulumicost.v1.NameResponse
-	(*SupportsRequest)(nil),          // 2: pulumicost.v1.SupportsRequest
-	(*SupportsResponse)(nil),         // 3: pulumicost.v1.SupportsResponse
-	(*GetActualCostRequest)(nil),     // 4: pulumicost.v1.GetActualCostRequest
-	(*GetActualCostResponse)(nil),    // 5: pulumicost.v1.GetActualCostResponse
-	(*GetProjectedCostRequest)(nil),  // 6: pulumicost.v1.GetProjectedCostRequest
-	(*GetProjectedCostResponse)(nil), // 7: pulumicost.v1.GetProjectedCostResponse
-	(*GetPricingSpecRequest)(nil),    // 8: pulumicost.v1.GetPricingSpecRequest
-	(*GetPricingSpecResponse)(nil),   // 9: pulumicost.v1.GetPricingSpecResponse
-	(*ResourceDescriptor)(nil),       // 10: pulumicost.v1.ResourceDescriptor
-	(*ActualCostResult)(nil),         // 11: pulumicost.v1.ActualCostResult
-	(*UsageMetricHint)(nil),          // 12: pulumicost.v1.UsageMetricHint
-	(*PricingSpec)(nil),              // 13: pulumicost.v1.PricingSpec
-	nil,                              // 14: pulumicost.v1.GetActualCostRequest.TagsEntry
-	nil,                              // 15: pulumicost.v1.ResourceDescriptor.TagsEntry
-	nil,                              // 16: pulumicost.v1.PricingSpec.PluginMetadataEntry
-	(*timestamppb.Timestamp)(nil),    // 17: google.protobuf.Timestamp
+	(ErrorCategory)(0),               // 0: pulumicost.v1.ErrorCategory
+	(ErrorCode)(0),                   // 1: pulumicost.v1.ErrorCode
+	(*NameRequest)(nil),              // 2: pulumicost.v1.NameRequest
+	(*NameResponse)(nil),             // 3: pulumicost.v1.NameResponse
+	(*SupportsRequest)(nil),          // 4: pulumicost.v1.SupportsRequest
+	(*SupportsResponse)(nil),         // 5: pulumicost.v1.SupportsResponse
+	(*GetActualCostRequest)(nil),     // 6: pulumicost.v1.GetActualCostRequest
+	(*GetActualCostResponse)(nil),    // 7: pulumicost.v1.GetActualCostResponse
+	(*GetProjectedCostRequest)(nil),  // 8: pulumicost.v1.GetProjectedCostRequest
+	(*GetProjectedCostResponse)(nil), // 9: pulumicost.v1.GetProjectedCostResponse
+	(*GetPricingSpecRequest)(nil),    // 10: pulumicost.v1.GetPricingSpecRequest
+	(*GetPricingSpecResponse)(nil),   // 11: pulumicost.v1.GetPricingSpecResponse
+	(*ResourceDescriptor)(nil),       // 12: pulumicost.v1.ResourceDescriptor
+	(*ActualCostResult)(nil),         // 13: pulumicost.v1.ActualCostResult
+	(*UsageMetricHint)(nil),          // 14: pulumicost.v1.UsageMetricHint
+	(*PricingSpec)(nil),              // 15: pulumicost.v1.PricingSpec
+	(*ErrorDetail)(nil),              // 16: pulumicost.v1.ErrorDetail
+	nil,                              // 17: pulumicost.v1.GetActualCostRequest.TagsEntry
+	nil,                              // 18: pulumicost.v1.ResourceDescriptor.TagsEntry
+	nil,                              // 19: pulumicost.v1.PricingSpec.PluginMetadataEntry
+	nil,                              // 20: pulumicost.v1.ErrorDetail.DetailsEntry
+	(*timestamppb.Timestamp)(nil),    // 21: google.protobuf.Timestamp
 }
 var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
-	10, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	17, // 1: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
-	17, // 2: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
-	14, // 3: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
-	11, // 4: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
-	10, // 5: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	10, // 6: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	13, // 7: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
-	15, // 8: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
-	17, // 9: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
-	12, // 10: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
-	16, // 11: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
-	0,  // 12: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
-	2,  // 13: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
-	4,  // 14: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
-	6,  // 15: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
-	8,  // 16: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
-	1,  // 17: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
-	3,  // 18: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
-	5,  // 19: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
-	7,  // 20: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
-	9,  // 21: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
-	17, // [17:22] is the sub-list for method output_type
-	12, // [12:17] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	12, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	21, // 1: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
+	21, // 2: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
+	17, // 3: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
+	13, // 4: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
+	12, // 5: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	12, // 6: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	15, // 7: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
+	18, // 8: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
+	21, // 9: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
+	14, // 10: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
+	19, // 11: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
+	1,  // 12: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
+	0,  // 13: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
+	20, // 14: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
+	21, // 15: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
+	2,  // 16: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
+	4,  // 17: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
+	6,  // 18: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
+	8,  // 19: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
+	10, // 20: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
+	3,  // 21: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
+	5,  // 22: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
+	7,  // 23: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
+	9,  // 24: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
+	11, // 25: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
+	21, // [21:26] is the sub-list for method output_type
+	16, // [16:21] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_pulumicost_v1_costsource_proto_init() }
@@ -1039,18 +1322,20 @@ func file_pulumicost_v1_costsource_proto_init() {
 	if File_pulumicost_v1_costsource_proto != nil {
 		return
 	}
+	file_pulumicost_v1_costsource_proto_msgTypes[14].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_costsource_proto_rawDesc), len(file_pulumicost_v1_costsource_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   17,
+			NumEnums:      2,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_pulumicost_v1_costsource_proto_goTypes,
 		DependencyIndexes: file_pulumicost_v1_costsource_proto_depIdxs,
+		EnumInfos:         file_pulumicost_v1_costsource_proto_enumTypes,
 		MessageInfos:      file_pulumicost_v1_costsource_proto_msgTypes,
 	}.Build()
 	File_pulumicost_v1_costsource_proto = out.File

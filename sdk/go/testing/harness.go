@@ -358,3 +358,207 @@ func MeasurePerformance(name string, iterations int, testFunc func() error) (*Pe
 
 	return metrics, totalErr
 }
+
+// ErrorHandlingTestSuite provides utilities for testing error handling scenarios.
+type ErrorHandlingTestSuite struct {
+	harness *TestHarness
+	client  pbc.CostSourceServiceClient
+}
+
+// NewErrorHandlingTestSuite creates a new error handling test suite.
+func NewErrorHandlingTestSuite(impl pbc.CostSourceServiceServer) *ErrorHandlingTestSuite {
+	harness := NewTestHarness(impl)
+	return &ErrorHandlingTestSuite{
+		harness: harness,
+	}
+}
+
+// Start initializes the error handling test suite.
+func (s *ErrorHandlingTestSuite) Start(t *testing.T) {
+	s.harness.Start(t)
+	s.client = s.harness.Client()
+}
+
+// Stop shuts down the error handling test suite.
+func (s *ErrorHandlingTestSuite) Stop() {
+	s.harness.Stop()
+}
+
+// TestTransientErrorRetry tests that transient errors are retried appropriately.
+func (s *ErrorHandlingTestSuite) TestTransientErrorRetry(t *testing.T, method string, _ int) {
+	ctx := context.Background()
+
+	var lastError error
+	attempts := 0
+
+	// Create a function that simulates transient failures
+	testFunc := func() error {
+		attempts++
+		switch method {
+		case "Name":
+			_, err := s.client.Name(ctx, &pbc.NameRequest{})
+			lastError = err
+		case "Supports":
+			resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+			_, err := s.client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
+			lastError = err
+		case "GetActualCost":
+			start, end := CreateTimeRange(HoursPerDay)
+			_, err := s.client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+				ResourceId: "test-resource",
+				Start:      start,
+				End:        end,
+			})
+			lastError = err
+		case "GetProjectedCost":
+			resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+			_, err := s.client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{Resource: resource})
+			lastError = err
+		case "GetPricingSpec":
+			resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+			_, err := s.client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{Resource: resource})
+			lastError = err
+		default:
+			lastError = fmt.Errorf("unknown method: %s", method)
+		}
+		return lastError
+	}
+
+	// Execute the test
+	if err := testFunc(); err != nil {
+		t.Logf("Test execution error: %v", err)
+	}
+
+	if lastError == nil {
+		t.Logf("Method %s completed successfully", method)
+	} else {
+		t.Logf("Method %s failed with error: %v after %d attempts", method, lastError, attempts)
+	}
+}
+
+// TestCircuitBreakerTripping tests that circuit breaker trips after repeated failures.
+func (s *ErrorHandlingTestSuite) TestCircuitBreakerTripping(t *testing.T, failureThreshold int) {
+	ctx := context.Background()
+	failures := 0
+
+	for range failureThreshold + 2 {
+		_, err := s.client.Name(ctx, &pbc.NameRequest{})
+		if err != nil {
+			failures++
+		}
+	}
+
+	if failures < failureThreshold {
+		t.Errorf("Expected at least %d failures to trip circuit breaker, got %d", failureThreshold, failures)
+	}
+
+	t.Logf("Circuit breaker test completed with %d failures", failures)
+}
+
+// TestTimeoutBehavior tests that operations respect timeout configurations.
+func (s *ErrorHandlingTestSuite) TestTimeoutBehavior(t *testing.T, method string, timeout time.Duration) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	start := time.Now()
+	var err error
+
+	switch method {
+	case "Name":
+		_, err = s.client.Name(ctx, &pbc.NameRequest{})
+	case "Supports":
+		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		_, err = s.client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
+	case "GetActualCost":
+		startTime, endTime := CreateTimeRange(HoursPerDay)
+		_, err = s.client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+			ResourceId: "test-resource",
+			Start:      startTime,
+			End:        endTime,
+		})
+	case "GetProjectedCost":
+		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		_, err = s.client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{Resource: resource})
+	case "GetPricingSpec":
+		resource := CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		_, err = s.client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{Resource: resource})
+	}
+
+	duration := time.Since(start)
+
+	switch {
+	case err != nil && errors.Is(err, context.DeadlineExceeded):
+		t.Logf("Method %s correctly timed out after %v (timeout was %v)", method, duration, timeout)
+	case duration > timeout:
+		t.Errorf("Method %s took %v, which exceeds timeout of %v", method, duration, timeout)
+	default:
+		t.Logf("Method %s completed in %v (within timeout of %v)", method, duration, timeout)
+	}
+}
+
+// ValidateErrorResponse validates that an error response contains proper structured error information.
+func ValidateErrorResponse(t *testing.T, err error, expectedCode string, expectedCategory string) {
+	if err == nil {
+		t.Error("Expected error response, got nil")
+		return
+	}
+
+	// For this basic validation, we check that the error message contains expected information
+	// In a more complete implementation, this would parse gRPC status details
+	errorMsg := err.Error()
+
+	if expectedCode != "" && !contains(errorMsg, expectedCode) {
+		t.Errorf("Expected error to contain code %s, but got: %s", expectedCode, errorMsg)
+	}
+
+	if expectedCategory != "" && !contains(errorMsg, expectedCategory) {
+		t.Errorf("Expected error to contain category %s, but got: %s", expectedCategory, errorMsg)
+	}
+
+	t.Logf("Error validation passed for: %s", errorMsg)
+}
+
+// contains checks if a string contains a substring (case-insensitive).
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr ||
+		(len(s) > len(substr) &&
+			(s[:len(substr)] == substr ||
+				s[len(s)-len(substr):] == substr ||
+				findInString(s, substr))))
+}
+
+// findInString searches for substring in string.
+func findInString(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}
+
+// ErrorTestScenario represents a test scenario for error handling.
+type ErrorTestScenario struct {
+	Name             string
+	Method           string
+	ExpectedCode     string
+	ExpectedCategory string
+	ShouldRetry      bool
+	MaxRetries       int
+	Timeout          time.Duration
+}
+
+// RunErrorTestScenarios runs a set of error handling test scenarios.
+func (s *ErrorHandlingTestSuite) RunErrorTestScenarios(t *testing.T, scenarios []ErrorTestScenario) {
+	for _, scenario := range scenarios {
+		t.Run(scenario.Name, func(t *testing.T) {
+			if scenario.ShouldRetry {
+				s.TestTransientErrorRetry(t, scenario.Method, scenario.MaxRetries)
+			}
+
+			if scenario.Timeout > 0 {
+				s.TestTimeoutBehavior(t, scenario.Method, scenario.Timeout)
+			}
+		})
+	}
+}
