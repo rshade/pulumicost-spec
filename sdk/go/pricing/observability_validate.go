@@ -2,6 +2,7 @@ package pricing
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 	"time"
@@ -156,7 +157,7 @@ func ValidateMetricValue(value float64, metricType MetricType) error {
 		if value < 0 {
 			return fmt.Errorf("counter metric value cannot be negative: %f", value)
 		}
-		if value == float64(1)/0 || value == float64(-1)/0 { // Infinity check
+		if math.IsInf(value, 0) { // Infinity check
 			return fmt.Errorf("counter metric value cannot be infinite: %f", value)
 		}
 	}
