@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Telemetry and Observability Specification**: Complete observability framework for PulumiCost plugins
+  - New `ObservabilityService` gRPC service with health checks, metrics, and SLI endpoints
+  - Comprehensive metrics specification covering latency, throughput, error rates, and resource usage
+  - OpenTelemetry distributed tracing integration with context propagation
+  - Structured logging standards with trace correlation and error classification
+  - Service Level Indicators (SLIs) and Service Level Objectives (SLOs) framework
+  - Three-tier conformance levels: Basic, Standard, and Advanced
+- **Go SDK Observability Support**: Complete observability implementation in Go SDK
+  - `observability.go`: Core observability types, metrics, SLIs, and validation functions
+  - `observability_validate.go`: Comprehensive validation for telemetry data and log entries
+  - Standard metrics constants and SLI definitions with target values
+  - Helper functions for error rate calculation, availability measurement, and duration formatting
+  - Conformance level requirements and validation framework
+- **Testing Framework Extensions**: Observability testing capabilities
+  - `ObservabilityTestSuite` for comprehensive conformance testing
+  - Basic, Standard, and Advanced observability conformance test implementations
+  - Mock interfaces for health checks, metrics collection, and SLI reporting
+  - Performance testing under load and error condition validation
+- **Comprehensive Examples and Documentation**
+  - JSON examples for metrics, SLIs, health checks, and structured logs
+  - Grafana dashboard template for Prometheus metrics visualization
+  - CloudWatch dashboard CloudFormation template with alerts and custom metrics
+  - Complete observability implementation guide with best practices
+  - Dashboard templates for common monitoring tools (Grafana, CloudWatch)
+- **Protocol Buffer Extensions**: Telemetry message types and service definitions
+  - `TelemetryMetadata` for request correlation and processing metrics
+  - `LogEntry` and `ErrorDetails` for structured logging
+  - `Metric`, `ServiceLevelIndicator`, and health check message types
+  - Time range and status enumerations for observability queries
 - Comprehensive markdown linting configuration with proper exclusions for node_modules
 - Changelog linting with keep-a-changelog tool
 - Session learnings and solutions documentation in CLAUDE.md

@@ -211,3 +211,191 @@ message ErrorDetail {
   // timestamp when the error occurred
   google.protobuf.Timestamp timestamp = 6;
 }
+
+// ObservabilityService provides telemetry, health checks, and monitoring capabilities
+// for cost source plugins. This service enables monitoring, debugging, and performance
+// optimization of plugin implementations.
+service ObservabilityService {
+  // HealthCheck returns the current health status of the plugin.
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  
+  // GetMetrics returns current metrics for monitoring plugin performance.
+  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
+  
+  // GetServiceLevelIndicators returns current SLI measurements.
+  rpc GetServiceLevelIndicators(GetSLIRequest) returns (GetSLIResponse);
+}
+
+// HealthCheckRequest is used for the HealthCheck RPC call.
+message HealthCheckRequest {
+  // service_name optionally specifies which service to check (empty for overall health)
+  string service_name = 1;
+}
+
+// HealthCheckResponse contains the health status of the plugin.
+message HealthCheckResponse {
+  // Status represents the health check status
+  enum Status {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;
+  }
+  
+  // status indicates the current health status
+  Status status = 1;
+  // message provides optional details about the health status
+  string message = 2;
+  // last_check_time indicates when this status was last updated
+  google.protobuf.Timestamp last_check_time = 3;
+}
+
+// GetMetricsRequest contains parameters for retrieving plugin metrics.
+message GetMetricsRequest {
+  // metric_names optionally filters which metrics to return (empty for all)
+  repeated string metric_names = 1;
+  // format specifies the output format (e.g., "prometheus", "json")
+  string format = 2;
+}
+
+// GetMetricsResponse contains the plugin metrics.
+message GetMetricsResponse {
+  // metrics contains the collected metrics data
+  repeated Metric metrics = 1;
+  // timestamp indicates when these metrics were collected
+  google.protobuf.Timestamp timestamp = 2;
+  // format indicates the format of the metrics data
+  string format = 3;
+}
+
+// Metric represents a single monitoring metric.
+message Metric {
+  // name is the metric name (e.g., "request_latency_seconds", "requests_total")
+  string name = 1;
+  // help provides a description of what the metric measures
+  string help = 2;
+  // type specifies the metric type (counter, gauge, histogram, summary)
+  MetricType type = 3;
+  // samples contains the metric data points
+  repeated MetricSample samples = 4;
+}
+
+// MetricType represents the type of metric being reported.
+enum MetricType {
+  METRIC_TYPE_UNSPECIFIED = 0;
+  COUNTER = 1;
+  GAUGE = 2;
+  HISTOGRAM = 3;
+  SUMMARY = 4;
+}
+
+// MetricSample represents a single metric measurement.
+message MetricSample {
+  // labels contains key-value pairs for metric dimensions
+  map<string, string> labels = 1;
+  // value is the numeric value of this metric sample
+  double value = 2;
+  // timestamp indicates when this sample was recorded
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+// GetSLIRequest contains parameters for retrieving Service Level Indicators.
+message GetSLIRequest {
+  // time_range optionally specifies the time range for SLI calculation
+  TimeRange time_range = 1;
+  // sli_names optionally filters which SLIs to return (empty for all)
+  repeated string sli_names = 2;
+}
+
+// GetSLIResponse contains the current Service Level Indicators.
+message GetSLIResponse {
+  // slis contains the current SLI measurements
+  repeated ServiceLevelIndicator slis = 1;
+  // measurement_time indicates when these SLIs were measured
+  google.protobuf.Timestamp measurement_time = 2;
+}
+
+// ServiceLevelIndicator represents a measurable aspect of service quality.
+message ServiceLevelIndicator {
+  // name is the SLI name (e.g., "availability", "latency_p99", "error_rate")
+  string name = 1;
+  // description explains what this SLI measures
+  string description = 2;
+  // value is the current SLI value (e.g., 0.995 for 99.5% availability)
+  double value = 3;
+  // unit specifies the unit of measurement (e.g., "percentage", "seconds", "ratio")
+  string unit = 4;
+  // target_value is the target/goal value for this SLI
+  double target_value = 5;
+  // status indicates if the SLI is meeting its target
+  SLIStatus status = 6;
+}
+
+// SLIStatus represents whether an SLI is meeting its target.
+enum SLIStatus {
+  SLI_STATUS_UNSPECIFIED = 0;
+  MEETING_TARGET = 1;
+  WARNING = 2;
+  CRITICAL = 3;
+}
+
+// TimeRange represents a time period for metrics and SLI calculations.
+message TimeRange {
+  // start timestamp for the time range
+  google.protobuf.Timestamp start = 1;
+  // end timestamp for the time range  
+  google.protobuf.Timestamp end = 2;
+}
+
+// TelemetryMetadata provides observability context for RPC responses.
+// This can be embedded in existing response messages to add telemetry capabilities.
+message TelemetryMetadata {
+  // trace_id is the distributed trace identifier for request correlation
+  string trace_id = 1;
+  // span_id is the current span identifier within the trace
+  string span_id = 2;
+  // request_id is a unique identifier for this specific request
+  string request_id = 3;
+  // processing_time_ms indicates how long the request took to process
+  int64 processing_time_ms = 4;
+  // data_source indicates the backend system that provided the data
+  string data_source = 5;
+  // cache_hit indicates if the response came from cache
+  bool cache_hit = 6;
+  // quality_score optionally indicates the data quality/confidence (0.0-1.0)
+  double quality_score = 7;
+}
+
+// LogEntry represents a structured log entry for standardized logging.
+message LogEntry {
+  // timestamp when the log entry was created
+  google.protobuf.Timestamp timestamp = 1;
+  // level indicates the log level (e.g., "DEBUG", "INFO", "WARN", "ERROR")
+  string level = 2;
+  // message is the log message content
+  string message = 3;
+  // component identifies the plugin component that generated the log
+  string component = 4;
+  // trace_id for correlating logs with distributed traces
+  string trace_id = 5;
+  // span_id for correlating logs with specific spans
+  string span_id = 6;
+  // fields contains structured log fields as key-value pairs
+  map<string, string> fields = 7;
+  // error_details provides additional context for error logs
+  ErrorDetails error_details = 8;
+}
+
+// ErrorDetails provides structured error information for logging and debugging.
+message ErrorDetails {
+  // error_code is a machine-readable error identifier
+  string error_code = 1;
+  // error_category classifies the type of error (e.g., "network", "auth", "data")
+  string error_category = 2;
+  // stack_trace provides debugging information (should be sanitized in production)
+  string stack_trace = 3;
+  // retry_after_seconds suggests when the client should retry (for transient errors)
+  int32 retry_after_seconds = 4;
+  // correlation_id helps correlate related errors across services
+  string correlation_id = 5;
+}
