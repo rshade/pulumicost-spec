@@ -1,4 +1,4 @@
-package types
+package pricing
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
-// Embedded schema content (generated from ../../../schemas/pricing_spec.schema.json)
+// Embedded schema content (generated from ../../../schemas/pricing_spec.schema.json).
 const schemaJSON = `{
 "$schema": "https://json-schema.org/draft/2020-12/schema",
 "$id": "https://spec.pulumicost.dev/schemas/pricing_spec.schema.json",
@@ -225,27 +225,26 @@ const schemaJSON = `{
 "additionalProperties": false
 }`
 
-var compiled *jsonschema.Schema
-
-func init() {
+func getCompiledSchema() (*jsonschema.Schema, error) {
 	c := jsonschema.NewCompiler()
 	if err := c.AddResource("schema.json", strings.NewReader(schemaJSON)); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to add schema resource: %w", err)
 	}
 	s, err := c.Compile("schema.json")
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to compile schema: %w", err)
 	}
-	compiled = s
+	return s, nil
 }
 
 func ValidatePricingSpec(doc []byte) error {
-	if compiled == nil {
-		return fmt.Errorf("schema not loaded")
+	compiled, err := getCompiledSchema()
+	if err != nil {
+		return err
 	}
 	var v interface{}
-	if err := json.Unmarshal(doc, &v); err != nil {
-		return fmt.Errorf("invalid json: %w", err)
+	if unmarshalErr := json.Unmarshal(doc, &v); unmarshalErr != nil {
+		return fmt.Errorf("invalid json: %w", unmarshalErr)
 	}
 	return compiled.Validate(v)
 }

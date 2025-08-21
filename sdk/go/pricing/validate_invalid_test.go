@@ -1,7 +1,9 @@
-package types
+package pricing_test
 
 import (
 	"testing"
+
+	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
 )
 
 func TestValidatePricingSpec_InvalidSchemas(t *testing.T) {
@@ -175,9 +177,9 @@ func TestValidatePricingSpec_InvalidSchemas(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidatePricingSpec([]byte(tt.jsonData))
+			err := pricing.ValidatePricingSpec([]byte(tt.jsonData))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("pricing.ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -277,9 +279,9 @@ func TestValidatePricingSpec_InvalidMetricHints(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidatePricingSpec([]byte(tt.jsonData))
+			err := pricing.ValidatePricingSpec([]byte(tt.jsonData))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("pricing.ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -361,9 +363,9 @@ func TestValidatePricingSpec_InvalidPricingTiers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidatePricingSpec([]byte(tt.jsonData))
+			err := pricing.ValidatePricingSpec([]byte(tt.jsonData))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("pricing.ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -427,9 +429,9 @@ func TestValidatePricingSpec_InvalidTimeAggregation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidatePricingSpec([]byte(tt.jsonData))
+			err := pricing.ValidatePricingSpec([]byte(tt.jsonData))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("pricing.ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -509,9 +511,9 @@ func TestValidatePricingSpec_InvalidCommitmentTerms(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidatePricingSpec([]byte(tt.jsonData))
+			err := pricing.ValidatePricingSpec([]byte(tt.jsonData))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("pricing.ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -551,9 +553,9 @@ func TestValidatePricingSpec_EdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidatePricingSpec([]byte(tt.jsonData))
+			err := pricing.ValidatePricingSpec([]byte(tt.jsonData))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("pricing.ValidatePricingSpec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -5,7 +5,7 @@ deps:
   - buf.build/googleapis/googleapis
 lint:
   use:
-    - STANDARD
+    - DEFAULT
 breaking:
   use:
     - FILE

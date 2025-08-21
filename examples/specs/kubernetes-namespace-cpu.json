@@ -1,0 +1,42 @@
+{
+  "provider": "kubernetes",
+  "resource_type": "namespace",
+  "billing_mode": "per_cpu_hour",
+  "rate_per_unit": 0.03,
+  "currency": "USD",
+  "description": "Kubernetes namespace CPU pricing via Kubecost",
+  "metric_hints": [
+    {
+      "metric": "cpu_cores",
+      "unit": "hour",
+      "aggregation_method": "avg"
+    },
+    {
+      "metric": "cpu_usage_percent",
+      "unit": "percent",
+      "aggregation_method": "avg"
+    }
+  ],
+  "time_aggregation": {
+    "window": "hour",
+    "method": "avg",
+    "alignment": "continuous"
+  },
+  "resource_tags": {
+    "billing_center": "platform",
+    "cost_center": "CC-6006",
+    "environment": "production",
+    "namespace": "frontend"
+  },
+  "plugin_metadata": {
+    "cluster_name": "production-cluster",
+    "cluster_provider": "gke",
+    "cluster_region": "us-central1",
+    "kubecost_version": "1.98.0",
+    "namespace_labels": "app=web,tier=frontend",
+    "node_pool": "default-pool",
+    "cost_allocation_method": "proportional"
+  },
+  "source": "kubecost",
+  "effective_date": "2024-01-01T00:00:00Z"
+}

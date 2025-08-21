@@ -1,0 +1,48 @@
+{
+  "provider": "aws",
+  "resource_type": "lambda",
+  "region": "us-east-1",
+  "billing_mode": "per_invocation",
+  "rate_per_unit": 0.0000002,
+  "currency": "USD",
+  "description": "AWS Lambda request charges (per invocation)",
+  "metric_hints": [
+    {
+      "metric": "invocations",
+      "unit": "count",
+      "aggregation_method": "sum"
+    },
+    {
+      "metric": "duration_ms",
+      "unit": "millisecond",
+      "aggregation_method": "sum"
+    },
+    {
+      "metric": "memory_mb",
+      "unit": "MB",
+      "aggregation_method": "avg"
+    }
+  ],
+  "time_aggregation": {
+    "window": "month",
+    "method": "sum",
+    "alignment": "billing"
+  },
+  "resource_tags": {
+    "billing_center": "platform",
+    "cost_center": "CC-4004",
+    "environment": "production",
+    "service": "api-gateway"
+  },
+  "plugin_metadata": {
+    "aws_account_id": "123456789012",
+    "function_runtime": "python3.9",
+    "memory_size_mb": 128,
+    "timeout_seconds": 30,
+    "architecture": "x86_64",
+    "free_tier_eligible": true,
+    "free_tier_invocations": 1000000
+  },
+  "source": "aws",
+  "effective_date": "2024-01-01T00:00:00Z"
+}

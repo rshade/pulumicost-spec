@@ -1,0 +1,50 @@
+{
+  "provider": "azure",
+  "resource_type": "sql_database",
+  "sku": "S1",
+  "region": "eastus",
+  "billing_mode": "per_dtu",
+  "rate_per_unit": 0.02,
+  "currency": "USD",
+  "description": "Standard S1 SQL Database with DTU-based pricing",
+  "metric_hints": [
+    {
+      "metric": "database_transaction_units",
+      "unit": "hour",
+      "aggregation_method": "avg"
+    },
+    {
+      "metric": "storage_gb",
+      "unit": "GB",
+      "aggregation_method": "max"
+    },
+    {
+      "metric": "cpu_percent",
+      "unit": "percent",
+      "aggregation_method": "avg"
+    }
+  ],
+  "time_aggregation": {
+    "window": "hour",
+    "method": "avg",
+    "alignment": "calendar"
+  },
+  "resource_tags": {
+    "billing_center": "data-platform",
+    "cost_center": "CC-7007",
+    "environment": "production",
+    "application": "ecommerce"
+  },
+  "plugin_metadata": {
+    "azure_subscription_id": "12345678-1234-1234-1234-123456789012",
+    "resource_group": "prod-databases",
+    "server_name": "prod-sql-server",
+    "database_name": "ecommerce-db",
+    "dtu_capacity": 20,
+    "max_storage_gb": 250,
+    "service_tier": "Standard",
+    "backup_retention_days": 7
+  },
+  "source": "azure",
+  "effective_date": "2024-01-01T00:00:00Z"
+}

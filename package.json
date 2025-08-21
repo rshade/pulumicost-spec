@@ -1,0 +1,69 @@
+{
+  "name": "@pulumicost/spec",
+  "version": "0.1.0",
+  "description": "Production-ready specification for cloud cost source plugins with gRPC protocol, JSON schemas, and Go SDK",
+  "keywords": [
+    "pulumi",
+    "cost-management",
+    "cloud-costs",
+    "grpc",
+    "protobuf",
+    "aws",
+    "azure",
+    "gcp",
+    "kubernetes",
+    "pricing",
+    "billing",
+    "finops"
+  ],
+  "homepage": "https://github.com/rshade/pulumicost-spec",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rshade/pulumicost-spec.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rshade/pulumicost-spec/issues"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "rshade",
+    "url": "https://github.com/rshade"
+  },
+  "main": "schemas/pricing_spec.schema.json",
+  "files": [
+    "schemas/",
+    "examples/",
+    "proto/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '!node_modules/**' '!CodeRabbitPrompt.md' '!Github_Development_Prompt.md' --config .markdownlint.json",
+    "lint:markdown:fix": "markdownlint-cli2 '**/*.md' '!node_modules/**' '!CodeRabbitPrompt.md' '!Github_Development_Prompt.md' --config .markdownlint.json --fix",
+    "lint:yaml": "yamllint .github/",
+    "validate:schema": "npx ajv compile --spec=draft2020 --all-errors --strict=false -s schemas/pricing_spec.schema.json",
+    "validate:examples": "node validate_examples.js",
+    "validate": "npm run validate:schema && npm run validate:examples",
+    "lint:changelog": "npx keep-a-changelog lint CHANGELOG.md",
+    "lint": "npm run lint:markdown && npm run lint:yaml && npm run lint:changelog",
+    "test": "npm run validate && npm run lint",
+    "format": "npm run lint:markdown:fix"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-cli": "^5.0.0",
+    "ajv-draft-04": "^1.0.0",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.15.0",
+    "@types/node": "^22.5.4",
+    "prettier": "^3.3.3",
+    "yaml-lint": "^1.7.0",
+    "keep-a-changelog": "^2.5.2"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}

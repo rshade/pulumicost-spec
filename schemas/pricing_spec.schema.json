@@ -3,7 +3,6 @@
 "$id": "https://spec.pulumicost.dev/schemas/pricing_spec.schema.json",
 "title": "PricingSpec v0.1.0",
 "description": "Comprehensive pricing specification schema for cloud resource cost calculation",
-"version": "0.1.0",
 "type": "object",
 "required": ["provider", "resource_type", "billing_mode", "rate_per_unit", "currency"],
 "properties": {
