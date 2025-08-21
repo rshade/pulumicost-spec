@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Service Level Indicators Example",
+  "description": "Example SLI measurements for PulumiCost plugin monitoring",
+  "type": "object",
+  "properties": {
+    "slis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "SLI name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of what this SLI measures"
+          },
+          "value": {
+            "type": "number",
+            "description": "Current SLI value"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measurement"
+          },
+          "target_value": {
+            "type": "number",
+            "description": "Target/goal value for this SLI"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["MEETING_TARGET", "WARNING", "CRITICAL"],
+            "description": "Whether the SLI is meeting its target"
+          }
+        },
+        "required": ["name", "description", "value", "unit", "target_value", "status"]
+      }
+    },
+    "measurement_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When these SLIs were measured"
+    }
+  },
+  "required": ["slis", "measurement_time"],
+  "examples": [
+    {
+      "slis": [
+        {
+          "name": "availability",
+          "description": "Percentage of successful requests over total requests",
+          "value": 99.95,
+          "unit": "percentage",
+          "target_value": 99.9,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "error_rate",
+          "description": "Percentage of requests that result in errors",
+          "value": 0.05,
+          "unit": "percentage",
+          "target_value": 0.1,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "latency_p99",
+          "description": "99th percentile response latency",
+          "value": 1.2,
+          "unit": "seconds",
+          "target_value": 2.0,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "latency_p95",
+          "description": "95th percentile response latency",
+          "value": 0.8,
+          "unit": "seconds",
+          "target_value": 1.0,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "throughput",
+          "description": "Requests processed per second",
+          "value": 125.5,
+          "unit": "requests_per_second",
+          "target_value": 100.0,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "data_freshness",
+          "description": "Age of the most recent cost data",
+          "value": 18.5,
+          "unit": "hours",
+          "target_value": 24.0,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "cache_effectiveness",
+          "description": "Percentage of requests served from cache",
+          "value": 85.2,
+          "unit": "percentage",
+          "target_value": 80.0,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "data_accuracy",
+          "description": "Confidence level in cost data accuracy",
+          "value": 0.98,
+          "unit": "ratio",
+          "target_value": 0.95,
+          "status": "MEETING_TARGET"
+        },
+        {
+          "name": "cost_query_success_rate",
+          "description": "Percentage of successful cost queries",
+          "value": 97.8,
+          "unit": "percentage",
+          "target_value": 98.0,
+          "status": "WARNING"
+        },
+        {
+          "name": "upstream_dependency_availability",
+          "description": "Availability of external cost APIs",
+          "value": 99.1,
+          "unit": "percentage",
+          "target_value": 99.5,
+          "status": "WARNING"
+        }
+      ],
+      "measurement_time": "2024-01-15T10:30:00Z"
+    }
+  ]
+}

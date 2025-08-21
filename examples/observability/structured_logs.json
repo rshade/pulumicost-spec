@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Structured Logging Example",
+  "description": "Example structured log entries for PulumiCost plugins",
+  "type": "object",
+  "properties": {
+    "log_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the log entry was created"
+          },
+          "level": {
+            "type": "string",
+            "enum": ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
+            "description": "Log level"
+          },
+          "message": {
+            "type": "string",
+            "description": "Log message content"
+          },
+          "component": {
+            "type": "string",
+            "description": "Plugin component that generated the log"
+          },
+          "trace_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "Distributed trace identifier"
+          },
+          "span_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{16}$",
+            "description": "Span identifier within the trace"
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Structured log fields as key-value pairs"
+          },
+          "error_details": {
+            "type": "object",
+            "properties": {
+              "error_code": {
+                "type": "string",
+                "description": "Machine-readable error identifier"
+              },
+              "error_category": {
+                "type": "string",
+                "description": "Error classification"
+              },
+              "stack_trace": {
+                "type": "string",
+                "description": "Stack trace (sanitized for production)"
+              },
+              "retry_after_seconds": {
+                "type": "integer",
+                "description": "Suggested retry delay for transient errors"
+              },
+              "correlation_id": {
+                "type": "string",
+                "description": "ID for correlating related errors"
+              }
+            }
+          }
+        },
+        "required": ["timestamp", "level", "message", "component"]
+      }
+    }
+  },
+  "required": ["log_entries"],
+  "examples": [
+    {
+      "log_entries": [
+        {
+          "timestamp": "2024-01-15T10:30:00.123Z",
+          "level": "INFO",
+          "message": "Processing cost query request",
+          "component": "cost-service",
+          "trace_id": "abcdef1234567890abcdef1234567890",
+          "span_id": "1234567890abcdef",
+          "fields": {
+            "method": "GetActualCost",
+            "provider": "aws",
+            "resource_type": "ec2",
+            "region": "us-east-1",
+            "user_id": "user-123",
+            "request_id": "req-456",
+            "cache_enabled": "true"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:00.234Z",
+          "level": "DEBUG",
+          "message": "Cache lookup for pricing data",
+          "component": "cache-manager",
+          "trace_id": "abcdef1234567890abcdef1234567890",
+          "span_id": "1234567890abcdef",
+          "fields": {
+            "cache_key": "aws-ec2-us-east-1-t3.micro",
+            "cache_ttl_seconds": "3600",
+            "cache_hit": "true"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:00.345Z",
+          "level": "INFO",
+          "message": "Cost query completed successfully",
+          "component": "cost-service",
+          "trace_id": "abcdef1234567890abcdef1234567890",
+          "span_id": "1234567890abcdef",
+          "fields": {
+            "processing_time_ms": "112",
+            "data_points_returned": "24",
+            "cache_hit": "true",
+            "cost_total_usd": "45.67"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:05.567Z",
+          "level": "WARN",
+          "message": "High latency detected for upstream API",
+          "component": "aws-connector",
+          "trace_id": "fedcba0987654321fedcba0987654321",
+          "span_id": "fedcba0987654321",
+          "fields": {
+            "api_endpoint": "billing.amazonaws.com",
+            "response_time_ms": "2340",
+            "threshold_ms": "1000",
+            "retry_attempt": "1"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:10.789Z",
+          "level": "ERROR",
+          "message": "Failed to retrieve cost data from upstream API",
+          "component": "azure-connector",
+          "trace_id": "1122334455667788112233445566778",
+          "span_id": "1122334455667788",
+          "fields": {
+            "api_endpoint": "management.azure.com",
+            "subscription_id": "sub-123",
+            "resource_group": "rg-production",
+            "http_status": "429",
+            "retry_count": "3"
+          },
+          "error_details": {
+            "error_code": "RATE_LIMIT_EXCEEDED",
+            "error_category": "rate_limit",
+            "stack_trace": "at azure.client.getCostData(client.go:123)\\nat cost.service.processRequest(service.go:456)",
+            "retry_after_seconds": 60,
+            "correlation_id": "corr-789"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:15.012Z",
+          "level": "DEBUG",
+          "message": "Metrics collection cycle started",
+          "component": "metrics-collector",
+          "fields": {
+            "collection_interval_seconds": "30",
+            "metrics_count": "15",
+            "enabled_providers": "aws,azure,gcp"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:20.345Z",
+          "level": "INFO",
+          "message": "Health check completed",
+          "component": "health-monitor",
+          "fields": {
+            "overall_status": "SERVING",
+            "checks_passed": "4",
+            "checks_failed": "0",
+            "check_duration_ms": "156"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:25.678Z",
+          "level": "WARN",
+          "message": "Memory usage approaching threshold",
+          "component": "resource-monitor",
+          "fields": {
+            "memory_usage_percent": "85",
+            "memory_threshold_percent": "90",
+            "memory_used_mb": "1700",
+            "memory_total_mb": "2000",
+            "gc_triggered": "true"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:30.901Z",
+          "level": "ERROR",
+          "message": "Database connection failed",
+          "component": "database-manager",
+          "fields": {
+            "database_host": "postgres.internal",
+            "database_port": "5432",
+            "connection_timeout_ms": "5000",
+            "retry_attempt": "2"
+          },
+          "error_details": {
+            "error_code": "CONNECTION_TIMEOUT",
+            "error_category": "network",
+            "stack_trace": "at db.connect(db.go:89)\\nat service.initialize(service.go:123)",
+            "retry_after_seconds": 30,
+            "correlation_id": "db-conn-456"
+          }
+        },
+        {
+          "timestamp": "2024-01-15T10:30:35.234Z",
+          "level": "INFO",
+          "message": "Cache eviction completed",
+          "component": "cache-manager",
+          "fields": {
+            "evicted_keys": "127",
+            "cache_size_before_mb": "245",
+            "cache_size_after_mb": "198",
+            "eviction_policy": "lru",
+            "eviction_duration_ms": "23"
+          }
+        }
+      ]
+    }
+  ]
+}

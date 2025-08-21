@@ -1,0 +1,291 @@
+# CloudWatch Dashboard Template for PulumiCost Plugin Observability
+# Deploy using AWS CloudFormation or CDK
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudWatch Dashboard for PulumiCost Plugin Observability'
+
+Parameters:
+  PluginName:
+    Type: String
+    Default: pulumicost-plugin
+    Description: Name of the PulumiCost plugin
+  
+  LogGroupName:
+    Type: String
+    Default: /aws/lambda/pulumicost-plugin
+    Description: CloudWatch Log Group for the plugin
+  
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Deployment environment
+
+Resources:
+  PulumiCostObservabilityDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub '${PluginName}-observability-${Environment}'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${PluginName}"],
+                  [".", "Errors", ".", "."],
+                  [".", "Duration", ".", "."]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Lambda Function Metrics",
+                "period": 300,
+                "stat": "Sum",
+                "yAxis": {
+                  "left": {
+                    "min": 0
+                  }
+                }
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/Lambda", "Errors", "FunctionName", "${PluginName}"],
+                  [".", "Invocations", ".", "."]
+                ],
+                "view": "singleValue",
+                "region": "${AWS::Region}",
+                "title": "Error Rate",
+                "period": 300,
+                "stat": "Sum",
+                "setPeriodToTimeRange": true
+              }
+            },
+            {
+              "type": "metric",
+              "x": 18,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/Lambda", "Duration", "FunctionName", "${PluginName}"]
+                ],
+                "view": "singleValue",
+                "region": "${AWS::Region}",
+                "title": "Average Duration",
+                "period": 300,
+                "stat": "Average"
+              }
+            },
+            {
+              "type": "log",
+              "x": 0,
+              "y": 6,
+              "width": 24,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}'\n| fields @timestamp, level, component, message, trace_id\n| filter level = \"ERROR\"\n| sort @timestamp desc\n| limit 100",
+                "region": "${AWS::Region}",
+                "title": "Recent Errors",
+                "view": "table"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 12,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/Lambda", "ConcurrentExecutions", "FunctionName", "${PluginName}"],
+                  [".", "Throttles", ".", "."]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Concurrency and Throttles",
+                "period": 300,
+                "yAxis": {
+                  "left": {
+                    "min": 0
+                  }
+                }
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 12,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/X-Ray", "TracesReceived"],
+                  [".", "ResponseTime", "ServiceName", "${PluginName}"]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "X-Ray Tracing Metrics",
+                "period": 300
+              }
+            },
+            {
+              "type": "log",
+              "x": 0,
+              "y": 18,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}'\n| fields @timestamp, fields.method, fields.provider, fields.processing_time_ms\n| filter level = \"INFO\" and message like /cost query completed/\n| stats avg(fields.processing_time_ms) as avg_processing_time by bin(5m)",
+                "region": "${AWS::Region}",
+                "title": "Request Processing Time Trend",
+                "view": "table"
+              }
+            },
+            {
+              "type": "log",
+              "x": 12,
+              "y": 18,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}'\n| fields @timestamp, fields.provider, fields.cache_hit\n| filter level = \"INFO\" and fields.cache_hit = \"true\"\n| stats count() as cache_hits by fields.provider\n| sort cache_hits desc",
+                "region": "${AWS::Region}",
+                "title": "Cache Hit Rate by Provider",
+                "view": "table"
+              }
+            },
+            {
+              "type": "log",
+              "x": 0,
+              "y": 24,
+              "width": 24,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '${LogGroupName}'\n| fields @timestamp, level, error_details.error_code, error_details.error_category, message\n| filter level = \"ERROR\"\n| stats count() as error_count by error_details.error_category\n| sort error_count desc",
+                "region": "${AWS::Region}",
+                "title": "Error Categories",
+                "view": "table"
+              }
+            }
+          ]
+        }
+
+  # CloudWatch Alarms for critical metrics
+  HighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${PluginName}-high-error-rate-${Environment}'
+      AlarmDescription: 'High error rate detected in PulumiCost plugin'
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PluginName
+      AlarmActions:
+        - !Ref ErrorNotificationTopic
+
+  HighLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${PluginName}-high-latency-${Environment}'
+      AlarmDescription: 'High latency detected in PulumiCost plugin'
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 30000  # 30 seconds
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PluginName
+      AlarmActions:
+        - !Ref ErrorNotificationTopic
+
+  LowCacheHitRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${PluginName}-low-cache-hit-rate-${Environment}'
+      AlarmDescription: 'Low cache hit rate detected'
+      MetricName: CacheHitRate
+      Namespace: PulumiCost/Plugin
+      Statistic: Average
+      Period: 600
+      EvaluationPeriods: 2
+      Threshold: 70  # 70%
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref ErrorNotificationTopic
+
+  # SNS Topic for notifications
+  ErrorNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${PluginName}-alerts-${Environment}'
+      DisplayName: PulumiCost Plugin Alerts
+
+  # Custom metrics filter for structured logs
+  ErrorCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: PulumiCost/Plugin
+          MetricName: ErrorCount
+          MetricValue: '1'
+          DefaultValue: 0
+
+  CacheHitMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      FilterPattern: '{ $.fields.cache_hit = "true" }'
+      MetricTransformations:
+        - MetricNamespace: PulumiCost/Plugin
+          MetricName: CacheHits
+          MetricValue: '1'
+          DefaultValue: 0
+
+  RequestProcessingTimeMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      FilterPattern: '{ $.message = "Processing cost query request" }'
+      MetricTransformations:
+        - MetricNamespace: PulumiCost/Plugin
+          MetricName: RequestProcessingTime
+          MetricValue: $.fields.processing_time_ms
+          DefaultValue: 0
+
+Outputs:
+  DashboardURL:
+    Description: 'URL to the CloudWatch Dashboard'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${PluginName}-observability-${Environment}'
+  
+  ErrorNotificationTopicArn:
+    Description: 'ARN of the SNS topic for error notifications'
+    Value: !Ref ErrorNotificationTopic
+    Export:
+      Name: !Sub '${PluginName}-error-topic-${Environment}'
