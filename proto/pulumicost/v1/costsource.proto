@@ -160,3 +160,54 @@ message PricingSpec {
   // (e.g., "aws", "gcp", "azure", "kubecost", "flexera", "cloudability", "spec")
   string source = 11;
 }
+
+// ErrorCategory defines the category of plugin errors.
+enum ErrorCategory {
+  ERROR_CATEGORY_UNSPECIFIED = 0;
+  ERROR_CATEGORY_TRANSIENT = 1;    // Temporary failure that may succeed on retry
+  ERROR_CATEGORY_PERMANENT = 2;    // Failure that will not succeed on retry without changes
+  ERROR_CATEGORY_CONFIGURATION = 3; // Error due to invalid configuration or setup
+}
+
+// ErrorCode defines standard error codes for plugin operations.
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  
+  // Transient error codes
+  ERROR_CODE_NETWORK_TIMEOUT = 1;      // Network timeout occurred
+  ERROR_CODE_SERVICE_UNAVAILABLE = 2;  // Service temporarily unavailable
+  ERROR_CODE_RATE_LIMITED = 3;         // Request was rate limited
+  ERROR_CODE_TEMPORARY_FAILURE = 4;    // Temporary failure occurred
+  ERROR_CODE_CIRCUIT_OPEN = 5;         // Circuit breaker is open
+  
+  // Permanent error codes
+  ERROR_CODE_INVALID_RESOURCE = 6;     // Invalid resource specification
+  ERROR_CODE_RESOURCE_NOT_FOUND = 7;   // Requested resource was not found
+  ERROR_CODE_INVALID_TIME_RANGE = 8;   // Invalid time range parameters
+  ERROR_CODE_UNSUPPORTED_REGION = 9;   // Region is not supported
+  ERROR_CODE_PERMISSION_DENIED = 10;   // Access is denied
+  ERROR_CODE_DATA_CORRUPTION = 11;     // Data corruption was detected
+  
+  // Configuration error codes
+  ERROR_CODE_INVALID_CREDENTIALS = 12; // Authentication credentials are invalid
+  ERROR_CODE_MISSING_API_KEY = 13;     // API key is missing
+  ERROR_CODE_INVALID_ENDPOINT = 14;    // Endpoint configuration is invalid
+  ERROR_CODE_INVALID_PROVIDER = 15;    // Provider specification is invalid
+  ERROR_CODE_PLUGIN_NOT_CONFIGURED = 16; // Plugin is not properly configured
+}
+
+// ErrorDetail provides detailed information about an error.
+message ErrorDetail {
+  // code is the specific error code
+  ErrorCode code = 1;
+  // category is the error category (transient, permanent, configuration)
+  ErrorCategory category = 2;
+  // message is the human-readable error message
+  string message = 3;
+  // details contains structured error details
+  map<string, string> details = 4;
+  // retry_after_seconds suggests when to retry (for transient errors)
+  optional int32 retry_after_seconds = 5;
+  // timestamp when the error occurred
+  google.protobuf.Timestamp timestamp = 6;
+}
