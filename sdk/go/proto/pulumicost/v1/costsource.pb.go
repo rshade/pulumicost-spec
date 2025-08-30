@@ -170,6 +170,168 @@ func (ErrorCode) EnumDescriptor() ([]byte, []int) {
 	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{1}
 }
 
+// MetricType represents the type of metric being reported.
+type MetricType int32
+
+const (
+	MetricType_METRIC_TYPE_UNSPECIFIED MetricType = 0
+	MetricType_METRIC_TYPE_COUNTER     MetricType = 1
+	MetricType_METRIC_TYPE_GAUGE       MetricType = 2
+	MetricType_METRIC_TYPE_HISTOGRAM   MetricType = 3
+	MetricType_METRIC_TYPE_SUMMARY     MetricType = 4
+)
+
+// Enum value maps for MetricType.
+var (
+	MetricType_name = map[int32]string{
+		0: "METRIC_TYPE_UNSPECIFIED",
+		1: "METRIC_TYPE_COUNTER",
+		2: "METRIC_TYPE_GAUGE",
+		3: "METRIC_TYPE_HISTOGRAM",
+		4: "METRIC_TYPE_SUMMARY",
+	}
+	MetricType_value = map[string]int32{
+		"METRIC_TYPE_UNSPECIFIED": 0,
+		"METRIC_TYPE_COUNTER":     1,
+		"METRIC_TYPE_GAUGE":       2,
+		"METRIC_TYPE_HISTOGRAM":   3,
+		"METRIC_TYPE_SUMMARY":     4,
+	}
+)
+
+func (x MetricType) Enum() *MetricType {
+	p := new(MetricType)
+	*p = x
+	return p
+}
+
+func (x MetricType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MetricType) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[2].Descriptor()
+}
+
+func (MetricType) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[2]
+}
+
+func (x MetricType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MetricType.Descriptor instead.
+func (MetricType) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{2}
+}
+
+// SLIStatus represents whether an SLI is meeting its target.
+type SLIStatus int32
+
+const (
+	SLIStatus_SLI_STATUS_UNSPECIFIED    SLIStatus = 0
+	SLIStatus_SLI_STATUS_MEETING_TARGET SLIStatus = 1
+	SLIStatus_SLI_STATUS_WARNING        SLIStatus = 2
+	SLIStatus_SLI_STATUS_CRITICAL       SLIStatus = 3
+)
+
+// Enum value maps for SLIStatus.
+var (
+	SLIStatus_name = map[int32]string{
+		0: "SLI_STATUS_UNSPECIFIED",
+		1: "SLI_STATUS_MEETING_TARGET",
+		2: "SLI_STATUS_WARNING",
+		3: "SLI_STATUS_CRITICAL",
+	}
+	SLIStatus_value = map[string]int32{
+		"SLI_STATUS_UNSPECIFIED":    0,
+		"SLI_STATUS_MEETING_TARGET": 1,
+		"SLI_STATUS_WARNING":        2,
+		"SLI_STATUS_CRITICAL":       3,
+	}
+)
+
+func (x SLIStatus) Enum() *SLIStatus {
+	p := new(SLIStatus)
+	*p = x
+	return p
+}
+
+func (x SLIStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SLIStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[3].Descriptor()
+}
+
+func (SLIStatus) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[3]
+}
+
+func (x SLIStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SLIStatus.Descriptor instead.
+func (SLIStatus) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{3}
+}
+
+// Status represents the health check status
+type HealthCheckResponse_Status int32
+
+const (
+	HealthCheckResponse_STATUS_UNSPECIFIED     HealthCheckResponse_Status = 0
+	HealthCheckResponse_STATUS_SERVING         HealthCheckResponse_Status = 1
+	HealthCheckResponse_STATUS_NOT_SERVING     HealthCheckResponse_Status = 2
+	HealthCheckResponse_STATUS_SERVICE_UNKNOWN HealthCheckResponse_Status = 3
+)
+
+// Enum value maps for HealthCheckResponse_Status.
+var (
+	HealthCheckResponse_Status_name = map[int32]string{
+		0: "STATUS_UNSPECIFIED",
+		1: "STATUS_SERVING",
+		2: "STATUS_NOT_SERVING",
+		3: "STATUS_SERVICE_UNKNOWN",
+	}
+	HealthCheckResponse_Status_value = map[string]int32{
+		"STATUS_UNSPECIFIED":     0,
+		"STATUS_SERVING":         1,
+		"STATUS_NOT_SERVING":     2,
+		"STATUS_SERVICE_UNKNOWN": 3,
+	}
+)
+
+func (x HealthCheckResponse_Status) Enum() *HealthCheckResponse_Status {
+	p := new(HealthCheckResponse_Status)
+	*p = x
+	return p
+}
+
+func (x HealthCheckResponse_Status) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (HealthCheckResponse_Status) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[4].Descriptor()
+}
+
+func (HealthCheckResponse_Status) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[4]
+}
+
+func (x HealthCheckResponse_Status) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use HealthCheckResponse_Status.Descriptor instead.
+func (HealthCheckResponse_Status) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{16, 0}
+}
+
 // NameRequest is used for the Name RPC call (empty request).
 type NameRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1132,6 +1294,920 @@ func (x *ErrorDetail) GetTimestamp() *timestamppb.Timestamp {
 	return nil
 }
 
+// HealthCheckRequest is used for the HealthCheck RPC call.
+type HealthCheckRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// service_name optionally specifies which service to check (empty for overall health)
+	ServiceName   string `protobuf:"bytes,1,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HealthCheckRequest) Reset() {
+	*x = HealthCheckRequest{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HealthCheckRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HealthCheckRequest) ProtoMessage() {}
+
+func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HealthCheckRequest.ProtoReflect.Descriptor instead.
+func (*HealthCheckRequest) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *HealthCheckRequest) GetServiceName() string {
+	if x != nil {
+		return x.ServiceName
+	}
+	return ""
+}
+
+// HealthCheckResponse contains the health status of the plugin.
+type HealthCheckResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// status indicates the current health status
+	Status HealthCheckResponse_Status `protobuf:"varint,1,opt,name=status,proto3,enum=pulumicost.v1.HealthCheckResponse_Status" json:"status,omitempty"`
+	// message provides optional details about the health status
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	// last_check_time indicates when this status was last updated
+	LastCheckTime *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=last_check_time,json=lastCheckTime,proto3" json:"last_check_time,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HealthCheckResponse) Reset() {
+	*x = HealthCheckResponse{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HealthCheckResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HealthCheckResponse) ProtoMessage() {}
+
+func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HealthCheckResponse.ProtoReflect.Descriptor instead.
+func (*HealthCheckResponse) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *HealthCheckResponse) GetStatus() HealthCheckResponse_Status {
+	if x != nil {
+		return x.Status
+	}
+	return HealthCheckResponse_STATUS_UNSPECIFIED
+}
+
+func (x *HealthCheckResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *HealthCheckResponse) GetLastCheckTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastCheckTime
+	}
+	return nil
+}
+
+// GetMetricsRequest contains parameters for retrieving plugin metrics.
+type GetMetricsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// metric_names optionally filters which metrics to return (empty for all)
+	MetricNames []string `protobuf:"bytes,1,rep,name=metric_names,json=metricNames,proto3" json:"metric_names,omitempty"`
+	// format specifies the output format (e.g., "prometheus", "json")
+	Format        string `protobuf:"bytes,2,opt,name=format,proto3" json:"format,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMetricsRequest) Reset() {
+	*x = GetMetricsRequest{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMetricsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMetricsRequest) ProtoMessage() {}
+
+func (x *GetMetricsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMetricsRequest.ProtoReflect.Descriptor instead.
+func (*GetMetricsRequest) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetMetricsRequest) GetMetricNames() []string {
+	if x != nil {
+		return x.MetricNames
+	}
+	return nil
+}
+
+func (x *GetMetricsRequest) GetFormat() string {
+	if x != nil {
+		return x.Format
+	}
+	return ""
+}
+
+// GetMetricsResponse contains the plugin metrics.
+type GetMetricsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// metrics contains the collected metrics data
+	Metrics []*Metric `protobuf:"bytes,1,rep,name=metrics,proto3" json:"metrics,omitempty"`
+	// timestamp indicates when these metrics were collected
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// format indicates the format of the metrics data
+	Format        string `protobuf:"bytes,3,opt,name=format,proto3" json:"format,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMetricsResponse) Reset() {
+	*x = GetMetricsResponse{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMetricsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMetricsResponse) ProtoMessage() {}
+
+func (x *GetMetricsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMetricsResponse.ProtoReflect.Descriptor instead.
+func (*GetMetricsResponse) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetMetricsResponse) GetMetrics() []*Metric {
+	if x != nil {
+		return x.Metrics
+	}
+	return nil
+}
+
+func (x *GetMetricsResponse) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+func (x *GetMetricsResponse) GetFormat() string {
+	if x != nil {
+		return x.Format
+	}
+	return ""
+}
+
+// Metric represents a single monitoring metric.
+type Metric struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// name is the metric name (e.g., "request_latency_seconds", "requests_total")
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// help provides a description of what the metric measures
+	Help string `protobuf:"bytes,2,opt,name=help,proto3" json:"help,omitempty"`
+	// type specifies the metric type (counter, gauge, histogram, summary)
+	Type MetricType `protobuf:"varint,3,opt,name=type,proto3,enum=pulumicost.v1.MetricType" json:"type,omitempty"`
+	// samples contains the metric data points
+	Samples       []*MetricSample `protobuf:"bytes,4,rep,name=samples,proto3" json:"samples,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Metric) Reset() {
+	*x = Metric{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Metric) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Metric) ProtoMessage() {}
+
+func (x *Metric) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Metric.ProtoReflect.Descriptor instead.
+func (*Metric) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *Metric) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Metric) GetHelp() string {
+	if x != nil {
+		return x.Help
+	}
+	return ""
+}
+
+func (x *Metric) GetType() MetricType {
+	if x != nil {
+		return x.Type
+	}
+	return MetricType_METRIC_TYPE_UNSPECIFIED
+}
+
+func (x *Metric) GetSamples() []*MetricSample {
+	if x != nil {
+		return x.Samples
+	}
+	return nil
+}
+
+// MetricSample represents a single metric measurement.
+type MetricSample struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// labels contains key-value pairs for metric dimensions
+	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// value is the numeric value of this metric sample
+	Value float64 `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	// timestamp indicates when this sample was recorded
+	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MetricSample) Reset() {
+	*x = MetricSample{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MetricSample) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MetricSample) ProtoMessage() {}
+
+func (x *MetricSample) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MetricSample.ProtoReflect.Descriptor instead.
+func (*MetricSample) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *MetricSample) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *MetricSample) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *MetricSample) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+// GetServiceLevelIndicatorsRequest contains parameters for retrieving Service Level Indicators.
+type GetServiceLevelIndicatorsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// time_range optionally specifies the time range for SLI calculation
+	TimeRange *TimeRange `protobuf:"bytes,1,opt,name=time_range,json=timeRange,proto3" json:"time_range,omitempty"`
+	// sli_names optionally filters which SLIs to return (empty for all)
+	SliNames      []string `protobuf:"bytes,2,rep,name=sli_names,json=sliNames,proto3" json:"sli_names,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetServiceLevelIndicatorsRequest) Reset() {
+	*x = GetServiceLevelIndicatorsRequest{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetServiceLevelIndicatorsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetServiceLevelIndicatorsRequest) ProtoMessage() {}
+
+func (x *GetServiceLevelIndicatorsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetServiceLevelIndicatorsRequest.ProtoReflect.Descriptor instead.
+func (*GetServiceLevelIndicatorsRequest) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GetServiceLevelIndicatorsRequest) GetTimeRange() *TimeRange {
+	if x != nil {
+		return x.TimeRange
+	}
+	return nil
+}
+
+func (x *GetServiceLevelIndicatorsRequest) GetSliNames() []string {
+	if x != nil {
+		return x.SliNames
+	}
+	return nil
+}
+
+// GetServiceLevelIndicatorsResponse contains the current Service Level Indicators.
+type GetServiceLevelIndicatorsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// slis contains the current SLI measurements
+	Slis []*ServiceLevelIndicator `protobuf:"bytes,1,rep,name=slis,proto3" json:"slis,omitempty"`
+	// measurement_time indicates when these SLIs were measured
+	MeasurementTime *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=measurement_time,json=measurementTime,proto3" json:"measurement_time,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetServiceLevelIndicatorsResponse) Reset() {
+	*x = GetServiceLevelIndicatorsResponse{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetServiceLevelIndicatorsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetServiceLevelIndicatorsResponse) ProtoMessage() {}
+
+func (x *GetServiceLevelIndicatorsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetServiceLevelIndicatorsResponse.ProtoReflect.Descriptor instead.
+func (*GetServiceLevelIndicatorsResponse) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetServiceLevelIndicatorsResponse) GetSlis() []*ServiceLevelIndicator {
+	if x != nil {
+		return x.Slis
+	}
+	return nil
+}
+
+func (x *GetServiceLevelIndicatorsResponse) GetMeasurementTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.MeasurementTime
+	}
+	return nil
+}
+
+// ServiceLevelIndicator represents a measurable aspect of service quality.
+type ServiceLevelIndicator struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// name is the SLI name (e.g., "availability", "latency_p99", "error_rate")
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// description explains what this SLI measures
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	// value is the current SLI value (e.g., 0.995 for 99.5% availability)
+	Value float64 `protobuf:"fixed64,3,opt,name=value,proto3" json:"value,omitempty"`
+	// unit specifies the unit of measurement (e.g., "percentage", "seconds", "ratio")
+	Unit string `protobuf:"bytes,4,opt,name=unit,proto3" json:"unit,omitempty"`
+	// target_value is the target/goal value for this SLI
+	TargetValue float64 `protobuf:"fixed64,5,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	// status indicates if the SLI is meeting its target
+	Status        SLIStatus `protobuf:"varint,6,opt,name=status,proto3,enum=pulumicost.v1.SLIStatus" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServiceLevelIndicator) Reset() {
+	*x = ServiceLevelIndicator{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServiceLevelIndicator) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServiceLevelIndicator) ProtoMessage() {}
+
+func (x *ServiceLevelIndicator) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServiceLevelIndicator.ProtoReflect.Descriptor instead.
+func (*ServiceLevelIndicator) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ServiceLevelIndicator) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ServiceLevelIndicator) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *ServiceLevelIndicator) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *ServiceLevelIndicator) GetUnit() string {
+	if x != nil {
+		return x.Unit
+	}
+	return ""
+}
+
+func (x *ServiceLevelIndicator) GetTargetValue() float64 {
+	if x != nil {
+		return x.TargetValue
+	}
+	return 0
+}
+
+func (x *ServiceLevelIndicator) GetStatus() SLIStatus {
+	if x != nil {
+		return x.Status
+	}
+	return SLIStatus_SLI_STATUS_UNSPECIFIED
+}
+
+// TimeRange represents a time period for metrics and SLI calculations.
+type TimeRange struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// start timestamp for the time range
+	Start *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
+	// end timestamp for the time range
+	End           *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TimeRange) Reset() {
+	*x = TimeRange{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TimeRange) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TimeRange) ProtoMessage() {}
+
+func (x *TimeRange) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TimeRange.ProtoReflect.Descriptor instead.
+func (*TimeRange) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *TimeRange) GetStart() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Start
+	}
+	return nil
+}
+
+func (x *TimeRange) GetEnd() *timestamppb.Timestamp {
+	if x != nil {
+		return x.End
+	}
+	return nil
+}
+
+// TelemetryMetadata provides observability context for RPC responses.
+// This can be embedded in existing response messages to add telemetry capabilities.
+type TelemetryMetadata struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// trace_id is the distributed trace identifier for request correlation
+	TraceId string `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
+	// span_id is the current span identifier within the trace
+	SpanId string `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
+	// request_id is a unique identifier for this specific request
+	RequestId string `protobuf:"bytes,3,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	// processing_time_ms indicates how long the request took to process
+	ProcessingTimeMs int64 `protobuf:"varint,4,opt,name=processing_time_ms,json=processingTimeMs,proto3" json:"processing_time_ms,omitempty"`
+	// data_source indicates the backend system that provided the data
+	DataSource string `protobuf:"bytes,5,opt,name=data_source,json=dataSource,proto3" json:"data_source,omitempty"`
+	// cache_hit indicates if the response came from cache
+	CacheHit bool `protobuf:"varint,6,opt,name=cache_hit,json=cacheHit,proto3" json:"cache_hit,omitempty"`
+	// quality_score optionally indicates the data quality/confidence (0.0-1.0)
+	QualityScore  float64 `protobuf:"fixed64,7,opt,name=quality_score,json=qualityScore,proto3" json:"quality_score,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TelemetryMetadata) Reset() {
+	*x = TelemetryMetadata{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TelemetryMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TelemetryMetadata) ProtoMessage() {}
+
+func (x *TelemetryMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TelemetryMetadata.ProtoReflect.Descriptor instead.
+func (*TelemetryMetadata) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *TelemetryMetadata) GetTraceId() string {
+	if x != nil {
+		return x.TraceId
+	}
+	return ""
+}
+
+func (x *TelemetryMetadata) GetSpanId() string {
+	if x != nil {
+		return x.SpanId
+	}
+	return ""
+}
+
+func (x *TelemetryMetadata) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *TelemetryMetadata) GetProcessingTimeMs() int64 {
+	if x != nil {
+		return x.ProcessingTimeMs
+	}
+	return 0
+}
+
+func (x *TelemetryMetadata) GetDataSource() string {
+	if x != nil {
+		return x.DataSource
+	}
+	return ""
+}
+
+func (x *TelemetryMetadata) GetCacheHit() bool {
+	if x != nil {
+		return x.CacheHit
+	}
+	return false
+}
+
+func (x *TelemetryMetadata) GetQualityScore() float64 {
+	if x != nil {
+		return x.QualityScore
+	}
+	return 0
+}
+
+// LogEntry represents a structured log entry for standardized logging.
+type LogEntry struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// timestamp when the log entry was created
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// level indicates the log level (e.g., "DEBUG", "INFO", "WARN", "ERROR")
+	Level string `protobuf:"bytes,2,opt,name=level,proto3" json:"level,omitempty"`
+	// message is the log message content
+	Message string `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	// component identifies the plugin component that generated the log
+	Component string `protobuf:"bytes,4,opt,name=component,proto3" json:"component,omitempty"`
+	// trace_id for correlating logs with distributed traces
+	TraceId string `protobuf:"bytes,5,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
+	// span_id for correlating logs with specific spans
+	SpanId string `protobuf:"bytes,6,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
+	// fields contains structured log fields as key-value pairs
+	Fields map[string]string `protobuf:"bytes,7,rep,name=fields,proto3" json:"fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// error_details provides additional context for error logs
+	ErrorDetails  *ErrorDetails `protobuf:"bytes,8,opt,name=error_details,json=errorDetails,proto3" json:"error_details,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LogEntry) Reset() {
+	*x = LogEntry{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LogEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogEntry) ProtoMessage() {}
+
+func (x *LogEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogEntry.ProtoReflect.Descriptor instead.
+func (*LogEntry) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *LogEntry) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+func (x *LogEntry) GetLevel() string {
+	if x != nil {
+		return x.Level
+	}
+	return ""
+}
+
+func (x *LogEntry) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *LogEntry) GetComponent() string {
+	if x != nil {
+		return x.Component
+	}
+	return ""
+}
+
+func (x *LogEntry) GetTraceId() string {
+	if x != nil {
+		return x.TraceId
+	}
+	return ""
+}
+
+func (x *LogEntry) GetSpanId() string {
+	if x != nil {
+		return x.SpanId
+	}
+	return ""
+}
+
+func (x *LogEntry) GetFields() map[string]string {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *LogEntry) GetErrorDetails() *ErrorDetails {
+	if x != nil {
+		return x.ErrorDetails
+	}
+	return nil
+}
+
+// ErrorDetails provides structured error information for logging and debugging.
+type ErrorDetails struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// error_code is a machine-readable error identifier
+	ErrorCode string `protobuf:"bytes,1,opt,name=error_code,json=errorCode,proto3" json:"error_code,omitempty"`
+	// error_category classifies the type of error (e.g., "network", "auth", "data")
+	ErrorCategory string `protobuf:"bytes,2,opt,name=error_category,json=errorCategory,proto3" json:"error_category,omitempty"`
+	// stack_trace provides debugging information (should be sanitized in production)
+	StackTrace string `protobuf:"bytes,3,opt,name=stack_trace,json=stackTrace,proto3" json:"stack_trace,omitempty"`
+	// retry_after_seconds suggests when the client should retry (for transient errors)
+	RetryAfterSeconds int32 `protobuf:"varint,4,opt,name=retry_after_seconds,json=retryAfterSeconds,proto3" json:"retry_after_seconds,omitempty"`
+	// correlation_id helps correlate related errors across services
+	CorrelationId string `protobuf:"bytes,5,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErrorDetails) Reset() {
+	*x = ErrorDetails{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErrorDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErrorDetails) ProtoMessage() {}
+
+func (x *ErrorDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErrorDetails.ProtoReflect.Descriptor instead.
+func (*ErrorDetails) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ErrorDetails) GetErrorCode() string {
+	if x != nil {
+		return x.ErrorCode
+	}
+	return ""
+}
+
+func (x *ErrorDetails) GetErrorCategory() string {
+	if x != nil {
+		return x.ErrorCategory
+	}
+	return ""
+}
+
+func (x *ErrorDetails) GetStackTrace() string {
+	if x != nil {
+		return x.StackTrace
+	}
+	return ""
+}
+
+func (x *ErrorDetails) GetRetryAfterSeconds() int32 {
+	if x != nil {
+		return x.RetryAfterSeconds
+	}
+	return 0
+}
+
+func (x *ErrorDetails) GetCorrelationId() string {
+	if x != nil {
+		return x.CorrelationId
+	}
+	return ""
+}
+
 var File_pulumicost_v1_costsource_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_costsource_proto_rawDesc = "" +
@@ -1213,7 +2289,84 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\fDetailsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x16\n" +
-	"\x14_retry_after_seconds*\x8d\x01\n" +
+	"\x14_retry_after_seconds\"7\n" +
+	"\x12HealthCheckRequest\x12!\n" +
+	"\fservice_name\x18\x01 \x01(\tR\vserviceName\"\xa0\x02\n" +
+	"\x13HealthCheckResponse\x12A\n" +
+	"\x06status\x18\x01 \x01(\x0e2).pulumicost.v1.HealthCheckResponse.StatusR\x06status\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12B\n" +
+	"\x0flast_check_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\rlastCheckTime\"h\n" +
+	"\x06Status\x12\x16\n" +
+	"\x12STATUS_UNSPECIFIED\x10\x00\x12\x12\n" +
+	"\x0eSTATUS_SERVING\x10\x01\x12\x16\n" +
+	"\x12STATUS_NOT_SERVING\x10\x02\x12\x1a\n" +
+	"\x16STATUS_SERVICE_UNKNOWN\x10\x03\"N\n" +
+	"\x11GetMetricsRequest\x12!\n" +
+	"\fmetric_names\x18\x01 \x03(\tR\vmetricNames\x12\x16\n" +
+	"\x06format\x18\x02 \x01(\tR\x06format\"\x97\x01\n" +
+	"\x12GetMetricsResponse\x12/\n" +
+	"\ametrics\x18\x01 \x03(\v2\x15.pulumicost.v1.MetricR\ametrics\x128\n" +
+	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x16\n" +
+	"\x06format\x18\x03 \x01(\tR\x06format\"\x96\x01\n" +
+	"\x06Metric\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
+	"\x04help\x18\x02 \x01(\tR\x04help\x12-\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x19.pulumicost.v1.MetricTypeR\x04type\x125\n" +
+	"\asamples\x18\x04 \x03(\v2\x1b.pulumicost.v1.MetricSampleR\asamples\"\xda\x01\n" +
+	"\fMetricSample\x12?\n" +
+	"\x06labels\x18\x01 \x03(\v2'.pulumicost.v1.MetricSample.LabelsEntryR\x06labels\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value\x128\n" +
+	"\ttimestamp\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"x\n" +
+	" GetServiceLevelIndicatorsRequest\x127\n" +
+	"\n" +
+	"time_range\x18\x01 \x01(\v2\x18.pulumicost.v1.TimeRangeR\ttimeRange\x12\x1b\n" +
+	"\tsli_names\x18\x02 \x03(\tR\bsliNames\"\xa4\x01\n" +
+	"!GetServiceLevelIndicatorsResponse\x128\n" +
+	"\x04slis\x18\x01 \x03(\v2$.pulumicost.v1.ServiceLevelIndicatorR\x04slis\x12E\n" +
+	"\x10measurement_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x0fmeasurementTime\"\xcc\x01\n" +
+	"\x15ServiceLevelIndicator\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\x01R\x05value\x12\x12\n" +
+	"\x04unit\x18\x04 \x01(\tR\x04unit\x12!\n" +
+	"\ftarget_value\x18\x05 \x01(\x01R\vtargetValue\x120\n" +
+	"\x06status\x18\x06 \x01(\x0e2\x18.pulumicost.v1.SLIStatusR\x06status\"k\n" +
+	"\tTimeRange\x120\n" +
+	"\x05start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x05start\x12,\n" +
+	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x03end\"\xf7\x01\n" +
+	"\x11TelemetryMetadata\x12\x19\n" +
+	"\btrace_id\x18\x01 \x01(\tR\atraceId\x12\x17\n" +
+	"\aspan_id\x18\x02 \x01(\tR\x06spanId\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x03 \x01(\tR\trequestId\x12,\n" +
+	"\x12processing_time_ms\x18\x04 \x01(\x03R\x10processingTimeMs\x12\x1f\n" +
+	"\vdata_source\x18\x05 \x01(\tR\n" +
+	"dataSource\x12\x1b\n" +
+	"\tcache_hit\x18\x06 \x01(\bR\bcacheHit\x12#\n" +
+	"\rquality_score\x18\a \x01(\x01R\fqualityScore\"\x80\x03\n" +
+	"\bLogEntry\x128\n" +
+	"\ttimestamp\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x14\n" +
+	"\x05level\x18\x02 \x01(\tR\x05level\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\x12\x1c\n" +
+	"\tcomponent\x18\x04 \x01(\tR\tcomponent\x12\x19\n" +
+	"\btrace_id\x18\x05 \x01(\tR\atraceId\x12\x17\n" +
+	"\aspan_id\x18\x06 \x01(\tR\x06spanId\x12;\n" +
+	"\x06fields\x18\a \x03(\v2#.pulumicost.v1.LogEntry.FieldsEntryR\x06fields\x12@\n" +
+	"\rerror_details\x18\b \x01(\v2\x1b.pulumicost.v1.ErrorDetailsR\ferrorDetails\x1a9\n" +
+	"\vFieldsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xcc\x01\n" +
+	"\fErrorDetails\x12\x1d\n" +
+	"\n" +
+	"error_code\x18\x01 \x01(\tR\terrorCode\x12%\n" +
+	"\x0eerror_category\x18\x02 \x01(\tR\rerrorCategory\x12\x1f\n" +
+	"\vstack_trace\x18\x03 \x01(\tR\n" +
+	"stackTrace\x12.\n" +
+	"\x13retry_after_seconds\x18\x04 \x01(\x05R\x11retryAfterSeconds\x12%\n" +
+	"\x0ecorrelation_id\x18\x05 \x01(\tR\rcorrelationId*\x8d\x01\n" +
 	"\rErrorCategory\x12\x1e\n" +
 	"\x1aERROR_CATEGORY_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18ERROR_CATEGORY_TRANSIENT\x10\x01\x12\x1c\n" +
@@ -1237,13 +2390,30 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x1aERROR_CODE_MISSING_API_KEY\x10\r\x12\x1f\n" +
 	"\x1bERROR_CODE_INVALID_ENDPOINT\x10\x0e\x12\x1f\n" +
 	"\x1bERROR_CODE_INVALID_PROVIDER\x10\x0f\x12$\n" +
-	" ERROR_CODE_PLUGIN_NOT_CONFIGURED\x10\x102\xc1\x03\n" +
+	" ERROR_CODE_PLUGIN_NOT_CONFIGURED\x10\x10*\x8d\x01\n" +
+	"\n" +
+	"MetricType\x12\x1b\n" +
+	"\x17METRIC_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13METRIC_TYPE_COUNTER\x10\x01\x12\x15\n" +
+	"\x11METRIC_TYPE_GAUGE\x10\x02\x12\x19\n" +
+	"\x15METRIC_TYPE_HISTOGRAM\x10\x03\x12\x17\n" +
+	"\x13METRIC_TYPE_SUMMARY\x10\x04*w\n" +
+	"\tSLIStatus\x12\x1a\n" +
+	"\x16SLI_STATUS_UNSPECIFIED\x10\x00\x12\x1d\n" +
+	"\x19SLI_STATUS_MEETING_TARGET\x10\x01\x12\x16\n" +
+	"\x12SLI_STATUS_WARNING\x10\x02\x12\x17\n" +
+	"\x13SLI_STATUS_CRITICAL\x10\x032\xc1\x03\n" +
 	"\x11CostSourceService\x12?\n" +
 	"\x04Name\x12\x1a.pulumicost.v1.NameRequest\x1a\x1b.pulumicost.v1.NameResponse\x12K\n" +
 	"\bSupports\x12\x1e.pulumicost.v1.SupportsRequest\x1a\x1f.pulumicost.v1.SupportsResponse\x12Z\n" +
 	"\rGetActualCost\x12#.pulumicost.v1.GetActualCostRequest\x1a$.pulumicost.v1.GetActualCostResponse\x12c\n" +
 	"\x10GetProjectedCost\x12&.pulumicost.v1.GetProjectedCostRequest\x1a'.pulumicost.v1.GetProjectedCostResponse\x12]\n" +
-	"\x0eGetPricingSpec\x12$.pulumicost.v1.GetPricingSpecRequest\x1a%.pulumicost.v1.GetPricingSpecResponseB4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
+	"\x0eGetPricingSpec\x12$.pulumicost.v1.GetPricingSpecRequest\x1a%.pulumicost.v1.GetPricingSpecResponse2\xbf\x02\n" +
+	"\x14ObservabilityService\x12T\n" +
+	"\vHealthCheck\x12!.pulumicost.v1.HealthCheckRequest\x1a\".pulumicost.v1.HealthCheckResponse\x12Q\n" +
+	"\n" +
+	"GetMetrics\x12 .pulumicost.v1.GetMetricsRequest\x1a!.pulumicost.v1.GetMetricsResponse\x12~\n" +
+	"\x19GetServiceLevelIndicators\x12/.pulumicost.v1.GetServiceLevelIndicatorsRequest\x1a0.pulumicost.v1.GetServiceLevelIndicatorsResponseB4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
 
 var (
 	file_pulumicost_v1_costsource_proto_rawDescOnce sync.Once
@@ -1257,64 +2427,105 @@ func file_pulumicost_v1_costsource_proto_rawDescGZIP() []byte {
 	return file_pulumicost_v1_costsource_proto_rawDescData
 }
 
-var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
 var file_pulumicost_v1_costsource_proto_goTypes = []any{
-	(ErrorCategory)(0),               // 0: pulumicost.v1.ErrorCategory
-	(ErrorCode)(0),                   // 1: pulumicost.v1.ErrorCode
-	(*NameRequest)(nil),              // 2: pulumicost.v1.NameRequest
-	(*NameResponse)(nil),             // 3: pulumicost.v1.NameResponse
-	(*SupportsRequest)(nil),          // 4: pulumicost.v1.SupportsRequest
-	(*SupportsResponse)(nil),         // 5: pulumicost.v1.SupportsResponse
-	(*GetActualCostRequest)(nil),     // 6: pulumicost.v1.GetActualCostRequest
-	(*GetActualCostResponse)(nil),    // 7: pulumicost.v1.GetActualCostResponse
-	(*GetProjectedCostRequest)(nil),  // 8: pulumicost.v1.GetProjectedCostRequest
-	(*GetProjectedCostResponse)(nil), // 9: pulumicost.v1.GetProjectedCostResponse
-	(*GetPricingSpecRequest)(nil),    // 10: pulumicost.v1.GetPricingSpecRequest
-	(*GetPricingSpecResponse)(nil),   // 11: pulumicost.v1.GetPricingSpecResponse
-	(*ResourceDescriptor)(nil),       // 12: pulumicost.v1.ResourceDescriptor
-	(*ActualCostResult)(nil),         // 13: pulumicost.v1.ActualCostResult
-	(*UsageMetricHint)(nil),          // 14: pulumicost.v1.UsageMetricHint
-	(*PricingSpec)(nil),              // 15: pulumicost.v1.PricingSpec
-	(*ErrorDetail)(nil),              // 16: pulumicost.v1.ErrorDetail
-	nil,                              // 17: pulumicost.v1.GetActualCostRequest.TagsEntry
-	nil,                              // 18: pulumicost.v1.ResourceDescriptor.TagsEntry
-	nil,                              // 19: pulumicost.v1.PricingSpec.PluginMetadataEntry
-	nil,                              // 20: pulumicost.v1.ErrorDetail.DetailsEntry
-	(*timestamppb.Timestamp)(nil),    // 21: google.protobuf.Timestamp
+	(ErrorCategory)(0),                        // 0: pulumicost.v1.ErrorCategory
+	(ErrorCode)(0),                            // 1: pulumicost.v1.ErrorCode
+	(MetricType)(0),                           // 2: pulumicost.v1.MetricType
+	(SLIStatus)(0),                            // 3: pulumicost.v1.SLIStatus
+	(HealthCheckResponse_Status)(0),           // 4: pulumicost.v1.HealthCheckResponse.Status
+	(*NameRequest)(nil),                       // 5: pulumicost.v1.NameRequest
+	(*NameResponse)(nil),                      // 6: pulumicost.v1.NameResponse
+	(*SupportsRequest)(nil),                   // 7: pulumicost.v1.SupportsRequest
+	(*SupportsResponse)(nil),                  // 8: pulumicost.v1.SupportsResponse
+	(*GetActualCostRequest)(nil),              // 9: pulumicost.v1.GetActualCostRequest
+	(*GetActualCostResponse)(nil),             // 10: pulumicost.v1.GetActualCostResponse
+	(*GetProjectedCostRequest)(nil),           // 11: pulumicost.v1.GetProjectedCostRequest
+	(*GetProjectedCostResponse)(nil),          // 12: pulumicost.v1.GetProjectedCostResponse
+	(*GetPricingSpecRequest)(nil),             // 13: pulumicost.v1.GetPricingSpecRequest
+	(*GetPricingSpecResponse)(nil),            // 14: pulumicost.v1.GetPricingSpecResponse
+	(*ResourceDescriptor)(nil),                // 15: pulumicost.v1.ResourceDescriptor
+	(*ActualCostResult)(nil),                  // 16: pulumicost.v1.ActualCostResult
+	(*UsageMetricHint)(nil),                   // 17: pulumicost.v1.UsageMetricHint
+	(*PricingSpec)(nil),                       // 18: pulumicost.v1.PricingSpec
+	(*ErrorDetail)(nil),                       // 19: pulumicost.v1.ErrorDetail
+	(*HealthCheckRequest)(nil),                // 20: pulumicost.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil),               // 21: pulumicost.v1.HealthCheckResponse
+	(*GetMetricsRequest)(nil),                 // 22: pulumicost.v1.GetMetricsRequest
+	(*GetMetricsResponse)(nil),                // 23: pulumicost.v1.GetMetricsResponse
+	(*Metric)(nil),                            // 24: pulumicost.v1.Metric
+	(*MetricSample)(nil),                      // 25: pulumicost.v1.MetricSample
+	(*GetServiceLevelIndicatorsRequest)(nil),  // 26: pulumicost.v1.GetServiceLevelIndicatorsRequest
+	(*GetServiceLevelIndicatorsResponse)(nil), // 27: pulumicost.v1.GetServiceLevelIndicatorsResponse
+	(*ServiceLevelIndicator)(nil),             // 28: pulumicost.v1.ServiceLevelIndicator
+	(*TimeRange)(nil),                         // 29: pulumicost.v1.TimeRange
+	(*TelemetryMetadata)(nil),                 // 30: pulumicost.v1.TelemetryMetadata
+	(*LogEntry)(nil),                          // 31: pulumicost.v1.LogEntry
+	(*ErrorDetails)(nil),                      // 32: pulumicost.v1.ErrorDetails
+	nil,                                       // 33: pulumicost.v1.GetActualCostRequest.TagsEntry
+	nil,                                       // 34: pulumicost.v1.ResourceDescriptor.TagsEntry
+	nil,                                       // 35: pulumicost.v1.PricingSpec.PluginMetadataEntry
+	nil,                                       // 36: pulumicost.v1.ErrorDetail.DetailsEntry
+	nil,                                       // 37: pulumicost.v1.MetricSample.LabelsEntry
+	nil,                                       // 38: pulumicost.v1.LogEntry.FieldsEntry
+	(*timestamppb.Timestamp)(nil),             // 39: google.protobuf.Timestamp
 }
 var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
-	12, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	21, // 1: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
-	21, // 2: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
-	17, // 3: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
-	13, // 4: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
-	12, // 5: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	12, // 6: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	15, // 7: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
-	18, // 8: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
-	21, // 9: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
-	14, // 10: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
-	19, // 11: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
+	15, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	39, // 1: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
+	39, // 2: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
+	33, // 3: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
+	16, // 4: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
+	15, // 5: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	15, // 6: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	18, // 7: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
+	34, // 8: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
+	39, // 9: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
+	17, // 10: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
+	35, // 11: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
 	1,  // 12: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
 	0,  // 13: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
-	20, // 14: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
-	21, // 15: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
-	2,  // 16: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
-	4,  // 17: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
-	6,  // 18: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
-	8,  // 19: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
-	10, // 20: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
-	3,  // 21: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
-	5,  // 22: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
-	7,  // 23: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
-	9,  // 24: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
-	11, // 25: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
-	21, // [21:26] is the sub-list for method output_type
-	16, // [16:21] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	36, // 14: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
+	39, // 15: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
+	4,  // 16: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
+	39, // 17: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
+	24, // 18: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
+	39, // 19: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
+	2,  // 20: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
+	25, // 21: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
+	37, // 22: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
+	39, // 23: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
+	29, // 24: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
+	28, // 25: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
+	39, // 26: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
+	3,  // 27: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
+	39, // 28: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
+	39, // 29: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
+	39, // 30: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	38, // 31: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
+	32, // 32: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
+	5,  // 33: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
+	7,  // 34: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
+	9,  // 35: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
+	11, // 36: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
+	13, // 37: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
+	20, // 38: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
+	22, // 39: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
+	26, // 40: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
+	6,  // 41: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
+	8,  // 42: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
+	10, // 43: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
+	12, // 44: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
+	14, // 45: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
+	21, // 46: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
+	23, // 47: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
+	27, // 48: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
+	41, // [41:49] is the sub-list for method output_type
+	33, // [33:41] is the sub-list for method input_type
+	33, // [33:33] is the sub-list for extension type_name
+	33, // [33:33] is the sub-list for extension extendee
+	0,  // [0:33] is the sub-list for field type_name
 }
 
 func init() { file_pulumicost_v1_costsource_proto_init() }
@@ -1328,10 +2539,10 @@ func file_pulumicost_v1_costsource_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_costsource_proto_rawDesc), len(file_pulumicost_v1_costsource_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   19,
+			NumEnums:      5,
+			NumMessages:   34,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_pulumicost_v1_costsource_proto_goTypes,
 		DependencyIndexes: file_pulumicost_v1_costsource_proto_depIdxs,

@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Health Check Response Example",
+  "description": "Example health check responses for PulumiCost plugins",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["UNKNOWN", "SERVING", "NOT_SERVING", "SERVICE_UNKNOWN"],
+      "description": "Current health status"
+    },
+    "message": {
+      "type": "string",
+      "description": "Optional details about the health status"
+    },
+    "last_check_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this status was last updated"
+    },
+    "checks": {
+      "type": "object",
+      "description": "Individual component health checks",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["UNKNOWN", "SERVING", "NOT_SERVING", "SERVICE_UNKNOWN"]
+          },
+          "message": {
+            "type": "string"
+          },
+          "last_check": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "response_time_ms": {
+            "type": "number",
+            "description": "Response time for this check in milliseconds"
+          }
+        },
+        "required": ["status"]
+      }
+    }
+  },
+  "required": ["status", "last_check_time"],
+  "examples": [
+    {
+      "status": "SERVING",
+      "message": "All systems operational",
+      "last_check_time": "2024-01-15T10:30:00Z",
+      "checks": {
+        "database": {
+          "status": "SERVING",
+          "message": "Database connection healthy",
+          "last_check": "2024-01-15T10:29:55Z",
+          "response_time_ms": 12.5
+        },
+        "aws_billing_api": {
+          "status": "SERVING",
+          "message": "AWS Billing API accessible",
+          "last_check": "2024-01-15T10:29:58Z",
+          "response_time_ms": 245.3
+        },
+        "azure_cost_api": {
+          "status": "SERVING",
+          "message": "Azure Cost Management API accessible",
+          "last_check": "2024-01-15T10:29:59Z",
+          "response_time_ms": 189.7
+        },
+        "cache": {
+          "status": "SERVING",
+          "message": "Redis cache responsive",
+          "last_check": "2024-01-15T10:29:57Z",
+          "response_time_ms": 3.2
+        },
+        "memory": {
+          "status": "SERVING",
+          "message": "Memory usage: 67% of available",
+          "last_check": "2024-01-15T10:30:00Z",
+          "response_time_ms": 0.1
+        }
+      }
+    },
+    {
+      "status": "NOT_SERVING",
+      "message": "Upstream dependency unavailable",
+      "last_check_time": "2024-01-15T10:30:00Z",
+      "checks": {
+        "database": {
+          "status": "SERVING",
+          "message": "Database connection healthy",
+          "last_check": "2024-01-15T10:29:55Z",
+          "response_time_ms": 11.8
+        },
+        "aws_billing_api": {
+          "status": "NOT_SERVING",
+          "message": "Connection timeout after 30 seconds",
+          "last_check": "2024-01-15T10:29:30Z",
+          "response_time_ms": 30000
+        },
+        "azure_cost_api": {
+          "status": "SERVING",
+          "message": "Azure Cost Management API accessible",
+          "last_check": "2024-01-15T10:29:59Z",
+          "response_time_ms": 203.1
+        },
+        "cache": {
+          "status": "SERVING",
+          "message": "Redis cache responsive",
+          "last_check": "2024-01-15T10:29:57Z",
+          "response_time_ms": 2.9
+        },
+        "memory": {
+          "status": "SERVING",
+          "message": "Memory usage: 71% of available",
+          "last_check": "2024-01-15T10:30:00Z",
+          "response_time_ms": 0.1
+        }
+      }
+    },
+    {
+      "status": "SERVING",
+      "message": "Degraded performance - high latency",
+      "last_check_time": "2024-01-15T10:30:00Z",
+      "checks": {
+        "database": {
+          "status": "SERVING",
+          "message": "Database connection slow but functional",
+          "last_check": "2024-01-15T10:29:55Z",
+          "response_time_ms": 156.7
+        },
+        "aws_billing_api": {
+          "status": "SERVING",
+          "message": "AWS Billing API accessible but slow",
+          "last_check": "2024-01-15T10:29:58Z",
+          "response_time_ms": 2340.2
+        },
+        "azure_cost_api": {
+          "status": "SERVING",
+          "message": "Azure Cost Management API accessible",
+          "last_check": "2024-01-15T10:29:59Z",
+          "response_time_ms": 187.3
+        },
+        "cache": {
+          "status": "SERVING",
+          "message": "Redis cache responsive",
+          "last_check": "2024-01-15T10:29:57Z",
+          "response_time_ms": 4.1
+        },
+        "memory": {
+          "status": "SERVING",
+          "message": "Memory usage: 89% of available - approaching limit",
+          "last_check": "2024-01-15T10:30:00Z",
+          "response_time_ms": 0.2
+        }
+      }
+    }
+  ]
+}
