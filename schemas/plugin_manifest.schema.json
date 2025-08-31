@@ -1,0 +1,366 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.pulumicost.dev/schemas/plugin_manifest.schema.json",
+  "title": "Plugin Manifest v1.0.0",
+  "description": "Plugin manifest specification for PulumiCost plugin discovery and management",
+  "type": "object",
+  "required": ["name", "version", "api_version", "plugin_type", "capabilities"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "minLength": 3,
+      "maxLength": 64,
+      "description": "Plugin name using lowercase alphanumeric characters and hyphens"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Human-readable display name for the plugin"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Brief description of the plugin's functionality"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version of the plugin (semver 2.0.0 compliant)"
+    },
+    "api_version": {
+      "type": "string",
+      "pattern": "^v[1-9]\\d*$",
+      "description": "PulumiCost API version supported by this plugin (e.g., 'v1')"
+    },
+    "plugin_type": {
+      "type": "string",
+      "enum": ["cost_source", "observability", "registry", "aggregator"],
+      "description": "Type of plugin functionality provided"
+    },
+    "capabilities": {
+      "type": "array",
+      "description": "List of capabilities supported by this plugin",
+      "items": {
+        "type": "string",
+        "enum": [
+          "actual_cost",
+          "projected_cost", 
+          "pricing_spec",
+          "real_time_cost",
+          "historical_cost",
+          "cost_forecasting",
+          "cost_optimization",
+          "budget_alerts",
+          "custom_metrics",
+          "multi_cloud",
+          "kubernetes_native",
+          "tagging_support",
+          "drill_down",
+          "cost_allocation",
+          "showback",
+          "chargeback"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "supported_providers": {
+      "type": "array",
+      "description": "Cloud providers supported by this plugin",
+      "items": {
+        "type": "string",
+        "enum": ["aws", "azure", "gcp", "kubernetes", "alibaba", "oracle", "ibm", "custom"]
+      },
+      "uniqueItems": true
+    },
+    "supported_regions": {
+      "type": "array",
+      "description": "Specific regions supported (optional, empty means all regions)",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "requirements": {
+      "type": "object",
+      "description": "Plugin runtime and dependency requirements",
+      "properties": {
+        "min_api_version": {
+          "type": "string",
+          "pattern": "^v[1-9]\\d*$",
+          "description": "Minimum PulumiCost API version required"
+        },
+        "max_api_version": {
+          "type": "string", 
+          "pattern": "^v[1-9]\\d*$",
+          "description": "Maximum PulumiCost API version supported"
+        },
+        "os": {
+          "type": "array",
+          "description": "Supported operating systems",
+          "items": {
+            "type": "string",
+            "enum": ["linux", "windows", "darwin", "freebsd"]
+          },
+          "uniqueItems": true
+        },
+        "arch": {
+          "type": "array",
+          "description": "Supported CPU architectures",
+          "items": {
+            "type": "string",
+            "enum": ["amd64", "arm64", "386", "arm"]
+          },
+          "uniqueItems": true
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "External dependencies required by the plugin",
+          "items": {
+            "type": "object",
+            "required": ["name", "version"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Dependency name"
+              },
+              "version": {
+                "type": "string",
+                "description": "Version constraint (semver range)"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["binary", "library", "service", "plugin"],
+                "description": "Type of dependency"
+              },
+              "optional": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the dependency is optional"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "environment_variables": {
+          "type": "array",
+          "description": "Required environment variables",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Environment variable name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the environment variable"
+              },
+              "required": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the environment variable is required"
+              },
+              "default_value": {
+                "type": "string",
+                "description": "Default value if not provided"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "authentication": {
+      "type": "object",
+      "description": "Authentication and security requirements",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether authentication is required"
+        },
+        "methods": {
+          "type": "array",
+          "description": "Supported authentication methods",
+          "items": {
+            "type": "string",
+            "enum": ["api_key", "oauth2", "service_account", "iam_role", "mutual_tls", "basic_auth", "bearer_token"]
+          },
+          "uniqueItems": true
+        },
+        "scopes": {
+          "type": "array",
+          "description": "Required authentication scopes",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "permissions": {
+          "type": "array",
+          "description": "Required permissions or policies",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "installation": {
+      "type": "object",
+      "description": "Installation and distribution information",
+      "properties": {
+        "binary_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to download the plugin binary"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$",
+          "description": "SHA-256 checksum of the plugin binary"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the plugin binary in bytes"
+        },
+        "install_script": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to installation script (optional)"
+        },
+        "docker_image": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*(/[a-z0-9]([a-z0-9._-]*[a-z0-9])?)*:.*$",
+          "description": "Docker image for containerized deployment"
+        }
+      },
+      "additionalProperties": false
+    },
+    "configuration": {
+      "type": "object",
+      "description": "Plugin configuration schema and defaults",
+      "properties": {
+        "schema_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to JSON schema for plugin configuration"
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Default configuration values",
+          "additionalProperties": true
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example configurations",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "contacts": {
+      "type": "object",
+      "description": "Contact information for the plugin",
+      "properties": {
+        "maintainers": {
+          "type": "array",
+          "description": "Plugin maintainers",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Maintainer name"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "Maintainer email"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Maintainer URL or profile"
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "support_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for support and bug reports"
+        },
+        "documentation_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to plugin documentation"
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for categorization and discovery",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "description": "Tags for categorizing the plugin",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "license": {
+          "type": "string",
+          "description": "Plugin license (SPDX identifier preferred)"
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Plugin homepage URL"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Plugin source code repository URL"
+        },
+        "release_notes_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to release notes for this version"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Plugin creation timestamp"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

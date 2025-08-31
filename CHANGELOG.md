@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Plugin Registry Specification**: Comprehensive plugin discovery, registration, and management system
+  - New `PluginRegistryService` gRPC service with plugin lifecycle management operations
+  - Plugin manifest format with JSON schema validation for metadata, requirements, and capabilities
+  - Registry format for aggregating plugin listings with categories, security status, and statistics
+  - Plugin discovery mechanisms supporting filesystem, registry, and URL-based sources
+  - Versioning and compatibility rules with semantic versioning and API compatibility matrices
+  - Security model with authentication methods, plugin verification, and vulnerability scanning
+  - Lifecycle management specification for installation, updates, removal, and validation
+- **Go SDK Plugin Registry Components**: Reference implementation for plugin registry system
+  - `registry/types.go`: Complete type system for manifests, registries, and validation results
+  - `registry/interfaces.go`: Service interfaces for registries, discovery, installation, and validation
+  - `registry/validation.go`: Comprehensive plugin validation with manifest, binary, and security checks
+  - `registry/validation_test.go`: Extensive test suite covering validation scenarios and edge cases
+- **Plugin Examples and Documentation**
+  - Example plugin manifests for Kubecost and AWS Cost Explorer plugins
+  - Community registry example with complete plugin listings and metadata
+  - Comprehensive plugin registry specification document with implementation guidance
+  - Plugin registry development guide with testing, troubleshooting, and best practices
+  - Plugin registry examples documentation with usage patterns and validation examples
+- **Protocol Buffer Registry Extensions**: Plugin registry service definitions and message types
+  - `plugin_registry.proto`: Complete gRPC service for plugin registry operations
+  - Plugin discovery, registration, validation, and management message types
+  - Security scanning, vulnerability reporting, and validation result structures
+  - Plugin filtering, searching, and compatibility checking capabilities
+- **JSON Schema Specifications**: Validation schemas for plugin ecosystem
+  - `plugin_manifest.schema.json`: Comprehensive schema for plugin manifests with 16 plugin types and capabilities
+  - `plugin_registry.schema.json`: Registry format schema with metadata, versioning, and security information
 - **Telemetry and Observability Specification**: Complete observability framework for PulumiCost plugins
   - New `ObservabilityService` gRPC service with health checks, metrics, and SLI endpoints
   - Comprehensive metrics specification covering latency, throughput, error rates, and resource usage
