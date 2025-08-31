@@ -1,38 +1,337 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spec.pulumicost.dev/schemas/plugin_manifest.schema.json",
-  "title": "Plugin Manifest v0.1.0",
-  "description": "Comprehensive plugin manifest schema for PulumiCost plugin registration and management",
+  "title": "Plugin Manifest v1.0.0",
+  "description": "Plugin manifest specification for PulumiCost plugin discovery and management",
   "type": "object",
-  "required": ["metadata", "specification", "installation"],
+  "required": ["name", "version", "api_version", "plugin_type", "capabilities"],
   "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "minLength": 3,
+      "maxLength": 64,
+      "description": "Plugin name using lowercase alphanumeric characters and hyphens"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Human-readable display name for the plugin"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Brief description of the plugin's functionality"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version of the plugin (semver 2.0.0 compliant)"
+    },
+    "api_version": {
+      "type": "string",
+      "pattern": "^v[1-9]\\d*$",
+      "description": "PulumiCost API version supported by this plugin (e.g., 'v1')"
+    },
+    "plugin_type": {
+      "type": "string",
+      "enum": ["cost_source", "observability", "registry", "aggregator"],
+      "description": "Type of plugin functionality provided"
+    },
+    "capabilities": {
+      "type": "array",
+      "description": "List of capabilities supported by this plugin",
+      "items": {
+        "type": "string",
+        "enum": [
+          "actual_cost",
+          "projected_cost", 
+          "pricing_spec",
+          "real_time_cost",
+          "historical_cost",
+          "cost_forecasting",
+          "cost_optimization",
+          "budget_alerts",
+          "custom_metrics",
+          "multi_cloud",
+          "kubernetes_native",
+          "tagging_support",
+          "drill_down",
+          "cost_allocation",
+          "showback",
+          "chargeback"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "supported_providers": {
+      "type": "array",
+      "description": "Cloud providers supported by this plugin",
+      "items": {
+        "type": "string",
+        "enum": ["aws", "azure", "gcp", "kubernetes", "alibaba", "oracle", "ibm", "custom"]
+      },
+      "uniqueItems": true
+    },
+    "supported_regions": {
+      "type": "array",
+      "description": "Specific regions supported (optional, empty means all regions)",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "requirements": {
+      "type": "object",
+      "description": "Plugin runtime and dependency requirements",
+      "properties": {
+        "min_api_version": {
+          "type": "string",
+          "pattern": "^v[1-9]\\d*$",
+          "description": "Minimum PulumiCost API version required"
+        },
+        "max_api_version": {
+          "type": "string", 
+          "pattern": "^v[1-9]\\d*$",
+          "description": "Maximum PulumiCost API version supported"
+        },
+        "os": {
+          "type": "array",
+          "description": "Supported operating systems",
+          "items": {
+            "type": "string",
+            "enum": ["linux", "windows", "darwin", "freebsd"]
+          },
+          "uniqueItems": true
+        },
+        "arch": {
+          "type": "array",
+          "description": "Supported CPU architectures",
+          "items": {
+            "type": "string",
+            "enum": ["amd64", "arm64", "386", "arm"]
+          },
+          "uniqueItems": true
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "External dependencies required by the plugin",
+          "items": {
+            "type": "object",
+            "required": ["name", "version"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Dependency name"
+              },
+              "version": {
+                "type": "string",
+                "description": "Version constraint (semver range)"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["binary", "library", "service", "plugin"],
+                "description": "Type of dependency"
+              },
+              "optional": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the dependency is optional"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "environment_variables": {
+          "type": "array",
+          "description": "Required environment variables",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Environment variable name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the environment variable"
+              },
+              "required": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the environment variable is required"
+              },
+              "default_value": {
+                "type": "string",
+                "description": "Default value if not provided"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "authentication": {
+      "type": "object",
+      "description": "Authentication and security requirements",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether authentication is required"
+        },
+        "methods": {
+          "type": "array",
+          "description": "Supported authentication methods",
+          "items": {
+            "type": "string",
+            "enum": ["api_key", "oauth2", "service_account", "iam_role", "mutual_tls", "basic_auth", "bearer_token"]
+          },
+          "uniqueItems": true
+        },
+        "scopes": {
+          "type": "array",
+          "description": "Required authentication scopes",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "permissions": {
+          "type": "array",
+          "description": "Required permissions or policies",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "installation": {
+      "type": "object",
+      "description": "Installation and distribution information",
+      "properties": {
+        "binary_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to download the plugin binary"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$",
+          "description": "SHA-256 checksum of the plugin binary"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the plugin binary in bytes"
+        },
+        "install_script": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to installation script (optional)"
+        },
+        "docker_image": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*(/[a-z0-9]([a-z0-9._-]*[a-z0-9])?)*:.*$",
+          "description": "Docker image for containerized deployment"
+        }
+      },
+      "additionalProperties": false
+    },
+    "configuration": {
+      "type": "object",
+      "description": "Plugin configuration schema and defaults",
+      "properties": {
+        "schema_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to JSON schema for plugin configuration"
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Default configuration values",
+          "additionalProperties": true
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example configurations",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "contacts": {
+      "type": "object",
+      "description": "Contact information for the plugin",
+      "properties": {
+        "maintainers": {
+          "type": "array",
+          "description": "Plugin maintainers",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Maintainer name"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "Maintainer email"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Maintainer URL or profile"
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "support_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for support and bug reports"
+        },
+        "documentation_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to plugin documentation"
+        }
+      },
+      "additionalProperties": false
+    },
     "metadata": {
       "type": "object",
-      "required": ["name", "version", "description", "author"],
+      "description": "Additional metadata for categorization and discovery",
       "properties": {
-        "name": {
-          "type": "string",
-          "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
-          "minLength": 2,
-          "maxLength": 50,
-          "description": "Unique plugin identifier (lowercase, alphanumeric with hyphens)"
+        "tags": {
+          "type": "array",
+          "description": "Tags for categorizing the plugin",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         },
-        "version": {
+        "license": {
           "type": "string",
-          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
-          "description": "Semantic version (e.g., '1.0.0', '2.1.0-beta.1')"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 10,
-          "maxLength": 500,
-          "description": "Human-readable plugin description"
-        },
-        "author": {
-          "type": "string",
-          "minLength": 2,
-          "maxLength": 100,
-          "description": "Plugin author or organization name"
+          "description": "Plugin license (SPDX identifier preferred)"
         },
         "homepage": {
           "type": "string",
@@ -42,466 +341,25 @@
         "repository": {
           "type": "string",
           "format": "uri",
-          "description": "Source code repository URL"
+          "description": "Plugin source code repository URL"
         },
-        "license": {
-          "type": "string",
-          "enum": [
-            "Apache-2.0", "MIT", "BSD-2-Clause", "BSD-3-Clause", 
-            "GPL-2.0", "GPL-3.0", "LGPL-2.1", "LGPL-3.0",
-            "MPL-2.0", "ISC", "Unlicense", "PROPRIETARY"
-          ],
-          "description": "Plugin license identifier (SPDX format)"
-        },
-        "keywords": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 30,
-            "pattern": "^[a-z0-9]+([a-z0-9-]*[a-z0-9])?$"
-          },
-          "maxItems": 10,
-          "uniqueItems": true,
-          "description": "Searchable keywords for plugin discovery"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Plugin creation timestamp (ISO 8601)"
-        },
-        "updated_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Plugin last updated timestamp (ISO 8601)"
-        }
-      },
-      "additionalProperties": false
-    },
-    
-    "specification": {
-      "type": "object",
-      "required": ["spec_version", "supported_providers", "service_definition"],
-      "properties": {
-        "spec_version": {
-          "type": "string",
-          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
-          "description": "PulumiCost specification version supported (e.g., '0.1.0')"
-        },
-        "supported_providers": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["aws", "azure", "gcp", "kubernetes", "custom"]
-          },
-          "minItems": 1,
-          "maxItems": 5,
-          "uniqueItems": true,
-          "description": "Cloud providers supported by this plugin"
-        },
-        "supported_resources": {
-          "type": "object",
-          "patternProperties": {
-            "^(aws|azure|gcp|kubernetes|custom)$": {
-              "type": "object",
-              "properties": {
-                "resource_types": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 50
-                  },
-                  "minItems": 1,
-                  "uniqueItems": true,
-                  "description": "Supported resource types for this provider"
-                },
-                "billing_modes": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "per_hour", "per_minute", "per_second", 
-                      "per_gb_month", "per_gb_hour", "per_gb_day",
-                      "per_request", "per_operation", "per_transaction",
-                      "per_execution", "per_invocation",
-                      "flat", "per_day", "per_month", "per_year",
-                      "per_cpu_hour", "per_cpu_month", "per_vcpu_hour",
-                      "per_memory_gb_hour", "per_memory_gb_month",
-                      "per_iops", "per_provisioned_iops",
-                      "per_rcu", "per_wcu", "per_dtu", "per_ru",
-                      "on_demand", "reserved", "spot", "preemptible",
-                      "savings_plan", "committed_use", "hybrid_benefit",
-                      "per_data_transfer_gb", "per_bandwidth_gb",
-                      "per_api_call", "per_lookup", "per_query"
-                    ]
-                  },
-                  "uniqueItems": true,
-                  "description": "Supported billing modes for this provider"
-                },
-                "regions": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 30
-                  },
-                  "uniqueItems": true,
-                  "description": "Supported regions for this provider"
-                }
-              },
-              "required": ["resource_types"],
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false,
-          "description": "Resource types supported per provider"
-        },
-        "capabilities": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "cost_retrieval", "cost_projection", "pricing_specs",
-              "historical_data", "real_time_data", "batch_processing",
-              "rate_limiting", "caching", "encryption", "compression",
-              "filtering", "aggregation", "multi_tenancy", "audit_logging"
-            ]
-          },
-          "uniqueItems": true,
-          "description": "Plugin-specific capabilities"
-        },
-        "service_definition": {
-          "type": "object",
-          "required": ["service_name", "package_name", "methods"],
-          "properties": {
-            "service_name": {
-              "type": "string",
-              "pattern": "^[A-Z][a-zA-Z0-9]*Service$",
-              "description": "gRPC service name (e.g., 'CostSourceService')"
-            },
-            "package_name": {
-              "type": "string",
-              "pattern": "^[a-z][a-z0-9]*(\\.v[0-9]+)?$",
-              "description": "Protobuf package name (e.g., 'pulumicost.v1')"
-            },
-            "methods": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"]
-              },
-              "minItems": 1,
-              "maxItems": 5,
-              "uniqueItems": true,
-              "description": "Implemented gRPC methods"
-            },
-            "port": {
-              "type": "integer",
-              "minimum": 1024,
-              "maximum": 65535,
-              "default": 50051,
-              "description": "Default service port"
-            },
-            "health_check_path": {
-              "type": "string",
-              "pattern": "^/[a-zA-Z0-9._/-]*$",
-              "description": "Health check endpoint path"
-            }
-          },
-          "additionalProperties": false
-        },
-        "observability_support": {
-          "type": "object",
-          "properties": {
-            "metrics_enabled": {
-              "type": "boolean",
-              "default": false,
-              "description": "Whether metrics collection is supported"
-            },
-            "tracing_enabled": {
-              "type": "boolean",
-              "default": false,
-              "description": "Whether distributed tracing is supported"
-            },
-            "logging_enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether structured logging is supported"
-            },
-            "health_checks_enabled": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether health checks are supported"
-            },
-            "sli_support": {
-              "type": "boolean",
-              "default": false,
-              "description": "Whether SLI reporting is supported"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    
-    "security": {
-      "type": "object",
-      "properties": {
-        "signature": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9+/]+=*$",
-          "description": "Base64-encoded plugin signature for verification"
-        },
-        "public_key": {
-          "type": "string",
-          "description": "Public key for signature verification"
-        },
-        "certificate_chain": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Certificate chain for verification"
-        },
-        "security_level": {
-          "type": "string",
-          "enum": ["untrusted", "community", "verified", "official"],
-          "default": "untrusted",
-          "description": "Plugin security trust level"
-        },
-        "permissions": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "network_access", "filesystem_read", "filesystem_write",
-              "environment_read", "process_spawn", "system_info",
-              "temp_files", "config_read", "metrics_collect"
-            ]
-          },
-          "uniqueItems": true,
-          "description": "Required system permissions"
-        },
-        "sandbox_required": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether sandboxing is required for this plugin"
-        }
-      },
-      "additionalProperties": false
-    },
-    
-    "installation": {
-      "type": "object",
-      "required": ["installation_method"],
-      "properties": {
-        "installation_method": {
-          "type": "string",
-          "enum": ["binary", "container", "script", "package"],
-          "description": "How to install the plugin"
-        },
-        "download_url": {
+        "release_notes_url": {
           "type": "string",
           "format": "uri",
-          "description": "Plugin download URL"
+          "description": "URL to release notes for this version"
         },
-        "checksum": {
+        "created": {
           "type": "string",
-          "pattern": "^[a-fA-F0-9]+$",
-          "minLength": 32,
-          "description": "File integrity checksum"
+          "format": "date-time",
+          "description": "Plugin creation timestamp"
         },
-        "checksum_algorithm": {
+        "updated": {
           "type": "string",
-          "enum": ["sha256", "sha512", "md5"],
-          "default": "sha256",
-          "description": "Checksum algorithm used"
-        },
-        "install_script": {
-          "type": "string",
-          "description": "Installation script content or path"
-        },
-        "pre_install_checks": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Checks to run before installation"
-        },
-        "post_install_steps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Steps to run after installation"
+          "format": "date-time",
+          "description": "Last update timestamp"
         }
       },
-      "additionalProperties": false
-    },
-    
-    "configuration": {
-      "type": "object",
-      "properties": {
-        "schema": {
-          "type": "string",
-          "description": "JSON schema for configuration validation"
-        },
-        "default_config": {
-          "type": "string",
-          "description": "Default configuration as JSON string"
-        },
-        "required_fields": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "Required configuration fields"
-        },
-        "examples": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["name", "description", "config"],
-            "properties": {
-              "name": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 50,
-                "description": "Example name"
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200,
-                "description": "Example description"
-              },
-              "config": {
-                "type": "string",
-                "description": "Example configuration as JSON string"
-              }
-            },
-            "additionalProperties": false
-          },
-          "description": "Configuration examples"
-        }
-      },
-      "additionalProperties": false
-    },
-    
-    "requirements": {
-      "type": "object",
-      "properties": {
-        "min_spec_version": {
-          "type": "string",
-          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
-          "description": "Minimum required PulumiCost spec version"
-        },
-        "max_spec_version": {
-          "type": "string",
-          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
-          "description": "Maximum supported PulumiCost spec version"
-        },
-        "dependencies": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["name", "version_constraint"],
-            "properties": {
-              "name": {
-                "type": "string",
-                "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
-                "description": "Required plugin name"
-              },
-              "version_constraint": {
-                "type": "string",
-                "pattern": "^([><=!~^]*)([0-9]+\\.[0-9]+\\.[0-9]+)(.*)$",
-                "description": "Version constraint (e.g., '>=1.0.0,<2.0.0')"
-              },
-              "optional": {
-                "type": "boolean",
-                "default": false,
-                "description": "Whether dependency is optional"
-              }
-            },
-            "additionalProperties": false
-          },
-          "description": "Plugin dependencies"
-        },
-        "system_requirements": {
-          "type": "object",
-          "properties": {
-            "min_memory_mb": {
-              "type": "integer",
-              "minimum": 64,
-              "maximum": 32768,
-              "description": "Minimum memory requirement in MB"
-            },
-            "min_disk_mb": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 10240,
-              "description": "Minimum disk space requirement in MB"
-            },
-            "supported_architectures": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["x86_64", "arm64", "i386", "armv7", "ppc64le", "s390x"]
-              },
-              "uniqueItems": true,
-              "minItems": 1,
-              "description": "Supported CPU architectures"
-            },
-            "supported_os": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["linux", "windows", "darwin", "freebsd", "openbsd", "netbsd"]
-              },
-              "uniqueItems": true,
-              "minItems": 1,
-              "description": "Supported operating systems"
-            }
-          },
-          "additionalProperties": false
-        },
-        "runtime_requirements": {
-          "type": "object",
-          "properties": {
-            "grpc_version": {
-              "type": "string",
-              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-              "description": "Required gRPC version"
-            },
-            "tls_required": {
-              "type": "boolean",
-              "default": true,
-              "description": "Whether TLS is required"
-            },
-            "auth_methods": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["none", "api_key", "jwt", "oauth2", "mtls", "basic_auth"]
-              },
-              "uniqueItems": true,
-              "description": "Supported authentication methods"
-            },
-            "timeout_seconds": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 300,
-              "default": 30,
-              "description": "Plugin response timeout in seconds"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
+      "additionalProperties": true
     }
   },
   "additionalProperties": false

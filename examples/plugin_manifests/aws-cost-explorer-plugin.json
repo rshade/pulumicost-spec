@@ -1,0 +1,123 @@
+{
+  "name": "aws-cost-explorer",
+  "display_name": "AWS Cost Explorer Plugin",
+  "description": "PulumiCost plugin for retrieving cost data from AWS Cost Explorer API",
+  "version": "2.1.0",
+  "api_version": "v1",
+  "plugin_type": "cost_source",
+  "capabilities": [
+    "actual_cost",
+    "projected_cost",
+    "pricing_spec",
+    "historical_cost",
+    "cost_forecasting",
+    "budget_alerts",
+    "tagging_support",
+    "drill_down"
+  ],
+  "supported_providers": ["aws"],
+  "supported_regions": [
+    "us-east-1", "us-east-2", "us-west-1", "us-west-2",
+    "eu-west-1", "eu-west-2", "eu-central-1", "ap-southeast-1",
+    "ap-southeast-2", "ap-northeast-1"
+  ],
+  "requirements": {
+    "min_api_version": "v1",
+    "max_api_version": "v1",
+    "os": ["linux", "darwin", "windows"],
+    "arch": ["amd64", "arm64"],
+    "dependencies": [
+      {
+        "name": "aws-sdk",
+        "version": ">=1.44.0",
+        "type": "library",
+        "optional": false
+      }
+    ],
+    "environment_variables": [
+      {
+        "name": "AWS_ACCESS_KEY_ID",
+        "description": "AWS access key ID for authentication",
+        "required": true
+      },
+      {
+        "name": "AWS_SECRET_ACCESS_KEY",
+        "description": "AWS secret access key for authentication",
+        "required": true
+      },
+      {
+        "name": "AWS_REGION",
+        "description": "Default AWS region for Cost Explorer API calls",
+        "required": false,
+        "default_value": "us-east-1"
+      },
+      {
+        "name": "AWS_PROFILE",
+        "description": "AWS profile to use for credentials",
+        "required": false
+      }
+    ]
+  },
+  "authentication": {
+    "required": true,
+    "methods": ["iam_role", "api_key", "service_account"],
+    "scopes": ["ce:GetCostAndUsage", "ce:GetUsageReport"],
+    "permissions": [
+      "ce:GetCostAndUsage",
+      "ce:GetUsageReport", 
+      "ce:GetReservationCoverage",
+      "ce:GetReservationPurchaseRecommendation",
+      "ce:GetReservationUtilization",
+      "organizations:ListAccounts"
+    ]
+  },
+  "installation": {
+    "binary_url": "https://releases.pulumicost.dev/plugins/aws-cost-explorer/2.1.0/aws-cost-explorer-plugin-linux-amd64",
+    "checksum": "sha256:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
+    "size_bytes": 23068672,
+    "docker_image": "pulumicost/aws-cost-explorer-plugin:2.1.0"
+  },
+  "configuration": {
+    "schema_url": "https://spec.pulumicost.dev/plugins/aws-cost-explorer/config-schema.json",
+    "defaults": {
+      "region": "us-east-1",
+      "granularity": "DAILY",
+      "metrics": ["BlendedCost", "UnblendedCost"],
+      "group_by": ["SERVICE"]
+    },
+    "examples": [
+      {
+        "region": "us-east-1",
+        "granularity": "DAILY",
+        "metrics": ["BlendedCost"],
+        "group_by": ["SERVICE", "LINKED_ACCOUNT"],
+        "filter": {
+          "Dimensions": {
+            "Key": "SERVICE",
+            "Values": ["Amazon Elastic Compute Cloud - Compute"]
+          }
+        }
+      }
+    ]
+  },
+  "contacts": {
+    "maintainers": [
+      {
+        "name": "PulumiCost AWS Team",
+        "email": "aws-team@pulumicost.dev",
+        "url": "https://github.com/pulumicost/aws-plugins"
+      }
+    ],
+    "support_url": "https://github.com/pulumicost/aws-cost-explorer-plugin/issues",
+    "documentation_url": "https://docs.pulumicost.dev/plugins/aws-cost-explorer"
+  },
+  "metadata": {
+    "tags": ["aws", "cost-explorer", "finops", "billing", "multi-account"],
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/pulumicost/aws-cost-explorer-plugin",
+    "repository": "https://github.com/pulumicost/aws-cost-explorer-plugin",
+    "release_notes_url": "https://github.com/pulumicost/aws-cost-explorer-plugin/releases/tag/v2.1.0",
+    "created": "2023-11-20T09:15:00Z",
+    "updated": "2024-08-29T16:45:00Z"
+  }
+}

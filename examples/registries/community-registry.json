@@ -1,0 +1,251 @@
+{
+  "registry_version": "1.0.0",
+  "registry_metadata": {
+    "name": "PulumiCost Community Registry",
+    "description": "Official community registry for PulumiCost plugins",
+    "url": "https://registry.pulumicost.dev",
+    "maintainer": {
+      "name": "PulumiCost Community",
+      "email": "registry@pulumicost.dev",
+      "url": "https://github.com/pulumicost"
+    },
+    "last_updated": "2024-08-31T17:30:00Z",
+    "supported_api_versions": ["v1"]
+  },
+  "plugins": [
+    {
+      "name": "kubecost",
+      "display_name": "Kubecost Cost Source Plugin",
+      "description": "PulumiCost plugin for retrieving cost data from Kubecost installations",
+      "latest_version": "1.2.3",
+      "plugin_type": "cost_source",
+      "supported_providers": ["kubernetes", "aws", "gcp", "azure"],
+      "capabilities": [
+        "actual_cost",
+        "projected_cost",
+        "pricing_spec",
+        "historical_cost",
+        "kubernetes_native",
+        "cost_allocation",
+        "drill_down"
+      ],
+      "versions": [
+        {
+          "version": "1.2.3",
+          "manifest_url": "https://registry.pulumicost.dev/plugins/kubecost/1.2.3/manifest.json",
+          "published": "2024-08-30T14:22:00Z",
+          "deprecated": false,
+          "yanked": false,
+          "api_compatibility": {
+            "min_api_version": "v1",
+            "max_api_version": "v1"
+          }
+        },
+        {
+          "version": "1.2.2",
+          "manifest_url": "https://registry.pulumicost.dev/plugins/kubecost/1.2.2/manifest.json",
+          "published": "2024-08-15T10:15:00Z",
+          "deprecated": false,
+          "yanked": false,
+          "api_compatibility": {
+            "min_api_version": "v1",
+            "max_api_version": "v1"
+          }
+        },
+        {
+          "version": "1.2.1",
+          "manifest_url": "https://registry.pulumicost.dev/plugins/kubecost/1.2.1/manifest.json",
+          "published": "2024-08-01T09:30:00Z",
+          "deprecated": false,
+          "yanked": false,
+          "security_advisory": {
+            "severity": "moderate",
+            "summary": "Information disclosure vulnerability in logging",
+            "url": "https://github.com/pulumicost/kubecost-plugin/security/advisories/GHSA-abc123"
+          },
+          "api_compatibility": {
+            "min_api_version": "v1",
+            "max_api_version": "v1"
+          }
+        }
+      ],
+      "downloads": {
+        "total": 15420,
+        "last_30_days": 2847
+      },
+      "rating": {
+        "average": 4.2,
+        "count": 38
+      },
+      "security_status": {
+        "status": "secure",
+        "last_audit": "2024-08-25T12:00:00Z",
+        "advisories_count": 0
+      },
+      "verified": true,
+      "tags": ["kubernetes", "cost-allocation", "monitoring", "finops"]
+    },
+    {
+      "name": "aws-cost-explorer",
+      "display_name": "AWS Cost Explorer Plugin",
+      "description": "PulumiCost plugin for retrieving cost data from AWS Cost Explorer API",
+      "latest_version": "2.1.0",
+      "plugin_type": "cost_source",
+      "supported_providers": ["aws"],
+      "capabilities": [
+        "actual_cost",
+        "projected_cost", 
+        "pricing_spec",
+        "historical_cost",
+        "cost_forecasting",
+        "budget_alerts",
+        "tagging_support",
+        "drill_down"
+      ],
+      "versions": [
+        {
+          "version": "2.1.0",
+          "manifest_url": "https://registry.pulumicost.dev/plugins/aws-cost-explorer/2.1.0/manifest.json",
+          "published": "2024-08-29T16:45:00Z",
+          "deprecated": false,
+          "yanked": false,
+          "api_compatibility": {
+            "min_api_version": "v1",
+            "max_api_version": "v1"
+          }
+        },
+        {
+          "version": "2.0.5",
+          "manifest_url": "https://registry.pulumicost.dev/plugins/aws-cost-explorer/2.0.5/manifest.json",
+          "published": "2024-07-20T14:30:00Z",
+          "deprecated": true,
+          "yanked": false,
+          "api_compatibility": {
+            "min_api_version": "v1",
+            "max_api_version": "v1"
+          }
+        }
+      ],
+      "downloads": {
+        "total": 28735,
+        "last_30_days": 4129
+      },
+      "rating": {
+        "average": 4.7,
+        "count": 72
+      },
+      "security_status": {
+        "status": "secure",
+        "last_audit": "2024-08-28T15:30:00Z",
+        "advisories_count": 0
+      },
+      "verified": true,
+      "tags": ["aws", "cost-explorer", "finops", "billing", "multi-account"]
+    },
+    {
+      "name": "azure-cost-management",
+      "display_name": "Azure Cost Management Plugin",
+      "description": "PulumiCost plugin for retrieving cost data from Azure Cost Management API",
+      "latest_version": "1.5.2",
+      "plugin_type": "cost_source",
+      "supported_providers": ["azure"],
+      "capabilities": [
+        "actual_cost",
+        "projected_cost",
+        "pricing_spec",
+        "historical_cost",
+        "budget_alerts",
+        "tagging_support"
+      ],
+      "versions": [
+        {
+          "version": "1.5.2",
+          "manifest_url": "https://registry.pulumicost.dev/plugins/azure-cost-management/1.5.2/manifest.json",
+          "published": "2024-08-20T11:22:00Z",
+          "deprecated": false,
+          "yanked": false,
+          "api_compatibility": {
+            "min_api_version": "v1",
+            "max_api_version": "v1"
+          }
+        }
+      ],
+      "downloads": {
+        "total": 8960,
+        "last_30_days": 1205
+      },
+      "rating": {
+        "average": 4.0,
+        "count": 25
+      },
+      "security_status": {
+        "status": "secure",
+        "last_audit": "2024-08-15T10:00:00Z",
+        "advisories_count": 0
+      },
+      "verified": true,
+      "tags": ["azure", "cost-management", "finops", "billing"]
+    },
+    {
+      "name": "prometheus-metrics",
+      "display_name": "Prometheus Metrics Plugin",
+      "description": "PulumiCost observability plugin for exporting cost metrics to Prometheus",
+      "latest_version": "0.8.1",
+      "plugin_type": "observability",
+      "supported_providers": ["custom"],
+      "capabilities": [
+        "custom_metrics"
+      ],
+      "versions": [
+        {
+          "version": "0.8.1",
+          "manifest_url": "https://registry.pulumicost.dev/plugins/prometheus-metrics/0.8.1/manifest.json",
+          "published": "2024-08-10T08:45:00Z",
+          "deprecated": false,
+          "yanked": false,
+          "api_compatibility": {
+            "min_api_version": "v1",
+            "max_api_version": "v1"
+          }
+        }
+      ],
+      "downloads": {
+        "total": 3245,
+        "last_30_days": 587
+      },
+      "rating": {
+        "average": 4.5,
+        "count": 14
+      },
+      "security_status": {
+        "status": "secure",
+        "last_audit": "2024-08-05T14:00:00Z",
+        "advisories_count": 0
+      },
+      "verified": false,
+      "tags": ["prometheus", "metrics", "observability", "monitoring"]
+    }
+  ],
+  "categories": [
+    {
+      "name": "Cost Sources",
+      "description": "Plugins that provide cost data from various sources",
+      "plugins": ["kubecost", "aws-cost-explorer", "azure-cost-management"]
+    },
+    {
+      "name": "Observability", 
+      "description": "Plugins that provide monitoring and metrics capabilities",
+      "plugins": ["prometheus-metrics"]
+    },
+    {
+      "name": "Cloud Providers",
+      "description": "Plugins specific to major cloud providers",
+      "plugins": ["aws-cost-explorer", "azure-cost-management"]
+    },
+    {
+      "name": "Kubernetes",
+      "description": "Plugins designed for Kubernetes environments",
+      "plugins": ["kubecost"]
+    }
+  ]
+}

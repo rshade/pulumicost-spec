@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.pulumicost.dev/schemas/plugin_registry.schema.json",
+  "title": "Plugin Registry v1.0.0",
+  "description": "Plugin registry specification for PulumiCost plugin discovery and metadata management",
+  "type": "object",
+  "required": ["registry_version", "plugins"],
+  "properties": {
+    "registry_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+      "description": "Version of the registry specification"
+    },
+    "registry_metadata": {
+      "type": "object",
+      "description": "Metadata about this registry instance",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Registry name or identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Registry description"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for this registry"
+        },
+        "maintainer": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Registry maintainer name"
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "Registry maintainer email"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Registry maintainer URL"
+            }
+          },
+          "additionalProperties": false
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last time this registry was updated"
+        },
+        "supported_api_versions": {
+          "type": "array",
+          "description": "PulumiCost API versions supported by this registry",
+          "items": {
+            "type": "string",
+            "pattern": "^v[1-9]\\d*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "plugins": {
+      "type": "array",
+      "description": "List of plugins available in this registry",
+      "items": {
+        "type": "object",
+        "required": ["name", "latest_version", "versions"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+            "description": "Plugin name (must match manifest name)"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Human-readable plugin name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief plugin description"
+          },
+          "latest_version": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+            "description": "Latest available version"
+          },
+          "plugin_type": {
+            "type": "string",
+            "enum": ["cost_source", "observability", "registry", "aggregator"],
+            "description": "Type of plugin functionality"
+          },
+          "supported_providers": {
+            "type": "array",
+            "description": "Supported cloud providers",
+            "items": {
+              "type": "string",
+              "enum": ["aws", "azure", "gcp", "kubernetes", "alibaba", "oracle", "ibm", "custom"]
+            },
+            "uniqueItems": true
+          },
+          "capabilities": {
+            "type": "array",
+            "description": "Plugin capabilities",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "versions": {
+            "type": "array",
+            "description": "All available versions of this plugin",
+            "items": {
+              "type": "object",
+              "required": ["version", "manifest_url"],
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+                  "description": "Plugin version"
+                },
+                "manifest_url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "URL to plugin manifest for this version"
+                },
+                "published": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "When this version was published"
+                },
+                "deprecated": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether this version is deprecated"
+                },
+                "security_advisory": {
+                  "type": "object",
+                  "description": "Security advisory for this version",
+                  "properties": {
+                    "severity": {
+                      "type": "string",
+                      "enum": ["low", "moderate", "high", "critical"],
+                      "description": "Severity level of security issue"
+                    },
+                    "summary": {
+                      "type": "string",
+                      "description": "Brief security advisory summary"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to detailed security advisory"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "yanked": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether this version has been yanked/removed"
+                },
+                "yank_reason": {
+                  "type": "string",
+                  "description": "Reason for yanking this version"
+                },
+                "api_compatibility": {
+                  "type": "object",
+                  "description": "API compatibility information",
+                  "properties": {
+                    "min_api_version": {
+                      "type": "string",
+                      "pattern": "^v[1-9]\\d*$",
+                      "description": "Minimum compatible API version"
+                    },
+                    "max_api_version": {
+                      "type": "string",
+                      "pattern": "^v[1-9]\\d*$", 
+                      "description": "Maximum compatible API version"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1
+          },
+          "downloads": {
+            "type": "object",
+            "description": "Download statistics",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Total downloads across all versions"
+              },
+              "last_30_days": {
+                "type": "integer", 
+                "minimum": 0,
+                "description": "Downloads in the last 30 days"
+              }
+            },
+            "additionalProperties": false
+          },
+          "rating": {
+            "type": "object",
+            "description": "Plugin rating and review information",
+            "properties": {
+              "average": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Average rating (0-5 stars)"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Number of ratings"
+              }
+            },
+            "additionalProperties": false
+          },
+          "security_status": {
+            "type": "object",
+            "description": "Overall security status of the plugin",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["secure", "advisory", "vulnerable", "unknown"],
+                "description": "Current security status"
+              },
+              "last_audit": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Date of last security audit"
+              },
+              "advisories_count": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Number of active security advisories"
+              }
+            },
+            "additionalProperties": false
+          },
+          "verified": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this plugin is verified by the registry maintainer"
+          },
+          "tags": {
+            "type": "array",
+            "description": "Tags for categorizing and searching",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "categories": {
+      "type": "array",
+      "description": "Plugin categories for organization",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Category name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Category description"
+          },
+          "plugins": {
+            "type": "array",
+            "description": "Plugin names in this category",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

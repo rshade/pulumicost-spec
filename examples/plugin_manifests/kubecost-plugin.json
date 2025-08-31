@@ -1,0 +1,104 @@
+{
+  "name": "kubecost",
+  "display_name": "Kubecost Cost Source Plugin",
+  "description": "PulumiCost plugin for retrieving cost data from Kubecost installations",
+  "version": "1.2.3",
+  "api_version": "v1",
+  "plugin_type": "cost_source",
+  "capabilities": [
+    "actual_cost",
+    "projected_cost",
+    "pricing_spec",
+    "historical_cost",
+    "kubernetes_native",
+    "cost_allocation",
+    "drill_down"
+  ],
+  "supported_providers": [
+    "kubernetes",
+    "aws",
+    "gcp",
+    "azure"
+  ],
+  "supported_regions": [],
+  "requirements": {
+    "min_api_version": "v1",
+    "max_api_version": "v1",
+    "os": ["linux", "darwin", "windows"],
+    "arch": ["amd64", "arm64"],
+    "dependencies": [
+      {
+        "name": "kubecost-api",
+        "version": ">=1.95.0",
+        "type": "service",
+        "optional": false
+      }
+    ],
+    "environment_variables": [
+      {
+        "name": "KUBECOST_ENDPOINT",
+        "description": "Kubecost API endpoint URL",
+        "required": true
+      },
+      {
+        "name": "KUBECOST_TOKEN",
+        "description": "Authentication token for Kubecost API",
+        "required": false
+      },
+      {
+        "name": "KUBECOST_TIMEOUT",
+        "description": "Request timeout in seconds",
+        "required": false,
+        "default_value": "30"
+      }
+    ]
+  },
+  "authentication": {
+    "required": false,
+    "methods": ["api_key", "bearer_token"],
+    "scopes": ["cost:read", "allocation:read"],
+    "permissions": ["kubecost:read"]
+  },
+  "installation": {
+    "binary_url": "https://releases.pulumicost.dev/plugins/kubecost/1.2.3/kubecost-plugin-linux-amd64",
+    "checksum": "sha256:a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+    "size_bytes": 15728640,
+    "docker_image": "pulumicost/kubecost-plugin:1.2.3"
+  },
+  "configuration": {
+    "schema_url": "https://spec.pulumicost.dev/plugins/kubecost/config-schema.json",
+    "defaults": {
+      "timeout": "30s",
+      "currency": "USD",
+      "window": "1d"
+    },
+    "examples": [
+      {
+        "endpoint": "http://kubecost-cost-analyzer:9090",
+        "currency": "USD",
+        "window": "1d",
+        "aggregate_by": ["namespace", "deployment"]
+      }
+    ]
+  },
+  "contacts": {
+    "maintainers": [
+      {
+        "name": "PulumiCost Team",
+        "email": "maintainers@pulumicost.dev",
+        "url": "https://github.com/pulumicost"
+      }
+    ],
+    "support_url": "https://github.com/pulumicost/kubecost-plugin/issues",
+    "documentation_url": "https://docs.pulumicost.dev/plugins/kubecost"
+  },
+  "metadata": {
+    "tags": ["kubernetes", "cost-allocation", "monitoring", "finops"],
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/pulumicost/kubecost-plugin",
+    "repository": "https://github.com/pulumicost/kubecost-plugin",
+    "release_notes_url": "https://github.com/pulumicost/kubecost-plugin/releases/tag/v1.2.3",
+    "created": "2024-01-15T10:30:00Z",
+    "updated": "2024-08-30T14:22:00Z"
+  }
+}

@@ -1,0 +1,531 @@
+syntax = "proto3";
+
+package pulumicost.v1;
+
+option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+
+import "google/protobuf/timestamp.proto";
+
+// PluginRegistryService provides gRPC interface for plugin discovery, registration,
+// and management within the PulumiCost ecosystem. This service enables dynamic
+// plugin discovery from multiple sources and centralized plugin lifecycle management.
+service PluginRegistryService {
+  // ListPlugins returns available plugins based on search criteria.
+  rpc ListPlugins(ListPluginsRequest) returns (ListPluginsResponse);
+  
+  // GetPlugin returns detailed information about a specific plugin.
+  rpc GetPlugin(GetPluginRequest) returns (GetPluginResponse);
+  
+  // GetPluginManifest returns the manifest for a specific plugin version.
+  rpc GetPluginManifest(GetPluginManifestRequest) returns (GetPluginManifestResponse);
+  
+  // SearchPlugins performs full-text search across plugin metadata.
+  rpc SearchPlugins(SearchPluginsRequest) returns (SearchPluginsResponse);
+  
+  // RegisterPlugin registers a new plugin or updates an existing one.
+  rpc RegisterPlugin(RegisterPluginRequest) returns (RegisterPluginResponse);
+  
+  // UnregisterPlugin removes a plugin from the registry.
+  rpc UnregisterPlugin(UnregisterPluginRequest) returns (UnregisterPluginResponse);
+  
+  // ValidatePlugin validates a plugin manifest and binary.
+  rpc ValidatePlugin(ValidatePluginRequest) returns (ValidatePluginResponse);
+}
+
+// ListPluginsRequest contains parameters for listing available plugins.
+message ListPluginsRequest {
+  // filter contains optional filtering criteria
+  PluginFilter filter = 1;
+  // limit specifies maximum number of plugins to return (default: 50, max: 1000)
+  int32 limit = 2;
+  // offset specifies number of plugins to skip (for pagination)
+  int32 offset = 3;
+  // sort_by specifies the field to sort results by
+  string sort_by = 4;
+  // sort_order specifies ascending or descending order
+  SortOrder sort_order = 5;
+}
+
+// ListPluginsResponse contains the list of matching plugins.
+message ListPluginsResponse {
+  // plugins contains the list of matching plugins
+  repeated PluginInfo plugins = 1;
+  // total_count is the total number of plugins matching the filter
+  int32 total_count = 2;
+  // has_more indicates if there are more results available
+  bool has_more = 3;
+}
+
+// GetPluginRequest contains parameters for getting a specific plugin.
+message GetPluginRequest {
+  // name is the plugin name
+  string name = 1;
+  // version is the specific version (optional, defaults to latest)
+  string version = 2;
+}
+
+// GetPluginResponse contains detailed plugin information.
+message GetPluginResponse {
+  // plugin contains the detailed plugin information
+  PluginInfo plugin = 1;
+  // manifest contains the plugin manifest
+  PluginManifest manifest = 2;
+}
+
+// GetPluginManifestRequest contains parameters for retrieving a plugin manifest.
+message GetPluginManifestRequest {
+  // name is the plugin name
+  string name = 1;
+  // version is the plugin version
+  string version = 2;
+}
+
+// GetPluginManifestResponse contains the plugin manifest.
+message GetPluginManifestResponse {
+  // manifest contains the plugin manifest
+  PluginManifest manifest = 1;
+}
+
+// SearchPluginsRequest contains parameters for searching plugins.
+message SearchPluginsRequest {
+  // query is the search query string
+  string query = 1;
+  // filter contains optional filtering criteria
+  PluginFilter filter = 2;
+  // limit specifies maximum number of results to return
+  int32 limit = 3;
+  // offset specifies number of results to skip
+  int32 offset = 4;
+}
+
+// SearchPluginsResponse contains search results.
+message SearchPluginsResponse {
+  // plugins contains the matching plugins
+  repeated PluginInfo plugins = 1;
+  // total_count is the total number of matching plugins
+  int32 total_count = 2;
+  // search_time_ms indicates how long the search took
+  int32 search_time_ms = 3;
+}
+
+// RegisterPluginRequest contains plugin registration information.
+message RegisterPluginRequest {
+  // manifest contains the plugin manifest
+  PluginManifest manifest = 1;
+  // binary_data contains the plugin binary (for inline registration)
+  bytes binary_data = 2;
+  // binary_url contains URL to the plugin binary (alternative to binary_data)
+  string binary_url = 3;
+  // signature contains cryptographic signature for verification
+  bytes signature = 4;
+  // replace_existing indicates whether to replace existing plugin versions
+  bool replace_existing = 5;
+}
+
+// RegisterPluginResponse contains registration results.
+message RegisterPluginResponse {
+  // success indicates if registration was successful
+  bool success = 1;
+  // plugin_id is the unique identifier assigned to the plugin
+  string plugin_id = 2;
+  // validation_errors contains any validation errors encountered
+  repeated ValidationError validation_errors = 3;
+  // message contains additional information about the registration
+  string message = 4;
+}
+
+// UnregisterPluginRequest contains plugin removal information.
+message UnregisterPluginRequest {
+  // name is the plugin name to remove
+  string name = 1;
+  // version is the specific version to remove (optional, removes all if empty)
+  string version = 2;
+  // reason is the reason for removal
+  string reason = 3;
+}
+
+// UnregisterPluginResponse contains removal results.
+message UnregisterPluginResponse {
+  // success indicates if removal was successful
+  bool success = 1;
+  // removed_versions contains the versions that were removed
+  repeated string removed_versions = 2;
+  // message contains additional information about the removal
+  string message = 3;
+}
+
+// ValidatePluginRequest contains plugin validation parameters.
+message ValidatePluginRequest {
+  // manifest contains the plugin manifest to validate
+  PluginManifest manifest = 1;
+  // binary_data contains the plugin binary to validate (optional)
+  bytes binary_data = 2;
+  // binary_url contains URL to the plugin binary (alternative to binary_data)
+  string binary_url = 3;
+  // validation_level specifies the depth of validation
+  ValidationLevel validation_level = 4;
+}
+
+// ValidatePluginResponse contains validation results.
+message ValidatePluginResponse {
+  // valid indicates if the plugin passed validation
+  bool valid = 1;
+  // errors contains validation errors if any
+  repeated ValidationError errors = 2;
+  // warnings contains validation warnings
+  repeated ValidationWarning warnings = 3;
+  // security_scan_results contains security scan results if performed
+  SecurityScanResults security_scan_results = 4;
+}
+
+// PluginInfo contains basic plugin information for listings.
+message PluginInfo {
+  // name is the plugin name
+  string name = 1;
+  // display_name is the human-readable name
+  string display_name = 2;
+  // description is the plugin description
+  string description = 3;
+  // latest_version is the latest available version
+  string latest_version = 4;
+  // plugin_type indicates the type of plugin
+  PluginType plugin_type = 5;
+  // capabilities lists the plugin capabilities
+  repeated Capability capabilities = 6;
+  // supported_providers lists supported cloud providers
+  repeated string supported_providers = 7;
+  // downloads contains download statistics
+  DownloadStats downloads = 8;
+  // rating contains rating information
+  Rating rating = 9;
+  // security_status indicates the security status
+  SecurityStatus security_status = 10;
+  // verified indicates if the plugin is verified
+  bool verified = 11;
+  // tags contains categorization tags
+  repeated string tags = 12;
+  // last_updated indicates when the plugin was last updated
+  google.protobuf.Timestamp last_updated = 13;
+}
+
+// PluginManifest contains complete plugin manifest information.
+message PluginManifest {
+  // name is the plugin name
+  string name = 1;
+  // display_name is the human-readable name
+  string display_name = 2;
+  // description is the plugin description
+  string description = 3;
+  // version is the plugin version
+  string version = 4;
+  // api_version is the supported PulumiCost API version
+  string api_version = 5;
+  // plugin_type indicates the type of plugin
+  PluginType plugin_type = 6;
+  // capabilities lists the plugin capabilities
+  repeated Capability capabilities = 7;
+  // supported_providers lists supported cloud providers
+  repeated string supported_providers = 8;
+  // supported_regions lists supported regions (empty means all)
+  repeated string supported_regions = 9;
+  // requirements contains plugin requirements
+  PluginRequirements requirements = 10;
+  // authentication contains authentication configuration
+  AuthenticationConfig authentication = 11;
+  // installation contains installation information
+  InstallationInfo installation = 12;
+  // configuration contains configuration schema
+  ConfigurationSchema configuration = 13;
+  // contacts contains contact information
+  ContactInfo contacts = 14;
+  // metadata contains additional metadata
+  PluginMetadata metadata = 15;
+}
+
+// PluginFilter contains criteria for filtering plugin searches.
+message PluginFilter {
+  // plugin_type filters by plugin type
+  PluginType plugin_type = 1;
+  // providers filters by supported providers
+  repeated string providers = 2;
+  // capabilities filters by required capabilities
+  repeated Capability capabilities = 3;
+  // tags filters by plugin tags
+  repeated string tags = 4;
+  // verified filters by verification status
+  optional bool verified = 5;
+  // min_rating filters by minimum rating
+  optional double min_rating = 6;
+  // api_version filters by API version compatibility
+  string api_version = 7;
+  // security_status filters by security status
+  SecurityStatus security_status = 8;
+}
+
+// PluginRequirements contains plugin runtime requirements.
+message PluginRequirements {
+  // min_api_version is the minimum required API version
+  string min_api_version = 1;
+  // max_api_version is the maximum supported API version
+  string max_api_version = 2;
+  // operating_systems lists supported operating systems
+  repeated string operating_systems = 3;
+  // architectures lists supported CPU architectures
+  repeated string architectures = 4;
+  // dependencies lists external dependencies
+  repeated Dependency dependencies = 5;
+  // environment_variables lists required environment variables
+  repeated EnvironmentVariable environment_variables = 6;
+}
+
+// Dependency represents an external dependency.
+message Dependency {
+  // name is the dependency name
+  string name = 1;
+  // version is the version constraint
+  string version = 2;
+  // type is the dependency type
+  DependencyType type = 3;
+  // optional indicates if the dependency is optional
+  bool optional = 4;
+}
+
+// EnvironmentVariable represents a required environment variable.
+message EnvironmentVariable {
+  // name is the environment variable name
+  string name = 1;
+  // description describes the environment variable
+  string description = 2;
+  // required indicates if the variable is required
+  bool required = 3;
+  // default_value is the default value if not provided
+  string default_value = 4;
+}
+
+// AuthenticationConfig contains authentication and security information.
+message AuthenticationConfig {
+  // required indicates if authentication is required
+  bool required = 1;
+  // methods lists supported authentication methods
+  repeated AuthenticationMethod methods = 2;
+  // scopes lists required authentication scopes
+  repeated string scopes = 3;
+  // permissions lists required permissions
+  repeated string permissions = 4;
+}
+
+// InstallationInfo contains plugin installation information.
+message InstallationInfo {
+  // binary_url is the URL to download the plugin binary
+  string binary_url = 1;
+  // checksum is the SHA-256 checksum of the binary
+  string checksum = 2;
+  // size_bytes is the size of the binary in bytes
+  int64 size_bytes = 3;
+  // install_script is the URL to installation script
+  string install_script = 4;
+  // docker_image is the Docker image for containerized deployment
+  string docker_image = 5;
+}
+
+// ConfigurationSchema contains plugin configuration information.
+message ConfigurationSchema {
+  // schema_url is the URL to JSON schema for configuration
+  string schema_url = 1;
+  // defaults contains default configuration values
+  map<string, string> defaults = 2;
+  // examples contains example configurations (JSON strings)
+  repeated string examples = 3;
+}
+
+// ContactInfo contains plugin contact information.
+message ContactInfo {
+  // maintainers lists plugin maintainers
+  repeated Maintainer maintainers = 1;
+  // support_url is the URL for support
+  string support_url = 2;
+  // documentation_url is the URL to documentation
+  string documentation_url = 3;
+}
+
+// Maintainer represents a plugin maintainer.
+message Maintainer {
+  // name is the maintainer name
+  string name = 1;
+  // email is the maintainer email
+  string email = 2;
+  // url is the maintainer URL or profile
+  string url = 3;
+}
+
+// PluginMetadata contains additional plugin metadata.
+message PluginMetadata {
+  // tags contains categorization tags
+  repeated string tags = 1;
+  // license is the plugin license
+  string license = 2;
+  // homepage is the plugin homepage URL
+  string homepage = 3;
+  // repository is the source code repository URL
+  string repository = 4;
+  // release_notes_url is the URL to release notes
+  string release_notes_url = 5;
+  // created is the plugin creation timestamp
+  google.protobuf.Timestamp created = 6;
+  // updated is the last update timestamp
+  google.protobuf.Timestamp updated = 7;
+  // custom contains custom metadata key-value pairs
+  map<string, string> custom = 8;
+}
+
+// DownloadStats contains plugin download statistics.
+message DownloadStats {
+  // total is the total downloads across all versions
+  int64 total = 1;
+  // last_30_days is downloads in the last 30 days
+  int64 last_30_days = 2;
+}
+
+// Rating contains plugin rating information.
+message Rating {
+  // average is the average rating (0-5 stars)
+  double average = 1;
+  // count is the number of ratings
+  int32 count = 2;
+}
+
+// SecurityScanResults contains security scan results.
+message SecurityScanResults {
+  // status is the overall security status
+  SecurityStatus status = 1;
+  // vulnerabilities contains identified vulnerabilities
+  repeated SecurityVulnerability vulnerabilities = 2;
+  // last_scan is when the security scan was performed
+  google.protobuf.Timestamp last_scan = 3;
+  // scan_version is the version of the security scanner used
+  string scan_version = 4;
+}
+
+// SecurityVulnerability represents a security vulnerability.
+message SecurityVulnerability {
+  // id is the vulnerability identifier (e.g., CVE-2023-1234)
+  string id = 1;
+  // severity is the vulnerability severity
+  Severity severity = 2;
+  // summary is a brief description of the vulnerability
+  string summary = 3;
+  // description is a detailed description
+  string description = 4;
+  // url is the URL to more information
+  string url = 5;
+  // fixed_in_version is the version where the vulnerability was fixed
+  string fixed_in_version = 6;
+}
+
+// ValidationError represents a plugin validation error.
+message ValidationError {
+  // code is the error code
+  string code = 1;
+  // field is the field that failed validation
+  string field = 2;
+  // message is the error message
+  string message = 3;
+  // severity is the error severity
+  Severity severity = 4;
+}
+
+// ValidationWarning represents a plugin validation warning.
+message ValidationWarning {
+  // code is the warning code
+  string code = 1;
+  // field is the field that triggered the warning
+  string field = 2;
+  // message is the warning message
+  string message = 3;
+}
+
+// Enumerations
+
+// PluginType represents the type of plugin functionality.
+enum PluginType {
+  PLUGIN_TYPE_UNSPECIFIED = 0;
+  PLUGIN_TYPE_COST_SOURCE = 1;
+  PLUGIN_TYPE_OBSERVABILITY = 2;
+  PLUGIN_TYPE_REGISTRY = 3;
+  PLUGIN_TYPE_AGGREGATOR = 4;
+}
+
+// Capability represents plugin capabilities.
+enum Capability {
+  CAPABILITY_UNSPECIFIED = 0;
+  CAPABILITY_ACTUAL_COST = 1;
+  CAPABILITY_PROJECTED_COST = 2;
+  CAPABILITY_PRICING_SPEC = 3;
+  CAPABILITY_REAL_TIME_COST = 4;
+  CAPABILITY_HISTORICAL_COST = 5;
+  CAPABILITY_COST_FORECASTING = 6;
+  CAPABILITY_COST_OPTIMIZATION = 7;
+  CAPABILITY_BUDGET_ALERTS = 8;
+  CAPABILITY_CUSTOM_METRICS = 9;
+  CAPABILITY_MULTI_CLOUD = 10;
+  CAPABILITY_KUBERNETES_NATIVE = 11;
+  CAPABILITY_TAGGING_SUPPORT = 12;
+  CAPABILITY_DRILL_DOWN = 13;
+  CAPABILITY_COST_ALLOCATION = 14;
+  CAPABILITY_SHOWBACK = 15;
+  CAPABILITY_CHARGEBACK = 16;
+}
+
+// SecurityStatus represents the security status of a plugin.
+enum SecurityStatus {
+  SECURITY_STATUS_UNSPECIFIED = 0;
+  SECURITY_STATUS_SECURE = 1;
+  SECURITY_STATUS_ADVISORY = 2;
+  SECURITY_STATUS_VULNERABLE = 3;
+  SECURITY_STATUS_UNKNOWN = 4;
+}
+
+// Severity represents the severity level of issues.
+enum Severity {
+  SEVERITY_UNSPECIFIED = 0;
+  SEVERITY_LOW = 1;
+  SEVERITY_MODERATE = 2;
+  SEVERITY_HIGH = 3;
+  SEVERITY_CRITICAL = 4;
+}
+
+// DependencyType represents the type of dependency.
+enum DependencyType {
+  DEPENDENCY_TYPE_UNSPECIFIED = 0;
+  DEPENDENCY_TYPE_BINARY = 1;
+  DEPENDENCY_TYPE_LIBRARY = 2;
+  DEPENDENCY_TYPE_SERVICE = 3;
+  DEPENDENCY_TYPE_PLUGIN = 4;
+}
+
+// AuthenticationMethod represents supported authentication methods.
+enum AuthenticationMethod {
+  AUTHENTICATION_METHOD_UNSPECIFIED = 0;
+  AUTHENTICATION_METHOD_API_KEY = 1;
+  AUTHENTICATION_METHOD_OAUTH2 = 2;
+  AUTHENTICATION_METHOD_SERVICE_ACCOUNT = 3;
+  AUTHENTICATION_METHOD_IAM_ROLE = 4;
+  AUTHENTICATION_METHOD_MUTUAL_TLS = 5;
+  AUTHENTICATION_METHOD_BASIC_AUTH = 6;
+  AUTHENTICATION_METHOD_BEARER_TOKEN = 7;
+}
+
+// SortOrder represents sort order options.
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
+// ValidationLevel represents the depth of plugin validation.
+enum ValidationLevel {
+  VALIDATION_LEVEL_UNSPECIFIED = 0;
+  VALIDATION_LEVEL_BASIC = 1;        // Basic manifest validation
+  VALIDATION_LEVEL_STANDARD = 2;     // Manifest + basic binary checks
+  VALIDATION_LEVEL_COMPREHENSIVE = 3; // Full validation + security scan
+}
