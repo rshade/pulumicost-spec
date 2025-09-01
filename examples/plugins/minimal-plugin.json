@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "name": "minimal-plugin",
+    "version": "1.0.0",
+    "description": "Minimal example plugin demonstrating basic cost source functionality with custom provider support",
+    "author": "Example Developer"
+  },
+  "specification": {
+    "spec_version": "0.1.0",
+    "supported_providers": ["custom"],
+    "service_definition": {
+      "service_name": "CostSourceService",
+      "package_name": "pulumicost.v1",
+      "methods": ["Name", "Supports", "GetActualCost"]
+    }
+  },
+  "installation": {
+    "installation_method": "binary"
+  }
+}

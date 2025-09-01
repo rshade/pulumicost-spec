@@ -1,7 +1,9 @@
+# yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
 version: 2
 language: "en-US"
+tone_instructions: "Senior Go engineer reviewing PulumiCost ecosystem code (Go 1.24+, gRPC/proto, JSON schemas). Provide concrete, implementable fixes with clear rationale for Claude Code automation."
 reviews:
-  profile: "chill"
+  profile: "assertive"  # Use assertive for production-quality code
   summaries:
     high_level: true
     poem: false
@@ -11,41 +13,188 @@ reviews:
       - "WIP"
       - "work in progress"
       - "do not merge"
+      - "[skip review]"
+  # Path filters - exclude only truly generated/dependency files
   path_filters:
-    - "!examples/**"
-    - "!sdk/**"
-    - "!proto/**"
     - "!node_modules/**"
-    - "**/vendor/**"
-    - "**/.git/**"
-    - "**/sdk/go/proto/**"
-    - "**/*_test.go"
-    - "**/go.sum"
+    - "!**/vendor/**"
+    - "!**/.git/**"
+    - "!**/bin/**"
+    - "!**/*.pb.go"           # Generated protobuf Go code
+    - "!**/*.pb_grpc.go"       # Generated gRPC Go code
+    - "!go.sum"
+    - "!go.work.sum"
+    - "!package-lock.json"
+    - "!**/*.lock"
+    - "!**/*.log"
+    - "!**/tmp/**"
+    - "!**/.cache/**"
   workflows:
     request_changes: true
+  sequence_diagrams: true
+  estimate_code_review_effort: true
   path_instructions:
     - path: "**/*.go"
       instructions: |
-        When reviewing Go code, please ensure that:
-        - Code is formatted with gofmt.
-        - Errors are handled properly.
-        - Best practices for concurrency are followed.
+        IMPORTANT: This project uses Go 1.24+ (go.mod specifies go 1.24.6 with toolchain go1.25.0).
+        Before reviewing, please consult the latest Go 1.24+ documentation and release notes for:
+        - New language features, syntax, and standard library additions
+        - Updated best practices and idiomatic patterns
+        - New compiler optimizations and behavior changes
+        - Deprecated patterns or functions
+
+        When reviewing Go code, ensure that:
+        - Code follows Go 1.24+ idioms and latest best practices
+        - Error handling follows current Go patterns (return error as last value)
+        - Proper use of context.Context for cancellation
+        - No dot imports are used (except in tests for specific packages)
+        - Interfaces are small and focused (Go's "accept interfaces, return structs")
+        - Concurrent code uses proper synchronization (mutexes, channels)
+        - Tests use table-driven patterns where appropriate
+        - Package names are lowercase, single-word when possible
+        - Exported types, functions, and variables have proper documentation
+        - No unnecessary type assertions or conversions
+        - Proper use of defer for cleanup operations
+        - Check for potential nil pointer dereferences
+        - Use latest Go 1.24+ features appropriately (check release notes)
+        - Avoid patterns deprecated in Go 1.24+
+    - path: "**/*_test.go"
+      instructions: |
+        For Go test files, verify:
+        - Table-driven tests are used for multiple test cases
+        - Test names follow TestFunctionName_scenario pattern
+        - Subtests use t.Run() for better organization
+        - Test data is properly isolated (use t.TempDir() for temp files)
+        - Benchmarks include b.ReportAllocs() when testing performance
+        - Mock implementations are properly defined and used
+        - Integration tests are properly tagged with build tags if needed
+        - Error messages are descriptive and helpful for debugging
+        - Test coverage for error paths and edge cases
     - path: "**/*.proto"
       instructions: |
-        When reviewing Protobuf files, please ensure that:
-        - Naming conventions for messages and fields are followed.
-        - Field numbers are unique and sequential.
+        When reviewing Protobuf files, ensure that:
+        - Field numbers are never reused or changed for existing fields
+        - Field numbers are sequential within reasonable gaps
+        - Message and field names follow protobuf naming conventions (PascalCase for messages, snake_case for fields)
+        - Required fields are avoided (use optional or repeated)
+        - Proper use of appropriate types (don't use string for numbers)
+        - Enums start at 0 with a sensible default/unknown value
+        - Package names follow reverse domain convention
+        - Imports are organized and necessary
+        - Comments document the purpose of messages and non-obvious fields
+        - Breaking changes are avoided in established APIs
+        - Proper versioning strategy (v1, v2) for major changes
+    - path: "schemas/*.json"
+      instructions: |
+        For JSON Schema files, ensure:
+        - Schema version is specified ($schema field)
+        - Required fields are properly defined
+        - Property types and formats are accurate
+        - Descriptions are clear and helpful
+        - Pattern properties use proper regex
+        - References ($ref) are valid and resolve correctly
+        - Examples provided are valid according to the schema
+        - Additional properties handling is explicit
+        - Enums have sensible allowed values
+    - path: "examples/**"
+      instructions: |
+        For example files, verify:
+        - Examples are complete and runnable
+        - Code follows the same standards as production code
+        - Comments explain the purpose and usage clearly
+        - Examples cover common use cases
+        - Any required setup or dependencies are documented
+        - Examples are tested in CI to ensure they don't break
+    - path: "*.md"
+      instructions: |
+        For Markdown documentation:
+        - Check for broken links and references
+        - Ensure code examples are properly formatted and valid
+        - Verify heading hierarchy is correct
+        - Check that the document follows the project's documentation standards
+        - Ensure technical accuracy of content
+        - Verify that commands and code snippets actually work
+  finishing_touches:
+    docstrings:
+      enabled: false  # We handle our own documentation standards
+    unit_tests:
+      enabled: false  # We write our own tests
 chat:
   auto_reply: true
 knowledge:
   learnings:
-    scope: "local"
+    scope: "auto"
   issues:
-    scope: "local"
+    scope: "auto"
   pull_requests:
-    scope: "local"
-  mcp:
-    usage: "enabled"
+    scope: "auto"
 tools:
+  # Go-specific tools - DISABLED due to version conflicts
+  # Note: We use golangci-lint v2.3.1 locally, but CodeRabbit uses v1.x
+  # This causes significant conflicts as v1.x and v2.x differ substantially
   golangci-lint:
+    enabled: false  # Disabled to prevent version conflicts with local v2.x config
+  # Protocol buffer tool
+  buf:
     enabled: true
+  # General tools
+  shellcheck:
+    enabled: true
+  markdownlint:
+    enabled: true
+  yamllint:
+    enabled: true
+  github-checks:
+    enabled: true
+    timeout_ms: 90000
+  gitleaks:
+    enabled: true
+  # Schema validation
+  actionlint:
+    enabled: true
+  # Security scanning
+  semgrep:
+    enabled: true
+  checkov:
+    enabled: false  # Can be noisy for Go projects
+  # Disable irrelevant tools for this Go/Proto project
+  ruff:
+    enabled: false  # Python linter
+  biome:
+    enabled: false  # JavaScript/TypeScript
+  hadolint:
+    enabled: false  # Dockerfile linter (enable if you add Dockerfiles)
+  swiftlint:
+    enabled: false  # Swift
+  phpstan:
+    enabled: false  # PHP
+  detekt:
+    enabled: false  # Kotlin
+  eslint:
+    enabled: false  # JavaScript
+  flake8:
+    enabled: false  # Python
+  rubocop:
+    enabled: false  # Ruby
+  pmd:
+    enabled: false  # Java
+  phpmd:
+    enabled: false  # PHP
+  phpcs:
+    enabled: false  # PHP
+  cppcheck:
+    enabled: false  # C++
+  clippy:
+    enabled: false  # Rust
+  sqlfluff:
+    enabled: false  # SQL
+  pylint:
+    enabled: false  # Python
+  oxc:
+    enabled: false  # JavaScript/TypeScript
+  luacheck:
+    enabled: false  # Lua
+  brakeman:
+    enabled: false  # Ruby on Rails
+  htmlhint:
+    enabled: false  # HTML

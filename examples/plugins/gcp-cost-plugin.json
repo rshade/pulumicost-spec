@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "name": "gcp-cost-plugin",
+    "version": "1.5.0",
+    "description": "Google Cloud Platform cost source plugin supporting Compute Engine, Cloud Storage, BigQuery, and Cloud SQL pricing",
+    "author": "GCP Community Contributors",
+    "homepage": "https://cloud.google.com/pulumicost",
+    "repository": "https://github.com/gcp-community/pulumicost-plugin",
+    "license": "Apache-2.0",
+    "keywords": ["gcp", "google-cloud", "compute-engine", "storage", "bigquery", "sql"],
+    "created_at": "2024-01-10T14:30:00Z",
+    "updated_at": "2024-03-25T11:20:00Z"
+  },
+  "specification": {
+    "spec_version": "0.1.0",
+    "supported_providers": ["gcp"],
+    "supported_resources": {
+      "gcp": {
+        "resource_types": ["compute-engine", "cloud-storage", "bigquery", "cloud-sql"],
+        "billing_modes": [
+          "per_hour", "per_gb_month", "per_operation", 
+          "preemptible", "committed_use", "per_cpu_hour"
+        ],
+        "regions": [
+          "us-central1", "us-east1", "europe-west1", "asia-southeast1"
+        ]
+      }
+    },
+    "capabilities": [
+      "cost_retrieval", "cost_projection", "pricing_specs",
+      "historical_data", "batch_processing", "rate_limiting"
+    ],
+    "service_definition": {
+      "service_name": "CostSourceService",
+      "package_name": "pulumicost.v1",
+      "methods": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"],
+      "port": 50054,
+      "health_check_path": "/gcp/health"
+    },
+    "observability_support": {
+      "metrics_enabled": true,
+      "tracing_enabled": true,
+      "logging_enabled": true,
+      "health_checks_enabled": true,
+      "sli_support": false
+    }
+  },
+  "security": {
+    "security_level": "community",
+    "permissions": [
+      "network_access", "filesystem_read", "config_read"
+    ],
+    "sandbox_required": false
+  },
+  "installation": {
+    "installation_method": "package",
+    "download_url": "https://packages.cloud.google.com/apt/pool/pulumicost-gcp-plugin_1.5.0_amd64.deb",
+    "checksum": "d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890ab",
+    "checksum_algorithm": "sha256",
+    "pre_install_checks": [
+      "verify_gcp_credentials",
+      "check_billing_api_access"
+    ]
+  },
+  "configuration": {
+    "schema": "{\"type\":\"object\",\"required\":[\"project_id\"],\"properties\":{\"project_id\":{\"type\":\"string\"},\"credentials_file\":{\"type\":\"string\"},\"billing_account_id\":{\"type\":\"string\"},\"timeout\":{\"type\":\"integer\",\"default\":45}}}",
+    "default_config": "{\"timeout\":45}",
+    "required_fields": ["project_id"],
+    "examples": [
+      {
+        "name": "service_account_config",
+        "description": "Configuration using GCP service account credentials",
+        "config": "{\"project_id\":\"my-gcp-project-123456\",\"credentials_file\":\"/etc/gcp/service-account.json\",\"billing_account_id\":\"012345-678901-234567\"}"
+      },
+      {
+        "name": "metadata_config",
+        "description": "Configuration using GCP metadata service (for GCE instances)",
+        "config": "{\"project_id\":\"my-gcp-project-123456\"}"
+      }
+    ]
+  },
+  "requirements": {
+    "min_spec_version": "0.1.0",
+    "max_spec_version": "0.1.0",
+    "system_requirements": {
+      "min_memory_mb": 384,
+      "min_disk_mb": 75,
+      "supported_architectures": ["x86_64"],
+      "supported_os": ["linux", "darwin"]
+    },
+    "runtime_requirements": {
+      "grpc_version": "1.49.0",
+      "tls_required": true,
+      "auth_methods": ["oauth2", "api_key"],
+      "timeout_seconds": 90
+    }
+  }
+}
