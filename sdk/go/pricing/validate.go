@@ -18,29 +18,29 @@ const schemaJSON = `{
 "type": "object",
 "required": ["provider", "resource_type", "billing_mode", "rate_per_unit", "currency"],
 "properties": {
-    "provider": { 
-        "type": "string", 
+    "provider": {
+        "type": "string",
         "minLength": 1,
         "enum": ["aws", "azure", "gcp", "kubernetes", "custom"],
         "description": "Cloud provider identifier"
     },
-    "resource_type": { 
-        "type": "string", 
+    "resource_type": {
+        "type": "string",
         "minLength": 1,
         "description": "Type of resource being priced (e.g., 'ec2', 's3', 'vm', 'k8s-namespace')"
     },
-    "sku": { 
+    "sku": {
         "type": "string",
         "description": "Provider-specific SKU or instance type identifier"
     },
-    "region": { 
+    "region": {
         "type": "string",
         "description": "Geographic region for pricing (e.g., 'us-east-1', 'westus2', 'us-central1')"
     },
-    "billing_mode": { 
-        "type": "string", 
+    "billing_mode": {
+        "type": "string",
         "enum": [
-            "per_hour", "per_minute", "per_second", 
+            "per_hour", "per_minute", "per_second",
             "per_gb_month", "per_gb_hour", "per_gb_day",
             "per_request", "per_operation", "per_transaction",
             "per_execution", "per_invocation",
@@ -56,19 +56,19 @@ const schemaJSON = `{
         ],
         "description": "Billing model that defines how the resource is charged"
     },
-    "rate_per_unit": { 
-        "type": "number", 
+    "rate_per_unit": {
+        "type": "number",
         "minimum": 0,
         "description": "Price per billing unit in the specified currency"
     },
-    "currency": { 
-        "type": "string", 
+    "currency": {
+        "type": "string",
         "minLength": 3,
         "maxLength": 3,
         "pattern": "^[A-Z]{3}$",
         "description": "ISO 4217 currency code (e.g., 'USD', 'EUR', 'GBP')"
     },
-    "description": { 
+    "description": {
         "type": "string",
         "description": "Human-readable description of the pricing model"
     },
@@ -79,13 +79,13 @@ const schemaJSON = `{
             "type": "object",
             "required": ["metric", "unit"],
             "properties": {
-                "metric": { 
-                    "type": "string", 
+                "metric": {
+                    "type": "string",
                     "minLength": 1,
                     "description": "Usage metric name (e.g., 'vcpu_hours', 'storage_gb', 'requests')"
                 },
-                "unit": { 
-                    "type": "string", 
+                "unit": {
+                    "type": "string",
                     "minLength": 1,
                     "description": "Metric unit (e.g., 'hour', 'GB', 'count', 'millisecond')"
                 },
@@ -134,7 +134,7 @@ const schemaJSON = `{
                 "description": "Time window for cost aggregation"
             },
             "method": {
-                "type": "string", 
+                "type": "string",
                 "enum": ["sum", "avg", "prorated"],
                 "description": "How to aggregate costs within the time window"
             },
@@ -176,7 +176,7 @@ const schemaJSON = `{
         "examples": [
             {
                 "billing_center": "engineering",
-                "cost_center": "CC-1001", 
+                "cost_center": "CC-1001",
                 "environment": "production",
                 "team": "platform",
                 "project": "microservices"
@@ -207,7 +207,7 @@ const schemaJSON = `{
             }
         ]
     },
-    "source": { 
+    "source": {
         "type": "string",
         "description": "Origin of the pricing model (e.g., 'aws', 'gcp', 'azure', 'kubecost', 'spec')"
     },
@@ -218,7 +218,7 @@ const schemaJSON = `{
     },
     "expiration_date": {
         "type": "string",
-        "format": "date-time", 
+        "format": "date-time",
         "description": "When this pricing expires (ISO 8601 format)"
     }
 },
