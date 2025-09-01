@@ -508,7 +508,7 @@ func TestValidatePricingSpec_ComplexValidExamples(t *testing.T) {
 					"alignment": "calendar"
 				},
 				"resource_tags": {
-					"billing_center": "it-infrastructure", 
+					"billing_center": "it-infrastructure",
 					"cost_center": "CC-2002",
 					"environment": "production",
 					"application": "web-server",
