@@ -3,9 +3,8 @@ package pricing
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
-	"github.com/santhosh-tekuri/jsonschema/v5"
+	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 // Embedded schema content (generated from ../../../schemas/pricing_spec.schema.json).
@@ -226,8 +225,13 @@ const schemaJSON = `{
 }`
 
 func getCompiledSchema() (*jsonschema.Schema, error) {
+	var schemaDoc any
+	if err := json.Unmarshal([]byte(schemaJSON), &schemaDoc); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal schema: %w", err)
+	}
+
 	c := jsonschema.NewCompiler()
-	if err := c.AddResource("schema.json", strings.NewReader(schemaJSON)); err != nil {
+	if err := c.AddResource("schema.json", schemaDoc); err != nil {
 		return nil, fmt.Errorf("failed to add schema resource: %w", err)
 	}
 	s, err := c.Compile("schema.json")
