@@ -172,6 +172,32 @@ func TestAuthMethod(t *testing.T) {
 	}
 }
 
+func TestProvider(t *testing.T) {
+	tests := []struct {
+		provider string
+		expected bool
+	}{
+		{"aws", true},
+		{"azure", true},
+		{"gcp", true},
+		{"kubernetes", true},
+		{"custom", true},
+		{"invalid", false},
+		{"", false},
+		{"AWS", false},    // Case sensitive
+		{"amazon", false}, // Not valid
+		{"AZURE", false},  // Case sensitive
+		{"k8s", false},    // Must be full name
+	}
+
+	for _, test := range tests {
+		result := registry.IsValidProvider(test.provider)
+		if result != test.expected {
+			t.Errorf("registry.IsValidProvider(%q) = %v, expected %v", test.provider, result, test.expected)
+		}
+	}
+}
+
 func TestValidatePluginName(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -214,6 +240,7 @@ func TestAllFunctions(t *testing.T) {
 		count    int
 		function func() int
 	}{
+		{"registry.AllProviders", 5, func() int { return len(registry.AllProviders()) }},
 		{"registry.AllDiscoverySources", 4, func() int { return len(registry.AllDiscoverySources()) }},
 		{"registry.AllPluginStatuses", 6, func() int { return len(registry.AllPluginStatuses()) }},
 		{"registry.AllSecurityLevels", 4, func() int { return len(registry.AllSecurityLevels()) }},

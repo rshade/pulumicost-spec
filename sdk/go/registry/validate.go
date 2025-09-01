@@ -174,10 +174,6 @@ func validateSupportedProviders(specification map[string]interface{}) error {
 		return errors.New("specification.supported_providers must contain at least one provider")
 	}
 
-	validProviders := map[string]bool{
-		"aws": true, "azure": true, "gcp": true, "kubernetes": true, "custom": true,
-	}
-
 	providerSet := make(map[string]bool)
 	for i, providerInterface := range providers {
 		provider, providerOK := providerInterface.(string)
@@ -185,7 +181,7 @@ func validateSupportedProviders(specification map[string]interface{}) error {
 			return fmt.Errorf("specification.supported_providers[%d] must be a string", i)
 		}
 
-		if !validProviders[provider] {
+		if !IsValidProvider(provider) {
 			return fmt.Errorf("specification.supported_providers[%d]: '%s' is not a valid provider", i, provider)
 		}
 

@@ -4,9 +4,8 @@ language: "en-US"
 tone_instructions: "Senior Go engineer reviewing PulumiCost ecosystem code (Go 1.24+, gRPC/proto, JSON schemas). Provide concrete, implementable fixes with clear rationale for Claude Code automation."
 reviews:
   profile: "assertive"  # Use assertive for production-quality code
-  summaries:
-    high_level: true
-    poem: false
+  high_level_summary: true
+  poem: false
   auto_review:
     enabled: true
     ignore_title_keywords:
@@ -29,8 +28,7 @@ reviews:
     - "!**/*.log"
     - "!**/tmp/**"
     - "!**/.cache/**"
-  workflows:
-    request_changes: true
+  request_changes_workflow: true
   sequence_diagrams: true
   estimate_code_review_effort: true
   path_instructions:

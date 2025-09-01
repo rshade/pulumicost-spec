@@ -9,6 +9,40 @@ import (
 	"fmt"
 )
 
+// Provider represents supported cloud providers.
+type Provider string
+
+const (
+	// ProviderAWS indicates Amazon Web Services provider.
+	ProviderAWS Provider = "aws"
+	// ProviderAzure indicates Microsoft Azure provider.
+	ProviderAzure Provider = "azure"
+	// ProviderGCP indicates Google Cloud Platform provider.
+	ProviderGCP Provider = "gcp"
+	// ProviderKubernetes indicates Kubernetes provider.
+	ProviderKubernetes Provider = "kubernetes"
+	// ProviderCustom indicates custom provider implementation.
+	ProviderCustom Provider = "custom"
+)
+
+// AllProviders returns all valid providers.
+func AllProviders() []Provider {
+	return []Provider{
+		ProviderAWS, ProviderAzure, ProviderGCP, ProviderKubernetes, ProviderCustom,
+	}
+}
+
+// IsValidProvider checks if a provider string is valid.
+func IsValidProvider(p string) bool {
+	provider := Provider(p)
+	for _, validProvider := range AllProviders() {
+		if provider == validProvider {
+			return true
+		}
+	}
+	return false
+}
+
 const (
 	// MinPluginNameLength defines the minimum required length for plugin names.
 	MinPluginNameLength = 2
