@@ -153,7 +153,7 @@ func TestValidatePricingSpec_EnhancedPluginMetadata(t *testing.T) {
 							"target_center": "Engineering-Prod"
 						},
 						{
-							"rule_id": "rule-002", 
+							"rule_id": "rule-002",
 							"percentage": 40,
 							"target_center": "Engineering-Dev"
 						}

@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "name": "kubecost-plugin",
+    "version": "3.0.1",
+    "description": "Kubernetes cost analysis plugin integrating with Kubecost for namespace, pod, and node-level cost tracking",
+    "author": "Kubecost Inc",
+    "homepage": "https://kubecost.com/pulumicost-integration",
+    "repository": "https://github.com/kubecost/pulumicost-plugin",
+    "license": "Apache-2.0",
+    "keywords": ["kubernetes", "kubecost", "cost", "namespace", "pod", "node"],
+    "created_at": "2024-01-20T12:00:00Z",
+    "updated_at": "2024-03-22T10:15:00Z"
+  },
+  "specification": {
+    "spec_version": "0.1.0",
+    "supported_providers": ["kubernetes"],
+    "supported_resources": {
+      "kubernetes": {
+        "resource_types": ["namespace", "pod", "node", "deployment"],
+        "billing_modes": [
+          "per_cpu_hour", "per_memory_gb_hour", "per_hour"
+        ]
+      }
+    },
+    "capabilities": [
+      "cost_retrieval", "cost_projection", "pricing_specs", 
+      "historical_data", "real_time_data", "filtering", "aggregation"
+    ],
+    "service_definition": {
+      "service_name": "CostSourceService",
+      "package_name": "pulumicost.v1",
+      "methods": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"],
+      "port": 50053,
+      "health_check_path": "/kubecost/health"
+    },
+    "observability_support": {
+      "metrics_enabled": true,
+      "tracing_enabled": true,
+      "logging_enabled": true,
+      "health_checks_enabled": true,
+      "sli_support": true
+    }
+  },
+  "security": {
+    "security_level": "verified",
+    "permissions": [
+      "network_access", "config_read", "temp_files"
+    ],
+    "sandbox_required": false
+  },
+  "installation": {
+    "installation_method": "script",
+    "download_url": "https://releases.kubecost.com/pulumicost/v3.0.1/install.sh",
+    "checksum": "c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456789",
+    "checksum_algorithm": "sha256",
+    "install_script": "#!/bin/bash\nset -e\necho 'Installing Kubecost PulumiCost Plugin...'\ncurl -fsSL https://releases.kubecost.com/pulumicost/v3.0.1/kubecost-plugin.tar.gz | tar -xz\necho 'Installation completed'",
+    "pre_install_checks": [
+      "check_kubernetes_access",
+      "verify_kubecost_api"
+    ],
+    "post_install_steps": [
+      "configure_kubecost_endpoint",
+      "test_connection"
+    ]
+  },
+  "configuration": {
+    "schema": "{\"type\":\"object\",\"required\":[\"kubecost_endpoint\"],\"properties\":{\"kubecost_endpoint\":{\"type\":\"string\",\"format\":\"uri\"},\"api_token\":{\"type\":\"string\"},\"cluster_name\":{\"type\":\"string\"},\"aggregation_level\":{\"type\":\"string\",\"enum\":[\"namespace\",\"pod\",\"node\"]},\"timeout\":{\"type\":\"integer\",\"default\":60}}}",
+    "default_config": "{\"aggregation_level\":\"namespace\",\"timeout\":60}",
+    "required_fields": ["kubecost_endpoint"],
+    "examples": [
+      {
+        "name": "cluster_config",
+        "description": "Standard cluster configuration with namespace-level aggregation",
+        "config": "{\"kubecost_endpoint\":\"http://kubecost.kubecost.svc.cluster.local:9090\",\"cluster_name\":\"production-cluster\",\"aggregation_level\":\"namespace\"}"
+      },
+      {
+        "name": "external_config",
+        "description": "External Kubecost instance with API token authentication",
+        "config": "{\"kubecost_endpoint\":\"https://kubecost.example.com\",\"api_token\":\"your-api-token\",\"cluster_name\":\"external-cluster\",\"aggregation_level\":\"pod\"}"
+      }
+    ]
+  },
+  "requirements": {
+    "min_spec_version": "0.1.0",
+    "max_spec_version": "0.2.0",
+    "dependencies": [
+      {
+        "name": "k8s-auth-plugin",
+        "version_constraint": ">=2.0.0,<3.0.0",
+        "optional": true
+      }
+    ],
+    "system_requirements": {
+      "min_memory_mb": 128,
+      "min_disk_mb": 25,
+      "supported_architectures": ["x86_64", "arm64"],
+      "supported_os": ["linux"]
+    },
+    "runtime_requirements": {
+      "grpc_version": "1.52.0",
+      "tls_required": false,
+      "auth_methods": ["none", "api_key"],
+      "timeout_seconds": 120
+    }
+  }
+}
