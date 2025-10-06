@@ -32,6 +32,21 @@ func AllProviders() []Provider {
 	}
 }
 
+// String returns the string representation of the Provider.
+func (p Provider) String() string {
+	return string(p)
+}
+
+// getAllProviderStrings returns all valid provider names as strings.
+func getAllProviderStrings() []string {
+	providers := AllProviders()
+	strs := make([]string, len(providers))
+	for i, p := range providers {
+		strs[i] = p.String()
+	}
+	return strs
+}
+
 // IsValidProvider checks if a provider string is valid.
 func IsValidProvider(p string) bool {
 	provider := Provider(p)
@@ -72,6 +87,11 @@ func AllDiscoverySources() []DiscoverySource {
 		DiscoverySourceURL,
 		DiscoverySourceGit,
 	}
+}
+
+// String returns the string representation of the DiscoverySource.
+func (d DiscoverySource) String() string {
+	return string(d)
 }
 
 // IsValidDiscoverySource checks if a discovery source is valid.
@@ -115,6 +135,11 @@ func AllPluginStatuses() []PluginStatus {
 	}
 }
 
+// String returns the string representation of the PluginStatus.
+func (p PluginStatus) String() string {
+	return string(p)
+}
+
 // IsValidPluginStatus checks if a plugin status is valid.
 func IsValidPluginStatus(status string) bool {
 	pluginStatus := PluginStatus(status)
@@ -150,6 +175,11 @@ func AllSecurityLevels() []SecurityLevel {
 	}
 }
 
+// String returns the string representation of the SecurityLevel.
+func (s SecurityLevel) String() string {
+	return string(s)
+}
+
 // IsValidSecurityLevel checks if a security level is valid.
 func IsValidSecurityLevel(level string) bool {
 	securityLevel := SecurityLevel(level)
@@ -183,6 +213,11 @@ func AllInstallationMethods() []InstallationMethod {
 		InstallationMethodScript,
 		InstallationMethodPackage,
 	}
+}
+
+// String returns the string representation of the InstallationMethod.
+func (i InstallationMethod) String() string {
+	return string(i)
 }
 
 // IsValidInstallationMethod checks if an installation method is valid.
@@ -250,6 +285,11 @@ func AllPluginCapabilities() []PluginCapability {
 	}
 }
 
+// String returns the string representation of the PluginCapability.
+func (p PluginCapability) String() string {
+	return string(p)
+}
+
 // IsValidPluginCapability checks if a plugin capability is valid.
 func IsValidPluginCapability(capability string) bool {
 	pluginCapability := PluginCapability(capability)
@@ -300,6 +340,11 @@ func AllSystemPermissions() []SystemPermission {
 	}
 }
 
+// String returns the string representation of the SystemPermission.
+func (s SystemPermission) String() string {
+	return string(s)
+}
+
 // IsValidSystemPermission checks if a system permission is valid.
 func IsValidSystemPermission(permission string) bool {
 	systemPermission := SystemPermission(permission)
@@ -339,6 +384,11 @@ func AllAuthMethods() []AuthMethod {
 		AuthMethodMTLS,
 		AuthMethodBasicAuth,
 	}
+}
+
+// String returns the string representation of the AuthMethod.
+func (a AuthMethod) String() string {
+	return string(a)
 }
 
 // IsValidAuthMethod checks if an authentication method is valid.

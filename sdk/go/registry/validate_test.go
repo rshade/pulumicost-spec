@@ -2,6 +2,7 @@ package registry_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/rshade/pulumicost-spec/sdk/go/registry"
@@ -63,8 +64,9 @@ func TestValidatePluginManifest_ValidManifests(t *testing.T) {
 
 func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 	invalidManifests := []struct {
-		name     string
-		manifest string
+		name                  string
+		manifest              string
+		expectedErrorContains string
 	}{
 		{
 			name:     "empty object",
@@ -178,6 +180,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"installation_method": "binary"
 				}
 			}`,
+			expectedErrorContains: "must be one of: aws, azure, gcp, kubernetes, custom",
 		},
 		{
 			name: "invalid service name",
@@ -277,6 +280,11 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 		err := registry.ValidatePluginManifest([]byte(test.manifest))
 		if err == nil {
 			t.Errorf("Invalid manifest '%s' should have failed validation", test.name)
+		} else if test.expectedErrorContains != "" {
+			if !strings.Contains(err.Error(), test.expectedErrorContains) {
+				t.Errorf("Invalid manifest '%s' error message should contain '%s', got: %v",
+					test.name, test.expectedErrorContains, err)
+			}
 		}
 	}
 }
