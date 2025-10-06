@@ -37,7 +37,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: |
-            --model claude-4-0-sonnet-20250805
+            --model claude-sonnet-4-5-20250929
             --allowedTools Edit,Read,Write,Bash,Glob,Grep,Task,TodoWrite
             --allowedTools mcp__context7__resolve-library-id,mcp__context7__get-library-docs
             --mcp-config '{
