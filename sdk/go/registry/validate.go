@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 const (
@@ -182,7 +183,8 @@ func validateSupportedProviders(specification map[string]interface{}) error {
 		}
 
 		if !IsValidProvider(provider) {
-			return fmt.Errorf("specification.supported_providers[%d]: '%s' is not a valid provider", i, provider)
+			return fmt.Errorf("specification.supported_providers[%d]: '%s' is not a valid provider, must be one of: %s",
+				i, provider, strings.Join(getAllProviderStrings(), ", "))
 		}
 
 		if providerSet[provider] {

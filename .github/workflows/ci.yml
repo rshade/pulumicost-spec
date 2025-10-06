@@ -84,6 +84,9 @@ jobs:
       - name: Generate Go SDK
         run: make generate
 
+      - name: Download Go module dependencies
+        run: go mod download
+
       - name: Run benchmarks
         run: go test -bench=. -benchmem ./sdk/go/testing/ > benchmark_results.txt
 
@@ -116,6 +119,9 @@ jobs:
 
       - name: Generate Go SDK (required for linting)
         run: make generate
+
+      - name: Download Go module dependencies
+        run: go mod download
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
