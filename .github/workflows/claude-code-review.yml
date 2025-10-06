@@ -52,7 +52,7 @@ jobs:
 
             Be constructive and helpful in your feedback.
           claude_args: |
-            --model claude-4-0-sonnet-20250805
+            --model claude-sonnet-4-5-20250929
             --allowedTools Edit,Read,Write,Bash,Glob,Grep,Task
             --allowedTools mcp__context7__resolve-library-id,mcp__context7__get-library-docs
             --mcp-config '{
