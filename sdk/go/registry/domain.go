@@ -25,6 +25,15 @@ const (
 	ProviderCustom Provider = "custom"
 )
 
+// validProviders is a map for O(1) provider validation lookups.
+var validProviders = map[Provider]bool{
+	ProviderAWS:        true,
+	ProviderAzure:      true,
+	ProviderGCP:        true,
+	ProviderKubernetes: true,
+	ProviderCustom:     true,
+}
+
 // AllProviders returns all valid providers.
 func AllProviders() []Provider {
 	return []Provider{
@@ -34,13 +43,7 @@ func AllProviders() []Provider {
 
 // IsValidProvider checks if a provider string is valid.
 func IsValidProvider(p string) bool {
-	provider := Provider(p)
-	for _, validProvider := range AllProviders() {
-		if provider == validProvider {
-			return true
-		}
-	}
-	return false
+	return validProviders[Provider(p)]
 }
 
 const (
@@ -64,6 +67,14 @@ const (
 	DiscoverySourceGit DiscoverySource = "git"
 )
 
+// validDiscoverySources is a map for O(1) discovery source validation lookups.
+var validDiscoverySources = map[DiscoverySource]bool{
+	DiscoverySourceFilesystem: true,
+	DiscoverySourceRegistry:   true,
+	DiscoverySourceURL:        true,
+	DiscoverySourceGit:        true,
+}
+
 // AllDiscoverySources returns all valid discovery sources.
 func AllDiscoverySources() []DiscoverySource {
 	return []DiscoverySource{
@@ -76,13 +87,7 @@ func AllDiscoverySources() []DiscoverySource {
 
 // IsValidDiscoverySource checks if a discovery source is valid.
 func IsValidDiscoverySource(source string) bool {
-	discoverySource := DiscoverySource(source)
-	for _, validSource := range AllDiscoverySources() {
-		if discoverySource == validSource {
-			return true
-		}
-	}
-	return false
+	return validDiscoverySources[DiscoverySource(source)]
 }
 
 // PluginStatus represents the current status of a plugin.
@@ -103,6 +108,16 @@ const (
 	PluginStatusUpdating PluginStatus = "updating"
 )
 
+// validPluginStatuses is a map for O(1) plugin status validation lookups.
+var validPluginStatuses = map[PluginStatus]bool{
+	PluginStatusAvailable: true,
+	PluginStatusInstalled: true,
+	PluginStatusActive:    true,
+	PluginStatusInactive:  true,
+	PluginStatusError:     true,
+	PluginStatusUpdating:  true,
+}
+
 // AllPluginStatuses returns all valid plugin statuses.
 func AllPluginStatuses() []PluginStatus {
 	return []PluginStatus{
@@ -117,13 +132,7 @@ func AllPluginStatuses() []PluginStatus {
 
 // IsValidPluginStatus checks if a plugin status is valid.
 func IsValidPluginStatus(status string) bool {
-	pluginStatus := PluginStatus(status)
-	for _, validStatus := range AllPluginStatuses() {
-		if pluginStatus == validStatus {
-			return true
-		}
-	}
-	return false
+	return validPluginStatuses[PluginStatus(status)]
 }
 
 // SecurityLevel represents plugin security trust levels.
@@ -140,6 +149,14 @@ const (
 	SecurityLevelOfficial SecurityLevel = "official"
 )
 
+// validSecurityLevels is a map for O(1) security level validation lookups.
+var validSecurityLevels = map[SecurityLevel]bool{
+	SecurityLevelUntrusted: true,
+	SecurityLevelCommunity: true,
+	SecurityLevelVerified:  true,
+	SecurityLevelOfficial:  true,
+}
+
 // AllSecurityLevels returns all valid security levels.
 func AllSecurityLevels() []SecurityLevel {
 	return []SecurityLevel{
@@ -152,13 +169,7 @@ func AllSecurityLevels() []SecurityLevel {
 
 // IsValidSecurityLevel checks if a security level is valid.
 func IsValidSecurityLevel(level string) bool {
-	securityLevel := SecurityLevel(level)
-	for _, validLevel := range AllSecurityLevels() {
-		if securityLevel == validLevel {
-			return true
-		}
-	}
-	return false
+	return validSecurityLevels[SecurityLevel(level)]
 }
 
 // InstallationMethod represents different plugin installation methods.
@@ -175,6 +186,14 @@ const (
 	InstallationMethodPackage InstallationMethod = "package"
 )
 
+// validInstallationMethods is a map for O(1) installation method validation lookups.
+var validInstallationMethods = map[InstallationMethod]bool{
+	InstallationMethodBinary:    true,
+	InstallationMethodContainer: true,
+	InstallationMethodScript:    true,
+	InstallationMethodPackage:   true,
+}
+
 // AllInstallationMethods returns all valid installation methods.
 func AllInstallationMethods() []InstallationMethod {
 	return []InstallationMethod{
@@ -187,13 +206,7 @@ func AllInstallationMethods() []InstallationMethod {
 
 // IsValidInstallationMethod checks if an installation method is valid.
 func IsValidInstallationMethod(method string) bool {
-	installationMethod := InstallationMethod(method)
-	for _, validMethod := range AllInstallationMethods() {
-		if installationMethod == validMethod {
-			return true
-		}
-	}
-	return false
+	return validInstallationMethods[InstallationMethod(method)]
 }
 
 // PluginCapability represents plugin capabilities.
@@ -230,6 +243,24 @@ const (
 	PluginCapabilityAuditLogging PluginCapability = "audit_logging"
 )
 
+// validPluginCapabilities is a map for O(1) plugin capability validation lookups.
+var validPluginCapabilities = map[PluginCapability]bool{
+	PluginCapabilityCostRetrieval:    true,
+	PluginCapabilityCostProjection:   true,
+	PluginCapabilityPricingSpecs:     true,
+	PluginCapabilityHistoricalData:   true,
+	PluginCapabilityRealTimeData:     true,
+	PluginCapabilityBatchProcessing:  true,
+	PluginCapabilityRateLimiting:     true,
+	PluginCapabilityCaching:          true,
+	PluginCapabilityEncryption:       true,
+	PluginCapabilityCompression:      true,
+	PluginCapabilityFiltering:        true,
+	PluginCapabilityAggregation:      true,
+	PluginCapabilityMultiTenancy:     true,
+	PluginCapabilityAuditLogging:     true,
+}
+
 // AllPluginCapabilities returns all valid plugin capabilities.
 func AllPluginCapabilities() []PluginCapability {
 	return []PluginCapability{
@@ -252,13 +283,7 @@ func AllPluginCapabilities() []PluginCapability {
 
 // IsValidPluginCapability checks if a plugin capability is valid.
 func IsValidPluginCapability(capability string) bool {
-	pluginCapability := PluginCapability(capability)
-	for _, validCapability := range AllPluginCapabilities() {
-		if pluginCapability == validCapability {
-			return true
-		}
-	}
-	return false
+	return validPluginCapabilities[PluginCapability(capability)]
 }
 
 // SystemPermission represents required system permissions.
@@ -285,6 +310,19 @@ const (
 	SystemPermissionMetricsCollect SystemPermission = "metrics_collect"
 )
 
+// validSystemPermissions is a map for O(1) system permission validation lookups.
+var validSystemPermissions = map[SystemPermission]bool{
+	SystemPermissionNetworkAccess:   true,
+	SystemPermissionFilesystemRead:  true,
+	SystemPermissionFilesystemWrite: true,
+	SystemPermissionEnvironmentRead: true,
+	SystemPermissionProcessSpawn:    true,
+	SystemPermissionSystemInfo:      true,
+	SystemPermissionTempFiles:       true,
+	SystemPermissionConfigRead:      true,
+	SystemPermissionMetricsCollect:  true,
+}
+
 // AllSystemPermissions returns all valid system permissions.
 func AllSystemPermissions() []SystemPermission {
 	return []SystemPermission{
@@ -302,13 +340,7 @@ func AllSystemPermissions() []SystemPermission {
 
 // IsValidSystemPermission checks if a system permission is valid.
 func IsValidSystemPermission(permission string) bool {
-	systemPermission := SystemPermission(permission)
-	for _, validPermission := range AllSystemPermissions() {
-		if systemPermission == validPermission {
-			return true
-		}
-	}
-	return false
+	return validSystemPermissions[SystemPermission(permission)]
 }
 
 // AuthMethod represents supported authentication methods.
@@ -329,6 +361,16 @@ const (
 	AuthMethodBasicAuth AuthMethod = "basic_auth"
 )
 
+// validAuthMethods is a map for O(1) authentication method validation lookups.
+var validAuthMethods = map[AuthMethod]bool{
+	AuthMethodNone:      true,
+	AuthMethodAPIKey:    true,
+	AuthMethodJWT:       true,
+	AuthMethodOAuth2:    true,
+	AuthMethodMTLS:      true,
+	AuthMethodBasicAuth: true,
+}
+
 // AllAuthMethods returns all valid authentication methods.
 func AllAuthMethods() []AuthMethod {
 	return []AuthMethod{
@@ -343,13 +385,7 @@ func AllAuthMethods() []AuthMethod {
 
 // IsValidAuthMethod checks if an authentication method is valid.
 func IsValidAuthMethod(method string) bool {
-	authMethod := AuthMethod(method)
-	for _, validMethod := range AllAuthMethods() {
-		if authMethod == validMethod {
-			return true
-		}
-	}
-	return false
+	return validAuthMethods[AuthMethod(method)]
 }
 
 // ValidatePluginName validates a plugin name according to registry rules.
