@@ -25,14 +25,14 @@ const (
 	ProviderCustom Provider = "custom"
 )
 
-// AllProviders returns all valid providers.
+// AllProviders returns a slice of all supported cloud providers in the registry.
 func AllProviders() []Provider {
 	return []Provider{
 		ProviderAWS, ProviderAzure, ProviderGCP, ProviderKubernetes, ProviderCustom,
 	}
 }
 
-// String returns the string representation of the Provider.
+// String returns the provider name as a lowercase string value (e.g., "aws", "azure", "gcp").
 func (p Provider) String() string {
 	return string(p)
 }
@@ -47,7 +47,8 @@ func getAllProviderStrings() []string {
 	return strs
 }
 
-// IsValidProvider checks if a provider string is valid.
+// IsValidProvider checks if the given string represents a valid cloud provider supported by the registry.
+// Valid providers include "aws", "azure", "gcp", "kubernetes", and "custom".
 func IsValidProvider(p string) bool {
 	provider := Provider(p)
 	for _, validProvider := range AllProviders() {
@@ -89,7 +90,7 @@ func AllDiscoverySources() []DiscoverySource {
 	}
 }
 
-// String returns the string representation of the DiscoverySource.
+// String returns the discovery source name as a lowercase string value (e.g., "filesystem", "registry").
 func (d DiscoverySource) String() string {
 	return string(d)
 }
@@ -135,7 +136,7 @@ func AllPluginStatuses() []PluginStatus {
 	}
 }
 
-// String returns the string representation of the PluginStatus.
+// String returns the plugin status as a lowercase string value (e.g., "available", "installed").
 func (p PluginStatus) String() string {
 	return string(p)
 }
@@ -175,7 +176,7 @@ func AllSecurityLevels() []SecurityLevel {
 	}
 }
 
-// String returns the string representation of the SecurityLevel.
+// String returns the security level as a lowercase string value (e.g., "untrusted", "verified").
 func (s SecurityLevel) String() string {
 	return string(s)
 }
@@ -215,7 +216,7 @@ func AllInstallationMethods() []InstallationMethod {
 	}
 }
 
-// String returns the string representation of the InstallationMethod.
+// String returns the installation method as a lowercase string value (e.g., "binary", "container").
 func (i InstallationMethod) String() string {
 	return string(i)
 }
@@ -285,7 +286,7 @@ func AllPluginCapabilities() []PluginCapability {
 	}
 }
 
-// String returns the string representation of the PluginCapability.
+// String returns the plugin capability as a lowercase string value (e.g., "cost_retrieval", "caching").
 func (p PluginCapability) String() string {
 	return string(p)
 }
@@ -340,7 +341,7 @@ func AllSystemPermissions() []SystemPermission {
 	}
 }
 
-// String returns the string representation of the SystemPermission.
+// String returns the system permission as a lowercase string value (e.g., "network_access", "filesystem_read").
 func (s SystemPermission) String() string {
 	return string(s)
 }
@@ -386,7 +387,7 @@ func AllAuthMethods() []AuthMethod {
 	}
 }
 
-// String returns the string representation of the AuthMethod.
+// String returns the authentication method as a lowercase string value (e.g., "api_key", "jwt").
 func (a AuthMethod) String() string {
 	return string(a)
 }
