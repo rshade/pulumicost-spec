@@ -1,8 +1,8 @@
 module github.com/rshade/pulumicost-spec
 
-go 1.24.7
+go 1.24.9
 
-toolchain go1.25.1
+toolchain go1.25.3
 
 require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
