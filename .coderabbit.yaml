@@ -27,6 +27,7 @@ reviews:
     - "!**/*.log"
     - "!**/tmp/**"
     - "!**/.cache/**"
+    - "!.specify/**" # speckit filed
   request_changes_workflow: true
   sequence_diagrams: true
   estimate_code_review_effort: true
