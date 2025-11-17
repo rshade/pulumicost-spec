@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
-version: 2
 language: "en-US"
 tone_instructions: "Senior Go engineer reviewing PulumiCost ecosystem code (Go 1.24+, gRPC/proto, JSON schemas). Provide concrete, implementable fixes with clear rationale for Claude Code automation."
 reviews:
@@ -119,80 +118,3 @@ reviews:
       enabled: false  # We write our own tests
 chat:
   auto_reply: true
-knowledge:
-  learnings:
-    scope: "auto"
-  issues:
-    scope: "auto"
-  pull_requests:
-    scope: "auto"
-tools:
-  # Go-specific tools - DISABLED due to version conflicts
-  # Note: We use golangci-lint v2.3.1 locally, but CodeRabbit uses v1.x
-  # This causes significant conflicts as v1.x and v2.x differ substantially
-  golangci-lint:
-    enabled: false  # Disabled to prevent version conflicts with local v2.x config
-  # Protocol buffer tool
-  buf:
-    enabled: true
-  # General tools
-  shellcheck:
-    enabled: true
-  markdownlint:
-    enabled: true
-  yamllint:
-    enabled: true
-  github-checks:
-    enabled: true
-    timeout_ms: 90000
-  gitleaks:
-    enabled: true
-  # Schema validation
-  actionlint:
-    enabled: true
-  # Security scanning
-  semgrep:
-    enabled: true
-  checkov:
-    enabled: false  # Can be noisy for Go projects
-  # Disable irrelevant tools for this Go/Proto project
-  ruff:
-    enabled: false  # Python linter
-  biome:
-    enabled: false  # JavaScript/TypeScript
-  hadolint:
-    enabled: false  # Dockerfile linter (enable if you add Dockerfiles)
-  swiftlint:
-    enabled: false  # Swift
-  phpstan:
-    enabled: false  # PHP
-  detekt:
-    enabled: false  # Kotlin
-  eslint:
-    enabled: false  # JavaScript
-  flake8:
-    enabled: false  # Python
-  rubocop:
-    enabled: false  # Ruby
-  pmd:
-    enabled: false  # Java
-  phpmd:
-    enabled: false  # PHP
-  phpcs:
-    enabled: false  # PHP
-  cppcheck:
-    enabled: false  # C++
-  clippy:
-    enabled: false  # Rust
-  sqlfluff:
-    enabled: false  # SQL
-  pylint:
-    enabled: false  # Python
-  oxc:
-    enabled: false  # JavaScript/TypeScript
-  luacheck:
-    enabled: false  # Lua
-  brakeman:
-    enabled: false  # Ruby on Rails
-  htmlhint:
-    enabled: false  # HTML
