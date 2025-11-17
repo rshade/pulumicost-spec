@@ -38,8 +38,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "lint:markdown": "markdownlint-cli2 '**/*.md' '!node_modules/**' '!CodeRabbitPrompt.md' '!Github_Development_Prompt.md' --config .markdownlint.json",
-    "lint:markdown:fix": "markdownlint-cli2 '**/*.md' '!node_modules/**' '!CodeRabbitPrompt.md' '!Github_Development_Prompt.md' --config .markdownlint.json --fix",
+    "lint:markdown": "markdownlint-cli2",
+    "lint:markdown:fix": "markdownlint-cli2 --fix",
     "lint:yaml": "yamllint .github/",
     "validate:schema": "npx ajv compile --spec=draft2020 --all-errors --strict=false -s schemas/pricing_spec.schema.json",
     "validate:examples": "node validate_examples.js",
