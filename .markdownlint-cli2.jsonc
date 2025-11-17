@@ -1,0 +1,13 @@
+{
+  "config": ".markdownlint.json",
+  "globs": [
+    "**/*.md"
+  ],
+  "ignores": [
+    "node_modules",
+    ".git",
+    "bin",
+    "CodeRabbitPrompt.md",
+    "Github_Development_Prompt.md"
+  ]
+}
