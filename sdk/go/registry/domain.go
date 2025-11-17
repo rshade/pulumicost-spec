@@ -25,14 +25,30 @@ const (
 	ProviderCustom Provider = "custom"
 )
 
-// AllProviders returns all valid providers.
+// AllProviders returns a slice of all supported cloud providers in the registry.
 func AllProviders() []Provider {
 	return []Provider{
 		ProviderAWS, ProviderAzure, ProviderGCP, ProviderKubernetes, ProviderCustom,
 	}
 }
 
-// IsValidProvider checks if a provider string is valid.
+// String returns the provider name as a lowercase string value (e.g., "aws", "azure", "gcp").
+func (p Provider) String() string {
+	return string(p)
+}
+
+// getAllProviderStrings returns all valid provider names as strings.
+func getAllProviderStrings() []string {
+	providers := AllProviders()
+	strs := make([]string, len(providers))
+	for i, p := range providers {
+		strs[i] = p.String()
+	}
+	return strs
+}
+
+// IsValidProvider checks if the given string represents a valid cloud provider supported by the registry.
+// Valid providers include "aws", "azure", "gcp", "kubernetes", and "custom".
 func IsValidProvider(p string) bool {
 	provider := Provider(p)
 	for _, validProvider := range AllProviders() {
@@ -72,6 +88,11 @@ func AllDiscoverySources() []DiscoverySource {
 		DiscoverySourceURL,
 		DiscoverySourceGit,
 	}
+}
+
+// String returns the discovery source name as a lowercase string value (e.g., "filesystem", "registry").
+func (d DiscoverySource) String() string {
+	return string(d)
 }
 
 // IsValidDiscoverySource checks if a discovery source is valid.
@@ -115,6 +136,11 @@ func AllPluginStatuses() []PluginStatus {
 	}
 }
 
+// String returns the plugin status as a lowercase string value (e.g., "available", "installed").
+func (p PluginStatus) String() string {
+	return string(p)
+}
+
 // IsValidPluginStatus checks if a plugin status is valid.
 func IsValidPluginStatus(status string) bool {
 	pluginStatus := PluginStatus(status)
@@ -150,6 +176,11 @@ func AllSecurityLevels() []SecurityLevel {
 	}
 }
 
+// String returns the security level as a lowercase string value (e.g., "untrusted", "verified").
+func (s SecurityLevel) String() string {
+	return string(s)
+}
+
 // IsValidSecurityLevel checks if a security level is valid.
 func IsValidSecurityLevel(level string) bool {
 	securityLevel := SecurityLevel(level)
@@ -183,6 +214,11 @@ func AllInstallationMethods() []InstallationMethod {
 		InstallationMethodScript,
 		InstallationMethodPackage,
 	}
+}
+
+// String returns the installation method as a lowercase string value (e.g., "binary", "container").
+func (i InstallationMethod) String() string {
+	return string(i)
 }
 
 // IsValidInstallationMethod checks if an installation method is valid.
@@ -250,6 +286,11 @@ func AllPluginCapabilities() []PluginCapability {
 	}
 }
 
+// String returns the plugin capability as a lowercase string value (e.g., "cost_retrieval", "caching").
+func (p PluginCapability) String() string {
+	return string(p)
+}
+
 // IsValidPluginCapability checks if a plugin capability is valid.
 func IsValidPluginCapability(capability string) bool {
 	pluginCapability := PluginCapability(capability)
@@ -300,6 +341,11 @@ func AllSystemPermissions() []SystemPermission {
 	}
 }
 
+// String returns the system permission as a lowercase string value (e.g., "network_access", "filesystem_read").
+func (s SystemPermission) String() string {
+	return string(s)
+}
+
 // IsValidSystemPermission checks if a system permission is valid.
 func IsValidSystemPermission(permission string) bool {
 	systemPermission := SystemPermission(permission)
@@ -339,6 +385,11 @@ func AllAuthMethods() []AuthMethod {
 		AuthMethodMTLS,
 		AuthMethodBasicAuth,
 	}
+}
+
+// String returns the authentication method as a lowercase string value (e.g., "api_key", "jwt").
+func (a AuthMethod) String() string {
+	return string(a)
 }
 
 // IsValidAuthMethod checks if an authentication method is valid.

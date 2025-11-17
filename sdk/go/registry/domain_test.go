@@ -198,6 +198,178 @@ func TestProvider(t *testing.T) {
 	}
 }
 
+func TestProviderString(t *testing.T) {
+	tests := []struct {
+		provider registry.Provider
+		expected string
+	}{
+		{registry.ProviderAWS, "aws"},
+		{registry.ProviderAzure, "azure"},
+		{registry.ProviderGCP, "gcp"},
+		{registry.ProviderKubernetes, "kubernetes"},
+		{registry.ProviderCustom, "custom"},
+	}
+
+	for _, test := range tests {
+		result := test.provider.String()
+		if result != test.expected {
+			t.Errorf("registry.Provider(%q).String() = %q, expected %q", test.provider, result, test.expected)
+		}
+	}
+}
+
+func TestDiscoverySourceString(t *testing.T) {
+	tests := []struct {
+		source   registry.DiscoverySource
+		expected string
+	}{
+		{registry.DiscoverySourceFilesystem, "filesystem"},
+		{registry.DiscoverySourceRegistry, "registry"},
+		{registry.DiscoverySourceURL, "url"},
+		{registry.DiscoverySourceGit, "git"},
+	}
+
+	for _, test := range tests {
+		result := test.source.String()
+		if result != test.expected {
+			t.Errorf("registry.DiscoverySource(%q).String() = %q, expected %q", test.source, result, test.expected)
+		}
+	}
+}
+
+func TestPluginStatusString(t *testing.T) {
+	tests := []struct {
+		status   registry.PluginStatus
+		expected string
+	}{
+		{registry.PluginStatusAvailable, "available"},
+		{registry.PluginStatusInstalled, "installed"},
+		{registry.PluginStatusActive, "active"},
+		{registry.PluginStatusInactive, "inactive"},
+		{registry.PluginStatusError, "error"},
+		{registry.PluginStatusUpdating, "updating"},
+	}
+
+	for _, test := range tests {
+		result := test.status.String()
+		if result != test.expected {
+			t.Errorf("registry.PluginStatus(%q).String() = %q, expected %q", test.status, result, test.expected)
+		}
+	}
+}
+
+func TestSecurityLevelString(t *testing.T) {
+	tests := []struct {
+		level    registry.SecurityLevel
+		expected string
+	}{
+		{registry.SecurityLevelUntrusted, "untrusted"},
+		{registry.SecurityLevelCommunity, "community"},
+		{registry.SecurityLevelVerified, "verified"},
+		{registry.SecurityLevelOfficial, "official"},
+	}
+
+	for _, test := range tests {
+		result := test.level.String()
+		if result != test.expected {
+			t.Errorf("registry.SecurityLevel(%q).String() = %q, expected %q", test.level, result, test.expected)
+		}
+	}
+}
+
+func TestInstallationMethodString(t *testing.T) {
+	tests := []struct {
+		method   registry.InstallationMethod
+		expected string
+	}{
+		{registry.InstallationMethodBinary, "binary"},
+		{registry.InstallationMethodContainer, "container"},
+		{registry.InstallationMethodScript, "script"},
+		{registry.InstallationMethodPackage, "package"},
+	}
+
+	for _, test := range tests {
+		result := test.method.String()
+		if result != test.expected {
+			t.Errorf("registry.InstallationMethod(%q).String() = %q, expected %q", test.method, result, test.expected)
+		}
+	}
+}
+
+func TestPluginCapabilityString(t *testing.T) {
+	tests := []struct {
+		capability registry.PluginCapability
+		expected   string
+	}{
+		{registry.PluginCapabilityCostRetrieval, "cost_retrieval"},
+		{registry.PluginCapabilityCostProjection, "cost_projection"},
+		{registry.PluginCapabilityPricingSpecs, "pricing_specs"},
+		{registry.PluginCapabilityHistoricalData, "historical_data"},
+		{registry.PluginCapabilityRealTimeData, "real_time_data"},
+		{registry.PluginCapabilityBatchProcessing, "batch_processing"},
+		{registry.PluginCapabilityRateLimiting, "rate_limiting"},
+		{registry.PluginCapabilityCaching, "caching"},
+		{registry.PluginCapabilityEncryption, "encryption"},
+		{registry.PluginCapabilityCompression, "compression"},
+		{registry.PluginCapabilityFiltering, "filtering"},
+		{registry.PluginCapabilityAggregation, "aggregation"},
+		{registry.PluginCapabilityMultiTenancy, "multi_tenancy"},
+		{registry.PluginCapabilityAuditLogging, "audit_logging"},
+	}
+
+	for _, test := range tests {
+		result := test.capability.String()
+		if result != test.expected {
+			t.Errorf("registry.PluginCapability(%q).String() = %q, expected %q", test.capability, result, test.expected)
+		}
+	}
+}
+
+func TestSystemPermissionString(t *testing.T) {
+	tests := []struct {
+		permission registry.SystemPermission
+		expected   string
+	}{
+		{registry.SystemPermissionNetworkAccess, "network_access"},
+		{registry.SystemPermissionFilesystemRead, "filesystem_read"},
+		{registry.SystemPermissionFilesystemWrite, "filesystem_write"},
+		{registry.SystemPermissionEnvironmentRead, "environment_read"},
+		{registry.SystemPermissionProcessSpawn, "process_spawn"},
+		{registry.SystemPermissionSystemInfo, "system_info"},
+		{registry.SystemPermissionTempFiles, "temp_files"},
+		{registry.SystemPermissionConfigRead, "config_read"},
+		{registry.SystemPermissionMetricsCollect, "metrics_collect"},
+	}
+
+	for _, test := range tests {
+		result := test.permission.String()
+		if result != test.expected {
+			t.Errorf("registry.SystemPermission(%q).String() = %q, expected %q", test.permission, result, test.expected)
+		}
+	}
+}
+
+func TestAuthMethodString(t *testing.T) {
+	tests := []struct {
+		method   registry.AuthMethod
+		expected string
+	}{
+		{registry.AuthMethodNone, "none"},
+		{registry.AuthMethodAPIKey, "api_key"},
+		{registry.AuthMethodJWT, "jwt"},
+		{registry.AuthMethodOAuth2, "oauth2"},
+		{registry.AuthMethodMTLS, "mtls"},
+		{registry.AuthMethodBasicAuth, "basic_auth"},
+	}
+
+	for _, test := range tests {
+		result := test.method.String()
+		if result != test.expected {
+			t.Errorf("registry.AuthMethod(%q).String() = %q, expected %q", test.method, result, test.expected)
+		}
+	}
+}
+
 func TestValidatePluginName(t *testing.T) {
 	tests := []struct {
 		name        string
