@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 version: 2
 language: "en-US"
 tone_instructions: "Senior Go engineer reviewing PulumiCost ecosystem code (Go 1.24+, gRPC/proto, JSON schemas). Provide concrete, implementable fixes with clear rationale for Claude Code automation."
