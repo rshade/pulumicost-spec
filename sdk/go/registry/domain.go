@@ -25,11 +25,17 @@ const (
 	ProviderCustom Provider = "custom"
 )
 
+// allProviders is a package-level slice containing all valid Provider values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allProviders = []Provider{
+	ProviderAWS, ProviderAzure, ProviderGCP, ProviderKubernetes, ProviderCustom,
+}
+
 // AllProviders returns a slice of all supported cloud providers in the registry.
 func AllProviders() []Provider {
-	return []Provider{
-		ProviderAWS, ProviderAzure, ProviderGCP, ProviderKubernetes, ProviderCustom,
-	}
+	return allProviders
 }
 
 // String returns the provider name as a lowercase string value (e.g., "aws", "azure", "gcp").
@@ -51,7 +57,7 @@ func getAllProviderStrings() []string {
 // Valid providers include "aws", "azure", "gcp", "kubernetes", and "custom".
 func IsValidProvider(p string) bool {
 	provider := Provider(p)
-	for _, validProvider := range AllProviders() {
+	for _, validProvider := range allProviders {
 		if provider == validProvider {
 			return true
 		}
@@ -80,14 +86,17 @@ const (
 	DiscoverySourceGit DiscoverySource = "git"
 )
 
+// allDiscoverySources is a package-level slice containing all valid DiscoverySource values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allDiscoverySources = []DiscoverySource{
+	DiscoverySourceFilesystem, DiscoverySourceRegistry, DiscoverySourceURL, DiscoverySourceGit,
+}
+
 // AllDiscoverySources returns all valid discovery sources.
 func AllDiscoverySources() []DiscoverySource {
-	return []DiscoverySource{
-		DiscoverySourceFilesystem,
-		DiscoverySourceRegistry,
-		DiscoverySourceURL,
-		DiscoverySourceGit,
-	}
+	return allDiscoverySources
 }
 
 // String returns the discovery source name as a lowercase string value (e.g., "filesystem", "registry").
@@ -98,7 +107,7 @@ func (d DiscoverySource) String() string {
 // IsValidDiscoverySource checks if a discovery source is valid.
 func IsValidDiscoverySource(source string) bool {
 	discoverySource := DiscoverySource(source)
-	for _, validSource := range AllDiscoverySources() {
+	for _, validSource := range allDiscoverySources {
 		if discoverySource == validSource {
 			return true
 		}
@@ -124,16 +133,18 @@ const (
 	PluginStatusUpdating PluginStatus = "updating"
 )
 
+// allPluginStatuses is a package-level slice containing all valid PluginStatus values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allPluginStatuses = []PluginStatus{
+	PluginStatusAvailable, PluginStatusInstalled, PluginStatusActive,
+	PluginStatusInactive, PluginStatusError, PluginStatusUpdating,
+}
+
 // AllPluginStatuses returns all valid plugin statuses.
 func AllPluginStatuses() []PluginStatus {
-	return []PluginStatus{
-		PluginStatusAvailable,
-		PluginStatusInstalled,
-		PluginStatusActive,
-		PluginStatusInactive,
-		PluginStatusError,
-		PluginStatusUpdating,
-	}
+	return allPluginStatuses
 }
 
 // String returns the plugin status as a lowercase string value (e.g., "available", "installed").
@@ -144,7 +155,7 @@ func (p PluginStatus) String() string {
 // IsValidPluginStatus checks if a plugin status is valid.
 func IsValidPluginStatus(status string) bool {
 	pluginStatus := PluginStatus(status)
-	for _, validStatus := range AllPluginStatuses() {
+	for _, validStatus := range allPluginStatuses {
 		if pluginStatus == validStatus {
 			return true
 		}
@@ -166,14 +177,17 @@ const (
 	SecurityLevelOfficial SecurityLevel = "official"
 )
 
+// allSecurityLevels is a package-level slice containing all valid SecurityLevel values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allSecurityLevels = []SecurityLevel{
+	SecurityLevelUntrusted, SecurityLevelCommunity, SecurityLevelVerified, SecurityLevelOfficial,
+}
+
 // AllSecurityLevels returns all valid security levels.
 func AllSecurityLevels() []SecurityLevel {
-	return []SecurityLevel{
-		SecurityLevelUntrusted,
-		SecurityLevelCommunity,
-		SecurityLevelVerified,
-		SecurityLevelOfficial,
-	}
+	return allSecurityLevels
 }
 
 // String returns the security level as a lowercase string value (e.g., "untrusted", "verified").
@@ -184,7 +198,7 @@ func (s SecurityLevel) String() string {
 // IsValidSecurityLevel checks if a security level is valid.
 func IsValidSecurityLevel(level string) bool {
 	securityLevel := SecurityLevel(level)
-	for _, validLevel := range AllSecurityLevels() {
+	for _, validLevel := range allSecurityLevels {
 		if securityLevel == validLevel {
 			return true
 		}
@@ -206,14 +220,17 @@ const (
 	InstallationMethodPackage InstallationMethod = "package"
 )
 
+// allInstallationMethods is a package-level slice containing all valid InstallationMethod values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allInstallationMethods = []InstallationMethod{
+	InstallationMethodBinary, InstallationMethodContainer, InstallationMethodScript, InstallationMethodPackage,
+}
+
 // AllInstallationMethods returns all valid installation methods.
 func AllInstallationMethods() []InstallationMethod {
-	return []InstallationMethod{
-		InstallationMethodBinary,
-		InstallationMethodContainer,
-		InstallationMethodScript,
-		InstallationMethodPackage,
-	}
+	return allInstallationMethods
 }
 
 // String returns the installation method as a lowercase string value (e.g., "binary", "container").
@@ -224,7 +241,7 @@ func (i InstallationMethod) String() string {
 // IsValidInstallationMethod checks if an installation method is valid.
 func IsValidInstallationMethod(method string) bool {
 	installationMethod := InstallationMethod(method)
-	for _, validMethod := range AllInstallationMethods() {
+	for _, validMethod := range allInstallationMethods {
 		if installationMethod == validMethod {
 			return true
 		}
@@ -266,24 +283,21 @@ const (
 	PluginCapabilityAuditLogging PluginCapability = "audit_logging"
 )
 
+// allPluginCapabilities is a package-level slice containing all valid PluginCapability values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allPluginCapabilities = []PluginCapability{
+	PluginCapabilityCostRetrieval, PluginCapabilityCostProjection, PluginCapabilityPricingSpecs,
+	PluginCapabilityHistoricalData, PluginCapabilityRealTimeData, PluginCapabilityBatchProcessing,
+	PluginCapabilityRateLimiting, PluginCapabilityCaching, PluginCapabilityEncryption,
+	PluginCapabilityCompression, PluginCapabilityFiltering, PluginCapabilityAggregation,
+	PluginCapabilityMultiTenancy, PluginCapabilityAuditLogging,
+}
+
 // AllPluginCapabilities returns all valid plugin capabilities.
 func AllPluginCapabilities() []PluginCapability {
-	return []PluginCapability{
-		PluginCapabilityCostRetrieval,
-		PluginCapabilityCostProjection,
-		PluginCapabilityPricingSpecs,
-		PluginCapabilityHistoricalData,
-		PluginCapabilityRealTimeData,
-		PluginCapabilityBatchProcessing,
-		PluginCapabilityRateLimiting,
-		PluginCapabilityCaching,
-		PluginCapabilityEncryption,
-		PluginCapabilityCompression,
-		PluginCapabilityFiltering,
-		PluginCapabilityAggregation,
-		PluginCapabilityMultiTenancy,
-		PluginCapabilityAuditLogging,
-	}
+	return allPluginCapabilities
 }
 
 // String returns the plugin capability as a lowercase string value (e.g., "cost_retrieval", "caching").
@@ -294,7 +308,7 @@ func (p PluginCapability) String() string {
 // IsValidPluginCapability checks if a plugin capability is valid.
 func IsValidPluginCapability(capability string) bool {
 	pluginCapability := PluginCapability(capability)
-	for _, validCapability := range AllPluginCapabilities() {
+	for _, validCapability := range allPluginCapabilities {
 		if pluginCapability == validCapability {
 			return true
 		}
@@ -326,19 +340,19 @@ const (
 	SystemPermissionMetricsCollect SystemPermission = "metrics_collect"
 )
 
+// allSystemPermissions is a package-level slice containing all valid SystemPermission values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allSystemPermissions = []SystemPermission{
+	SystemPermissionNetworkAccess, SystemPermissionFilesystemRead, SystemPermissionFilesystemWrite,
+	SystemPermissionEnvironmentRead, SystemPermissionProcessSpawn, SystemPermissionSystemInfo,
+	SystemPermissionTempFiles, SystemPermissionConfigRead, SystemPermissionMetricsCollect,
+}
+
 // AllSystemPermissions returns all valid system permissions.
 func AllSystemPermissions() []SystemPermission {
-	return []SystemPermission{
-		SystemPermissionNetworkAccess,
-		SystemPermissionFilesystemRead,
-		SystemPermissionFilesystemWrite,
-		SystemPermissionEnvironmentRead,
-		SystemPermissionProcessSpawn,
-		SystemPermissionSystemInfo,
-		SystemPermissionTempFiles,
-		SystemPermissionConfigRead,
-		SystemPermissionMetricsCollect,
-	}
+	return allSystemPermissions
 }
 
 // String returns the system permission as a lowercase string value (e.g., "network_access", "filesystem_read").
@@ -349,7 +363,7 @@ func (s SystemPermission) String() string {
 // IsValidSystemPermission checks if a system permission is valid.
 func IsValidSystemPermission(permission string) bool {
 	systemPermission := SystemPermission(permission)
-	for _, validPermission := range AllSystemPermissions() {
+	for _, validPermission := range allSystemPermissions {
 		if systemPermission == validPermission {
 			return true
 		}
@@ -375,16 +389,17 @@ const (
 	AuthMethodBasicAuth AuthMethod = "basic_auth"
 )
 
+// allAuthMethods is a package-level slice containing all valid AuthMethod values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allAuthMethods = []AuthMethod{
+	AuthMethodNone, AuthMethodAPIKey, AuthMethodJWT, AuthMethodOAuth2, AuthMethodMTLS, AuthMethodBasicAuth,
+}
+
 // AllAuthMethods returns all valid authentication methods.
 func AllAuthMethods() []AuthMethod {
-	return []AuthMethod{
-		AuthMethodNone,
-		AuthMethodAPIKey,
-		AuthMethodJWT,
-		AuthMethodOAuth2,
-		AuthMethodMTLS,
-		AuthMethodBasicAuth,
-	}
+	return allAuthMethods
 }
 
 // String returns the authentication method as a lowercase string value (e.g., "api_key", "jwt").
@@ -395,7 +410,7 @@ func (a AuthMethod) String() string {
 // IsValidAuthMethod checks if an authentication method is valid.
 func IsValidAuthMethod(method string) bool {
 	authMethod := AuthMethod(method)
-	for _, validMethod := range AllAuthMethods() {
+	for _, validMethod := range allAuthMethods {
 		if authMethod == validMethod {
 			return true
 		}

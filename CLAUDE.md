@@ -59,9 +59,21 @@ This is **pulumicost-spec**, a repository that provides the canonical protocol a
 **Go SDK (`sdk/go/`)**
 
 - `sdk/go/proto/` - Generated protobuf Go code (do not edit manually)
+- `sdk/go/registry/` - Plugin registry domain types with optimized zero-allocation validation (8 enum types)
 - `sdk/go/pricing/domain.go` - BillingMode enum constants and validation helpers
 - `sdk/go/pricing/validate.go` - JSON schema validation for PricingSpec documents
 - `sdk/go/testing/` - Comprehensive plugin testing framework
+
+**Performance Optimization** (Registry Package):
+
+The registry package implements **zero-allocation enum validation** using package-level slice variables:
+
+- **Performance**: 5-12 ns/op, 0 allocs/op across all 8 enum types
+- **Pattern**: Package-level variables instead of function-returned slices
+- **Memory**: ~608 bytes total for all enums (vs ~3.5 KB for map-based alternatives)
+- **Speed**: 2x faster than map-based validation for small enums (4-14 values)
+
+See `specs/001-domain-enum-optimization/` for complete documentation and performance analysis.
 
 **Testing Framework (`sdk/go/testing/`)**
 
@@ -500,3 +512,12 @@ cd schemas && /init            # JSON Schema validation
 - **Specialized Workflows**: Directory-appropriate development and testing approaches  
 - **Tool Detection**: Context-aware build commands and validation approaches
 - **Knowledge Preservation**: Captures domain-specific best practices and solutions
+
+## Active Technologies
+
+- Go 1.24.10 (toolchain go1.25.4) + Standard library only (no external dependencies for validation) (001-domain-enum-optimization)
+
+## Recent Changes
+
+- 001-domain-enum-optimization: Added Go 1.24.10 (toolchain go1.25.4) + Standard library only (no external
+  dependencies for validation)

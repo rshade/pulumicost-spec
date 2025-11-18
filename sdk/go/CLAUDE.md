@@ -5,8 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 This is the **Go SDK** for the PulumiCost specification, providing a complete runtime library for implementing and testing
-cost source plugins. The SDK consists of three main packages:
+cost source plugins. The SDK consists of four main packages:
 
+- **`registry/`** - Plugin registry domain types with optimized zero-allocation validation
 - **`pricing/`** - Domain types, validation, and billing mode enumerations
 - **`proto/`** - Generated gRPC code from protobuf definitions (do not edit manually)
 - **`testing/`** - Comprehensive testing framework with harness, mocks, and conformance tests
@@ -46,6 +47,15 @@ cd ../../ && make test && make lint
 ## Architecture
 
 ### Package Structure
+
+**`registry/` Package - Plugin Registry Domain Types**
+
+- `domain.go` - 8 enum types with optimized zero-allocation validation
+- `domain_test.go` - Comprehensive tests and performance benchmarks
+- Enum types: Provider, DiscoverySource, PluginStatus, SecurityLevel, InstallationMethod, PluginCapability,
+  SystemPermission, AuthMethod
+- Performance: 5-12 ns/op, 0 allocs/op across all validation functions
+- Pattern: Package-level slice variables for zero-allocation validation
 
 **`pricing/` Package - Domain Logic**
 
@@ -92,6 +102,42 @@ The `pricing` package defines 44+ billing modes organized by category:
 - **MockPlugin**: Configurable mock with error injection, delays, and custom responses
 - **Conformance Testing**: Three-tier validation (Basic/Standard/Advanced) with performance requirements
 - **Performance Benchmarks**: Memory-profiled benchmarks for all RPC methods
+
+### Enum Validation Pattern (Registry Package)
+
+The registry package implements **optimized zero-allocation validation** for all enum types:
+
+**Pattern**: Package-level slice variables
+
+```go
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allProviders = []Provider{ProviderAWS, ProviderAzure, ProviderGCP, ProviderKubernetes, ProviderCustom}
+
+func AllProviders() []Provider {
+    return allProviders  // Zero allocation
+}
+
+func IsValidProvider(p string) bool {
+    provider := Provider(p)
+    for _, valid := range allProviders {  // Direct slice access
+        if provider == valid {
+            return true
+        }
+    }
+    return false
+}
+```
+
+**Performance**:
+
+- 5-12 ns/op across all 8 enum types
+- 0 B/op, 0 allocs/op (zero allocation)
+- 2x faster than map-based alternatives
+- Memory footprint: ~608 bytes total for all enums
+
+**Documentation**: See `../specs/001-domain-enum-optimization/validation-pattern.md` for complete pattern guide.
+
+**Status**: Registry package fully optimized ✅, pricing package pending future optimization
 
 ### Plugin Implementation Flow
 

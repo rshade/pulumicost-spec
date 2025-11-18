@@ -89,8 +89,10 @@ func getAllBillingModes() []BillingMode {
 	}
 }
 
+// String returns the billing mode as its string value.
 func (b BillingMode) String() string { return string(b) }
 
+// ValidBillingMode checks if the given string represents a valid billing mode.
 func ValidBillingMode(s string) bool {
 	mode := BillingMode(s)
 	for _, validMode := range getAllBillingModes() {
@@ -132,8 +134,10 @@ func GetAllProviders() []Provider {
 	return []Provider{AWS, Azure, GCP, Kubernetes, Custom}
 }
 
+// String returns the provider name as its string value.
 func (p Provider) String() string { return string(p) }
 
+// ValidProvider checks if the given string represents a valid cloud provider.
 func ValidProvider(s string) bool {
 	provider := Provider(s)
 	for _, validProvider := range GetAllProviders() {

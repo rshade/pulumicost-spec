@@ -94,6 +94,8 @@ cd ../../../ && make lint && make validate
 
 ### Billing Mode Validation Strategy
 
+**Current Status**: Uses function-returned slices (not yet optimized)
+
 The package uses a **centralized enumeration approach**:
 
 1. **Constants Definitions**: All billing modes defined as typed constants
@@ -102,13 +104,54 @@ The package uses a **centralized enumeration approach**:
 4. **Validation Functions**: Multiple validation entry points for different use cases
 
 ```go
-// Usage patterns
+// Current usage patterns
 if !pricing.ValidBillingMode("per_hour") {
     return errors.New("invalid billing mode")
 }
 
-allModes := pricing.GetAllBillingModes() // Get all 38 modes
+allModes := pricing.GetAllBillingModes() // Get all 44 modes
 ```
+
+**Performance Optimization Opportunity** 🔧:
+
+The pricing package currently uses function-returned slices which allocate memory on each call. The registry package
+has been optimized to use package-level variables for zero-allocation validation (see
+`specs/001-domain-enum-optimization/validation-pattern.md`).
+
+**Recommended Future Optimization**:
+
+Apply the same pattern as registry package:
+
+```go
+// Recommended pattern (not yet implemented)
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allBillingModes = []BillingMode{
+    PerHour, PerMinute, PerSecond, /* ... all 44 values ... */
+}
+
+func getAllBillingModes() []BillingMode {
+    return allBillingModes  // Returns reference, zero allocation
+}
+
+func ValidBillingMode(mode string) bool {
+    billingMode := BillingMode(mode)
+    for _, valid := range allBillingModes {  // Direct slice access
+        if billingMode == valid {
+            return true
+        }
+    }
+    return false
+}
+```
+
+**Expected Performance** (based on registry package scaling):
+
+- Current: ~40-60 ns/op with allocation overhead
+- Optimized: ~20-25 ns/op (44 values × 0.5 ns/value + 5 ns base)
+- Memory: 0 allocs/op (vs current 1 alloc/op)
+
+**Recommendation**: Apply optimization in future PR when performance becomes critical or for consistency with registry
+package pattern.
 
 ### Schema Validation Architecture
 
