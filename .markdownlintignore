@@ -3,3 +3,5 @@ node_modules/
 bin/
 CodeRabbitPrompt.md
 Github_Development_Prompt.md
+.claude/commands/
+.specify/templates/
