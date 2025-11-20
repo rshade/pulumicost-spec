@@ -429,3 +429,198 @@ func TestAllFunctions(t *testing.T) {
 		}
 	}
 }
+
+// Benchmark tests for enum validation performance (T006-T013)
+// These benchmarks measure the current implementation before optimization
+
+func BenchmarkIsValidProvider(b *testing.B) {
+	testCases := []string{"aws", "invalid", "gcp", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidProvider(testCases[i%len(testCases)])
+	}
+}
+
+func BenchmarkIsValidDiscoverySource(b *testing.B) {
+	testCases := []string{"filesystem", "invalid", "registry", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidDiscoverySource(testCases[i%len(testCases)])
+	}
+}
+
+func BenchmarkIsValidPluginStatus(b *testing.B) {
+	testCases := []string{"active", "invalid", "installed", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidPluginStatus(testCases[i%len(testCases)])
+	}
+}
+
+func BenchmarkIsValidSecurityLevel(b *testing.B) {
+	testCases := []string{"verified", "invalid", "official", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidSecurityLevel(testCases[i%len(testCases)])
+	}
+}
+
+func BenchmarkIsValidInstallationMethod(b *testing.B) {
+	testCases := []string{"binary", "invalid", "container", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidInstallationMethod(testCases[i%len(testCases)])
+	}
+}
+
+func BenchmarkIsValidPluginCapability(b *testing.B) {
+	testCases := []string{"cost_retrieval", "invalid", "caching", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidPluginCapability(testCases[i%len(testCases)])
+	}
+}
+
+func BenchmarkIsValidSystemPermission(b *testing.B) {
+	testCases := []string{"network_access", "invalid", "filesystem_read", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidSystemPermission(testCases[i%len(testCases)])
+	}
+}
+
+func BenchmarkIsValidAuthMethod(b *testing.B) {
+	testCases := []string{"api_key", "invalid", "jwt", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidAuthMethod(testCases[i%len(testCases)])
+	}
+}
+
+// Edge case tests (T014).
+func TestValidationEdgeCases(b *testing.T) {
+	b.Run("EmptyString", func(t *testing.T) {
+		if registry.IsValidProvider("") {
+			t.Error("Empty string should be invalid")
+		}
+		if registry.IsValidDiscoverySource("") {
+			t.Error("Empty string should be invalid")
+		}
+	})
+
+	b.Run("CaseMismatch", func(t *testing.T) {
+		if registry.IsValidProvider("AWS") {
+			t.Error("Uppercase 'AWS' should be invalid (case-sensitive)")
+		}
+		if registry.IsValidPluginStatus("ACTIVE") {
+			t.Error("Uppercase 'ACTIVE' should be invalid (case-sensitive)")
+		}
+	})
+
+	b.Run("InvalidValues", func(t *testing.T) {
+		if registry.IsValidProvider("invalid-provider") {
+			t.Error("'invalid-provider' should be invalid")
+		}
+		if registry.IsValidPluginCapability("nonexistent") {
+			t.Error("'nonexistent' should be invalid")
+		}
+	})
+}
+
+// Map-based comparison benchmarks (T045-T046).
+// These benchmarks compare optimized slice-based validation against map-based approach.
+
+// BenchmarkIsValidProvider_MapBased compares map-based validation for Provider enum (5 values).
+func BenchmarkIsValidProvider_MapBased(b *testing.B) {
+	// Map-based validation for comparison
+	validProviders := map[registry.Provider]struct{}{
+		registry.ProviderAWS:        {},
+		registry.ProviderAzure:      {},
+		registry.ProviderGCP:        {},
+		registry.ProviderKubernetes: {},
+		registry.ProviderCustom:     {},
+	}
+
+	testCases := []string{"aws", "invalid", "gcp", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		provider := registry.Provider(testCases[i%len(testCases)])
+		_ = validProviders[provider]
+	}
+}
+
+// BenchmarkIsValidPluginCapability_MapBased compares map-based validation for PluginCapability enum (14 values).
+func BenchmarkIsValidPluginCapability_MapBased(b *testing.B) {
+	// Map-based validation for comparison
+	validCapabilities := map[registry.PluginCapability]struct{}{
+		registry.PluginCapabilityCostRetrieval:   {},
+		registry.PluginCapabilityCostProjection:  {},
+		registry.PluginCapabilityPricingSpecs:    {},
+		registry.PluginCapabilityHistoricalData:  {},
+		registry.PluginCapabilityRealTimeData:    {},
+		registry.PluginCapabilityBatchProcessing: {},
+		registry.PluginCapabilityRateLimiting:    {},
+		registry.PluginCapabilityCaching:         {},
+		registry.PluginCapabilityEncryption:      {},
+		registry.PluginCapabilityCompression:     {},
+		registry.PluginCapabilityFiltering:       {},
+		registry.PluginCapabilityAggregation:     {},
+		registry.PluginCapabilityMultiTenancy:    {},
+		registry.PluginCapabilityAuditLogging:    {},
+	}
+
+	testCases := []string{"cost_retrieval", "invalid", "caching", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		capability := registry.PluginCapability(testCases[i%len(testCases)])
+		_ = validCapabilities[capability]
+	}
+}
+
+// Scalability benchmarks (T047).
+// These benchmarks test validation performance across different enum sizes.
+
+// BenchmarkValidation_4Values tests validation performance for 4-value enums (DiscoverySource, SecurityLevel, InstallationMethod).
+func BenchmarkValidation_4Values(b *testing.B) {
+	testCases := []string{"filesystem", "invalid", "registry", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidDiscoverySource(testCases[i%len(testCases)])
+	}
+}
+
+// BenchmarkValidation_5Values tests validation performance for 5-value enums (Provider).
+func BenchmarkValidation_5Values(b *testing.B) {
+	testCases := []string{"aws", "invalid", "gcp", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidProvider(testCases[i%len(testCases)])
+	}
+}
+
+// BenchmarkValidation_6Values tests validation performance for 6-value enums (PluginStatus, AuthMethod).
+func BenchmarkValidation_6Values(b *testing.B) {
+	testCases := []string{"active", "invalid", "installed", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidPluginStatus(testCases[i%len(testCases)])
+	}
+}
+
+// BenchmarkValidation_9Values tests validation performance for 9-value enums (SystemPermission).
+func BenchmarkValidation_9Values(b *testing.B) {
+	testCases := []string{"network_access", "invalid", "filesystem_read", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidSystemPermission(testCases[i%len(testCases)])
+	}
+}
+
+// BenchmarkValidation_14Values tests validation performance for 14-value enums (PluginCapability).
+func BenchmarkValidation_14Values(b *testing.B) {
+	testCases := []string{"cost_retrieval", "invalid", "caching", ""}
+	b.ResetTimer()
+	for i := range b.N {
+		_ = registry.IsValidPluginCapability(testCases[i%len(testCases)])
+	}
+}

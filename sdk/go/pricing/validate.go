@@ -224,6 +224,7 @@ const schemaJSON = `{
 "additionalProperties": false
 }`
 
+// getCompiledSchema returns the compiled JSON schema for PricingSpec validation.
 func getCompiledSchema() (*jsonschema.Schema, error) {
 	var schemaDoc any
 	if err := json.Unmarshal([]byte(schemaJSON), &schemaDoc); err != nil {
@@ -241,6 +242,7 @@ func getCompiledSchema() (*jsonschema.Schema, error) {
 	return s, nil
 }
 
+// ValidatePricingSpec validates a PricingSpec JSON document against the schema.
 func ValidatePricingSpec(doc []byte) error {
 	compiled, err := getCompiledSchema()
 	if err != nil {

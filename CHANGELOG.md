@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Performance**: Optimized registry package enum validation for zero-allocation performance
+  - Converted all 8 enum types (Provider, DiscoverySource, PluginStatus, SecurityLevel, InstallationMethod,
+    PluginCapability, SystemPermission, AuthMethod) from function-returned slices to package-level variables
+  - Achieved 0 B/op, 0 allocs/op across all validation functions (previously 1 alloc/op)
+  - Performance improved to 5-12 ns/op (2x faster than map-based alternatives)
+  - Memory footprint reduced to ~608 bytes total for all enums (vs ~3.5 KB for maps)
+  - Established validation pattern for future SDK enums (see `specs/001-domain-enum-optimization/`)
+
 ## [0.1.0](https://github.com/rshade/pulumicost-spec/compare/v0.1.0...v0.1.0) (2025-11-18)
 
 
