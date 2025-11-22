@@ -2,10 +2,17 @@
   "provider": "aws",
   "resource_type": "s3",
   "region": "us-east-1",
-  "billing_mode": "per_gb_month",
+  "billing_mode": "tiered",
   "rate_per_unit": 0.023,
   "currency": "USD",
+  "unit": "GB-month",
   "description": "S3 Standard storage with tiered pricing in us-east-1",
+  "assumptions": [
+    "S3 Standard storage class",
+    "Volume pricing with progressive discounts",
+    "First 50 TB at $0.023, next 400 TB at $0.022, over 450 TB at $0.021",
+    "Does not include request, transfer, or management fees"
+  ],
   "metric_hints": [
     {
       "metric": "storage_gb",
@@ -25,18 +32,22 @@
   ],
   "pricing_tiers": [
     {
-      "min_units": 0,
-      "max_units": 50000,
-      "rate_per_unit": 0.023
+      "min_quantity": 0,
+      "max_quantity": 50000,
+      "rate_per_unit": 0.023,
+      "description": "First 50 TB / Month"
     },
     {
-      "min_units": 50000,
-      "max_units": 450000,
-      "rate_per_unit": 0.022
+      "min_quantity": 50000,
+      "max_quantity": 450000,
+      "rate_per_unit": 0.022,
+      "description": "Next 400 TB / Month"
     },
     {
-      "min_units": 450000,
-      "rate_per_unit": 0.021
+      "min_quantity": 450000,
+      "max_quantity": 0,
+      "rate_per_unit": 0.021,
+      "description": "Over 450 TB / Month"
     }
   ],
   "time_aggregation": {

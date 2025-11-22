@@ -91,7 +91,8 @@ func (h *TestHarness) Client() pbc.CostSourceServiceClient {
 	return h.client
 }
 
-// TestResult represents the result of a test operation.
+// TestResult represents the result of a single test operation.
+// It includes timing information, success status, and error details.
 type TestResult struct {
 	Method   string
 	Success  bool

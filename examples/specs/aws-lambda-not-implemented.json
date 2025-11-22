@@ -1,0 +1,25 @@
+{
+  "provider": "aws",
+  "resource_type": "lambda_edge",
+  "region": "us-east-1",
+  "billing_mode": "not_implemented",
+  "rate_per_unit": 0,
+  "currency": "USD",
+  "unit": "unknown",
+  "description": "Lambda@Edge pricing not yet implemented",
+  "assumptions": [
+    "Lambda@Edge pricing requires special calculation",
+    "Pricing varies based on edge location",
+    "Not yet supported by this plugin"
+  ],
+  "resource_tags": {
+    "billing_center": "engineering",
+    "cost_center": "CC-4004",
+    "environment": "production"
+  },
+  "plugin_metadata": {
+    "not_implemented_reason": "edge_location_pricing",
+    "fallback_suggestion": "Use standard Lambda pricing as estimate"
+  },
+  "source": "mock-plugin"
+}

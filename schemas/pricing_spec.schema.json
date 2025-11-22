@@ -1,7 +1,7 @@
 {
 "$schema": "https://json-schema.org/draft/2020-12/schema",
 "$id": "https://spec.pulumicost.dev/schemas/pricing_spec.schema.json",
-"title": "PricingSpec v0.1.0",
+"title": "PricingSpec v0.2.0",
 "description": "Comprehensive pricing specification schema for cloud resource cost calculation",
 "type": "object",
 "required": ["provider", "resource_type", "billing_mode", "rate_per_unit", "currency"],
@@ -40,9 +40,21 @@
             "on_demand", "reserved", "spot", "preemptible",
             "savings_plan", "committed_use", "hybrid_benefit",
             "per_data_transfer_gb", "per_bandwidth_gb",
-            "per_api_call", "per_lookup", "per_query"
+            "per_api_call", "per_lookup", "per_query",
+            "tiered", "not_implemented"
         ],
         "description": "Billing model that defines how the resource is charged"
+    },
+    "unit": {
+        "type": "string",
+        "description": "Unit of measurement for rate_per_unit (e.g., 'hour', 'GB-month', 'request', 'unknown')"
+    },
+    "assumptions": {
+        "type": "array",
+        "description": "Human-readable strings explaining pricing derivation and constraints",
+        "items": {
+            "type": "string"
+        }
     },
     "rate_per_unit": { 
         "type": "number", 
@@ -91,22 +103,26 @@
         "description": "Tiered pricing structure for volume-based discounts",
         "items": {
             "type": "object",
-            "required": ["min_units", "rate_per_unit"],
+            "required": ["min_quantity", "rate_per_unit"],
             "properties": {
-                "min_units": {
+                "min_quantity": {
                     "type": "number",
                     "minimum": 0,
-                    "description": "Minimum units for this pricing tier"
+                    "description": "Minimum quantity for this pricing tier (inclusive)"
                 },
-                "max_units": {
+                "max_quantity": {
                     "type": "number",
                     "minimum": 0,
-                    "description": "Maximum units for this pricing tier (optional for highest tier)"
+                    "description": "Maximum quantity for this pricing tier (exclusive, 0 means unlimited)"
                 },
                 "rate_per_unit": {
                     "type": "number",
                     "minimum": 0,
                     "description": "Rate per unit for this tier"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable explanation of this tier"
                 }
             },
             "additionalProperties": false
