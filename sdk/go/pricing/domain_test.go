@@ -180,7 +180,7 @@ func TestAllBillingModesCompleteness(t *testing.T) {
 	for i, mode := range allModesStr {
 		allModes[i] = pricing.BillingMode(mode)
 	}
-	expectedCount := 38 // Based on the constants defined (updated count)
+	expectedCount := 40 // Based on the constants defined (added Tiered, NotImplemented)
 	if len(allModes) != expectedCount {
 		t.Errorf("GetAllBillingModes length = %d, want %d", len(allModes), expectedCount)
 	}

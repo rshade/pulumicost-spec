@@ -2,10 +2,16 @@
   "provider": "gcp",
   "resource_type": "cloud_storage",
   "region": "us-central1",
-  "billing_mode": "per_gb_month",
+  "billing_mode": "tiered",
   "rate_per_unit": 0.02,
   "currency": "USD",
+  "unit": "GB-month",
   "description": "Standard storage class in us-central1 region",
+  "assumptions": [
+    "Standard storage class",
+    "Regional location in us-central1",
+    "Volume pricing with progressive discounts"
+  ],
   "metric_hints": [
     {
       "metric": "storage_gb",
@@ -20,18 +26,22 @@
   ],
   "pricing_tiers": [
     {
-      "min_units": 0,
-      "max_units": 1024,
-      "rate_per_unit": 0.02
+      "min_quantity": 0,
+      "max_quantity": 1024,
+      "rate_per_unit": 0.02,
+      "description": "First 1 TB / Month"
     },
     {
-      "min_units": 1024,
-      "max_units": 51200,
-      "rate_per_unit": 0.019
+      "min_quantity": 1024,
+      "max_quantity": 51200,
+      "rate_per_unit": 0.019,
+      "description": "Next 50 TB / Month"
     },
     {
-      "min_units": 51200,
-      "rate_per_unit": 0.018
+      "min_quantity": 51200,
+      "max_quantity": 0,
+      "rate_per_unit": 0.018,
+      "description": "Over 51 TB / Month"
     }
   ],
   "time_aggregation": {

@@ -6,7 +6,14 @@
   "billing_mode": "per_hour",
   "rate_per_unit": 0.0104,
   "currency": "USD",
+  "unit": "hour",
   "description": "On-demand Linux EC2 t3.micro instance in us-east-1",
+  "assumptions": [
+    "On-demand pricing without reserved capacity discounts",
+    "Linux/Unix operating system",
+    "Shared tenancy",
+    "EBS-optimized by default"
+  ],
   "metric_hints": [
     {
       "metric": "vcpu_hours",

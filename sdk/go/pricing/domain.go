@@ -58,15 +58,35 @@ const (
 
 // Pricing model types.
 const (
-	OnDemand      BillingMode = "on_demand"
-	Reserved      BillingMode = "reserved"
-	Spot          BillingMode = "spot"
-	Preemptible   BillingMode = "preemptible"
-	SavingsPlan   BillingMode = "savings_plan"
-	CommittedUse  BillingMode = "committed_use"
-	HybridBenefit BillingMode = "hybrid_benefit"
-	FlatRate      BillingMode = "flat"
+	OnDemand       BillingMode = "on_demand"
+	Reserved       BillingMode = "reserved"
+	Spot           BillingMode = "spot"
+	Preemptible    BillingMode = "preemptible"
+	SavingsPlan    BillingMode = "savings_plan"
+	CommittedUse   BillingMode = "committed_use"
+	HybridBenefit  BillingMode = "hybrid_benefit"
+	FlatRate       BillingMode = "flat"
+	Tiered         BillingMode = "tiered"
+	NotImplemented BillingMode = "not_implemented"
 )
+
+// Unit represents the unit of measurement for pricing.
+type Unit string
+
+// Unit constants for pricing specifications.
+const (
+	UnitHour    Unit = "hour"
+	UnitGBMonth Unit = "GB-month"
+	UnitRequest Unit = "request"
+	UnitUnknown Unit = "unknown"
+	UnitDTU     Unit = "DTU"
+	UnitRCU     Unit = "RCU"
+	UnitWCU     Unit = "WCU"
+	UnitRU      Unit = "RU"
+)
+
+// String returns the unit as its string value.
+func (u Unit) String() string { return string(u) }
 
 // getAllBillingModes returns all valid billing modes for validation.
 func getAllBillingModes() []BillingMode {
@@ -86,6 +106,7 @@ func getAllBillingModes() []BillingMode {
 		PerRCU, PerWCU, PerDTU, PerRU,
 		// Pricing models
 		OnDemand, Reserved, Spot, Preemptible, SavingsPlan, CommittedUse, HybridBenefit, FlatRate,
+		Tiered, NotImplemented,
 	}
 }
 
