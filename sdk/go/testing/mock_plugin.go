@@ -1,3 +1,6 @@
+// Package testing provides test utilities for PulumiCost plugin development.
+// It includes mock plugin implementations, test harnesses, and conformance testing
+// utilities for validating plugin behavior against the CostSource gRPC service spec.
 package testing
 
 import (
@@ -37,6 +40,13 @@ const (
 	// Cost variation constants.
 	costVariationBase  = 0.8 // Base cost variation multiplier (80%)
 	costVariationRange = 0.4 // Cost variation range (40% additional)
+
+	// Rate multipliers for different resource types.
+	computeRateMultiplier    = 2.0   // Compute resources (EC2, VM, Compute Engine)
+	storageRateMultiplier    = 0.1   // Storage resources (S3, Blob, Cloud Storage)
+	serverlessRateMultiplier = 0.001 // Serverless (Lambda, Cloud Functions)
+	namespaceRateMultiplier  = 1.5   // Kubernetes namespace
+	databaseRateMultiplier   = 3.0   // Database resources (SQL Database)
 )
 
 // MockPlugin provides a configurable mock implementation of CostSourceServiceServer.
@@ -257,16 +267,8 @@ func (m *MockPlugin) GetProjectedCost(
 		return nil, status.Error(codes.InvalidArgument, "resource descriptor is required")
 	}
 
-	// Calculate cost based on resource type
-	multiplier := 1.0
-	switch resource.GetResourceType() {
-	case ec2ResourceType, "vm", computeEngineResourceType:
-		multiplier = 2.0 // Compute is more expensive
-	case "s3", blobStorageResourceType, cloudStorageResourceType:
-		multiplier = 0.1 // Storage is cheaper
-	case lambdaResourceType, cloudFunctionsResourceType:
-		multiplier = 0.001 // Serverless is very cheap per unit
-	}
+	// Calculate cost based on resource type (keep in sync with GetPricingSpec).
+	multiplier := getRateMultiplier(resource.GetResourceType())
 
 	unitPrice := m.BaseHourlyRate * multiplier
 	costPerMonth := unitPrice * HoursPerDay * daysPerMonth
@@ -279,6 +281,84 @@ func (m *MockPlugin) GetProjectedCost(
 		CostPerMonth:  costPerMonth,
 		BillingDetail: billingDetail,
 	}, nil
+}
+
+// getBillingModeAndUnit returns billing mode and unit for a resource type.
+func getBillingModeAndUnit(resourceType string) (string, string) {
+	switch resourceType {
+	case "s3", blobStorageResourceType, cloudStorageResourceType:
+		return "per_gb_month", "GB-month"
+	case lambdaResourceType, cloudFunctionsResourceType:
+		return "per_invocation", "request"
+	case namespaceResourceType:
+		return "per_cpu_hour", "hour"
+	case "sql_database":
+		return "per_dtu", "DTU"
+	default:
+		return "per_hour", "hour"
+	}
+}
+
+// isKnownResourceType returns true if the resource type is known/supported.
+func isKnownResourceType(resourceType string) bool {
+	knownTypes := []string{
+		ec2ResourceType, "s3", lambdaResourceType, "rds",
+		"vm", blobStorageResourceType, "sql_database",
+		computeEngineResourceType, cloudStorageResourceType, cloudFunctionsResourceType,
+		namespaceResourceType, "pod", "service",
+	}
+	for _, known := range knownTypes {
+		if resourceType == known {
+			return true
+		}
+	}
+	return false
+}
+
+// getRateMultiplier returns the rate multiplier for a resource type.
+func getRateMultiplier(resourceType string) float64 {
+	switch resourceType {
+	case ec2ResourceType, "vm", computeEngineResourceType:
+		return computeRateMultiplier
+	case "s3", blobStorageResourceType, cloudStorageResourceType:
+		return storageRateMultiplier
+	case lambdaResourceType, cloudFunctionsResourceType:
+		return serverlessRateMultiplier
+	case namespaceResourceType:
+		return namespaceRateMultiplier
+	case "sql_database":
+		return databaseRateMultiplier
+	default:
+		return 1.0
+	}
+}
+
+// getMetricHints returns metric hints for a resource type.
+func getMetricHints(resourceType string) []*pbc.UsageMetricHint {
+	switch resourceType {
+	case ec2ResourceType, "vm", computeEngineResourceType:
+		return []*pbc.UsageMetricHint{
+			{Metric: "vcpu_hours", Unit: "hour"},
+			{Metric: "memory_gb_hours", Unit: "hour"},
+		}
+	case "s3", blobStorageResourceType, cloudStorageResourceType:
+		return []*pbc.UsageMetricHint{
+			{Metric: "storage_gb", Unit: "GB"},
+			{Metric: "requests", Unit: "count"},
+		}
+	case lambdaResourceType, cloudFunctionsResourceType:
+		return []*pbc.UsageMetricHint{
+			{Metric: "invocations", Unit: "count"},
+			{Metric: "duration_ms", Unit: "millisecond"},
+		}
+	case namespaceResourceType:
+		return []*pbc.UsageMetricHint{
+			{Metric: "cpu_cores", Unit: "hour"},
+			{Metric: "memory_gb", Unit: "hour"},
+		}
+	default:
+		return []*pbc.UsageMetricHint{}
+	}
 }
 
 // GetPricingSpec returns mock pricing specification.
@@ -299,59 +379,52 @@ func (m *MockPlugin) GetPricingSpec(
 		return nil, status.Error(codes.InvalidArgument, "resource descriptor is required")
 	}
 
-	// Generate billing mode based on resource type
-	billingMode := "per_hour"
-	switch resource.GetResourceType() {
-	case "s3", blobStorageResourceType, cloudStorageResourceType:
-		billingMode = "per_gb_month"
-	case lambdaResourceType, cloudFunctionsResourceType:
-		billingMode = "per_invocation"
-	case namespaceResourceType:
-		billingMode = "per_cpu_hour"
-	case "sql_database":
-		billingMode = "per_dtu"
+	// Validate required fields (FR-011)
+	if resource.GetProvider() == "" {
+		return nil, status.Error(codes.InvalidArgument, "provider is required")
+	}
+	if resource.GetResourceType() == "" {
+		return nil, status.Error(codes.InvalidArgument, "resource_type is required")
 	}
 
-	// Calculate rate based on resource type
-	multiplier := 1.0
-	switch resource.GetResourceType() {
-	case ec2ResourceType, "vm", computeEngineResourceType:
-		multiplier = 2.0
-	case "s3", blobStorageResourceType, cloudStorageResourceType:
-		multiplier = 0.1
-	case lambdaResourceType, cloudFunctionsResourceType:
-		multiplier = 0.001
-	case namespaceResourceType:
-		multiplier = 1.5
-	case "sql_database":
-		multiplier = 3.0
+	resourceType := resource.GetResourceType()
+
+	// Handle unknown resource types with not_implemented (T039)
+	if !isKnownResourceType(resourceType) {
+		return &pbc.GetPricingSpecResponse{
+			Spec: &pbc.PricingSpec{
+				Provider:     resource.GetProvider(),
+				ResourceType: resourceType,
+				Sku:          resource.GetSku(),
+				Region:       resource.GetRegion(),
+				BillingMode:  "not_implemented",
+				RatePerUnit:  0,
+				Currency:     m.Currency,
+				Unit:         "unknown",
+				Description:  fmt.Sprintf("Pricing not implemented for %s", resourceType),
+				Assumptions: []string{
+					fmt.Sprintf("Resource type %s is not yet supported", resourceType),
+					"Pricing data is unavailable for this resource type",
+				},
+				Source: m.PluginName,
+			},
+		}, nil
 	}
 
-	ratePerUnit := m.BaseHourlyRate * multiplier
+	billingMode, unit := getBillingModeAndUnit(resourceType)
+	ratePerUnit := m.BaseHourlyRate * getRateMultiplier(resourceType)
+	metricHints := getMetricHints(resourceType)
 
-	// Generate metric hints based on resource type
-	metricHints := []*pbc.UsageMetricHint{}
-	switch resource.GetResourceType() {
-	case ec2ResourceType, "vm", computeEngineResourceType:
-		metricHints = []*pbc.UsageMetricHint{
-			{Metric: "vcpu_hours", Unit: "hour"},
-			{Metric: "memory_gb_hours", Unit: "hour"},
-		}
-	case "s3", blobStorageResourceType, cloudStorageResourceType:
-		metricHints = []*pbc.UsageMetricHint{
-			{Metric: "storage_gb", Unit: "GB"},
-			{Metric: "requests", Unit: "count"},
-		}
-	case lambdaResourceType, cloudFunctionsResourceType:
-		metricHints = []*pbc.UsageMetricHint{
-			{Metric: "invocations", Unit: "count"},
-			{Metric: "duration_ms", Unit: "millisecond"},
-		}
-	case namespaceResourceType:
-		metricHints = []*pbc.UsageMetricHint{
-			{Metric: "cpu_cores", Unit: "hour"},
-			{Metric: "memory_gb", Unit: "hour"},
-		}
+	// Generate assumptions based on resource type
+	assumptions := []string{
+		fmt.Sprintf(
+			"Pricing based on %s %s in %s",
+			resource.GetProvider(),
+			resource.GetResourceType(),
+			resource.GetRegion(),
+		),
+		"On-demand pricing without reserved capacity discounts",
+		"Standard tier without additional features",
 	}
 
 	spec := &pbc.PricingSpec{
@@ -369,7 +442,9 @@ func (m *MockPlugin) GetPricingSpec(
 			"test_mode":           "true",
 			"data_source":         "synthetic",
 		},
-		Source: m.PluginName,
+		Source:      m.PluginName,
+		Unit:        unit,
+		Assumptions: assumptions,
 	}
 
 	return &pbc.GetPricingSpecResponse{

@@ -36,6 +36,7 @@ type ConformanceResult struct {
 	Summary      string
 }
 
+// NameValidationTest validates that the plugin returns a properly formatted name response.
 func NameValidationTest(harness *plugintesting.TestHarness) plugintesting.TestResult {
 	start := time.Now()
 	resp, err := harness.Client().Name(context.Background(), &pbc.NameRequest{})
@@ -100,6 +101,18 @@ func addBasicConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 		Name:        "GetProjectedCostHandlesValidResource",
 		Description: "Plugin must handle GetProjectedCost for valid resources",
 		TestFunc:    createProjectedCostValidResourceTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetPricingSpecReturnsCompleteResponse",
+		Description: "Plugin must return PricingSpec with unit and assumptions populated",
+		TestFunc:    createPricingSpecFlatRateTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetPricingSpecHandlesDefaultFields",
+		Description: "Plugin must handle PricingSpec with default/empty optional fields",
+		TestFunc:    createPricingSpecDefaultFieldsTest(),
 	})
 }
 
@@ -815,6 +828,144 @@ func createLargeDataHandlingTest() func(*plugintesting.TestHarness) plugintestin
 				len(resp.GetResults()),
 				duration,
 			),
+		}
+	}
+}
+
+// createPricingSpecFlatRateTest validates that GetPricingSpec returns complete response
+// with unit and assumptions populated (FR-009: assumptions SHOULD be populated).
+func createPricingSpecFlatRateTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+
+		resp, err := harness.Client().
+			GetPricingSpec(context.Background(), &pbc.GetPricingSpecRequest{
+				Resource: resource,
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetPricingSpec",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		spec := resp.GetSpec()
+		if spec == nil {
+			return plugintesting.TestResult{
+				Method:   "GetPricingSpec",
+				Success:  false,
+				Error:    errors.New("spec is nil"),
+				Duration: duration,
+				Details:  "Response must contain a PricingSpec",
+			}
+		}
+
+		// Validate required fields
+		var issues []string
+
+		if spec.GetProvider() == "" {
+			issues = append(issues, "provider is empty")
+		}
+		if spec.GetResourceType() == "" {
+			issues = append(issues, "resource_type is empty")
+		}
+		if spec.GetBillingMode() == "" {
+			issues = append(issues, "billing_mode is empty")
+		}
+		if spec.GetCurrency() == "" {
+			issues = append(issues, "currency is empty")
+		}
+		if spec.GetUnit() == "" {
+			issues = append(issues, "unit is empty (should be populated for flat-rate pricing)")
+		}
+		if len(spec.GetAssumptions()) == 0 {
+			issues = append(issues, "assumptions array is empty (SHOULD be populated per FR-009)")
+		}
+
+		if len(issues) > 0 {
+			return plugintesting.TestResult{
+				Method:   "GetPricingSpec",
+				Success:  false,
+				Error:    fmt.Errorf("validation issues: %s", strings.Join(issues, "; ")),
+				Duration: duration,
+				Details:  "PricingSpec validation failed",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetPricingSpec",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf("unit=%s, assumptions=%d, rate=%.4f %s",
+				spec.GetUnit(), len(spec.GetAssumptions()), spec.GetRatePerUnit(), spec.GetCurrency()),
+		}
+	}
+}
+
+// createPricingSpecDefaultFieldsTest validates that GetPricingSpec handles empty optional fields.
+func createPricingSpecDefaultFieldsTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		// Use a resource with minimal fields to test defaults
+		resource := &pbc.ResourceDescriptor{
+			Provider:     "aws",
+			ResourceType: "ec2",
+			// Intentionally omit sku and region to test defaults
+		}
+
+		resp, err := harness.Client().
+			GetPricingSpec(context.Background(), &pbc.GetPricingSpecRequest{
+				Resource: resource,
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			// Some plugins may reject resources without sku/region - that's acceptable
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.InvalidArgument {
+				return plugintesting.TestResult{
+					Method:   "GetPricingSpec",
+					Success:  true,
+					Duration: duration,
+					Details:  "Plugin correctly rejects incomplete resource descriptor",
+				}
+			}
+			return plugintesting.TestResult{
+				Method:   "GetPricingSpec",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "Unexpected error for resource with minimal fields",
+			}
+		}
+
+		spec := resp.GetSpec()
+		if spec == nil {
+			return plugintesting.TestResult{
+				Method:   "GetPricingSpec",
+				Success:  false,
+				Error:    errors.New("spec is nil"),
+				Duration: duration,
+				Details:  "Response must contain a PricingSpec",
+			}
+		}
+
+		// Verify that empty optional fields don't cause issues
+		// pricing_tiers can be empty for flat-rate billing
+		tiersCount := len(spec.GetPricingTiers())
+
+		return plugintesting.TestResult{
+			Method:   "GetPricingSpec",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf("Handled defaults gracefully: pricing_tiers=%d, unit=%s",
+				tiersCount, spec.GetUnit()),
 		}
 	}
 }

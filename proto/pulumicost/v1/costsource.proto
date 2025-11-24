@@ -156,9 +156,31 @@ message PricingSpec {
   repeated UsageMetricHint metric_hints = 9;
   // plugin_metadata contains plugin-specific extra metadata (keys are not guaranteed to be stable)
   map<string, string> plugin_metadata = 10;
-  // source identifies where the pricing model originated 
+  // source identifies where the pricing model originated
   // (e.g., "aws", "gcp", "azure", "kubecost", "flexera", "cloudability", "spec")
   string source = 11;
+  // unit specifies the unit of measurement for rate_per_unit
+  // (e.g., "hour", "GB-month", "request", "unknown")
+  string unit = 12;
+  // assumptions contains human-readable strings explaining pricing derivation
+  // and any constraints or conditions applied to the pricing calculation
+  repeated string assumptions = 13;
+  // pricing_tiers contains tiered pricing breakdown for volume-based billing
+  // When billing_mode is "tiered", this array contains the pricing tiers
+  repeated PricingTier pricing_tiers = 14;
+}
+
+// PricingTier represents one tier in a tiered pricing model.
+// Used for volume-based pricing where rates decrease at higher usage levels.
+message PricingTier {
+  // min_quantity is the lower bound of this tier (inclusive)
+  double min_quantity = 1;
+  // max_quantity is the upper bound of this tier (exclusive, 0 means unlimited)
+  double max_quantity = 2;
+  // rate_per_unit is the price per unit within this tier
+  double rate_per_unit = 3;
+  // description provides human-readable explanation of this tier
+  string description = 4;
 }
 
 // ErrorCategory defines the category of plugin errors.
