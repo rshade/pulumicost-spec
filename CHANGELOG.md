@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/rshade/pulumicost-spec/compare/v0.2.0...v0.3.0) (2025-11-24)
+
+
+### Added
+
+* **sdk:** add zerolog logging utilities for plugin standardization ([#76](https://github.com/rshade/pulumicost-spec/issues/76)) ([6d5b5ac](https://github.com/rshade/pulumicost-spec/commit/6d5b5ac06329dce03a99b595e41d5ca1273b7c40)), closes [#75](https://github.com/rshade/pulumicost-spec/issues/75)
+
+
+### Documentation
+
+* udpate sdk/go/registry/CLAUDE.md for enums ([#78](https://github.com/rshade/pulumicost-spec/issues/78)) ([f15ef76](https://github.com/rshade/pulumicost-spec/commit/f15ef769ac491056504f7a0376b413727f7969e0)), closes [#3](https://github.com/rshade/pulumicost-spec/issues/3)
+
 ## [0.2.0](https://github.com/rshade/pulumicost-spec/compare/v0.1.0...v0.2.0) (2025-11-24)
 
 
