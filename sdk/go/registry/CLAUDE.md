@@ -163,6 +163,67 @@ for _, manifest := range pluginManifests {
 
 **Performance**: Zero allocation even when validating thousands of manifests.
 
+## Standard Domain Enum Pattern
+
+All 8 enum types in this package follow a consistent pattern. Use this as a template for new domain types:
+
+### Pattern Components
+
+1. **Type Definition** - String-backed type for type safety
+2. **Constants** - Exported constants with descriptive comments
+3. **Package-Level Slice** - Pre-allocated for zero-allocation validation
+4. **AllXxx() Function** - Returns all valid values
+5. **String() Method** - Returns string representation
+6. **IsValidXxx() Function** - Validates string input
+
+### Complete Pattern Example
+
+```go
+// TypeName represents [description of what it represents].
+type TypeName string
+
+const (
+    // TypeNameValue1 indicates [description].
+    TypeNameValue1 TypeName = "value1"
+    // TypeNameValue2 indicates [description].
+    TypeNameValue2 TypeName = "value2"
+)
+
+// allTypeNames is a package-level slice containing all valid TypeName values.
+// This is allocated once at package initialization for zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allTypeNames = []TypeName{
+    TypeNameValue1, TypeNameValue2,
+}
+
+// AllTypeNames returns all valid type names.
+func AllTypeNames() []TypeName {
+    return allTypeNames
+}
+
+// String returns the type name as a lowercase string value.
+func (t TypeName) String() string {
+    return string(t)
+}
+
+// IsValidTypeName checks if a type name is valid.
+func IsValidTypeName(name string) bool {
+    typeName := TypeName(name)
+    for _, validName := range allTypeNames {
+        if typeName == validName {
+            return true
+        }
+    }
+    return false
+}
+```
+
+### Cross-Package Reference
+
+The `pricing` package (`sdk/go/pricing/`) uses similar enum patterns for `BillingMode` and `Provider`. When adding
+new enum types, ensure consistency with both packages.
+
 ## Adding New Enum Values
 
 ### Step 1: Add Constant
@@ -202,6 +263,26 @@ func TestIsValidProvider_NewCloud(t *testing.T) {
     }
 }
 ```
+
+## Adding a New Provider
+
+When adding support for a new cloud provider:
+
+1. **Add to registry package** (`sdk/go/registry/domain.go`):
+   - Add `ProviderXxx Provider = "xxx"` constant
+   - Add to `allProviders` slice
+   - Update tests with new expected count
+
+2. **Consider pricing package** (`sdk/go/pricing/domain.go`):
+   - Check if Provider enum there also needs updating
+   - Ensure consistency between packages
+
+3. **Add example spec** (`examples/specs/`):
+   - Create example JSON demonstrating the new provider's pricing patterns
+
+4. **Update documentation**:
+   - Update this CLAUDE.md with new provider count
+   - Document provider-specific considerations
 
 ## Performance Optimization Details
 
