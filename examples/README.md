@@ -1,6 +1,49 @@
-# PricingSpec Examples
+# PulumiCost Examples
 
-This directory contains comprehensive examples of PricingSpec JSON documents
+This directory contains examples of PulumiCost specification documents including
+PricingSpec JSON documents and plugin registry index files.
+
+## Plugin Registry Index
+
+The **[registry.json](registry.json)** file demonstrates the plugin registry index
+format used by `pulumicost plugin install` to discover and install plugins.
+
+### Registry Format
+
+```json
+{
+  "schema_version": "1.0.0",
+  "plugins": {
+    "plugin-name": {
+      "name": "plugin-name",
+      "description": "Human-readable description (10-500 chars)",
+      "repository": "owner/repo",
+      "author": "Author Name",
+      "supported_providers": ["aws", "azure", "gcp", "kubernetes", "custom"],
+      "min_spec_version": "0.1.0",
+      "capabilities": ["cost_retrieval", "cost_projection"],
+      "security_level": "community",
+      "keywords": ["keyword1", "keyword2"]
+    }
+  }
+}
+```
+
+### Validation
+
+```bash
+# Validate registry against schema
+npm run validate:registry
+```
+
+For detailed contribution guidelines, see
+[specs/001-plugin-registry-schema/quickstart.md](../specs/001-plugin-registry-schema/quickstart.md).
+
+---
+
+## PricingSpec Examples
+
+This section contains comprehensive examples of PricingSpec JSON documents
 demonstrating various cloud provider pricing models and billing patterns.
 
 ## Example Categories

@@ -42,8 +42,10 @@
     "lint:markdown:fix": "markdownlint-cli2 --fix",
     "lint:yaml": "yamllint .github/",
     "validate:schema": "npx ajv compile --spec=draft2020 --all-errors --strict=false -s schemas/pricing_spec.schema.json",
+    "validate:registry-schema": "npx ajv compile --spec=draft2020 --all-errors --strict=false -s schemas/plugin_registry.schema.json",
     "validate:examples": "node validate_examples.js",
-    "validate": "npm run validate:schema && npm run validate:examples",
+    "validate:registry": "npx ajv validate --spec=draft2020 --all-errors --strict=false -s schemas/plugin_registry.schema.json -d examples/registry.json",
+    "validate": "npm run validate:schema && npm run validate:registry-schema && npm run validate:examples && npm run validate:registry",
     "lint:changelog": "npx keep-a-changelog lint CHANGELOG.md",
     "lint": "npm run lint:markdown && npm run lint:yaml && npm run lint:changelog",
     "test": "npm run validate && npm run lint",
@@ -56,11 +58,13 @@
     "ajv-formats": "^3.0.1"
   },
   "devDependencies": {
-    "markdownlint-cli2": "^0.15.0",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@types/node": "^22.5.4",
+    "keep-a-changelog": "^2.5.2",
+    "markdownlint-cli2": "^0.15.0",
     "prettier": "^3.3.3",
-    "yaml-lint": "^1.7.0",
-    "keep-a-changelog": "^2.5.2"
+    "yaml-lint": "^1.7.0"
   },
   "engines": {
     "node": ">=22.0.0",

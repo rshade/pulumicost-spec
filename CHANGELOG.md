@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Schema**: Add plugin registry index JSON Schema (`schemas/plugin_registry.schema.json`)
+  - Validates registry.json files for `pulumicost plugin install` discovery
+  - Aligns with registry.proto definitions (SecurityLevel, capabilities, providers)
+  - Includes `dependentRequired` for deprecation_message when deprecated is true
+  - npm validation scripts: `validate:registry`, `validate:registry-schema`
+  - Example registry with kubecost and aws-public plugins
+  - Closes [#68](https://github.com/rshade/pulumicost-spec/issues/68)
+
 ### Changed
 
 - **Performance**: Optimized registry package enum validation for zero-allocation performance
