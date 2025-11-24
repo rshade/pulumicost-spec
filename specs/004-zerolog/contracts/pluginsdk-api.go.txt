@@ -1,0 +1,74 @@
+// Package pluginsdk API contract definition
+// This file defines the public API surface for the logging utilities.
+// Implementation must match these signatures exactly.
+
+package pluginsdk
+
+import (
+	"context"
+	"io"
+
+	"github.com/rs/zerolog"
+	"google.golang.org/grpc"
+)
+
+// Metadata keys for gRPC trace propagation
+const (
+	// TraceIDMetadataKey is the gRPC metadata header for trace ID propagation
+	TraceIDMetadataKey = "x-pulumicost-trace-id"
+)
+
+// Standard field names for structured logging consistency across plugins
+const (
+	FieldTraceID       = "trace_id"
+	FieldComponent     = "component"
+	FieldOperation     = "operation"
+	FieldDurationMs    = "duration_ms"
+	FieldResourceURN   = "resource_urn"
+	FieldResourceType  = "resource_type"
+	FieldPluginName    = "plugin_name"
+	FieldPluginVersion = "plugin_version"
+	FieldCostMonthly   = "cost_monthly"
+	FieldAdapter       = "adapter"
+	FieldErrorCode     = "error_code"
+)
+
+// NewPluginLogger creates a configured zerolog logger for plugins.
+//
+// Parameters:
+//   - pluginName: Identifier for the plugin (e.g., "aws-public")
+//   - version: Plugin version (e.g., "v1.0.0")
+//   - level: Minimum log level to output
+//   - w: Output writer (nil defaults to os.Stderr)
+//
+// Returns a logger with plugin_name and plugin_version fields pre-configured.
+func NewPluginLogger(pluginName, version string, level zerolog.Level, w io.Writer) zerolog.Logger
+
+// TracingUnaryServerInterceptor returns a gRPC server interceptor that extracts
+// trace_id from incoming request metadata and adds it to the request context.
+//
+// The interceptor looks for the TraceIDMetadataKey header and stores the value
+// in the context for retrieval via TraceIDFromContext.
+func TracingUnaryServerInterceptor() grpc.UnaryServerInterceptor
+
+// TraceIDFromContext extracts the trace ID from the given context.
+//
+// Returns empty string if no trace ID is present in the context.
+func TraceIDFromContext(ctx context.Context) string
+
+// ContextWithTraceID returns a new context with the trace ID stored.
+//
+// This is typically called by the interceptor, but can be used directly
+// for testing or manual trace ID injection.
+func ContextWithTraceID(ctx context.Context, traceID string) context.Context
+
+// LogOperation returns a function that logs the operation duration when called.
+//
+// Usage:
+//
+//	done := LogOperation(logger, "GetProjectedCost")
+//	defer done()
+//	// ... perform operation ...
+//
+// The returned function logs at Info level with FieldOperation and FieldDurationMs.
+func LogOperation(logger zerolog.Logger, operation string) func()
