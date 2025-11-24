@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/rshade/pulumicost-spec/compare/v0.1.0...v0.2.0) (2025-11-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **proto:** None - 100% backward compatible (additive proto changes only)
+* **registry:** None - 100% backward compatible
+
+### Added
+
+* **proto:** enhance GetPricingSpec with transparent pricing breakdown ([#67](https://github.com/rshade/pulumicost-spec/issues/67)) ([336144e](https://github.com/rshade/pulumicost-spec/commit/336144e45e2334a677af4a0f5ccb3994126cf22a)), closes [#62](https://github.com/rshade/pulumicost-spec/issues/62)
+* **schema:** add plugin registry index JSON Schema ([#70](https://github.com/rshade/pulumicost-spec/issues/70)) ([79938a7](https://github.com/rshade/pulumicost-spec/commit/79938a7fc473cd997465f3a71c734b0b2b3b692b)), closes [#68](https://github.com/rshade/pulumicost-spec/issues/68)
+
+
+### Fixed
+
+* **release:** remove release-as constraint to allow version bumps ([#73](https://github.com/rshade/pulumicost-spec/issues/73)) ([706ec65](https://github.com/rshade/pulumicost-spec/commit/706ec65dbe779242674aae94c6bc89de0f8c252a))
+
+
+### Performance
+
+* **registry:** optimize enum validation for zero-allocation performance ([#63](https://github.com/rshade/pulumicost-spec/issues/63)) ([6d3c124](https://github.com/rshade/pulumicost-spec/commit/6d3c124b4230485ee27288051181a965a31daf50)), closes [#33](https://github.com/rshade/pulumicost-spec/issues/33)
+
+
+### Documentation
+
+* **spec:** document Supports() RPC verification for issue [#64](https://github.com/rshade/pulumicost-spec/issues/64) ([#66](https://github.com/rshade/pulumicost-spec/issues/66)) ([3a17c4f](https://github.com/rshade/pulumicost-spec/commit/3a17c4f516488d033549c26c4bb9ad8ed957e3b0))
+
 ## [0.1.0](https://github.com/rshade/pulumicost-spec/compare/v0.1.0...v0.1.0) (2025-11-24)
 
 
