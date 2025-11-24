@@ -522,6 +522,7 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- JSON Schema draft 2020-12 + AJV (validation), existing `registry.proto` definitions (003-plugin-registry-schema)
 - Go 1.24.10 (toolchain go1.25.4) + Standard library only (no external dependencies for validation) (001-domain-enum-optimization)
 
 ## Recent Changes
