@@ -65,7 +65,7 @@ pulumicost-spec/
 
 ### Core Components
 
-- **[gRPC Service](proto/pulumicost/v1/costsource.proto)**: Complete v0.1.0 CostSourceService with 5 RPC methods
+- **[gRPC Service](proto/pulumicost/v1/costsource.proto)**: Complete v0.1.0 CostSourceService with 6 RPC methods
 - **[JSON Schema](schemas/pricing_spec.schema.json)**: Comprehensive validation supporting all major cloud providers
 - **[Go SDK](sdk/go/)**: Production-ready SDK with automatic protobuf generation
 - **[Testing Framework](sdk/go/testing/)**: Multi-level conformance testing (Basic, Standard, Advanced)
@@ -227,6 +227,16 @@ func (k *kubecostPlugin) GetPricingSpec(ctx context.Context, req *pbc.GetPricing
     }, nil
 }
 
+// EstimateCost estimates the monthly cost for a resource before deployment
+func (k *kubecostPlugin) EstimateCost(ctx context.Context, req *pbc.EstimateCostRequest) (*pbc.EstimateCostResponse, error) {
+    // Example: Estimate cost for a Kubernetes workload
+    // In production, this would analyze the attributes to calculate actual cost
+    return &pbc.EstimateCostResponse{
+        Currency:    "USD",
+        CostMonthly: 216.00, // 30 days * 24 hours * 0.03 per hour
+    }, nil
+}
+
 func main() {
     // Create gRPC server
     lis, err := net.Listen("tcp", ":50051")
@@ -256,11 +266,12 @@ import (
     "fmt"
     "log"
     "time"
-    
+
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials/insecure"
+    "google.golang.org/protobuf/types/known/structpb"
     "google.golang.org/protobuf/types/known/timestamppb"
-    
+
     pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
@@ -362,6 +373,23 @@ func main() {
             fmt.Printf("    - %s (%s)\n", hint.GetMetric(), hint.GetUnit())
         }
     }
+
+    // Estimate cost for a resource before deployment ("what-if" analysis)
+    estimateResp, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+        ResourceType: "kubernetes:core/v1:Namespace",
+        Attributes: &structpb.Struct{
+            Fields: map[string]*structpb.Value{
+                "cpu_limit": structpb.NewStringValue("2"),
+                "memory_limit": structpb.NewStringValue("4Gi"),
+            },
+        },
+    })
+    if err != nil {
+        log.Fatalf("Failed to estimate cost: %v", err)
+    }
+
+    fmt.Printf("\nEstimated cost (before deployment):\n")
+    fmt.Printf("  Monthly cost: $%.2f %s\n", estimateResp.GetCostMonthly(), estimateResp.GetCurrency())
 }
 ```
 
@@ -575,7 +603,7 @@ See [Examples Documentation](examples/README.md) for detailed explanations.
 
 ### gRPC Service Interface
 
-The CostSourceService provides 5 core RPC methods:
+The CostSourceService provides 6 core RPC methods:
 
 ```protobuf
 service CostSourceService {
@@ -584,6 +612,7 @@ service CostSourceService {
   rpc GetActualCost(GetActualCostRequest) returns (GetActualCostResponse);    // Historical costs
   rpc GetProjectedCost(GetProjectedCostRequest) returns (GetProjectedCostResponse); // Cost projections
   rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);       // Pricing specifications
+  rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);       // Cost estimation before deployment
 }
 ```
 

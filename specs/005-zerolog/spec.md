@@ -1,6 +1,6 @@
 # Feature Specification: Zerolog SDK Logging Utilities
 
-**Feature Branch**: `001-zerolog`
+**Feature Branch**: `005-zerolog`
 **Created**: 2025-11-24
 **Status**: Draft
 **Input**: GitHub Issue #75 - Add zerolog v1.34.0+ SDK logging utilities

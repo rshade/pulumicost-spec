@@ -1,0 +1,19 @@
+{
+  "resource_type": "aws:ec2/instance:Instance",
+  "attributes": {
+    "instanceType": "t3.micro",
+    "region": "us-east-1",
+    "ebsVolumes": [
+      {
+        "type": "gp3",
+        "sizeGb": 30
+      }
+    ],
+    "monitoring": true,
+    "tags": {
+      "Environment": "production",
+      "CostCenter": "engineering",
+      "Project": "api-backend"
+    }
+  }
+}

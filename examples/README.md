@@ -197,6 +197,57 @@ for file in examples/specs/*.json; do
 done
 ```
 
+## RPC Request Examples
+
+The `requests/` directory contains sample gRPC request payloads demonstrating how to call various
+CostSource RPC methods. These examples are useful for testing, documentation, and integration development.
+
+### EstimateCost Requests
+
+EstimateCost enables "what-if" cost analysis before deploying resources. The following examples
+demonstrate cross-provider cost estimation:
+
+- **[estimate_cost_aws.json](requests/estimate_cost_aws.json)**: AWS EC2 instance estimation
+  - Resource: `aws:ec2/instance:Instance`
+  - Attributes: Instance type (t3.micro), region, EBS volumes, monitoring, tags
+
+- **[estimate_cost_azure.json](requests/estimate_cost_azure.json)**: Azure VM estimation
+  - Resource: `azure:compute/virtualMachine:VirtualMachine`
+  - Attributes: VM size (Standard_B1s), location, OS disk, operating system, tags
+
+- **[estimate_cost_gcp.json](requests/estimate_cost_gcp.json)**: GCP Compute instance estimation
+  - Resource: `gcp:compute/instance:Instance`
+  - Attributes: Machine type (e2-micro), zone, boot disk, scheduling, labels
+
+#### EstimateCost Request Format
+
+```json
+{
+  "resource_type": "provider:module/resource:Type",
+  "attributes": {
+    "configuration_key": "value",
+    "nested_object": {
+      "key": "value"
+    }
+  }
+}
+```
+
+The `attributes` field uses protobuf `Struct` format, allowing flexible key-value pairs matching
+Pulumi resource input properties.
+
+### GetActualCost Requests
+
+Historical cost retrieval examples:
+
+- **[actual-cost-namespace.json](requests/actual-cost-namespace.json)**: Kubernetes namespace actual costs
+
+### GetProjectedCost Requests
+
+Cost projection examples:
+
+- **[projected-cost-ec2.json](requests/projected-cost-ec2.json)**: AWS EC2 instance projected costs
+
 ## Usage in Testing
 
 These examples are used in:

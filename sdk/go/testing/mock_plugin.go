@@ -34,6 +34,7 @@ const (
 	actualCostDelayMs    = 500  // ActualCost RPC delay in milliseconds
 	projectedCostDelayMs = 300  // ProjectedCost RPC delay in milliseconds
 	pricingSpecDelayMs   = 250  // PricingSpec RPC delay in milliseconds
+	estimateCostDelayMs  = 150  // EstimateCost RPC delay in milliseconds
 	costVariationMod     = 10   // Modulo for cost variation
 	daysPerMonth         = 30   // Days per month for cost calculation
 
@@ -64,6 +65,7 @@ type MockPlugin struct {
 	ShouldErrorOnActualCost    bool
 	ShouldErrorOnProjectedCost bool
 	ShouldErrorOnPricingSpec   bool
+	ShouldErrorOnEstimateCost  bool
 
 	// Response delays for testing timeouts
 	NameDelay          time.Duration
@@ -71,6 +73,7 @@ type MockPlugin struct {
 	ActualCostDelay    time.Duration
 	ProjectedCostDelay time.Duration
 	PricingSpecDelay   time.Duration
+	EstimateCostDelay  time.Duration
 
 	// Data generation configuration
 	ActualCostDataPoints int
@@ -111,6 +114,7 @@ func SlowMockPlugin() *MockPlugin {
 	plugin.ActualCostDelay = actualCostDelayMs * time.Millisecond
 	plugin.ProjectedCostDelay = projectedCostDelayMs * time.Millisecond
 	plugin.PricingSpecDelay = pricingSpecDelayMs * time.Millisecond
+	plugin.EstimateCostDelay = estimateCostDelayMs * time.Millisecond
 	return plugin
 }
 
@@ -449,5 +453,129 @@ func (m *MockPlugin) GetPricingSpec(
 
 	return &pbc.GetPricingSpecResponse{
 		Spec: spec,
+	}, nil
+}
+
+// parseResourceType parses a resource type string in format provider:module/resource:Type.
+// Returns (provider, module, resource, typeName, error).
+func parseResourceType(resourceType string) (string, string, string, string, error) {
+	const (
+		expectedColonParts = 3
+		expectedSlashParts = 2
+	)
+	// Split by first colon to get provider
+	parts := strings.Split(resourceType, ":")
+	if len(parts) != expectedColonParts {
+		return "", "", "", "",
+			fmt.Errorf(
+				"invalid format: expected provider:module/resource:Type, got %s",
+				resourceType,
+			)
+	}
+
+	provider := parts[0]
+	moduleResource := parts[1]
+	typeName := parts[2]
+
+	// Split module/resource
+	moduleResourceParts := strings.Split(moduleResource, "/")
+	if len(moduleResourceParts) != expectedSlashParts {
+		return "", "", "", "",
+			fmt.Errorf(
+				"invalid format: expected provider:module/resource:Type, got %s",
+				resourceType,
+			)
+	}
+
+	module := moduleResourceParts[0]
+	resource := moduleResourceParts[1]
+
+	return provider, module, resource, typeName, nil
+}
+
+// EstimateCost returns mock cost estimate for a resource before deployment.
+func (m *MockPlugin) EstimateCost(
+	_ context.Context,
+	req *pbc.EstimateCostRequest,
+) (*pbc.EstimateCostResponse, error) {
+	if m.EstimateCostDelay > 0 {
+		time.Sleep(m.EstimateCostDelay)
+	}
+
+	if m.ShouldErrorOnEstimateCost {
+		return nil, status.Error(codes.Unavailable, "mock error: pricing source unavailable")
+	}
+
+	resourceType := req.GetResourceType()
+
+	// Validate resource type format (FR-003)
+	if resourceType == "" {
+		return nil, status.Error(codes.InvalidArgument, "resource_type is required")
+	}
+
+	provider, module, resource, _, err := parseResourceType(resourceType)
+	if err != nil {
+		return nil, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprintf(
+				"resource_type must follow provider:module/resource:Type format, got: %s",
+				resourceType,
+			),
+		)
+	}
+
+	// Check if provider is supported (FR-008)
+	providerSupported := false
+	for _, supportedProvider := range m.SupportedProviders {
+		if provider == supportedProvider {
+			providerSupported = true
+			break
+		}
+	}
+
+	if !providerSupported {
+		return nil, status.Error(
+			codes.NotFound,
+			fmt.Sprintf("resource type %s is not supported by this plugin", resourceType),
+		)
+	}
+
+	// Check if resource type is supported for this provider
+	supportedResources, exists := m.SupportedResources[provider]
+	if !exists {
+		return nil, status.Error(
+			codes.NotFound,
+			fmt.Sprintf("resource type %s is not supported by this plugin", resourceType),
+		)
+	}
+
+	// For mock purposes, try to match against module, resource, or module_resource combinations
+	// This handles formats like "aws:ec2/instance:Instance" where "ec2" is the module
+	simpleResourceType := module
+	resourceSupported := false
+	for _, supportedResource := range supportedResources {
+		if module == supportedResource || resource == supportedResource || module+"_"+resource == supportedResource {
+			resourceSupported = true
+			simpleResourceType = supportedResource
+			break
+		}
+	}
+
+	if !resourceSupported {
+		return nil, status.Error(
+			codes.NotFound,
+			fmt.Sprintf("resource type %s is not supported by this plugin", resourceType),
+		)
+	}
+
+	// Calculate monthly cost based on resource type
+	multiplier := getRateMultiplier(simpleResourceType)
+	hourlyRate := m.BaseHourlyRate * multiplier
+	monthlyHours := float64(HoursPerDay * daysPerMonth)
+	monthlyCost := hourlyRate * monthlyHours
+
+	return &pbc.EstimateCostResponse{
+		Currency:    m.Currency,
+		CostMonthly: monthlyCost,
 	}, nil
 }

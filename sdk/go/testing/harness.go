@@ -316,6 +316,28 @@ func ValidatePricingSpec(spec *pbc.PricingSpec) error {
 	return nil
 }
 
+// ValidateEstimateCostResponse validates an EstimateCost RPC response.
+func ValidateEstimateCostResponse(response *pbc.EstimateCostResponse) error {
+	if response == nil {
+		return errors.New("response is nil")
+	}
+
+	if response.GetCurrency() == "" {
+		return errors.New("currency is required")
+	}
+
+	// Currency should be 3-character ISO code
+	if len(response.GetCurrency()) != currencyCodeLength {
+		return fmt.Errorf("currency should be 3-character ISO code, got: %s", response.GetCurrency())
+	}
+
+	if response.GetCostMonthly() < 0 {
+		return fmt.Errorf("cost_monthly cannot be negative: %f", response.GetCostMonthly())
+	}
+
+	return nil
+}
+
 // PerformanceMetrics contains performance measurement data.
 type PerformanceMetrics struct {
 	Method        string

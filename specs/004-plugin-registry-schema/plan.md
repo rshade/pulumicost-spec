@@ -1,7 +1,7 @@
 # Implementation Plan: Plugin Registry Index JSON Schema
 
-**Branch**: `003-plugin-registry-schema` | **Date**: 2025-11-23 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/003-plugin-registry-schema/spec.md`
+**Branch**: `004-plugin-registry-schema` | **Date**: 2025-11-23 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/004-plugin-registry-schema/spec.md`
 
 ## Summary
 
@@ -43,7 +43,7 @@ registries used by `pulumicost plugin install`, aligning field patterns and enum
 ### Documentation (this feature)
 
 ```text
-specs/003-plugin-registry-schema/
+specs/004-plugin-registry-schema/
 ├── plan.md              # This file
 ├── research.md          # Phase 0 output
 ├── data-model.md        # Phase 1 output

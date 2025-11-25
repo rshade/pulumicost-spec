@@ -9,6 +9,7 @@ package pbc
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -2312,11 +2313,147 @@ func (x *ErrorDetails) GetCorrelationId() string {
 	return ""
 }
 
+// EstimateCostRequest represents a request to estimate the cost of a Pulumi
+// resource before deployment. This enables "what-if" cost analysis for
+// configuration comparison and budget planning.
+type EstimateCostRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The full type name of the Pulumi resource to estimate cost for.
+	// Must follow the format: "provider:module/resource:Type"
+	//
+	// Examples:
+	//   - "aws:ec2/instance:Instance"
+	//   - "azure:compute/virtualMachine:VirtualMachine"
+	//   - "gcp:compute/instance:Instance"
+	//
+	// The resource_type must be supported by the plugin (check via Supports RPC).
+	// Invalid formats will return InvalidArgument error.
+	ResourceType string `protobuf:"bytes,1,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
+	// A structured representation of the resource's input properties.
+	// This mirrors the structure of a Pulumi resource declaration.
+	//
+	// The attributes field may be null or missing, which is treated as an
+	// empty struct. The plugin determines which attributes are required for
+	// cost estimation based on its pricing model.
+	//
+	// Examples:
+	//
+	//	AWS: {"instanceType": "t3.micro", "region": "us-east-1"}
+	//	Azure: {"vmSize": "Standard_B1s", "location": "eastus"}
+	//	GCP: {"machineType": "e2-micro", "zone": "us-central1-a"}
+	Attributes    *structpb.Struct `protobuf:"bytes,2,opt,name=attributes,proto3" json:"attributes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EstimateCostRequest) Reset() {
+	*x = EstimateCostRequest{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EstimateCostRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EstimateCostRequest) ProtoMessage() {}
+
+func (x *EstimateCostRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EstimateCostRequest.ProtoReflect.Descriptor instead.
+func (*EstimateCostRequest) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *EstimateCostRequest) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *EstimateCostRequest) GetAttributes() *structpb.Struct {
+	if x != nil {
+		return x.Attributes
+	}
+	return nil
+}
+
+// EstimateCostResponse contains the estimated monthly cost for a resource
+// based on the provided configuration.
+type EstimateCostResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The currency of the cost, as an ISO 4217 currency code.
+	// Typically "USD" but depends on the plugin's pricing source.
+	Currency string `protobuf:"bytes,1,opt,name=currency,proto3" json:"currency,omitempty"`
+	// The estimated monthly cost for the resource.
+	// Must be non-negative. Zero is valid for free-tier resources.
+	// Monthly cost assumes 730 hours/month for hourly-billed resources.
+	CostMonthly   float64 `protobuf:"fixed64,2,opt,name=cost_monthly,json=costMonthly,proto3" json:"cost_monthly,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EstimateCostResponse) Reset() {
+	*x = EstimateCostResponse{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EstimateCostResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EstimateCostResponse) ProtoMessage() {}
+
+func (x *EstimateCostResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EstimateCostResponse.ProtoReflect.Descriptor instead.
+func (*EstimateCostResponse) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *EstimateCostResponse) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *EstimateCostResponse) GetCostMonthly() float64 {
+	if x != nil {
+		return x.CostMonthly
+	}
+	return 0
+}
+
 var File_pulumicost_v1_costsource_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\n" +
-	"\x1epulumicost/v1/costsource.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\r\n" +
+	"\x1epulumicost/v1/costsource.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\r\n" +
 	"\vNameRequest\"\"\n" +
 	"\fNameResponse\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"P\n" +
@@ -2478,7 +2615,15 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\vstack_trace\x18\x03 \x01(\tR\n" +
 	"stackTrace\x12.\n" +
 	"\x13retry_after_seconds\x18\x04 \x01(\x05R\x11retryAfterSeconds\x12%\n" +
-	"\x0ecorrelation_id\x18\x05 \x01(\tR\rcorrelationId*\x8d\x01\n" +
+	"\x0ecorrelation_id\x18\x05 \x01(\tR\rcorrelationId\"s\n" +
+	"\x13EstimateCostRequest\x12#\n" +
+	"\rresource_type\x18\x01 \x01(\tR\fresourceType\x127\n" +
+	"\n" +
+	"attributes\x18\x02 \x01(\v2\x17.google.protobuf.StructR\n" +
+	"attributes\"U\n" +
+	"\x14EstimateCostResponse\x12\x1a\n" +
+	"\bcurrency\x18\x01 \x01(\tR\bcurrency\x12!\n" +
+	"\fcost_monthly\x18\x02 \x01(\x01R\vcostMonthly*\x8d\x01\n" +
 	"\rErrorCategory\x12\x1e\n" +
 	"\x1aERROR_CATEGORY_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18ERROR_CATEGORY_TRANSIENT\x10\x01\x12\x1c\n" +
@@ -2514,13 +2659,14 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x16SLI_STATUS_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19SLI_STATUS_MEETING_TARGET\x10\x01\x12\x16\n" +
 	"\x12SLI_STATUS_WARNING\x10\x02\x12\x17\n" +
-	"\x13SLI_STATUS_CRITICAL\x10\x032\xc1\x03\n" +
+	"\x13SLI_STATUS_CRITICAL\x10\x032\x9a\x04\n" +
 	"\x11CostSourceService\x12?\n" +
 	"\x04Name\x12\x1a.pulumicost.v1.NameRequest\x1a\x1b.pulumicost.v1.NameResponse\x12K\n" +
 	"\bSupports\x12\x1e.pulumicost.v1.SupportsRequest\x1a\x1f.pulumicost.v1.SupportsResponse\x12Z\n" +
 	"\rGetActualCost\x12#.pulumicost.v1.GetActualCostRequest\x1a$.pulumicost.v1.GetActualCostResponse\x12c\n" +
 	"\x10GetProjectedCost\x12&.pulumicost.v1.GetProjectedCostRequest\x1a'.pulumicost.v1.GetProjectedCostResponse\x12]\n" +
-	"\x0eGetPricingSpec\x12$.pulumicost.v1.GetPricingSpecRequest\x1a%.pulumicost.v1.GetPricingSpecResponse2\xbf\x02\n" +
+	"\x0eGetPricingSpec\x12$.pulumicost.v1.GetPricingSpecRequest\x1a%.pulumicost.v1.GetPricingSpecResponse\x12W\n" +
+	"\fEstimateCost\x12\".pulumicost.v1.EstimateCostRequest\x1a#.pulumicost.v1.EstimateCostResponse2\xbf\x02\n" +
 	"\x14ObservabilityService\x12T\n" +
 	"\vHealthCheck\x12!.pulumicost.v1.HealthCheckRequest\x1a\".pulumicost.v1.HealthCheckResponse\x12Q\n" +
 	"\n" +
@@ -2540,7 +2686,7 @@ func file_pulumicost_v1_costsource_proto_rawDescGZIP() []byte {
 }
 
 var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
+var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_pulumicost_v1_costsource_proto_goTypes = []any{
 	(ErrorCategory)(0),                        // 0: pulumicost.v1.ErrorCategory
 	(ErrorCode)(0),                            // 1: pulumicost.v1.ErrorCode
@@ -2576,70 +2722,76 @@ var file_pulumicost_v1_costsource_proto_goTypes = []any{
 	(*TelemetryMetadata)(nil),                 // 31: pulumicost.v1.TelemetryMetadata
 	(*LogEntry)(nil),                          // 32: pulumicost.v1.LogEntry
 	(*ErrorDetails)(nil),                      // 33: pulumicost.v1.ErrorDetails
-	nil,                                       // 34: pulumicost.v1.GetActualCostRequest.TagsEntry
-	nil,                                       // 35: pulumicost.v1.ResourceDescriptor.TagsEntry
-	nil,                                       // 36: pulumicost.v1.PricingSpec.PluginMetadataEntry
-	nil,                                       // 37: pulumicost.v1.ErrorDetail.DetailsEntry
-	nil,                                       // 38: pulumicost.v1.MetricSample.LabelsEntry
-	nil,                                       // 39: pulumicost.v1.LogEntry.FieldsEntry
-	(*timestamppb.Timestamp)(nil),             // 40: google.protobuf.Timestamp
+	(*EstimateCostRequest)(nil),               // 34: pulumicost.v1.EstimateCostRequest
+	(*EstimateCostResponse)(nil),              // 35: pulumicost.v1.EstimateCostResponse
+	nil,                                       // 36: pulumicost.v1.GetActualCostRequest.TagsEntry
+	nil,                                       // 37: pulumicost.v1.ResourceDescriptor.TagsEntry
+	nil,                                       // 38: pulumicost.v1.PricingSpec.PluginMetadataEntry
+	nil,                                       // 39: pulumicost.v1.ErrorDetail.DetailsEntry
+	nil,                                       // 40: pulumicost.v1.MetricSample.LabelsEntry
+	nil,                                       // 41: pulumicost.v1.LogEntry.FieldsEntry
+	(*timestamppb.Timestamp)(nil),             // 42: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),                   // 43: google.protobuf.Struct
 }
 var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
 	15, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	40, // 1: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
-	40, // 2: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
-	34, // 3: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
+	42, // 1: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
+	42, // 2: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
+	36, // 3: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
 	16, // 4: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
 	15, // 5: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
 	15, // 6: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
 	18, // 7: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
-	35, // 8: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
-	40, // 9: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
+	37, // 8: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
+	42, // 9: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
 	17, // 10: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
-	36, // 11: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
+	38, // 11: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
 	19, // 12: pulumicost.v1.PricingSpec.pricing_tiers:type_name -> pulumicost.v1.PricingTier
 	1,  // 13: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
 	0,  // 14: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
-	37, // 15: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
-	40, // 16: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
+	39, // 15: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
+	42, // 16: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
 	4,  // 17: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
-	40, // 18: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
+	42, // 18: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
 	25, // 19: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
-	40, // 20: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
+	42, // 20: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
 	2,  // 21: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
 	26, // 22: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
-	38, // 23: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
-	40, // 24: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
+	40, // 23: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
+	42, // 24: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
 	30, // 25: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
 	29, // 26: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
-	40, // 27: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
+	42, // 27: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
 	3,  // 28: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
-	40, // 29: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
-	40, // 30: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
-	40, // 31: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
-	39, // 32: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
+	42, // 29: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
+	42, // 30: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
+	42, // 31: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	41, // 32: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
 	33, // 33: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
-	5,  // 34: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
-	7,  // 35: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
-	9,  // 36: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
-	11, // 37: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
-	13, // 38: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
-	21, // 39: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
-	23, // 40: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
-	27, // 41: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
-	6,  // 42: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
-	8,  // 43: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
-	10, // 44: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
-	12, // 45: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
-	14, // 46: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
-	22, // 47: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
-	24, // 48: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
-	28, // 49: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
-	42, // [42:50] is the sub-list for method output_type
-	34, // [34:42] is the sub-list for method input_type
-	34, // [34:34] is the sub-list for extension type_name
-	34, // [34:34] is the sub-list for extension extendee
-	0,  // [0:34] is the sub-list for field type_name
+	43, // 34: pulumicost.v1.EstimateCostRequest.attributes:type_name -> google.protobuf.Struct
+	5,  // 35: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
+	7,  // 36: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
+	9,  // 37: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
+	11, // 38: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
+	13, // 39: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
+	34, // 40: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
+	21, // 41: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
+	23, // 42: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
+	27, // 43: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
+	6,  // 44: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
+	8,  // 45: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
+	10, // 46: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
+	12, // 47: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
+	14, // 48: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
+	35, // 49: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
+	22, // 50: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
+	24, // 51: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
+	28, // 52: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
+	44, // [44:53] is the sub-list for method output_type
+	35, // [35:44] is the sub-list for method input_type
+	35, // [35:35] is the sub-list for extension type_name
+	35, // [35:35] is the sub-list for extension extendee
+	0,  // [0:35] is the sub-list for field type_name
 }
 
 func init() { file_pulumicost_v1_costsource_proto_init() }
@@ -2654,7 +2806,7 @@ func file_pulumicost_v1_costsource_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_costsource_proto_rawDesc), len(file_pulumicost_v1_costsource_proto_rawDesc)),
 			NumEnums:      5,
-			NumMessages:   35,
+			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

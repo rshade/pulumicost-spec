@@ -1,6 +1,6 @@
 # Tasks: Plugin Registry Index JSON Schema
 
-**Input**: Design documents from `/specs/003-plugin-registry-schema/`
+**Input**: Design documents from `/specs/004-plugin-registry-schema/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, quickstart.md
 
 **Tests**: Test tasks included (schema validation is test-driven by nature).

@@ -116,6 +116,28 @@ func BenchmarkGetPricingSpec(b *testing.B) {
 	}
 }
 
+// BenchmarkEstimateCost benchmarks the EstimateCost RPC method.
+func BenchmarkEstimateCost(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for range b.N {
+		_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: "aws:ec2/instance:Instance",
+			Attributes:   nil,
+		})
+		if err != nil {
+			b.Fatalf("EstimateCost() failed: %v", err)
+		}
+	}
+}
+
 // BenchmarkAllMethods benchmarks all RPC methods in sequence.
 func BenchmarkAllMethods(b *testing.B) {
 	plugin := plugintesting.NewMockPlugin()
@@ -166,6 +188,15 @@ func BenchmarkAllMethods(b *testing.B) {
 		})
 		if err != nil {
 			b.Fatalf("GetPricingSpec() failed: %v", err)
+		}
+
+		// EstimateCost
+		_, err = client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: "aws:ec2/instance:Instance",
+			Attributes:   nil,
+		})
+		if err != nil {
+			b.Fatalf("EstimateCost() failed: %v", err)
 		}
 	}
 }

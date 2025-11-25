@@ -1,7 +1,7 @@
 # Research: Plugin Registry Index JSON Schema
 
 **Date**: 2025-11-23
-**Feature**: 003-plugin-registry-schema
+**Feature**: 004-plugin-registry-schema
 
 ## Research Topics
 

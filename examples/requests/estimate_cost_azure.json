@@ -1,0 +1,17 @@
+{
+  "resource_type": "azure:compute/virtualMachine:VirtualMachine",
+  "attributes": {
+    "vmSize": "Standard_B1s",
+    "location": "eastus",
+    "osDisk": {
+      "storageAccountType": "Standard_LRS",
+      "diskSizeGb": 128
+    },
+    "operatingSystem": "Linux",
+    "tags": {
+      "Environment": "staging",
+      "Department": "operations",
+      "Application": "web-server"
+    }
+  }
+}

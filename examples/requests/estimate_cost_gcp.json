@@ -1,0 +1,20 @@
+{
+  "resource_type": "gcp:compute/instance:Instance",
+  "attributes": {
+    "machineType": "e2-micro",
+    "zone": "us-central1-a",
+    "bootDisk": {
+      "type": "pd-standard",
+      "sizeGb": 10
+    },
+    "scheduling": {
+      "preemptible": false,
+      "automaticRestart": true
+    },
+    "labels": {
+      "env": "development",
+      "team": "platform",
+      "cost-center": "infrastructure"
+    }
+  }
+}

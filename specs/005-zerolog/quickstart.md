@@ -1,6 +1,6 @@
 # Quickstart: Zerolog SDK Logging Utilities
 
-**Feature**: 001-zerolog | **SDK Package**: `github.com/rshade/pulumicost-spec/sdk/go/pluginsdk`
+**Feature**: 005-zerolog | **SDK Package**: `github.com/rshade/pulumicost-spec/sdk/go/pluginsdk`
 
 ## Installation
 
