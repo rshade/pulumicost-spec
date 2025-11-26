@@ -1,16 +1,21 @@
 package testing_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
-
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 )
 
 // TestBasicPluginFunctionality tests all basic RPC methods of a plugin.
@@ -486,5 +491,372 @@ func TestDataConsistency(t *testing.T) {
 					firstResponse.GetCostPerMonth(), i, resp.GetCostPerMonth())
 			}
 		}
+	}
+}
+
+// =============================================================================
+// STRUCTURED LOGGING EXAMPLE
+// =============================================================================
+//
+// TestStructuredLoggingExample demonstrates structured logging patterns for the
+// EstimateCost RPC, per NFR-001 of spec 006-estimate-cost.
+//
+// This example serves as the canonical reference for plugin developers to
+// understand how to properly integrate zerolog structured logging with
+// PulumiCost plugin operations.
+//
+// Key patterns demonstrated:
+//   - Creating a configured logger with plugin metadata (FR-001)
+//   - Logging requests with resource context (FR-002)
+//   - Logging successful responses with cost details (FR-003)
+//   - Logging errors with error codes and context (FR-004)
+//   - Correlation ID (trace_id) propagation (FR-005)
+//   - Using standard field name constants (FR-006)
+//   - Operation timing with LogOperation helper (FR-009)
+//
+// Best Practices:
+//   - ALWAYS include trace_id when available for distributed tracing
+//   - NEVER log attribute values directly - log count only to prevent credential exposure
+//   - Use standard field constants from pluginsdk for consistent naming
+//   - Include operation name in every log entry for filterability
+//   - Log at appropriate levels: Info for normal flow, Error for failures
+//
+//nolint:gocognit // Intentional: educational test with comprehensive inline documentation
+func TestStructuredLoggingExample(t *testing.T) {
+	// Setup plugin and harness for all subtests
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+
+	// =========================================================================
+	// User Story 1: Plugin Developer Learns Logging Patterns
+	// =========================================================================
+
+	// T008, T009, T010: RequestLogging subtest
+	t.Run("RequestLogging", func(t *testing.T) {
+		// Create a buffer to capture log output for verification
+		var buf bytes.Buffer
+
+		// FR-001: Create a configured logger with plugin name and version
+		// Best Practice: Use NewPluginLogger to ensure consistent metadata fields
+		logger := pluginsdk.NewPluginLogger(
+			"example-plugin",  // plugin name - identifies the plugin in logs
+			"v1.0.0",          // version - helps correlate logs with deployments
+			zerolog.InfoLevel, // minimum log level
+			&buf,              // output writer (use os.Stderr in production)
+		)
+
+		// Simulate a trace ID from incoming request context
+		// Best Practice: Extract trace_id from gRPC metadata using TracingUnaryServerInterceptor
+		traceID := "trace-abc123"
+		ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+
+		// Create sample request data
+		resourceType := "aws:ec2/instance:Instance"
+		attrs, _ := structpb.NewStruct(map[string]interface{}{
+			"instanceType": "t3.micro",
+			"region":       "us-east-1",
+		})
+
+		// FR-002: Log incoming request with resource context
+		// Best Practice: Log attribute COUNT not values to prevent credential exposure
+		logger.Info().
+			Str(pluginsdk.FieldTraceID, pluginsdk.TraceIDFromContext(ctx)).
+			Str(pluginsdk.FieldOperation, "EstimateCost").
+			Str(pluginsdk.FieldResourceType, resourceType).
+			Int("attribute_count", len(attrs.GetFields())).
+			Msg("Processing cost estimation request")
+
+		// Verify log output contains expected fields
+		logOutput := buf.String()
+		assertLogContains(t, logOutput, pluginsdk.FieldTraceID, "trace_id field missing")
+		assertLogContains(t, logOutput, pluginsdk.FieldOperation, "operation field missing")
+		assertLogContains(t, logOutput, pluginsdk.FieldResourceType, "resource_type field missing")
+		assertLogContains(t, logOutput, "attribute_count", "attribute_count field missing")
+		assertLogContains(t, logOutput, traceID, "trace_id value missing")
+		assertLogContains(t, logOutput, resourceType, "resource_type value missing")
+
+		// Verify we did NOT log sensitive attribute values
+		assertLogNotContains(t, logOutput, "t3.micro", "sensitive attribute value should not be logged")
+	})
+
+	// T011, T012, T013: SuccessResponseLogging subtest
+	t.Run("SuccessResponseLogging", func(t *testing.T) {
+		var buf bytes.Buffer
+		logger := pluginsdk.NewPluginLogger("example-plugin", "v1.0.0", zerolog.InfoLevel, &buf)
+
+		traceID := "trace-def456"
+		ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+		resourceType := "aws:ec2/instance:Instance"
+
+		// FR-009: Use LogOperation helper for automatic timing measurement
+		// Note: In production, use `defer done()` to ensure timing is logged even on panic.
+		// Here we call done() explicitly to verify log output within the test.
+		done := pluginsdk.LogOperation(logger, "EstimateCost")
+
+		// Perform the actual EstimateCost RPC call
+		attrs, _ := structpb.NewStruct(map[string]interface{}{
+			"instanceType": "t3.micro",
+			"region":       "us-east-1",
+		})
+		resp, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: resourceType,
+			Attributes:   attrs,
+		})
+		if err != nil {
+			t.Fatalf("EstimateCost() failed: %v", err)
+		}
+
+		// FR-003: Log successful response with cost details
+		// Best Practice: Include all relevant business data for operational visibility
+		logger.Info().
+			Str(pluginsdk.FieldTraceID, pluginsdk.TraceIDFromContext(ctx)).
+			Str(pluginsdk.FieldOperation, "EstimateCost").
+			Str(pluginsdk.FieldResourceType, resourceType).
+			Float64(pluginsdk.FieldCostMonthly, resp.GetCostMonthly()).
+			Str("currency", resp.GetCurrency()).
+			Msg("Cost estimation completed")
+
+		// Log operation timing (this will add duration_ms)
+		done()
+
+		// Verify log output
+		logOutput := buf.String()
+		assertLogContains(t, logOutput, pluginsdk.FieldCostMonthly, "cost_monthly field missing")
+		assertLogContains(t, logOutput, "currency", "currency field missing")
+		assertLogContains(t, logOutput, pluginsdk.FieldDurationMs, "duration_ms field missing")
+		assertLogContains(t, logOutput, "Cost estimation completed", "completion message missing")
+
+		// Verify cost value is present (even if zero - valid business case)
+		entries := parseMultipleLogEntries(t, logOutput)
+		foundCost := false
+		for _, entry := range entries {
+			if _, ok := entry[pluginsdk.FieldCostMonthly]; ok {
+				foundCost = true
+				break
+			}
+		}
+		if !foundCost {
+			t.Error("cost_monthly field not found in any log entry")
+		}
+	})
+
+	// =========================================================================
+	// User Story 2: Plugin Developer Implements Error Logging
+	// =========================================================================
+
+	// T015, T016, T017: ErrorLogging subtest
+	t.Run("ErrorLogging", func(t *testing.T) {
+		// Use configurable error mock for error injection
+		errorPlugin := plugintesting.ConfigurableErrorMockPlugin()
+		errorPlugin.ShouldErrorOnEstimateCost = true
+
+		errorHarness := plugintesting.NewTestHarness(errorPlugin)
+		errorHarness.Start(t)
+		defer errorHarness.Stop()
+
+		errorClient := errorHarness.Client()
+
+		var buf bytes.Buffer
+		logger := pluginsdk.NewPluginLogger("example-plugin", "v1.0.0", zerolog.InfoLevel, &buf)
+
+		traceID := "trace-error789"
+		ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+		resourceType := "invalid:resource/type:Type"
+
+		// Attempt the call (will fail)
+		attrs, _ := structpb.NewStruct(map[string]interface{}{})
+		_, err := errorClient.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: resourceType,
+			Attributes:   attrs,
+		})
+
+		// FR-004: Log errors with error code, message, and original request context
+		// Best Practice: Include enough context to diagnose without re-running the request
+		if err != nil {
+			st, _ := status.FromError(err)
+			logger.Error().
+				Err(err).
+				Str(pluginsdk.FieldTraceID, pluginsdk.TraceIDFromContext(ctx)).
+				Str(pluginsdk.FieldOperation, "EstimateCost").
+				Str(pluginsdk.FieldResourceType, resourceType).
+				Str(pluginsdk.FieldErrorCode, st.Code().String()).
+				Msg("Cost estimation failed")
+		}
+
+		// Verify error log output
+		logOutput := buf.String()
+		assertLogContains(t, logOutput, "error", "error level/field missing")
+		assertLogContains(t, logOutput, pluginsdk.FieldErrorCode, "error_code field missing")
+		assertLogContains(t, logOutput, pluginsdk.FieldTraceID, "trace_id missing in error log")
+		assertLogContains(t, logOutput, pluginsdk.FieldResourceType, "resource_type missing in error log")
+		assertLogContains(t, logOutput, "Cost estimation failed", "error message missing")
+	})
+
+	// T018, T019, T020, T021: CorrelationIDPropagation subtest
+	t.Run("CorrelationIDPropagation", func(t *testing.T) {
+		var buf bytes.Buffer
+		logger := pluginsdk.NewPluginLogger("example-plugin", "v1.0.0", zerolog.InfoLevel, &buf)
+
+		// FR-005: Demonstrate correlation ID propagation
+		// Best Practice: Use ContextWithTraceID to store, TraceIDFromContext to retrieve
+		traceID := "trace-correlation-xyz"
+		ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+
+		// Verify trace ID can be retrieved from context
+		retrievedTraceID := pluginsdk.TraceIDFromContext(ctx)
+		if retrievedTraceID != traceID {
+			t.Errorf("Expected trace ID %s, got %s", traceID, retrievedTraceID)
+		}
+
+		// Log multiple operations with the same trace_id
+		for i, op := range []string{"validate", "estimate", "respond"} {
+			logger.Info().
+				Str(pluginsdk.FieldTraceID, pluginsdk.TraceIDFromContext(ctx)).
+				Str(pluginsdk.FieldOperation, op).
+				Int("step", i+1).
+				Msg("Processing step")
+		}
+
+		// Verify all log entries contain the same trace_id
+		logOutput := buf.String()
+		entries := parseMultipleLogEntries(t, logOutput)
+
+		// Best Practice: Verify trace_id appears in ALL related log entries
+		for i, entry := range entries {
+			entryTraceID, ok := entry[pluginsdk.FieldTraceID].(string)
+			if !ok {
+				t.Errorf("Log entry %d missing trace_id", i)
+				continue
+			}
+			if entryTraceID != traceID {
+				t.Errorf("Log entry %d has wrong trace_id: expected %s, got %s", i, traceID, entryTraceID)
+			}
+		}
+
+		// Test graceful degradation: empty context returns empty string
+		emptyCtx := context.Background()
+		emptyTraceID := pluginsdk.TraceIDFromContext(emptyCtx)
+		if emptyTraceID != "" {
+			t.Errorf("Expected empty trace_id from empty context, got %s", emptyTraceID)
+		}
+	})
+
+	// =========================================================================
+	// User Story 3: Operator Monitors EstimateCost Health
+	// =========================================================================
+
+	// T022, T023, T024, T025: LogStructureValidation subtest
+	t.Run("LogStructureValidation", func(t *testing.T) {
+		var buf bytes.Buffer
+		logger := pluginsdk.NewPluginLogger("example-plugin", "v1.0.0", zerolog.InfoLevel, &buf)
+
+		traceID := "trace-structure-test"
+		ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+
+		// Generate multiple log entries for different operations
+		operations := []string{"EstimateCost", "GetProjectedCost", "GetActualCost"}
+		resourceTypes := []string{
+			"aws:ec2/instance:Instance",
+			"azure:compute/virtualMachine:VirtualMachine",
+			"gcp:compute/instance:Instance",
+		}
+
+		for i, op := range operations {
+			logger.Info().
+				Str(pluginsdk.FieldTraceID, pluginsdk.TraceIDFromContext(ctx)).
+				Str(pluginsdk.FieldOperation, op).
+				Str(pluginsdk.FieldResourceType, resourceTypes[i]).
+				Float64(pluginsdk.FieldCostMonthly, float64(i+1)*10.50).
+				Msg("Operation completed")
+		}
+
+		// Parse all log entries
+		logOutput := buf.String()
+		entries := parseMultipleLogEntries(t, logOutput)
+
+		if len(entries) != len(operations) {
+			t.Errorf("Expected %d log entries, got %d", len(operations), len(entries))
+		}
+
+		// Verify all entries are valid JSON and use standard field names
+		// Best Practice: Consistent field names enable cross-plugin log aggregation
+		for i, entry := range entries {
+			// Check required fields exist
+			if _, ok := entry[pluginsdk.FieldTraceID]; !ok {
+				t.Errorf("Entry %d missing %s", i, pluginsdk.FieldTraceID)
+			}
+			if _, ok := entry[pluginsdk.FieldOperation]; !ok {
+				t.Errorf("Entry %d missing %s", i, pluginsdk.FieldOperation)
+			}
+
+			// Verify filterability: operation field should allow filtering
+			opValue, ok := entry[pluginsdk.FieldOperation].(string)
+			if !ok {
+				t.Errorf("Entry %d: operation field not a string", i)
+				continue
+			}
+			if opValue != operations[i] {
+				t.Errorf("Entry %d: expected operation %s, got %s", i, operations[i], opValue)
+			}
+		}
+
+		// Demonstrate filterability by operation
+		// Operators can query: jq 'select(.operation == "EstimateCost")' logs.json
+		estimateCostCount := 0
+		for _, entry := range entries {
+			if op, ok := entry[pluginsdk.FieldOperation].(string); ok && op == "EstimateCost" {
+				estimateCostCount++
+			}
+		}
+		if estimateCostCount != 1 {
+			t.Errorf("Expected 1 EstimateCost operation, found %d", estimateCostCount)
+		}
+	})
+}
+
+// =============================================================================
+// Helper Functions for Log Verification
+// =============================================================================
+
+// parseMultipleLogEntries parses newline-delimited JSON log entries from a buffer.
+// Each line is expected to be a valid JSON object.
+func parseMultipleLogEntries(t *testing.T, logOutput string) []map[string]interface{} {
+	t.Helper()
+	var entries []map[string]interface{}
+
+	lines := strings.Split(strings.TrimSpace(logOutput), "\n")
+	for i, line := range lines {
+		if line == "" {
+			continue
+		}
+		var entry map[string]interface{}
+		if err := json.Unmarshal([]byte(line), &entry); err != nil {
+			t.Errorf("Failed to parse log entry %d as JSON: %v\nLine: %s", i, err, line)
+			continue
+		}
+		entries = append(entries, entry)
+	}
+
+	return entries
+}
+
+// assertLogContains verifies that the log output contains the expected substring.
+func assertLogContains(t *testing.T, logOutput, expected, errMsg string) {
+	t.Helper()
+	if !strings.Contains(logOutput, expected) {
+		t.Errorf("%s: expected '%s' in log output:\n%s", errMsg, expected, logOutput)
+	}
+}
+
+// assertLogNotContains verifies that the log output does NOT contain the unexpected substring.
+// Use this to verify sensitive data is not being logged.
+func assertLogNotContains(t *testing.T, logOutput, unexpected, errMsg string) {
+	t.Helper()
+	if strings.Contains(logOutput, unexpected) {
+		t.Errorf("%s: unexpected '%s' found in log output:\n%s", errMsg, unexpected, logOutput)
 	}
 }

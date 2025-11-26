@@ -67,7 +67,7 @@ This section covers each RPC method in detail.
 
 ### Service Interface
 
-The service defines 5 RPC methods that provide different aspects of cost information:
+The service defines 6 RPC methods that provide different aspects of cost information:
 
 ```protobuf
 service CostSourceService {
@@ -76,6 +76,7 @@ service CostSourceService {
   rpc GetActualCost(GetActualCostRequest) returns (GetActualCostResponse);
   rpc GetProjectedCost(GetProjectedCostRequest) returns (GetProjectedCostResponse);
   rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);
+  rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
 }
 ```
 
@@ -237,6 +238,71 @@ message PricingSpec {
 - Use standard `billing_mode` values: `per_hour`, `per_gb_month`, `per_request`, `flat`, `per_day`, `per_cpu_hour`
 - Provide helpful `metric_hints` for usage calculation
 - Include plugin-specific metadata for debugging/auditing
+
+#### EstimateCost RPC
+
+Estimates the monthly cost for a Pulumi resource **before deployment**. This enables "what-if"
+cost analysis for configuration comparison and budget planning.
+
+**Request**: `EstimateCostRequest`
+
+```protobuf
+message EstimateCostRequest {
+  string resource_type = 1;              // Pulumi format: "aws:ec2/instance:Instance"
+  google.protobuf.Struct attributes = 2; // Resource config attributes
+}
+```
+
+**Response**: `EstimateCostResponse`
+
+```protobuf
+message EstimateCostResponse {
+  string currency = 1;      // ISO 4217 code (e.g., "USD")
+  double cost_monthly = 2;  // Estimated monthly cost
+}
+```
+
+**Implementation Notes**:
+
+- `resource_type` must follow Pulumi format: `provider:module/resource:Type`
+- The method must be **idempotent** - identical inputs always produce identical outputs
+- Response time should be **<500ms** for standard resource types
+- Monthly cost assumes **730 hours/month** for hourly-billed resources
+- Return `InvalidArgument` for invalid resource_type format
+- Return `NotFound` for unsupported resource types
+
+**Example resource_type values**:
+
+- `aws:ec2/instance:Instance`
+- `azure:compute/virtualMachine:VirtualMachine`
+- `gcp:compute/instance:Instance`
+- `kubernetes:core/v1:Namespace`
+
+### Choosing Between GetProjectedCost and EstimateCost
+
+These two RPCs serve different use cases. Understanding when to use each is important:
+
+| Aspect | GetProjectedCost | EstimateCost |
+|--------|------------------|--------------|
+| **Input** | `ResourceDescriptor` (provider, type, SKU, region) | Pulumi resource type + attributes `Struct` |
+| **Output** | Unit price, monthly cost, billing detail | Monthly cost only |
+| **Use Case** | Generic cost projection for any resource | Pre-deployment "what-if" analysis |
+| **Resource ID** | Generic format per provider | Pulumi format (`aws:ec2/instance:Instance`) |
+| **Idempotency** | Not specified | Guaranteed deterministic |
+| **Response Time** | Not specified | <500ms target |
+
+**Use GetProjectedCost when**:
+
+- You have a generic resource descriptor (provider/type/SKU/region)
+- You need unit pricing details and billing context
+- You're querying existing or planned resources outside Pulumi
+
+**Use EstimateCost when**:
+
+- You're working with Pulumi resources and have the full configuration
+- You want to estimate cost **before** deploying infrastructure
+- You need deterministic, cacheable results for cost comparisons
+- You're building Pulumi preview cost estimation features
 
 ### Implementation Requirements
 
@@ -2312,6 +2378,10 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
 
 func (s *server) GetPricingSpec(ctx context.Context, req *pb.GetPricingSpecRequest) (*pb.GetPricingSpecResponse, error) {
     // Implementation required
+}
+
+func (s *server) EstimateCost(ctx context.Context, req *pb.EstimateCostRequest) (*pb.EstimateCostResponse, error) {
+    // Implementation required - see "Choosing Between GetProjectedCost and EstimateCost" section
 }
 ```
 

@@ -63,6 +63,47 @@ testing for CostSource plugins.
 - `TestConcurrentRequests` - Thread safety and race condition testing
 - `TestResponseTimeouts` - Configurable delay and timeout behavior
 - `TestDataConsistency` - Idempotent response validation
+- `TestStructuredLoggingExample` - Canonical reference for zerolog logging patterns
+
+### Structured Logging Example (`TestStructuredLoggingExample`)
+
+**Educational Reference for Plugin Developers**:
+
+This test serves as the canonical reference for implementing structured logging with zerolog in PulumiCost plugins.
+It demonstrates NFR-001 compliance patterns from spec 006-estimate-cost.
+
+**Subtests**:
+
+- `RequestLogging` - Demonstrates logging incoming requests with resource context
+- `SuccessResponseLogging` - Demonstrates logging successful responses with cost details
+- `ErrorLogging` - Demonstrates error logging with error codes and original context
+- `CorrelationIDPropagation` - Demonstrates trace_id propagation across log entries
+- `LogStructureValidation` - Verifies JSON parseable output with standard field names
+
+**Key Patterns Demonstrated**:
+
+- Creating configured loggers with `pluginsdk.NewPluginLogger()`
+- Using standard field constants (FieldTraceID, FieldOperation, FieldResourceType, etc.)
+- Correlation ID propagation with `ContextWithTraceID` and `TraceIDFromContext`
+- Operation timing measurement with `LogOperation` helper
+- Sensitive data protection (log attribute count, never values)
+
+**Helper Functions**:
+
+- `parseMultipleLogEntries(t, logOutput)` - Parse newline-delimited JSON log entries
+- `assertLogContains(t, logOutput, expected, errMsg)` - Verify field presence
+- `assertLogNotContains(t, logOutput, unexpected, errMsg)` - Verify sensitive data exclusion
+
+**Running the Example**:
+
+```bash
+# Run all logging example subtests
+go test -v -run TestStructuredLoggingExample
+
+# Run specific subtest
+go test -v -run TestStructuredLoggingExample/RequestLogging
+go test -v -run TestStructuredLoggingExample/ErrorLogging
+```
 
 ### Conformance Testing (`conformance_test.go`)
 
