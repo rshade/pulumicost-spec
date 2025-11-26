@@ -44,7 +44,7 @@ This is **pulumicost-spec**, a repository that provides the canonical protocol a
 
 ### Core Components
 
-**Proto Definition (`proto/pulumicost/costsource.proto`)**
+**Proto Definition (`proto/pulumicost/v1/costsource.proto`)**
 
 - Defines `CostSource` gRPC service with RPCs for: Name, Supports, GetActualCost, GetProjectedCost, GetPricingSpec
 - Contains message definitions for requests/responses
@@ -522,8 +522,11 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
-- Go 1.24+ (matches existing SDK) + zerolog v1.34.0+, google.golang.org/grpc (001-zerolog)
-- JSON Schema draft 2020-12 + AJV (validation), existing `registry.proto` definitions (003-plugin-registry-schema)
+- Go 1.24+ (matches existing SDK, toolchain go1.25.4), Protocol Buffers v3 (006-estimate-cost)
+- N/A (specification repository - no runtime storage) (006-estimate-cost)
+
+- Go 1.24+ (matches existing SDK) + zerolog v1.34.0+, google.golang.org/grpc (005-zerolog)
+- JSON Schema draft 2020-12 + AJV (validation), existing `registry.proto` definitions (004-plugin-registry-schema)
 - Go 1.24.10 (toolchain go1.25.4) + Standard library only (no external dependencies for validation) (001-domain-enum-optimization)
 
 ## Recent Changes

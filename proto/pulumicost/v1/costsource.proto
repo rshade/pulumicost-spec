@@ -5,6 +5,7 @@ package pulumicost.v1;
 option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
 // CostSourceService provides gRPC interface for cost source plugins to implement.
 // This service defines the contract for retrieving actual costs, projected costs,
@@ -24,6 +25,20 @@ service CostSourceService {
   
   // GetPricingSpec returns detailed pricing specification for a resource type.
   rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);
+
+  // EstimateCost returns an estimated monthly cost for a resource based on
+  // its type and configuration attributes. This enables proactive cost
+  // planning before resource deployment.
+  //
+  // The method is idempotent - identical inputs always produce identical
+  // outputs (deterministic pricing). Response time should be <500ms for
+  // standard resource types.
+  //
+  // Error cases:
+  //   - InvalidArgument: Invalid resource_type format or missing required attributes
+  //   - NotFound: Unsupported resource_type for this plugin
+  //   - Unavailable: Pricing source temporarily unavailable
+  rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
 }
 
 // NameRequest is used for the Name RPC call (empty request).
@@ -420,4 +435,50 @@ message ErrorDetails {
   int32 retry_after_seconds = 4;
   // correlation_id helps correlate related errors across services
   string correlation_id = 5;
+}
+
+// EstimateCostRequest represents a request to estimate the cost of a Pulumi
+// resource before deployment. This enables "what-if" cost analysis for
+// configuration comparison and budget planning.
+message EstimateCostRequest {
+  // The full type name of the Pulumi resource to estimate cost for.
+  // Must follow the format: "provider:module/resource:Type"
+  //
+  // Examples:
+  //   - "aws:ec2/instance:Instance"
+  //   - "azure:compute/virtualMachine:VirtualMachine"
+  //   - "gcp:compute/instance:Instance"
+  //
+  // The resource_type must be supported by the plugin (check via Supports RPC).
+  // Invalid formats will return InvalidArgument error.
+  string resource_type = 1;
+
+  // A structured representation of the resource's input properties.
+  // This mirrors the structure of a Pulumi resource declaration.
+  //
+  // The attributes field may be null or missing, which is treated as an
+  // empty struct. The plugin determines which attributes are required for
+  // cost estimation based on its pricing model.
+  //
+  // Examples:
+  //   AWS: {"instanceType": "t3.micro", "region": "us-east-1"}
+  //   Azure: {"vmSize": "Standard_B1s", "location": "eastus"}
+  //   GCP: {"machineType": "e2-micro", "zone": "us-central1-a"}
+  google.protobuf.Struct attributes = 2;
+}
+
+// EstimateCostResponse contains the estimated monthly cost for a resource
+// based on the provided configuration.
+//
+// Future versions may add optional breakdown fields (e.g., compute vs storage)
+// while maintaining backward compatibility through optional fields.
+message EstimateCostResponse {
+  // The currency of the cost, as an ISO 4217 currency code.
+  // Typically "USD" but depends on the plugin's pricing source.
+  string currency = 1;
+
+  // The estimated monthly cost for the resource.
+  // Must be non-negative. Zero is valid for free-tier resources.
+  // Monthly cost assumes 730 hours/month for hourly-billed resources.
+  double cost_monthly = 2;
 }

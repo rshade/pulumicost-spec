@@ -1,7 +1,7 @@
 # Research: Zerolog SDK Logging Utilities
 
 **Date**: 2025-11-24
-**Feature**: 001-zerolog
+**Feature**: 005-zerolog
 
 ## Technology Decisions
 

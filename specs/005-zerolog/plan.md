@@ -1,7 +1,7 @@
 # Implementation Plan: Zerolog SDK Logging Utilities
 
-**Branch**: `001-zerolog` | **Date**: 2025-11-24 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/004-zerolog/spec.md`
+**Branch**: `005-zerolog` | **Date**: 2025-11-24 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/005-zerolog/spec.md`
 
 ## Summary
 
@@ -46,7 +46,7 @@ call overhead
 ### Documentation (this feature)
 
 ```text
-specs/004-zerolog/
+specs/005-zerolog/
 ├── spec.md              # Feature specification
 ├── plan.md              # This file
 ├── research.md          # Phase 0: Technology research

@@ -1,6 +1,6 @@
 # Feature Specification: Plugin Registry Index JSON Schema
 
-**Feature Branch**: `003-plugin-registry-schema`
+**Feature Branch**: `004-plugin-registry-schema`
 **Created**: 2025-11-23
 **Status**: Draft
 **Input**: GitHub Issue #68 - Add plugin registry index JSON Schema

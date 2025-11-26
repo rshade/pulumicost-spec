@@ -114,6 +114,25 @@ func addBasicConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 		Description: "Plugin must handle PricingSpec with default/empty optional fields",
 		TestFunc:    createPricingSpecDefaultFieldsTest(),
 	})
+
+	// EstimateCost Basic tests
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "EstimateCostHandlesValidResource",
+		Description: "Plugin must return cost estimate for valid resource type",
+		TestFunc:    createEstimateCostValidResourceTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "EstimateCostRejectsInvalidFormat",
+		Description: "Plugin must reject invalid resource type format with InvalidArgument",
+		TestFunc:    createEstimateCostInvalidFormatTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "EstimateCostRejectsUnsupportedResource",
+		Description: "Plugin must return NotFound for unsupported resource types",
+		TestFunc:    createEstimateCostUnsupportedResourceTest(),
+	})
 }
 
 func runConformanceTestSuite(
@@ -411,6 +430,19 @@ func addStandardConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 		Description: "Plugin must return consistent pricing specs for same resource",
 		TestFunc:    createPricingSpecConsistencyTest(),
 	})
+
+	// EstimateCost Standard tests
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "EstimateCostIsDeterministic",
+		Description: "Plugin must return consistent cost estimates for identical requests",
+		TestFunc:    createEstimateCostDeterministicTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "EstimateCostHandlesConcurrentRequests",
+		Description: "Plugin must handle concurrent EstimateCost requests",
+		TestFunc:    createEstimateCostConcurrentTest(),
+	})
 }
 
 // RunAdvancedConformanceTests runs advanced conformance tests for high-performance plugins.
@@ -458,6 +490,13 @@ func addAdvancedConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 		Name:        "LargeDataHandling",
 		Description: "Plugin must handle large datasets efficiently",
 		TestFunc:    createLargeDataHandlingTest(),
+	})
+
+	// EstimateCost Advanced tests
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "EstimateCostPerformance",
+		Description: "Plugin must return EstimateCost responses within 500ms",
+		TestFunc:    createEstimateCostPerformanceTest(),
 	})
 }
 
@@ -966,6 +1005,284 @@ func createPricingSpecDefaultFieldsTest() func(*plugintesting.TestHarness) plugi
 			Duration: duration,
 			Details: fmt.Sprintf("Handled defaults gracefully: pricing_tiers=%d, unit=%s",
 				tiersCount, spec.GetUnit()),
+		}
+	}
+}
+
+// EstimateCost conformance test helpers
+
+// createEstimateCostValidResourceTest validates FR-001: valid EstimateCost responses
+// with proper currency format and non-negative monthly cost.
+func createEstimateCostValidResourceTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+			ResourceType: "aws:ec2/instance:Instance",
+			Attributes:   nil, // Null attributes should be handled per FR-005
+		})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		if validationErr := plugintesting.ValidateEstimateCostResponse(resp); validationErr != nil {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    validationErr,
+				Duration: duration,
+				Details:  "Response validation failed",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "EstimateCost",
+			Success:  true,
+			Duration: duration,
+			Details:  fmt.Sprintf("Cost: %s %f/month", resp.GetCurrency(), resp.GetCostMonthly()),
+		}
+	}
+}
+
+// createEstimateCostInvalidFormatTest validates FR-003: InvalidArgument error
+// for malformed resource type strings.
+func createEstimateCostInvalidFormatTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		_, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+			ResourceType: "invalid-format",
+			Attributes:   nil,
+		})
+		duration := time.Since(start)
+
+		// Should return InvalidArgument error per FR-003
+		if err == nil {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    errors.New("expected error for invalid format, got nil"),
+				Duration: duration,
+				Details:  "Should reject invalid resource type format",
+			}
+		}
+
+		st, ok := status.FromError(err)
+		if !ok || st.Code() != codes.InvalidArgument {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    fmt.Errorf("expected InvalidArgument error, got: %w", err),
+				Duration: duration,
+				Details:  "Wrong error code for invalid format",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "EstimateCost",
+			Success:  true,
+			Duration: duration,
+			Details:  "Correctly rejected invalid resource type format",
+		}
+	}
+}
+
+// createEstimateCostUnsupportedResourceTest validates FR-008: NotFound error
+// for resource types not supported by the plugin.
+func createEstimateCostUnsupportedResourceTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		_, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+			ResourceType: "aws:lambda/function:Function",
+			Attributes:   nil,
+		})
+		duration := time.Since(start)
+
+		// Should return NotFound error per FR-008
+		if err == nil {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    errors.New("expected error for unsupported resource, got nil"),
+				Duration: duration,
+				Details:  "Should return error for unsupported resource type",
+			}
+		}
+
+		st, ok := status.FromError(err)
+		if !ok || st.Code() != codes.NotFound {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    fmt.Errorf("expected NotFound error, got: %w", err),
+				Duration: duration,
+				Details:  "Wrong error code for unsupported resource",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "EstimateCost",
+			Success:  true,
+			Duration: duration,
+			Details:  "Correctly returned NotFound for unsupported resource",
+		}
+	}
+}
+
+// createEstimateCostDeterministicTest validates FR-011: deterministic responses
+// for identical inputs across multiple calls.
+func createEstimateCostDeterministicTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+
+		// Call EstimateCost multiple times with same input
+		var costs []float64
+		for i := range plugintesting.NumConsistencyChecks {
+			resp, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+				ResourceType: "aws:ec2/instance:Instance",
+				Attributes:   nil,
+			})
+			if err != nil {
+				return plugintesting.TestResult{
+					Method:   "EstimateCost",
+					Success:  false,
+					Error:    err,
+					Duration: time.Since(start),
+					Details:  fmt.Sprintf("RPC call %d failed", i+1),
+				}
+			}
+			costs = append(costs, resp.GetCostMonthly())
+		}
+
+		duration := time.Since(start)
+
+		// Verify all costs are identical (FR-011)
+		for i := 1; i < len(costs); i++ {
+			if costs[i] != costs[0] {
+				return plugintesting.TestResult{
+					Method:   "EstimateCost",
+					Success:  false,
+					Error:    fmt.Errorf("inconsistent costs: %v vs %v", costs[0], costs[i]),
+					Duration: duration,
+					Details:  "Responses should be deterministic for identical inputs",
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "EstimateCost",
+			Success:  true,
+			Duration: duration,
+			Details:  fmt.Sprintf("Deterministic: all %d calls returned %f", len(costs), costs[0]),
+		}
+	}
+}
+
+// createEstimateCostConcurrentTest validates Standard conformance: concurrent request handling
+// with at least 10 simultaneous requests without errors.
+func createEstimateCostConcurrentTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+
+		// Test concurrent requests per Standard conformance
+		results := make(chan error, plugintesting.NumConcurrentRequests)
+
+		for range plugintesting.NumConcurrentRequests {
+			go func() {
+				_, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+					ResourceType: "aws:ec2/instance:Instance",
+					Attributes:   nil,
+				})
+				results <- err
+			}()
+		}
+
+		// Collect results
+		var errors []error
+		for range plugintesting.NumConcurrentRequests {
+			if err := <-results; err != nil {
+				errors = append(errors, err)
+			}
+		}
+
+		duration := time.Since(start)
+
+		if len(errors) > 0 {
+			maxErrors := 3
+			if len(errors) < maxErrors {
+				maxErrors = len(errors)
+			}
+			return plugintesting.TestResult{
+				Method:  "EstimateCost",
+				Success: false,
+				Error: fmt.Errorf(
+					"%d/%d concurrent requests failed",
+					len(errors),
+					plugintesting.NumConcurrentRequests,
+				),
+				Duration: duration,
+				Details:  fmt.Sprintf("Failed requests: %v", errors[:maxErrors]),
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "EstimateCost",
+			Success:  true,
+			Duration: duration,
+			Details:  fmt.Sprintf("All %d concurrent requests succeeded", plugintesting.NumConcurrentRequests),
+		}
+	}
+}
+
+// createEstimateCostPerformanceTest validates SC-002: response time under 500ms
+// for EstimateCost operations.
+func createEstimateCostPerformanceTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+			ResourceType: "aws:ec2/instance:Instance",
+			Attributes:   nil,
+		})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		// Check response time < 500ms per SC-002
+		maxDuration := 500 * time.Millisecond
+		if duration > maxDuration {
+			return plugintesting.TestResult{
+				Method:   "EstimateCost",
+				Success:  false,
+				Error:    fmt.Errorf("response time %v exceeds %v", duration, maxDuration),
+				Duration: duration,
+				Details:  "Performance requirement not met",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "EstimateCost",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Response time %v < %v (Cost: %f)",
+				duration,
+				maxDuration,
+				resp.GetCostMonthly(),
+			),
 		}
 	}
 }

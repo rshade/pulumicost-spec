@@ -1,6 +1,6 @@
 # Tasks: Zerolog SDK Logging Utilities
 
-**Input**: Design documents from `/specs/004-zerolog/`
+**Input**: Design documents from `/specs/005-zerolog/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
 **Tests**: Tests are REQUIRED per spec (FR-010: 90%+ coverage)

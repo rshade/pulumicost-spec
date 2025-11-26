@@ -1,6 +1,6 @@
 # Implementation Plan: GetPricingSpec RPC Enhancement
 
-**Branch**: `001-getpricingspec` | **Date**: 2025-11-22 | **Spec**: [spec.md](./spec.md)
+**Branch**: `003-getpricingspec` | **Date**: 2025-11-22 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/003-getpricingspec/spec.md`
 
 ## Summary
