@@ -17,6 +17,7 @@
 | attributes | google.protobuf.Struct | 2 | No | Resource input properties | Treated as empty struct if null/missing |
 
 **Validation Rules**:
+
 - `resource_type` MUST NOT be empty
 - `resource_type` format MUST match `provider:module/resource:Type` pattern
   - **provider**: lowercase identifier (e.g., "aws", "azure", "gcp")
@@ -56,6 +57,7 @@ EstimateCostRequest {
 | cost_monthly | [decimal type TBD] | 2 | Yes | Estimated monthly cost | Non-negative, precision per existing cost RPCs |
 
 **Validation Rules**:
+
 - `currency` MUST be a valid ISO 4217 currency code (3 uppercase letters)
 - `cost_monthly` MUST be non-negative (≥0)
 - `cost_monthly` precision follows existing GetActualCost/GetProjectedCost patterns
@@ -92,6 +94,7 @@ rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
 ```
 
 **Semantics**:
+
 - **Idempotent**: YES - same inputs always produce same outputs (FR-011)
 - **Streaming**: NO - simple unary RPC
 - **Timeout**: Implementations should complete within 500ms (SC-002)
@@ -194,6 +197,7 @@ aws:ec2/instance:Instance
 ```
 
 **Plugin Responsibility**:
+
 - Plugins interpret attributes based on their pricing models
 - Plugins validate required attributes and return InvalidArgument if missing
 - Plugins handle provider-specific naming conventions (instanceType vs machineType vs vmSize)
@@ -205,17 +209,20 @@ N/A - EstimateCost is a stateless, idempotent query operation. No state is persi
 ## Validation Summary
 
 **SDK Layer (Go)**:
+
 - Resource type format validation (regex match)
 - Empty resource type check
 - Null/missing attributes normalization to empty struct
 
 **Plugin Layer (Implementation-specific)**:
+
 - Resource type support check (Supports RPC)
 - Required attribute presence check
 - Attribute value validation (types, ranges, enums)
 - Pricing model applicability check
 
 **Proto Layer (buf)**:
+
 - Message structure validation
 - Field type validation
 - Breaking change detection
@@ -223,6 +230,7 @@ N/A - EstimateCost is a stateless, idempotent query operation. No state is persi
 ## Future Considerations
 
 **Not in Scope** (defer to future specs):
+
 - Batch estimation (multiple resources in one RPC)
 - Cost breakdown by component (compute, storage, network)
 - Historical cost estimates (time-series data)

@@ -236,6 +236,9 @@ demonstrate cross-provider cost estimation:
 The `attributes` field uses protobuf `Struct` format, allowing flexible key-value pairs matching
 Pulumi resource input properties.
 
+**Note**: Required attributes vary by plugin and resource type. Consult the plugin's documentation
+to determine which attributes are mandatory for accurate cost estimation.
+
 ### GetActualCost Requests
 
 Historical cost retrieval examples:

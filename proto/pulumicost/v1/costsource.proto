@@ -469,6 +469,9 @@ message EstimateCostRequest {
 
 // EstimateCostResponse contains the estimated monthly cost for a resource
 // based on the provided configuration.
+//
+// Future versions may add optional breakdown fields (e.g., compute vs storage)
+// while maintaining backward compatibility through optional fields.
 message EstimateCostResponse {
   // The currency of the cost, as an ISO 4217 currency code.
   // Typically "USD" but depends on the plugin's pricing source.

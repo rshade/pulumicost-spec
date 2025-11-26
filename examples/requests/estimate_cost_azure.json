@@ -9,9 +9,9 @@
     },
     "operatingSystem": "Linux",
     "tags": {
-      "Environment": "staging",
-      "Department": "operations",
-      "Application": "web-server"
+      "environment": "staging",
+      "department": "operations",
+      "application": "web-server"
     }
   }
 }

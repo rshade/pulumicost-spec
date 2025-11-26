@@ -1011,6 +1011,8 @@ func createPricingSpecDefaultFieldsTest() func(*plugintesting.TestHarness) plugi
 
 // EstimateCost conformance test helpers
 
+// createEstimateCostValidResourceTest validates FR-001: valid EstimateCost responses
+// with proper currency format and non-negative monthly cost.
 func createEstimateCostValidResourceTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
 	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
 		start := time.Now()
@@ -1049,6 +1051,8 @@ func createEstimateCostValidResourceTest() func(*plugintesting.TestHarness) plug
 	}
 }
 
+// createEstimateCostInvalidFormatTest validates FR-003: InvalidArgument error
+// for malformed resource type strings.
 func createEstimateCostInvalidFormatTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
 	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
 		start := time.Now()
@@ -1089,6 +1093,8 @@ func createEstimateCostInvalidFormatTest() func(*plugintesting.TestHarness) plug
 	}
 }
 
+// createEstimateCostUnsupportedResourceTest validates FR-008: NotFound error
+// for resource types not supported by the plugin.
 func createEstimateCostUnsupportedResourceTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
 	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
 		start := time.Now()
@@ -1129,6 +1135,8 @@ func createEstimateCostUnsupportedResourceTest() func(*plugintesting.TestHarness
 	}
 }
 
+// createEstimateCostDeterministicTest validates FR-011: deterministic responses
+// for identical inputs across multiple calls.
 func createEstimateCostDeterministicTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
 	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
 		start := time.Now()
@@ -1176,6 +1184,8 @@ func createEstimateCostDeterministicTest() func(*plugintesting.TestHarness) plug
 	}
 }
 
+// createEstimateCostConcurrentTest validates Standard conformance: concurrent request handling
+// with at least 10 simultaneous requests without errors.
 func createEstimateCostConcurrentTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
 	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
 		start := time.Now()
@@ -1230,6 +1240,8 @@ func createEstimateCostConcurrentTest() func(*plugintesting.TestHarness) plugint
 	}
 }
 
+// createEstimateCostPerformanceTest validates SC-002: response time under 500ms
+// for EstimateCost operations.
 func createEstimateCostPerformanceTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
 	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
 		start := time.Now()

@@ -126,6 +126,7 @@ func BenchmarkEstimateCost(b *testing.B) {
 	client := harness.Client()
 	ctx := context.Background()
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for range b.N {
 		_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{

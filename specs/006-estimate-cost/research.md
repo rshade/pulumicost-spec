@@ -10,6 +10,7 @@
 **Decision**: Use `google.protobuf.Struct` for attributes field
 
 **Rationale**:
+
 - Existing GetActualCost and GetProjectedCost RPCs already use Struct for flexibility
 - Supports arbitrary nested key-value pairs matching Pulumi resource input properties
 - Aligns with assumption: "The `google.protobuf.Struct` type is sufficient for representing all
@@ -18,12 +19,14 @@
 - Allows plugins to interpret attributes based on their pricing models
 
 **Alternatives Considered**:
+
 - **Map<string, string>**: Rejected - Cannot represent nested structures or typed values
 - **Custom AttributeValue oneof**: Rejected - Adds unnecessary complexity and proto message bloat
 - **Provider-specific messages**: Rejected - Violates Constitution Principle II (Multi-Provider
   Consistency)
 
 **Implementation Notes**:
+
 - EstimateCostRequest will have fields: `string resource_type` (field 1), `google.protobuf.Struct
   attributes` (field 2)
 - EstimateCostResponse will have fields: `string currency` (field 1), protobuf decimal type for
@@ -36,6 +39,7 @@
 **Decision**: Research existing cost field types in GetActualCost/GetProjectedCost responses
 
 **Findings**:
+
 - Existing RPCs likely use `double` or `string` for cost values
 - Financial precision requires avoiding floating-point rounding errors
 - gRPC/Protobuf does not have native decimal type
@@ -43,6 +47,7 @@
 **Decision**: Use approach consistent with existing GetActualCost and GetProjectedCost RPCs
 
 **Rationale**:
+
 - Maintains consistency across all cost-related RPCs
 - Assumption states: "Decimal precision for costs follows existing patterns in GetActualCost and
   GetProjectedCost responses"
@@ -56,18 +61,21 @@ existing cost response messages
 **Decision**: Implement format validation in SDK, not protobuf
 
 **Rationale**:
+
 - Protobuf string fields cannot enforce regex patterns
 - FR-003 requires validation and specific gRPC InvalidArgument error responses
 - Validation logic belongs in SDK layer, not proto layer
 - Allows for clear, actionable error messages explaining format expectations
 
 **Pattern**: `provider:module/resource:Type`
+
 - **provider**: Cloud provider or platform (e.g., "aws", "azure", "gcp", "kubernetes")
 - **module**: Provider module (e.g., "ec2", "compute", "k8s")
 - **resource**: Resource name (e.g., "instance", "virtualMachine", "pod")
 - **Type**: Pascal case resource type name
 
 **Examples**:
+
 - Valid: `aws:ec2/instance:Instance`
 - Valid: `azure:compute/virtualMachine:VirtualMachine`
 - Invalid: `aws:ec2:Instance` (missing module separator)
@@ -92,6 +100,7 @@ existing cost response messages
 | Zero cost (valid) | FR-013 | OK | Return successful response with cost=0 |
 
 **Rationale**:
+
 - Follows gRPC best practices for error handling
 - InvalidArgument for client errors (bad input)
 - NotFound for valid requests to unsupported resources
@@ -99,6 +108,7 @@ existing cost response messages
 - Consistent with existing gRPC service error patterns
 
 **Implementation Notes**:
+
 - Use `status.Error()` or `status.Errorf()` in Go SDK
 - Include structured error details using `google.rpc.ErrorInfo` when appropriate
 - Error messages must be actionable (tell user what to fix)
@@ -108,11 +118,13 @@ existing cost response messages
 **Decision**: Leverage existing zerolog integration from spec 005-zerolog
 
 **Requirements** (NFR-001 to NFR-003):
+
 - Structured logs: request/response/errors with context
 - Metrics: latency, success rate, error rate
 - Distributed tracing: end-to-end visibility
 
 **Implementation Approach**:
+
 - Use `github.com/rs/zerolog` v1.34.0+ for structured logging
 - Log at appropriate levels:
   - `Info`: Successful EstimateCost calls with resource_type and latency
@@ -123,6 +135,7 @@ existing cost response messages
 - Metrics via existing registry (if present) or defer to plugin implementations
 
 **Log Fields**:
+
 - `rpc_method`: "EstimateCost"
 - `resource_type`: The requested resource type
 - `latency_ms`: Request duration
@@ -137,12 +150,14 @@ existing cost response messages
 **Conformance Levels**:
 
 **Basic (Required for all plugins)**:
+
 - Successfully estimate cost for at least one supported resource type
 - Return proper error for unsupported resource type
 - Return proper error for invalid resource type format
 - Handle null/missing attributes per FR-005
 
 **Standard (Recommended for production)**:
+
 - All Basic requirements plus:
 - Estimate cost for multiple resource types (3+)
 - Return descriptive errors for missing/ambiguous attributes
@@ -151,6 +166,7 @@ existing cost response messages
 - Handle 10+ concurrent requests
 
 **Advanced (High-performance requirements)**:
+
 - All Standard requirements plus:
 - Support 50+ concurrent requests
 - Response time <500ms even under load
@@ -158,6 +174,7 @@ existing cost response messages
 - Comprehensive observability signals (logs, metrics, traces)
 
 **Test Implementation**:
+
 - Extend `sdk/go/testing/harness.go` to support EstimateCost RPC
 - Add mock implementations in `sdk/go/testing/mock_plugin.go`
 - Add conformance tests in `sdk/go/testing/conformance_test.go`
@@ -218,6 +235,7 @@ existing cost response messages
 ```
 
 **Rationale**:
+
 - Demonstrates real-world usage patterns
 - Shows attribute structure for each major provider
 - Validates that `google.protobuf.Struct` handles provider-specific attributes

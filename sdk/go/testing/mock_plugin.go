@@ -88,8 +88,8 @@ func NewMockPlugin() *MockPlugin {
 		SupportedProviders: []string{"aws", "azure", "gcp", "kubernetes"},
 		SupportedResources: map[string][]string{
 			"aws":        {ec2ResourceType, "s3", lambdaResourceType, "rds"},
-			"azure":      {"vm", blobStorageResourceType, "sql_database"},
-			"gcp":        {computeEngineResourceType, cloudStorageResourceType, cloudFunctionsResourceType},
+			"azure":      {"vm", blobStorageResourceType, "sql_database", "compute"},
+			"gcp":        {computeEngineResourceType, cloudStorageResourceType, cloudFunctionsResourceType, "compute"},
 			"kubernetes": {namespaceResourceType, "pod", "service"},
 		},
 		ActualCostDataPoints: defaultDataPoints,
@@ -322,7 +322,7 @@ func isKnownResourceType(resourceType string) bool {
 // getRateMultiplier returns the rate multiplier for a resource type.
 func getRateMultiplier(resourceType string) float64 {
 	switch resourceType {
-	case ec2ResourceType, "vm", computeEngineResourceType:
+	case ec2ResourceType, "vm", computeEngineResourceType, "compute":
 		return computeRateMultiplier
 	case "s3", blobStorageResourceType, cloudStorageResourceType:
 		return storageRateMultiplier
@@ -340,7 +340,7 @@ func getRateMultiplier(resourceType string) float64 {
 // getMetricHints returns metric hints for a resource type.
 func getMetricHints(resourceType string) []*pbc.UsageMetricHint {
 	switch resourceType {
-	case ec2ResourceType, "vm", computeEngineResourceType:
+	case ec2ResourceType, "vm", computeEngineResourceType, "compute":
 		return []*pbc.UsageMetricHint{
 			{Metric: "vcpu_hours", Unit: "hour"},
 			{Metric: "memory_gb_hours", Unit: "hour"},
@@ -463,9 +463,9 @@ func parseResourceType(resourceType string) (string, string, string, string, err
 		expectedColonParts = 3
 		expectedSlashParts = 2
 	)
-	// Split by first colon to get provider
-	parts := strings.Split(resourceType, ":")
-	if len(parts) != expectedColonParts {
+	// Split into provider, module/resource, and type name
+	parts := strings.SplitN(resourceType, ":", expectedColonParts)
+	if len(parts) != expectedColonParts || parts[0] == "" || parts[1] == "" || parts[2] == "" {
 		return "", "", "", "",
 			fmt.Errorf(
 				"invalid format: expected provider:module/resource:Type, got %s",
@@ -478,8 +478,8 @@ func parseResourceType(resourceType string) (string, string, string, string, err
 	typeName := parts[2]
 
 	// Split module/resource
-	moduleResourceParts := strings.Split(moduleResource, "/")
-	if len(moduleResourceParts) != expectedSlashParts {
+	moduleResourceParts := strings.SplitN(moduleResource, "/", expectedSlashParts)
+	if len(moduleResourceParts) != expectedSlashParts || moduleResourceParts[0] == "" || moduleResourceParts[1] == "" {
 		return "", "", "", "",
 			fmt.Errorf(
 				"invalid format: expected provider:module/resource:Type, got %s",

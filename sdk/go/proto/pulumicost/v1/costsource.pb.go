@@ -2392,6 +2392,9 @@ func (x *EstimateCostRequest) GetAttributes() *structpb.Struct {
 
 // EstimateCostResponse contains the estimated monthly cost for a resource
 // based on the provided configuration.
+//
+// Future versions may add optional breakdown fields (e.g., compute vs storage)
+// while maintaining backward compatibility through optional fields.
 type EstimateCostResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The currency of the cost, as an ISO 4217 currency code.

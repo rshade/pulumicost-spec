@@ -2,6 +2,8 @@
   "resource_type": "gcp:compute/instance:Instance",
   "attributes": {
     "machineType": "e2-micro",
+    "gcp_project_id": "my-project-123456",
+    "machine_family": "e2",
     "zone": "us-central1-a",
     "bootDisk": {
       "type": "pd-standard",
@@ -14,7 +16,7 @@
     "labels": {
       "env": "development",
       "team": "platform",
-      "cost-center": "infrastructure"
+      "cost_center": "infrastructure"
     }
   }
 }

@@ -3,7 +3,8 @@
 **Input**: Design documents from `/specs/006-estimate-cost/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
-**Tests**: This feature follows Test-First Protocol (Constitution Principle III). Conformance tests are REQUIRED per the TDD approach.
+**Tests**: This feature follows Test-First Protocol (Constitution Principle III). Conformance tests
+are REQUIRED per the TDD approach.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -20,7 +21,9 @@
 - [X] T001 Verify Go 1.24+ toolchain and Protocol Buffers v3 installation
 - [X] T002 Verify buf v1.32.1 is installed in bin/ (run `make generate` if needed)
 - [X] T003 [P] Verify zerolog v1.34.0+ dependency in go.mod
-- [X] T004 [P] Review existing proto/pulumicost/v1/costsource.proto to identify cost field type pattern (examine GetActualCost and GetProjectedCost response messages - likely double, string, or custom decimal type - document findings in comment for T013)
+- [X] T004 [P] Review existing proto/pulumicost/v1/costsource.proto to identify cost field type
+  pattern (examine GetActualCost and GetProjectedCost response messages - likely double, string,
+  or custom decimal type - document findings in comment for T013)
 
 ---
 
@@ -28,14 +31,21 @@
 
 **Purpose**: Write conformance tests FIRST (must FAIL) before any implementation
 
-**⚠️ CRITICAL**: Tests must be written and FAILING before proto changes. This follows Constitution Principle III (Test-First Protocol).
+**CRITICAL**: Tests must be written and FAILING before proto changes. This follows Constitution
+Principle III (Test-First Protocol).
 
-- [X] T005 [P] Create test helper for EstimateCost in sdk/go/testing/harness.go (add method to TestHarness struct)
-- [X] T006 [P] Add EstimateCost mock implementation in sdk/go/testing/mock_plugin.go (ConfigurableEstimateCost field and handler)
-- [X] T007 Create Basic conformance tests for EstimateCost in sdk/go/testing/conformance_test.go (TestEstimateCostBasicConformance function)
-- [X] T008 [P] Create Standard conformance tests for EstimateCost in sdk/go/testing/conformance_test.go (TestEstimateCostStandardConformance function)
-- [X] T009 [P] Create Advanced conformance tests for EstimateCost in sdk/go/testing/conformance_test.go (TestEstimateCostAdvancedConformance function)
-- [X] T010 Add EstimateCost benchmarks in sdk/go/testing/benchmark_test.go (BenchmarkEstimateCost function with multiple scenarios)
+- [X] T005 [P] Create test helper for EstimateCost in sdk/go/testing/harness.go
+  (add method to TestHarness struct)
+- [X] T006 [P] Add EstimateCost mock implementation in sdk/go/testing/mock_plugin.go
+  (ConfigurableEstimateCost field and handler)
+- [X] T007 Create Basic conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
+  (TestEstimateCostBasicConformance function)
+- [X] T008 [P] Create Standard conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
+  (TestEstimateCostStandardConformance function)
+- [X] T009 [P] Create Advanced conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
+  (TestEstimateCostAdvancedConformance function)
+- [X] T010 Add EstimateCost benchmarks in sdk/go/testing/benchmark_test.go
+  (BenchmarkEstimateCost function with multiple scenarios)
 - [X] T011 Run `go test -v ./sdk/go/testing/` and verify ALL EstimateCost tests FAIL (RED phase complete)
 
 **Checkpoint**: All tests written and failing - ready for protocol implementation (GREEN phase)
@@ -44,28 +54,38 @@
 
 ## Phase 3: User Story 1 - Basic Cost Estimation (Priority: P1) 🎯 MVP
 
-**Goal**: Enable developers to get cost estimates for resources before deployment by implementing the core EstimateCost RPC with request/response messages.
+**Goal**: Enable developers to get cost estimates for resources before deployment by implementing
+the core EstimateCost RPC with request/response messages.
 
-**Independent Test**: Send EstimateCost request with valid resource type and attributes, verify cost estimate is returned. Tests: TestEstimateCostBasicConformance must pass.
+**Independent Test**: Send EstimateCost request with valid resource type and attributes, verify
+cost estimate is returned. Tests: TestEstimateCostBasicConformance must pass.
 
 ### Protocol Definition for User Story 1
 
-- [X] T012 [US1] Add EstimateCostRequest message to proto/pulumicost/v1/costsource.proto (fields: resource_type string=1, attributes google.protobuf.Struct=2)
-- [X] T013 [US1] Add EstimateCostResponse message to proto/pulumicost/v1/costsource.proto (fields: currency string=1, cost_monthly [USE TYPE FROM T004 - double/string/custom decimal]=2)
-- [X] T014 [US1] Add EstimateCost RPC method to CostSource service in proto/pulumicost/v1/costsource.proto (method signature with inline documentation)
-- [X] T015 [US1] Add comprehensive proto comments for EstimateCost RPC, request, and response messages per Constitution Principle V
+- [X] T012 [US1] Add EstimateCostRequest message to proto/pulumicost/v1/costsource.proto
+  (fields: resource_type string=1, attributes google.protobuf.Struct=2)
+- [X] T013 [US1] Add EstimateCostResponse message to proto/pulumicost/v1/costsource.proto
+  (fields: currency string=1, cost_monthly [USE TYPE FROM T004 - double/string/custom decimal]=2)
+- [X] T014 [US1] Add EstimateCost RPC method to CostSource service in
+  proto/pulumicost/v1/costsource.proto (method signature with inline documentation)
+- [X] T015 [US1] Add comprehensive proto comments for EstimateCost RPC, request, and response
+  messages per Constitution Principle V
 - [X] T016 [US1] Run `make generate` to regenerate Go SDK from proto definitions in sdk/go/proto/
 
 ### Validation Implementation for User Story 1
 
-- [X] T017 [US1] Implement resource type format validation function in sdk/go/pricing/validate.go (ValidateResourceType with regex pattern provider:module/resource:Type)
-- [X] T018 [US1] Implement null/missing attributes normalization in sdk/go/pricing/validate.go (NormalizeAttributes function)
+- [X] T017 [US1] Implement resource type format validation function in sdk/go/pricing/validate.go
+  (ValidateResourceType with regex pattern provider:module/resource:Type)
+- [X] T018 [US1] Implement null/missing attributes normalization in sdk/go/pricing/validate.go
+  (NormalizeAttributes function)
 - [X] T019 [US1] Add unit tests for validation functions in sdk/go/pricing/validate_test.go
 
 ### Testing Framework Integration for User Story 1
 
-- [X] T020 [US1] Update mock plugin EstimateCost handler to use generated proto messages in sdk/go/testing/mock_plugin.go
-- [X] T021 [US1] Update TestHarness EstimateCost helper to use generated proto messages in sdk/go/testing/harness.go
+- [X] T020 [US1] Update mock plugin EstimateCost handler to use generated proto messages in
+  sdk/go/testing/mock_plugin.go
+- [X] T021 [US1] Update TestHarness EstimateCost helper to use generated proto messages in
+  sdk/go/testing/harness.go
 - [X] T022 [US1] Run `go test -v ./sdk/go/testing/` and verify Basic conformance tests PASS (GREEN phase for US1)
 
 **Checkpoint**: Basic EstimateCost RPC functional - can estimate cost for supported resource types
@@ -74,23 +94,31 @@
 
 ## Phase 4: User Story 2 - Configuration Comparison (Priority: P2)
 
-**Goal**: Enable developers to compare costs between different resource configurations by ensuring deterministic, consistent responses.
+**Goal**: Enable developers to compare costs between different resource configurations by ensuring
+deterministic, consistent responses.
 
-**Independent Test**: Call EstimateCost multiple times with different attribute values for same resource type, verify different costs. Tests: TestEstimateCostStandardConformance must pass.
+**Independent Test**: Call EstimateCost multiple times with different attribute values for same
+resource type, verify different costs. Tests: TestEstimateCostStandardConformance must pass.
 
 ### Deterministic Behavior for User Story 2
 
-- [X] T023 [P] [US2] Add determinism tests to sdk/go/testing/conformance_test.go (verify identical inputs produce identical outputs per FR-011)
-- [X] T024 [P] [US2] Add concurrent request tests to sdk/go/testing/conformance_test.go (test 10+ concurrent EstimateCost calls per Standard conformance)
-- [X] T025 [US2] Update mock plugin to support multiple resource types in sdk/go/testing/mock_plugin.go (add ResourceTypes map[string]EstimateCostConfig)
+- [X] T023 [P] [US2] Add determinism tests to sdk/go/testing/conformance_test.go
+  (verify identical inputs produce identical outputs per FR-011)
+- [X] T024 [P] [US2] Add concurrent request tests to sdk/go/testing/conformance_test.go
+  (test 10+ concurrent EstimateCost calls per Standard conformance)
+- [X] T025 [US2] Update mock plugin to support multiple resource types in
+  sdk/go/testing/mock_plugin.go (add ResourceTypes map[string]EstimateCostConfig)
 - [X] T026 [US2] Run `go test -v ./sdk/go/testing/` and verify Standard conformance tests PASS
 
 ### Cross-Provider Examples for User Story 2
 
 - [X] T027 [P] [US2] Create examples/requests/ directory
-- [X] T028 [P] [US2] Create AWS example in examples/requests/estimate_cost_aws.json (aws:ec2/instance:Instance with t3.micro attributes)
-- [X] T029 [P] [US2] Create Azure example in examples/requests/estimate_cost_azure.json (azure:compute/virtualMachine:VirtualMachine with Standard_B1s)
-- [X] T030 [P] [US2] Create GCP example in examples/requests/estimate_cost_gcp.json (gcp:compute/instance:Instance with e2-micro)
+- [X] T028 [P] [US2] Create AWS example in examples/requests/estimate_cost_aws.json
+  (aws:ec2/instance:Instance with t3.micro attributes)
+- [X] T029 [P] [US2] Create Azure example in examples/requests/estimate_cost_azure.json
+  (azure:compute/virtualMachine:VirtualMachine with Standard_B1s)
+- [X] T030 [P] [US2] Create GCP example in examples/requests/estimate_cost_gcp.json
+  (gcp:compute/instance:Instance with e2-micro)
 - [X] T031 [US2] Verify all example JSON files match protobuf Struct format
 
 **Checkpoint**: Configuration comparison working - can compare costs across different configs and providers
@@ -99,19 +127,28 @@
 
 ## Phase 5: User Story 3 - Unsupported Resource Handling (Priority: P3)
 
-**Goal**: Provide clear feedback for unsupported resources, invalid formats, and missing attributes to guide developers.
+**Goal**: Provide clear feedback for unsupported resources, invalid formats, and missing attributes
+to guide developers.
 
-**Independent Test**: Send EstimateCost requests with invalid resource types, verify appropriate error responses. Tests: TestEstimateCostAdvancedConformance must pass.
+**Independent Test**: Send EstimateCost requests with invalid resource types, verify appropriate
+error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 ### Error Handling for User Story 3
 
-- [X] T032 [P] [US3] Add invalid format error test to sdk/go/testing/conformance_test.go (test gRPC InvalidArgument for "invalid-format" per FR-003)
-- [X] T033 [P] [US3] Add unsupported resource error test to sdk/go/testing/conformance_test.go (test gRPC NotFound for unsupported resource per FR-008)
-- [X] T034 [P] [US3] Add missing attributes error test to sdk/go/testing/conformance_test.go (test gRPC InvalidArgument for empty attributes per FR-009)
-- [X] T035 [P] [US3] Add ambiguous attributes error test to sdk/go/testing/conformance_test.go (test descriptive error messages per FR-010)
-- [X] T036 [P] [US3] Add pricing source unavailable error test to sdk/go/testing/conformance_test.go (test gRPC Unavailable per FR-014)
-- [X] T037 [P] [US3] Add zero cost handling test to sdk/go/testing/conformance_test.go (test valid response with cost=0 per FR-013)
-- [X] T038 [US3] Update mock plugin with error scenario support in sdk/go/testing/mock_plugin.go (add ForceError field and error injection)
+- [X] T032 [P] [US3] Add invalid format error test to sdk/go/testing/conformance_test.go
+  (test gRPC InvalidArgument for "invalid-format" per FR-003)
+- [X] T033 [P] [US3] Add unsupported resource error test to sdk/go/testing/conformance_test.go
+  (test gRPC NotFound for unsupported resource per FR-008)
+- [X] T034 [P] [US3] Add missing attributes error test to sdk/go/testing/conformance_test.go
+  (test gRPC InvalidArgument for empty attributes per FR-009)
+- [X] T035 [P] [US3] Add ambiguous attributes error test to sdk/go/testing/conformance_test.go
+  (test descriptive error messages per FR-010)
+- [X] T036 [P] [US3] Add pricing source unavailable error test to sdk/go/testing/conformance_test.go
+  (test gRPC Unavailable per FR-014)
+- [X] T037 [P] [US3] Add zero cost handling test to sdk/go/testing/conformance_test.go
+  (test valid response with cost=0 per FR-013)
+- [X] T038 [US3] Update mock plugin with error scenario support in sdk/go/testing/mock_plugin.go
+  (add ForceError field and error injection)
 - [X] T039 [US3] Run `go test -v ./sdk/go/testing/` and verify Advanced conformance tests PASS
 
 ### Observability Integration for User Story 3

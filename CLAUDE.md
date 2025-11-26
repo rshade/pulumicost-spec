@@ -44,7 +44,7 @@ This is **pulumicost-spec**, a repository that provides the canonical protocol a
 
 ### Core Components
 
-**Proto Definition (`proto/pulumicost/costsource.proto`)**
+**Proto Definition (`proto/pulumicost/v1/costsource.proto`)**
 
 - Defines `CostSource` gRPC service with RPCs for: Name, Supports, GetActualCost, GetProjectedCost, GetPricingSpec
 - Contains message definitions for requests/responses

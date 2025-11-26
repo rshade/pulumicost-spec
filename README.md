@@ -375,14 +375,14 @@ func main() {
     }
 
     // Estimate cost for a resource before deployment ("what-if" analysis)
+    // Use structpb.NewStruct for ergonomic attribute construction
+    attrs, _ := structpb.NewStruct(map[string]interface{}{
+        "cpu_limit":    "2",
+        "memory_limit": "4Gi",
+    })
     estimateResp, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
         ResourceType: "kubernetes:core/v1:Namespace",
-        Attributes: &structpb.Struct{
-            Fields: map[string]*structpb.Value{
-                "cpu_limit": structpb.NewStringValue("2"),
-                "memory_limit": structpb.NewStringValue("4Gi"),
-            },
-        },
+        Attributes:   attrs,
     })
     if err != nil {
         log.Fatalf("Failed to estimate cost: %v", err)

@@ -3,7 +3,8 @@
 **Branch**: `006-estimate-cost` | **Date**: 2025-11-24 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/006-estimate-cost/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Note**: This template is filled in by the `/speckit.plan` command.
+See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
@@ -17,6 +18,7 @@ decisions.
 
 **Language/Version**: Go 1.24+ (matches existing SDK, toolchain go1.25.4), Protocol Buffers v3
 **Primary Dependencies**:
+
 - google.golang.org/grpc (gRPC Go implementation)
 - google.golang.org/protobuf (Go protobuf runtime)
 - buf v1.32.1 (Protocol buffer toolchain)
@@ -24,6 +26,7 @@ decisions.
 
 **Storage**: N/A (specification repository - no runtime storage)
 **Testing**:
+
 - Go testing framework (sdk/go/testing/ harness)
 - bufconn for in-memory gRPC testing
 - Conformance tests (Basic/Standard/Advanced levels)
@@ -32,17 +35,20 @@ decisions.
 **Target Platform**: Cross-platform (specification defines gRPC protocol)
 **Project Type**: gRPC Protocol Specification (protobuf-first)
 **Performance Goals**:
+
 - RPC response time <500ms (per SC-002)
 - Support concurrent requests per conformance level
 - Zero-allocation enum validation patterns where applicable
 
 **Constraints**:
+
 - Backward compatibility with existing CostSource service
 - buf breaking change detection must pass
 - No retry logic in SDK (per FR-014, handled by plugins/core)
 - Resource type format validation: provider:module/resource:Type
 
 **Scale/Scope**:
+
 - Single new RPC method (EstimateCost)
 - 2 new protobuf messages (EstimateCostRequest, EstimateCostResponse)
 - Support for 3+ major cloud providers (AWS, Azure, GCP per SC-003)
@@ -165,6 +171,7 @@ N/A - All constitutional requirements passed. No violations to justify.
 **Output**: `research.md`
 
 **Key Decisions**:
+
 1. Use `google.protobuf.Struct` for attributes (consistent with existing RPCs)
 2. Resource type validation in SDK layer (provider:module/resource:Type pattern)
 3. Clear gRPC status code mapping for all error scenarios
@@ -175,6 +182,7 @@ N/A - All constitutional requirements passed. No violations to justify.
 ### Phase 1: Design & Contracts ✅ COMPLETE
 
 **Outputs**:
+
 - `data-model.md` - Protobuf message definitions and validation rules
 - `contracts/estimate_cost.proto` - RPC contract definition with inline documentation
 - `contracts/examples.md` - Request/response examples for all scenarios
@@ -182,6 +190,7 @@ N/A - All constitutional requirements passed. No violations to justify.
 - `CLAUDE.md` - Updated agent context with new technologies
 
 **Artifacts Created**:
+
 - EstimateCostRequest protobuf message specification
 - EstimateCostResponse protobuf message specification
 - Resource type format validation pattern
@@ -191,6 +200,7 @@ N/A - All constitutional requirements passed. No violations to justify.
 - Configuration comparison use cases
 
 **Constitution Re-Check** ✅ PASS:
+
 - All Phase 1 artifacts align with constitutional principles
 - Cross-provider examples created as required
 - Proto contract defined with comprehensive documentation
@@ -200,11 +210,13 @@ N/A - All constitutional requirements passed. No violations to justify.
 ## Next Steps
 
 **Ready for** `/speckit.tasks`:
+
 - Convert functional requirements into actionable tasks
 - Generate dependency-ordered implementation checklist
 - Create test-first task sequence per TDD principle
 
 **Implementation Order** (from tasks.md):
+
 1. Write conformance tests for EstimateCost (RED phase)
 2. Update proto/pulumicost/v1/costsource.proto
 3. Run `make generate` to regenerate Go SDK
