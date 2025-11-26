@@ -522,6 +522,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.24+ (toolchain go1.25.4) + zerolog v1.34.0+, google.golang.org/grpc, sdk/go/testing harness (007-zerolog-logging-example)
+- N/A (example code, no data persistence) (007-zerolog-logging-example)
+
 - Go 1.24+ (matches existing SDK, toolchain go1.25.4), Protocol Buffers v3 (006-estimate-cost)
 - N/A (specification repository - no runtime storage) (006-estimate-cost)
 
