@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0](https://github.com/rshade/pulumicost-spec/compare/v0.3.0...v0.4.0) (2025-11-26)
+
+
+### Added
+
+* **rpc:** implement EstimateCost RPC for what-if cost analysis ([#90](https://github.com/rshade/pulumicost-spec/issues/90)) ([d6f3c95](https://github.com/rshade/pulumicost-spec/commit/d6f3c9566da8d28550923edfe4ffe34d3c143e0e)), closes [#79](https://github.com/rshade/pulumicost-spec/issues/79)
+
 ## [0.3.0](https://github.com/rshade/pulumicost-spec/compare/v0.2.0...v0.3.0) (2025-11-24)
 
 
