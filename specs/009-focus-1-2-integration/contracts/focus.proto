@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package pulumicost.v1;
+
+import "google/protobuf/timestamp.proto";
+import "pulumicost/v1/enums.proto";
+
+option go_package = "github.com/pulumi/pulumicost-spec/sdk/go/pulumicost/v1;pulumicostv1";
+
+// FocusCostRecord represents a single cost line item normalized to the
+// FinOps FOCUS 1.2 specification.
+message FocusCostRecord {
+  // --- Identity & Hierarchy ---
+  string provider_name = 1;
+  string billing_account_id = 2;
+  string billing_account_name = 3;
+  
+  // --- Time ---
+  google.protobuf.Timestamp charge_period_start = 4;
+  google.protobuf.Timestamp charge_period_end = 5;
+
+  // --- Service & Product ---
+  FocusServiceCategory service_category = 6;
+  string service_name = 7;
+  string resource_id = 12;
+  string resource_name = 13;
+  string sku_id = 14;
+  string region_id = 10;
+  string region_name = 11;
+
+  // --- Charge Details ---
+  FocusChargeCategory charge_category = 8;
+  FocusPricingCategory pricing_category = 9;
+
+  // --- Financials ---
+  double billed_cost = 15;
+  double list_cost = 16;
+  double effective_cost = 17;
+  string currency = 18;
+  string invoice_id = 19;
+
+  // --- Usage ---
+  double usage_quantity = 20;
+  string usage_unit = 21;
+
+  // --- Metadata & Extension ---
+  map<string, string> tags = 22;
+  
+  // The "Backpack": Supports future FOCUS columns or provider-specific
+  // extensions without requiring a schema update.
+  map<string, string> extended_columns = 23;
+}
