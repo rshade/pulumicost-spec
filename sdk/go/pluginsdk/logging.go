@@ -1,4 +1,3 @@
-// Package pluginsdk provides utilities for PulumiCost plugin development.
 package pluginsdk
 
 import (
@@ -29,12 +28,24 @@ const (
 	FieldDurationMs    = "duration_ms"
 	FieldResourceURN   = "resource_urn"
 	FieldResourceType  = "resource_type"
+	FieldProvider      = "provider"
+	FieldRegion        = "region"
 	FieldPluginName    = "plugin_name"
 	FieldPluginVersion = "plugin_version"
 	FieldCostMonthly   = "cost_monthly"
 	FieldAdapter       = "adapter"
 	FieldErrorCode     = "error_code"
 )
+
+// newDefaultLogger creates a basic zerolog logger for internal SDK use.
+// This is used when no custom logger is provided.
+func newDefaultLogger() zerolog.Logger {
+	return zerolog.New(os.Stderr).
+		Level(zerolog.InfoLevel).
+		With().
+		Timestamp().
+		Logger()
+}
 
 // NewPluginLogger creates a configured zerolog logger for plugins.
 //
