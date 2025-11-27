@@ -6,26 +6,38 @@
 
 ## 1. Context & Vision
 
-The `pulumicost-spec` currently serves as a high-level query API for cloud costs. To achieve the project's vision of becoming the **universal, open-source standard for cloud cost observability**, it must align with the industry-standard **FinOps FOCUS 1.2 Specification**.
+The `pulumicost-spec` currently serves as a high-level query API for cloud costs. To achieve
+the project's vision of becoming the **universal, open-source standard for cloud cost
+observability**, it must align with the industry-standard **FinOps FOCUS 1.2 Specification**.
 
-Adopting FOCUS 1.2 will transform `pulumicost` from a simple cost summarizer into a forensic-grade cost analysis tool. To ensure this is sustainable and upgradeable (e.g., to FOCUS 1.3), we will employ a **"Backpack & Builder"** strategy to insulate plugin developers from schema complexity.
+Adopting FOCUS 1.2 will transform `pulumicost` from a simple cost summarizer into a
+forensic-grade cost analysis tool. To ensure this is sustainable and upgradeable
+(e.g., to FOCUS 1.3), we will employ a **"Backpack & Builder"** strategy to insulate
+plugin developers from schema complexity.
 
 ## 2. Objectives
 
-1.  **Define `FocusCostRecord`:** Create a comprehensive Protobuf message implementing the ~40 mandatory and optional columns of FOCUS 1.2.
-2.  **Future-Proofing (The "Backpack"):** Include an `extended_columns` map to support version 1.3+ features before strict schema support exists.
-3.  **SDK Abstraction (The "Shield"):** Mandate an **Opaque Builder Pattern** so plugin developers never touch the raw Protobuf struct, allowing us to refactor the schema without breaking plugin code.
-4.  **Conformance Validation:** Provide a test harness to verify compliance.
+1. **Define `FocusCostRecord`:** Create a comprehensive Protobuf message implementing
+   the ~40 mandatory and optional columns of FOCUS 1.2.
+2. **Future-Proofing (The "Backpack"):** Include an `extended_columns` map to support
+   version 1.3+ features before strict schema support exists.
+3. **SDK Abstraction (The "Shield"):** Mandate an **Opaque Builder Pattern** so plugin
+   developers never touch the raw Protobuf struct, allowing us to refactor the schema
+   without breaking plugin code.
+4. **Conformance Validation:** Provide a test harness to verify compliance.
 
 ## 3. User Benefits (Enabled by this Spec)
 
-*   **Universal Compatibility:** Data exported from `pulumicost` is native to FinOps platforms (Cloudability, Vantage).
-*   **Forensic Precision:** Distinguish between "List Cost", "Billed Cost", and "Effective Cost".
-*   **Stability:** Plugins written today will compile against future Spec versions thanks to the Builder abstraction.
+- **Universal Compatibility:** Data exported from `pulumicost` is native to FinOps
+  platforms (Cloudability, Vantage).
+- **Forensic Precision:** Distinguish between "List Cost", "Billed Cost", and "Effective Cost".
+- **Stability:** Plugins written today will compile against future Spec versions thanks
+  to the Builder abstraction.
 
 ## 4. Proposed Specification Changes
 
 ### 4.1 New Protobuf Message: `FocusCostRecord`
+
 *File:* `proto/pulumicost/v1/focus.proto`
 
 ```protobuf
@@ -76,6 +88,7 @@ message FocusCostRecord {
 ```
 
 ### 4.2 Enum Standardization and Examples
+
 *File:* `proto/pulumicost/v1/enums.proto`
 
 We will define strict Enums for categories with controlled vocabularies.
@@ -115,9 +128,11 @@ enum FocusPricingCategory {
 ```
 
 ### 4.3 SDK Builder Pattern (The "Shield")
+
 *File:* `sdk/go/pluginsdk/focus_builder.go`
 
-The SDK serves as an **Anti-Corruption Layer**. The plugin developer depends on the SDK's method signatures, not the Proto's struct layout.
+The SDK serves as an **Anti-Corruption Layer**. The plugin developer depends on the SDK's
+method signatures, not the Proto's struct layout.
 
 ```go
 // Plugin Developer sees this:
@@ -149,23 +164,33 @@ record, err := pluginsdk.NewFocusRecordBuilder().
 ## 5. Implementation Plan
 
 ### Phase 1: Schema Definition
-*   [ ] Create `proto/pulumicost/v1/focus.proto` with `extended_columns` and updated enum types for fields.
-*   [ ] Create `proto/pulumicost/v1/enums.proto` with the detailed enum definitions (FocusServiceCategory, FocusChargeCategory, FocusPricingCategory).
-*   [ ] Update `costsource.proto` to import both `focus.proto` and `enums.proto`.
-*   [ ] Run `buf generate`.
+
+- [ ] Create `proto/pulumicost/v1/focus.proto` with `extended_columns` and updated
+  enum types for fields.
+- [ ] Create `proto/pulumicost/v1/enums.proto` with the detailed enum definitions
+  (FocusServiceCategory, FocusChargeCategory, FocusPricingCategory).
+- [ ] Update `costsource.proto` to import both `focus.proto` and `enums.proto`.
+- [ ] Run `buf generate`.
 
 ### Phase 2: SDK & Builders
-*   [ ] Create `sdk/go/pluginsdk/focus_builder.go`.
-    *   Implement the Builder pattern hiding the struct fields.
-    *   Ensure methods take enum types where appropriate.
-    *   Ensure `WithExtension` maps to `extended_columns`.
-*   [ ] Create `sdk/go/pluginsdk/focus_conformance.go` (`ValidateFocusRecord`).
+
+- [ ] Create `sdk/go/pluginsdk/focus_builder.go`.
+  - Implement the Builder pattern hiding the struct fields.
+  - Ensure methods take enum types where appropriate.
+  - Ensure `WithExtension` maps to `extended_columns`.
+- [ ] Create `sdk/go/pluginsdk/focus_conformance.go` (`ValidateFocusRecord`).
 
 ### Phase 3: Documentation
-*   [ ] Create `PLUGIN_MIGRATION_GUIDE.md`.
-    *   **Explicitly Warning:** "Do not instantiate `FocusCostRecord` structs directly. Use the Builder. Direct struct usage is unsupported and may break in minor version updates."
+
+- [ ] Create `PLUGIN_MIGRATION_GUIDE.md`.
+  - **Explicitly Warning:** "Do not instantiate `FocusCostRecord` structs directly.
+    Use the Builder. Direct struct usage is unsupported and may break in minor
+    version updates."
 
 ## 6. Separation of Concerns
-*   **Spec:** Defines the data wire format (`extended_columns` handles the unknown) and strict enumerations.
-*   **SDK:** Defines the *Developer API* (The Builder). This is the stability boundary and enforces enum usage.
-*   **Core:** Renders `extended_columns` dynamically, ensuring new data is visible immediately.
+
+- **Spec:** Defines the data wire format (`extended_columns` handles the unknown)
+  and strict enumerations.
+- **SDK:** Defines the *Developer API* (The Builder). This is the stability boundary
+  and enforces enum usage.
+- **Core:** Renders `extended_columns` dynamically, ensuring new data is visible immediately.

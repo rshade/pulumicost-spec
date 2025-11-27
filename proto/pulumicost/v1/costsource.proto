@@ -6,6 +6,7 @@ option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
+import "pulumicost/v1/focus.proto";
 
 // CostSourceService provides gRPC interface for cost source plugins to implement.
 // This service defines the contract for retrieving actual costs, projected costs,
@@ -138,6 +139,9 @@ message ActualCostResult {
   string usage_unit = 4;
   // source identifies the data source (e.g., "kubecost", "flexera")
   string source = 5;
+  // focus_record provides the cost data in FOCUS 1.2 format.
+  // This field is optional and will eventually replace the legacy fields.
+  FocusCostRecord focus_record = 6;
 }
 
 // UsageMetricHint provides guidance on usage metrics for cost calculation.

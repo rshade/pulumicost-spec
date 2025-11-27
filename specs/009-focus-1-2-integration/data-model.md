@@ -3,6 +3,7 @@
 ## Enums (`proto/pulumicost/v1/enums.proto`)
 
 ### FocusServiceCategory
+
 | Name | Value | Description |
 | :--- | :--- | :--- |
 | `SERVICE_CATEGORY_UNSPECIFIED` | 0 | Default |
@@ -18,6 +19,7 @@
 | `SERVICE_CATEGORY_OTHER` | 10 | Fallback |
 
 ### FocusChargeCategory
+
 | Name | Value | Description |
 | :--- | :--- | :--- |
 | `CHARGE_CATEGORY_UNSPECIFIED` | 0 | Default |
@@ -29,6 +31,7 @@
 | `CHARGE_CATEGORY_ADJUSTMENT` | 6 | Other adjustments (Superset of Refund sometimes) |
 
 ### FocusPricingCategory
+
 | Name | Value | Description |
 | :--- | :--- | :--- |
 | `PRICING_CATEGORY_UNSPECIFIED` | 0 | Default |
@@ -40,6 +43,7 @@
 ## Messages (`proto/pulumicost/v1/focus.proto`)
 
 ### FocusCostRecord
+
 | Field Name | Type | ID | Description |
 | :--- | :--- | :--- | :--- |
 | `provider_name` | string | 1 | e.g., "AWS" |

@@ -7,7 +7,9 @@
 
 ## Technical Context
 
-This feature upgrades the `pulumicost-spec` to align with FinOps FOCUS 1.2 by introducing a new `FocusCostRecord` Protobuf message, standardizing categorization via strict Enums (Vocabulary), and implementing a "Backpack & Builder" pattern in the Go SDK.
+This feature upgrades the `pulumicost-spec` to align with FinOps FOCUS 1.2 by introducing
+a new `FocusCostRecord` Protobuf message, standardizing categorization via strict Enums
+(Vocabulary), and implementing a "Backpack & Builder" pattern in the Go SDK.
 
 **Key constraints:**
 
@@ -19,7 +21,8 @@ This feature upgrades the `pulumicost-spec` to align with FinOps FOCUS 1.2 by in
 
 **Unknowns & Risks:**
 
-- [x] **Validation Rules**: Resolved. Mandatory fields identified: `BillingAccountId`, `ChargePeriod`, `ServiceCategory`, `ChargeCategory`, `BilledCost`, `Currency`.
+- [x] **Validation Rules**: Resolved. Mandatory fields identified: `BillingAccountId`,
+  `ChargePeriod`, `ServiceCategory`, `ChargeCategory`, `BilledCost`, `Currency`.
 - [x] **Enum Values**: Resolved. Mapped from FOCUS 1.0/1.1 and search results.
 - [x] **Versioning Strategy**: Resolved. Use `extended_columns` for future fields.
 - [x] **Breaking Changes**: Resolved. Additive change, safe.
@@ -40,49 +43,49 @@ This feature upgrades the `pulumicost-spec` to align with FinOps FOCUS 1.2 by in
 
 **Goal**: Resolve unknowns and finalize the data model.
 
-1.  **Research FOCUS 1.2 Spec**:
-    *   Action: Extract the full list of mandatory vs optional columns.
-    *   Action: Extract the full list of allowed values for Service, Charge, and Pricing categories.
-    *   Output: `specs/009-focus-1-2-integration/research.md`
-2.  **Define Data Model**:
-    *   Action: Map FOCUS columns to Protobuf fields (types, field IDs).
-    *   Action: Define Enum values in `enums.proto`.
-    *   Output: `specs/009-focus-1-2-integration/data-model.md`
-3.  **Define Contracts**:
-    *   Action: Draft `proto/pulumicost/v1/focus.proto` and `proto/pulumicost/v1/enums.proto`.
-    *   Output: `specs/009-focus-1-2-integration/contracts/focus.proto`
+1. **Research FOCUS 1.2 Spec**:
+    - Action: Extract the full list of mandatory vs optional columns.
+    - Action: Extract the full list of allowed values for Service, Charge, and Pricing categories.
+    - Output: `specs/009-focus-1-2-integration/research.md`
+2. **Define Data Model**:
+    - Action: Map FOCUS columns to Protobuf fields (types, field IDs).
+    - Action: Define Enum values in `enums.proto`.
+    - Output: `specs/009-focus-1-2-integration/data-model.md`
+3. **Define Contracts**:
+    - Action: Draft `proto/pulumicost/v1/focus.proto` and `proto/pulumicost/v1/enums.proto`.
+    - Output: `specs/009-focus-1-2-integration/contracts/focus.proto`
 
 ## Phase 1: Specification & SDK Core
 
 **Goal**: Implement the Protobuf spec and base SDK Builder.
 
-1.  **Protobuf Implementation**:
-    *   Create `proto/pulumicost/v1/enums.proto` (Vocabularies).
-    *   Create `proto/pulumicost/v1/focus.proto` (`FocusCostRecord` message).
-    *   Run `buf generate` to create Go code.
-2.  **SDK Builder Implementation**:
-    *   Create `sdk/go/pluginsdk/focus_builder.go`.
-    *   Implement `With...` methods for all fields.
-    *   Implement `WithExtension` (Backpack).
-    *   Implement `Build()` with validation logic (mandatory fields check).
-3.  **Conformance Tests**:
-    *   Create `sdk/go/pluginsdk/focus_builder_test.go`.
-    *   Test: Happy path (all fields).
-    *   Test: Missing mandatory field -> Error.
-    *   Test: Enum enforcement.
-    *   Test: Extension data preservation.
+1. **Protobuf Implementation**:
+    - Create `proto/pulumicost/v1/enums.proto` (Vocabularies).
+    - Create `proto/pulumicost/v1/focus.proto` (`FocusCostRecord` message).
+    - Run `buf generate` to create Go code.
+2. **SDK Builder Implementation**:
+    - Create `sdk/go/pluginsdk/focus_builder.go`.
+    - Implement `With...` methods for all fields.
+    - Implement `WithExtension` (Backpack).
+    - Implement `Build()` with validation logic (mandatory fields check).
+3. **Conformance Tests**:
+    - Create `sdk/go/pluginsdk/focus_builder_test.go`.
+    - Test: Happy path (all fields).
+    - Test: Missing mandatory field -> Error.
+    - Test: Enum enforcement.
+    - Test: Extension data preservation.
 
 ## Phase 2: Validation & Documentation
 
 **Goal**: Verify compliance and document usage.
 
-1.  **Conformance Validator**:
-    *   Create `sdk/go/pluginsdk/focus_conformance.go` (Exported validation function).
-    *   Implement strict FOCUS 1.2 business rule checks (e.g., if ChargeCategory=Usage, UsageQuantity must be > 0).
-2.  **Benchmarks**:
-    *   Create `sdk/go/pluginsdk/focus_benchmark_test.go`.
-    *   Benchmark: Builder allocation and serialization speed.
-3.  **Documentation**:
-    *   Create `docs/PLUGIN_MIGRATION_GUIDE.md` (Focus Upgrade).
-    *   Update `README.md` with FOCUS 1.2 badge/info.
-    *   Create `examples/plugins/focus-example.go` demonstrating Builder usage.
+1. **Conformance Validator**:
+    - Create `sdk/go/pluginsdk/focus_conformance.go` (Exported validation function).
+    - Implement strict FOCUS 1.2 business rule checks (e.g., if ChargeCategory=Usage, UsageQuantity must be > 0).
+2. **Benchmarks**:
+    - Create `sdk/go/pluginsdk/focus_benchmark_test.go`.
+    - Benchmark: Builder allocation and serialization speed.
+3. **Documentation**:
+    - Create `docs/PLUGIN_MIGRATION_GUIDE.md` (Focus Upgrade).
+    - Update `README.md` with FOCUS 1.2 badge/info.
+    - Create `examples/plugins/focus-example.go` demonstrating Builder usage.
