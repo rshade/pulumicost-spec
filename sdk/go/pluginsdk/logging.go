@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -59,10 +60,11 @@ func NewPluginLogger(pluginName, version string, level zerolog.Level, w io.Write
 }
 
 // TracingUnaryServerInterceptor returns a gRPC server interceptor that extracts
-// trace_id from incoming request metadata and adds it to the request context.
+// trace_id from incoming request metadata, validates it, and adds it to the request context.
 //
-// The interceptor looks for the TraceIDMetadataKey header and stores the value
-// in the context for retrieval via TraceIDFromContext.
+// The interceptor looks for the TraceIDMetadataKey header. If the trace_id is missing or
+// invalid, a new valid trace_id is generated. The validated or generated trace_id is
+// stored in the context for retrieval via TraceIDFromContext.
 func TracingUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -70,11 +72,26 @@ func TracingUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		_ *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
+		var traceID string
+
 		if md, ok := metadata.FromIncomingContext(ctx); ok {
 			if values := md.Get(TraceIDMetadataKey); len(values) > 0 {
-				ctx = ContextWithTraceID(ctx, values[0])
+				traceID = values[0]
 			}
 		}
+
+		// Validate the trace ID; generate a new one if invalid or missing
+		if traceID == "" || pricing.ValidateTraceID(traceID) != nil {
+			var err error
+			traceID, err = GenerateTraceID()
+			if err != nil {
+				// If generation fails, proceed with empty trace ID
+				// This maintains request flow even in extreme failure cases
+				traceID = ""
+			}
+		}
+
+		ctx = ContextWithTraceID(ctx, traceID)
 		return handler(ctx, req)
 	}
 }

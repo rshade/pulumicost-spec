@@ -118,11 +118,12 @@ func TestTraceIDFromContext_EmptyContext(t *testing.T) {
 
 // TestTracingUnaryServerInterceptor_Integration tests TracingUnaryServerInterceptor with bufconn.
 func TestTracingUnaryServerInterceptor_Integration(t *testing.T) {
-	// Test that interceptor extracts trace ID correctly
+	// Test that interceptor extracts valid trace ID correctly
 	interceptor := pluginsdk.TracingUnaryServerInterceptor()
 	ctx := context.Background()
+	validTraceID := "abcdef1234567890abcdef1234567890"
 	md := metadata.New(map[string]string{
-		pluginsdk.TraceIDMetadataKey: "test-trace-123",
+		pluginsdk.TraceIDMetadataKey: validTraceID,
 	})
 	ctx = metadata.NewIncomingContext(ctx, md)
 
@@ -137,12 +138,12 @@ func TestTracingUnaryServerInterceptor_Integration(t *testing.T) {
 		t.Fatalf("Interceptor failed: %v", err)
 	}
 
-	if capturedTraceID != "test-trace-123" {
-		t.Errorf("Expected trace ID 'test-trace-123', got %q", capturedTraceID)
+	if capturedTraceID != validTraceID {
+		t.Errorf("Expected trace ID %q, got %q", validTraceID, capturedTraceID)
 	}
 }
 
-// TestTracingUnaryServerInterceptor_MissingMetadata tests interceptor with missing metadata.
+// TestTracingUnaryServerInterceptor_MissingMetadata tests interceptor generates trace ID when metadata is missing.
 func TestTracingUnaryServerInterceptor_MissingMetadata(t *testing.T) {
 	interceptor := pluginsdk.TracingUnaryServerInterceptor()
 	ctx := context.Background()
@@ -159,12 +160,33 @@ func TestTracingUnaryServerInterceptor_MissingMetadata(t *testing.T) {
 		t.Fatalf("Interceptor failed: %v", err)
 	}
 
-	if capturedTraceID != "" {
-		t.Errorf("Expected empty trace ID for missing metadata, got %q", capturedTraceID)
+	// Should generate a valid trace ID when metadata is missing
+	if capturedTraceID == "" {
+		t.Errorf("Expected generated trace ID for missing metadata, got empty")
+	}
+
+	if len(capturedTraceID) != 32 {
+		t.Errorf(
+			"Generated trace ID should be 32 characters, got %d: %q",
+			len(capturedTraceID),
+			capturedTraceID,
+		)
+	}
+
+	// Should be valid hex
+	for _, r := range capturedTraceID {
+		if r < '0' || (r > '9' && r < 'a') || r > 'f' {
+			t.Errorf("Generated trace ID contains invalid character %q: %q", r, capturedTraceID)
+		}
+	}
+
+	// Should not be all zeros
+	if capturedTraceID == "00000000000000000000000000000000" {
+		t.Errorf("Generated trace ID should not be all zeros")
 	}
 }
 
-// TestTracingUnaryServerInterceptor_ConcurrentRequests tests concurrent requests with different trace_ids.
+// TestTracingUnaryServerInterceptor_ConcurrentRequests tests concurrent requests with different valid trace_ids.
 func TestTracingUnaryServerInterceptor_ConcurrentRequests(t *testing.T) {
 	interceptor := pluginsdk.TracingUnaryServerInterceptor()
 
@@ -172,7 +194,13 @@ func TestTracingUnaryServerInterceptor_ConcurrentRequests(t *testing.T) {
 	results := make(map[string]string)
 	var mu sync.Mutex
 
-	traceIDs := []string{"trace-1", "trace-2", "trace-3", "trace-4", "trace-5"}
+	traceIDs := []string{
+		"abcdef1234567890abcdef1234567890",
+		"1234567890abcdef1234567890abcdef",
+		"a1b2c3d4e5f678901234567890abcdef",
+		"fedcba0987654321fedcba0987654321",
+		"11111111111111111111111111111111",
+	}
 
 	for _, traceID := range traceIDs {
 		wg.Add(1)
@@ -206,15 +234,16 @@ func TestTracingUnaryServerInterceptor_ConcurrentRequests(t *testing.T) {
 	}
 }
 
-// TestTracingUnaryServerInterceptor_MultipleTraceIDs tests multiple trace_id values in metadata (use first).
+// TestTracingUnaryServerInterceptor_MultipleTraceIDs tests multiple valid trace_id values in metadata (use first).
 func TestTracingUnaryServerInterceptor_MultipleTraceIDs(t *testing.T) {
 	interceptor := pluginsdk.TracingUnaryServerInterceptor()
 	ctx := context.Background()
 
 	// Create metadata with multiple values for the same key
+	firstTraceID := "abcdef1234567890abcdef1234567890"
 	md := metadata.Pairs(
-		pluginsdk.TraceIDMetadataKey, "first-trace",
-		pluginsdk.TraceIDMetadataKey, "second-trace",
+		pluginsdk.TraceIDMetadataKey, firstTraceID,
+		pluginsdk.TraceIDMetadataKey, "1234567890abcdef1234567890abcdef",
 	)
 	ctx = metadata.NewIncomingContext(ctx, md)
 
@@ -229,8 +258,8 @@ func TestTracingUnaryServerInterceptor_MultipleTraceIDs(t *testing.T) {
 		t.Fatalf("Interceptor failed: %v", err)
 	}
 
-	if capturedTraceID != "first-trace" {
-		t.Errorf("Expected first trace ID 'first-trace', got %q", capturedTraceID)
+	if capturedTraceID != firstTraceID {
+		t.Errorf("Expected first trace ID %q, got %q", firstTraceID, capturedTraceID)
 	}
 }
 
@@ -310,7 +339,11 @@ func TestFieldConstants_Values(t *testing.T) {
 func TestTraceIDMetadataKey_Value(t *testing.T) {
 	expected := "x-pulumicost-trace-id"
 	if pluginsdk.TraceIDMetadataKey != expected {
-		t.Errorf("TraceIDMetadataKey mismatch: expected %q, got %q", expected, pluginsdk.TraceIDMetadataKey)
+		t.Errorf(
+			"TraceIDMetadataKey mismatch: expected %q, got %q",
+			expected,
+			pluginsdk.TraceIDMetadataKey,
+		)
 	}
 }
 
@@ -352,5 +385,268 @@ func BenchmarkInterceptor(b *testing.B) {
 	b.ResetTimer()
 	for range b.N {
 		_, _ = interceptor(ctx, nil, &grpc.UnaryServerInfo{}, handler)
+	}
+}
+
+// BenchmarkInterceptorValidation measures validation overhead with invalid trace IDs.
+func BenchmarkInterceptorValidation(b *testing.B) {
+	interceptor := pluginsdk.TracingUnaryServerInterceptor()
+	ctx := context.Background()
+	md := metadata.New(map[string]string{
+		pluginsdk.TraceIDMetadataKey: "invalid-trace-id", // Invalid: too short
+	})
+	ctx = metadata.NewIncomingContext(ctx, md)
+
+	handler := func(ctx context.Context, _ interface{}) (interface{}, error) {
+		_ = pluginsdk.TraceIDFromContext(ctx)
+		return struct{}{}, nil
+	}
+
+	b.ResetTimer()
+	for range b.N {
+		_, _ = interceptor(ctx, nil, &grpc.UnaryServerInfo{}, handler)
+	}
+}
+
+// BenchmarkInterceptorGeneration measures generation overhead when no trace ID is provided.
+func BenchmarkInterceptorGeneration(b *testing.B) {
+	interceptor := pluginsdk.TracingUnaryServerInterceptor()
+	ctx := context.Background()
+	// No metadata - will trigger generation
+
+	handler := func(ctx context.Context, _ interface{}) (interface{}, error) {
+		_ = pluginsdk.TraceIDFromContext(ctx)
+		return struct{}{}, nil
+	}
+
+	b.ResetTimer()
+	for range b.N {
+		_, _ = interceptor(ctx, nil, &grpc.UnaryServerInfo{}, handler)
+	}
+}
+
+// validateGeneratedTraceID validates that a generated trace ID meets requirements.
+func validateGeneratedTraceID(t *testing.T, traceID, originalInput string) {
+	t.Helper()
+
+	if traceID == "" {
+		t.Errorf("Expected generated trace ID for invalid input %q, got empty", originalInput)
+	}
+
+	if len(traceID) != 32 {
+		t.Errorf(
+			"Generated trace ID should be 32 characters, got %d: %q",
+			len(traceID),
+			traceID,
+		)
+	}
+
+	// Should be valid hex
+	for _, r := range traceID {
+		if r < '0' || (r > '9' && r < 'a') || r > 'f' {
+			t.Errorf(
+				"Generated trace ID contains invalid character %q: %q",
+				r,
+				traceID,
+			)
+		}
+	}
+
+	// Should not be all zeros
+	if traceID == "00000000000000000000000000000000" {
+		t.Errorf("Generated trace ID should not be all zeros")
+	}
+
+	// Should not be the same as invalid input
+	if traceID == originalInput {
+		t.Errorf(
+			"Trace ID should have been replaced, but got same value: %q",
+			traceID,
+		)
+	}
+}
+
+// TestTracingUnaryServerInterceptor_InvalidTraceIDs tests interceptor validation of invalid trace IDs.
+func TestTracingUnaryServerInterceptor_InvalidTraceIDs(t *testing.T) {
+	interceptor := pluginsdk.TracingUnaryServerInterceptor()
+
+	tests := []struct {
+		name        string
+		traceID     string
+		description string
+	}{
+		{
+			name:        "too_short",
+			traceID:     "abc123",
+			description: "trace ID shorter than 32 characters",
+		},
+		{
+			name:        "too_long",
+			traceID:     "abcdef1234567890abcdef1234567890extra",
+			description: "trace ID longer than 32 characters",
+		},
+		{
+			name:        "non_hex_chars",
+			traceID:     "gggggggggggggggggggggggggggggggg",
+			description: "trace ID with non-hexadecimal characters",
+		},
+		{
+			name:        "all_zeros",
+			traceID:     "00000000000000000000000000000000",
+			description: "trace ID that is all zeros",
+		},
+		{
+			name:        "mixed_case_invalid",
+			traceID:     "ABCDEF1234567890abcdef1234567890",
+			description: "trace ID with uppercase (should be lowercase)",
+		},
+		{
+			name:        "empty_string",
+			traceID:     "",
+			description: "empty trace ID string",
+		},
+		{
+			name:        "control_characters",
+			traceID:     "abc123\n\r\t",
+			description: "trace ID with control characters",
+		},
+		{
+			name:        "unicode_characters",
+			traceID:     "abc123\u00e9\u00f1",
+			description: "trace ID with unicode characters",
+		},
+		{
+			name:        "excessive_length",
+			traceID:     string(make([]byte, 10000)), // 10KB of data
+			description: "trace ID with excessive length",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			md := metadata.New(map[string]string{
+				pluginsdk.TraceIDMetadataKey: tt.traceID,
+			})
+			ctx = metadata.NewIncomingContext(ctx, md)
+
+			var capturedTraceID string
+			handler := func(ctx context.Context, _ interface{}) (interface{}, error) {
+				capturedTraceID = pluginsdk.TraceIDFromContext(ctx)
+				return struct{}{}, nil
+			}
+
+			_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{}, handler)
+			if err != nil {
+				t.Fatalf("Interceptor failed: %v", err)
+			}
+
+			validateGeneratedTraceID(t, capturedTraceID, tt.traceID)
+		})
+	}
+}
+
+// TestTracingUnaryServerInterceptor_ValidTraceIDs tests interceptor preserves valid trace IDs.
+func TestTracingUnaryServerInterceptor_ValidTraceIDs(t *testing.T) {
+	interceptor := pluginsdk.TracingUnaryServerInterceptor()
+
+	validTraceIDs := []string{
+		"abcdef1234567890abcdef1234567890",
+		"1234567890abcdef1234567890abcdef",
+		"a1b2c3d4e5f678901234567890abcdef",
+		"fedcba0987654321fedcba0987654321",
+	}
+
+	for _, expectedTraceID := range validTraceIDs {
+		t.Run("valid_"+expectedTraceID[:8], func(t *testing.T) {
+			ctx := context.Background()
+			md := metadata.New(map[string]string{
+				pluginsdk.TraceIDMetadataKey: expectedTraceID,
+			})
+			ctx = metadata.NewIncomingContext(ctx, md)
+
+			var capturedTraceID string
+			handler := func(ctx context.Context, _ interface{}) (interface{}, error) {
+				capturedTraceID = pluginsdk.TraceIDFromContext(ctx)
+				return struct{}{}, nil
+			}
+
+			_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{}, handler)
+			if err != nil {
+				t.Fatalf("Interceptor failed: %v", err)
+			}
+
+			if capturedTraceID != expectedTraceID {
+				t.Errorf(
+					"Expected trace ID %q to be preserved, got %q",
+					expectedTraceID,
+					capturedTraceID,
+				)
+			}
+		})
+	}
+}
+
+// TestTracingUnaryServerInterceptor_EdgeCases tests edge cases for trace ID validation.
+func TestTracingUnaryServerInterceptor_EdgeCases(t *testing.T) {
+	interceptor := pluginsdk.TracingUnaryServerInterceptor()
+
+	tests := []struct {
+		name        string
+		setupMD     func() metadata.MD
+		description string
+	}{
+		{
+			name: "multiple_trace_ids",
+			setupMD: func() metadata.MD {
+				return metadata.Pairs(
+					pluginsdk.TraceIDMetadataKey, "first-valid-trace-id1234567890",
+					pluginsdk.TraceIDMetadataKey, "second-trace-id-should-be-ignored",
+				)
+			},
+			description: "multiple trace_id values should use first one",
+		},
+		{
+			name: "first_invalid_multiple",
+			setupMD: func() metadata.MD {
+				return metadata.Pairs(
+					pluginsdk.TraceIDMetadataKey, "invalid",
+					pluginsdk.TraceIDMetadataKey, "abcdef1234567890abcdef1234567890",
+				)
+			},
+			description: "first trace_id invalid, should generate new one",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			md := tt.setupMD()
+			ctx = metadata.NewIncomingContext(ctx, md)
+
+			var capturedTraceID string
+			handler := func(ctx context.Context, _ interface{}) (interface{}, error) {
+				capturedTraceID = pluginsdk.TraceIDFromContext(ctx)
+				return struct{}{}, nil
+			}
+
+			_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{}, handler)
+			if err != nil {
+				t.Fatalf("Interceptor failed: %v", err)
+			}
+
+			// Should always have a valid trace ID
+			if capturedTraceID == "" {
+				t.Errorf("Expected valid trace ID, got empty")
+			}
+
+			if len(capturedTraceID) != 32 {
+				t.Errorf(
+					"Trace ID should be 32 characters, got %d: %q",
+					len(capturedTraceID),
+					capturedTraceID,
+				)
+			}
+		})
 	}
 }

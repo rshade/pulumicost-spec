@@ -15,7 +15,7 @@ This is **pulumicost-spec**, a repository that provides the canonical protocol a
 ### Core Build Commands
 
 - `make generate` - Generate Go code from protobuf definitions (installs buf locally in bin/)
-- `make tidy` - Run `go mod tidy` to clean up dependencies  
+- `make tidy` - Run `go mod tidy` to clean up dependencies
 - `make test` - Run all Go tests including integration tests
 - `make validate` - Run tests, linting, and npm validations together
 - `make clean` - Remove generated proto files
@@ -143,7 +143,7 @@ The project uses local tool installation to avoid version conflicts:
 ### Conformance Testing
 
 - **Basic**: Required for all plugins - core functionality
-- **Standard**: Recommended for production - reliability and consistency  
+- **Standard**: Recommended for production - reliability and consistency
 - **Advanced**: High-performance requirements - scalability and performance
 
 ### Example Usage
@@ -180,7 +180,7 @@ for validating PricingSpec JSON documents against the schema.
 Follow semantic versioning for proto changes:
 
 - MAJOR: Breaking proto changes
-- MINOR: Backward-compatible additions  
+- MINOR: Backward-compatible additions
 - PATCH: Bug fixes, documentation
 
 Tag releases as `v0.1.0`, `v1.0.0`, etc.
@@ -242,7 +242,7 @@ npm run lint:markdown
 - Special case: When importing custom package with same name as stdlib (e.g., `testing`),
   use import alias: `import plugintesting "custom/testing"`
 
-### Package Naming Conflicts  
+### Package Naming Conflicts
 
 - Issue: Import name conflicts between stdlib and custom packages (e.g., `testing` vs custom `testing` package)
 - Solution: Use import aliases to disambiguate: `import plugintesting "github.com/repo/testing"`
@@ -292,7 +292,7 @@ npm run lint:markdown
 3. **Conformance Levels**: Implement Basic/Standard/Advanced hierarchy for certification
 4. **Performance Baselines**: Establish response time and memory usage benchmarks
 
-### SDK Development Patterns  
+### SDK Development Patterns
 
 1. **Generated vs Helper Code**: Separate protobuf generation from helper utilities
 2. **Validation Integration**: Embed JSON schema for runtime validation
@@ -303,7 +303,7 @@ npm run lint:markdown
 
 1. **Tool Installation**: Local installation avoids version conflicts
 2. **Validation Gates**: Generated code must be up-to-date in CI
-3. **Test Coverage**: Unit → Integration → Conformance → Performance progression  
+3. **Test Coverage**: Unit → Integration → Conformance → Performance progression
 4. **Artifact Collection**: Store benchmark results for performance tracking
 
 ### Protocol Buffer Best Practices
@@ -349,7 +349,7 @@ make clean-all         # Clean all generated files and tools
 
 ```bash
 # Validate all JSON examples against schema
-for file in examples/specs/*.json; do 
+for file in examples/specs/*.json; do
     echo "Validating $file..."
     go run validate_examples.go "$file"
 done
@@ -360,7 +360,7 @@ done
 ```bash
 # Test your plugin implementation
 go test -v -run TestBasicPluginFunctionality
-go test -v -run TestConformance  
+go test -v -run TestConformance
 go test -bench=BenchmarkAllMethods
 ```
 
@@ -516,11 +516,14 @@ cd schemas && /init            # JSON Schema validation
 ### Directory-Specific Benefits
 
 - **Focused Context**: Relevant architecture patterns and command references
-- **Specialized Workflows**: Directory-appropriate development and testing approaches  
+- **Specialized Workflows**: Directory-appropriate development and testing approaches
 - **Tool Detection**: Context-aware build commands and validation approaches
 - **Knowledge Preservation**: Captures domain-specific best practices and solutions
 
 ## Active Technologies
+
+- Go 1.24+ (toolchain go1.25.4) + google.golang.org/grpc v1.77.0, crypto/rand (stdlib) (008-trace-id-validation)
+- N/A (in-memory context propagation only) (008-trace-id-validation)
 
 - Go 1.24+ (toolchain go1.25.4) + zerolog v1.34.0+, google.golang.org/grpc, sdk/go/testing harness (007-zerolog-logging-example)
 - N/A (example code, no data persistence) (007-zerolog-logging-example)
