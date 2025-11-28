@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package pulumicost.v1;
+
+option go_package = "github.com/pulumi/pulumicost-spec/sdk/go/pulumicost/v1;pulumicostv1";
+
+// FocusServiceCategory represents the standard service classifications
+// defined in FinOps FOCUS 1.2.
+enum FocusServiceCategory {
+  FOCUS_SERVICE_CATEGORY_UNSPECIFIED = 0;
+  FOCUS_SERVICE_CATEGORY_COMPUTE = 1;
+  FOCUS_SERVICE_CATEGORY_STORAGE = 2;
+  FOCUS_SERVICE_CATEGORY_NETWORK = 3;
+  FOCUS_SERVICE_CATEGORY_DATABASE = 4;
+  FOCUS_SERVICE_CATEGORY_ANALYTICS = 5;
+  FOCUS_SERVICE_CATEGORY_MACHINE_LEARNING = 6;
+  FOCUS_SERVICE_CATEGORY_MANAGEMENT = 7;
+  FOCUS_SERVICE_CATEGORY_SECURITY = 8;
+  FOCUS_SERVICE_CATEGORY_DEVELOPER_TOOLS = 9;
+  FOCUS_SERVICE_CATEGORY_OTHER = 10;
+}
+
+// FocusChargeCategory represents the nature of the charge.
+enum FocusChargeCategory {
+  FOCUS_CHARGE_CATEGORY_UNSPECIFIED = 0;
+  FOCUS_CHARGE_CATEGORY_USAGE = 1;
+  FOCUS_CHARGE_CATEGORY_PURCHASE = 2;
+  FOCUS_CHARGE_CATEGORY_CREDIT = 3;
+  FOCUS_CHARGE_CATEGORY_TAX = 4;
+  FOCUS_CHARGE_CATEGORY_REFUND = 5;
+  FOCUS_CHARGE_CATEGORY_ADJUSTMENT = 6;
+}
+
+// FocusPricingCategory represents the pricing model applied.
+enum FocusPricingCategory {
+  FOCUS_PRICING_CATEGORY_UNSPECIFIED = 0;
+  FOCUS_PRICING_CATEGORY_STANDARD = 1;
+  FOCUS_PRICING_CATEGORY_COMMITTED = 2;
+  FOCUS_PRICING_CATEGORY_DYNAMIC = 3;
+  FOCUS_PRICING_CATEGORY_OTHER = 4;
+}

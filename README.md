@@ -10,6 +10,7 @@ cost data retrieval across AWS, Azure, GCP, Kubernetes, and custom providers.
 [![codecov](https://codecov.io/gh/rshade/pulumicost-spec/branch/main/graph/badge.svg)](https://codecov.io/gh/rshade/pulumicost-spec)
 [![Go Reference](https://pkg.go.dev/badge/github.com/rshade/pulumicost-spec/sdk/go.svg)](https://pkg.go.dev/github.com/rshade/pulumicost-spec/sdk/go)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![FOCUS 1.2](https://img.shields.io/badge/FinOps-FOCUS_1.2-green)](https://focus.finops.org)
 
 ## Overview
 
@@ -19,6 +20,7 @@ standardizing cloud cost data retrieval. It provides:
 ### Core Features
 
 - **Universal Protocol**: Standardized gRPC interface for cost plugins
+- **FinOps FOCUS 1.2**: Aligned with industry standard cost data schema
 - **Comprehensive Schema**: JSON Schema supporting 44+ billing models across all major cloud providers
 - **Multi-Provider Support**: Native support for AWS, Azure, GCP, Kubernetes, and custom providers
 - **Production SDK**: Complete Go SDK with automatic protobuf generation
