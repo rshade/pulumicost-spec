@@ -37,10 +37,10 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [x] T004 Define context key type and trace ID context key in
-  sdk/go/pluginsdk/logging.go
+      sdk/go/pluginsdk/logging.go
 - [x] T005 [P] Define TraceIDMetadataKey constant in sdk/go/pluginsdk/logging.go
 - [x] T006 [P] Define all 11 field name constants (FieldTraceID, FieldComponent,
-  etc.) in sdk/go/pluginsdk/logging.go
+      etc.) in sdk/go/pluginsdk/logging.go
 
 **Checkpoint**: Foundation ready - user story implementation can begin
 
@@ -59,28 +59,28 @@ plugin_name, plugin_version, timestamp fields
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
 - [x] T007 [P] [US1] Unit test for NewPluginLogger with default stderr in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T008 [P] [US1] Unit test for NewPluginLogger with custom io.Writer in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T009 [P] [US1] Unit test for log level filtering (Debug vs Info) in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T010 [P] [US1] Unit test for empty plugin name/version handling in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 
 ### Implementation for User Story 1
 
 - [x] T011 [US1] Implement NewPluginLogger function with plugin name, version,
-  level, and io.Writer parameters in sdk/go/pluginsdk/logging.go
+      level, and io.Writer parameters in sdk/go/pluginsdk/logging.go
 - [x] T012 [US1] Configure logger to output structured JSON (FR-009) with
-  plugin_name and plugin_version base fields in sdk/go/pluginsdk/logging.go
+      plugin_name and plugin_version base fields in sdk/go/pluginsdk/logging.go
 - [x] T013 [US1] Default to os.Stderr when io.Writer is nil in
-  sdk/go/pluginsdk/logging.go
+      sdk/go/pluginsdk/logging.go
 - [x] T014 [US1] Implement file output support with --logfile flag in
-  sdk/go/pluginsdk/logging.go
+      sdk/go/pluginsdk/logging.go
 - [x] T015 [US1] Implement directory output support with --logdir flag and
-  default filenames in sdk/go/pluginsdk/logging.go
+      default filenames in sdk/go/pluginsdk/logging.go
 - [x] T016 [P] [US1] Unit test for file output configuration in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 
 **Checkpoint**: User Story 1 complete - plugin logger creation works independently
 
@@ -99,26 +99,26 @@ trace_id metadata, verify handler can retrieve trace_id from context
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
 - [x] T017 [P] [US2] Unit test for ContextWithTraceID/TraceIDFromContext in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T018 [P] [US2] Unit test for TraceIDFromContext with empty context in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T019 [P] [US2] Integration test for TracingUnaryServerInterceptor with
-  bufconn in sdk/go/pluginsdk/logging_test.go
+      bufconn in sdk/go/pluginsdk/logging_test.go
 - [x] T020 [P] [US2] Integration test for interceptor with missing metadata in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T021 [P] [US2] Integration test for concurrent requests with different
-  trace_ids in sdk/go/pluginsdk/logging_test.go
+      trace_ids in sdk/go/pluginsdk/logging_test.go
 
 ### Implementation for User Story 2
 
 - [x] T022 [US2] Implement ContextWithTraceID function in
-  sdk/go/pluginsdk/logging.go
+      sdk/go/pluginsdk/logging.go
 - [x] T023 [US2] Implement TraceIDFromContext function in
-  sdk/go/pluginsdk/logging.go
+      sdk/go/pluginsdk/logging.go
 - [x] T024 [US2] Implement TracingUnaryServerInterceptor that extracts trace_id
-  from gRPC metadata in sdk/go/pluginsdk/logging.go
+      from gRPC metadata in sdk/go/pluginsdk/logging.go
 - [x] T025 [US2] Handle multiple trace_id values in metadata (use first) in
-  sdk/go/pluginsdk/logging.go
+      sdk/go/pluginsdk/logging.go
 
 **Checkpoint**: User Story 2 complete - trace ID propagation works independently
 
@@ -139,16 +139,16 @@ verify duration_ms appears in log output
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
 - [x] T026 [P] [US3] Unit test for LogOperation timing accuracy in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T027 [P] [US3] Unit test for LogOperation log output format in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 
 ### Implementation for User Story 3
 
 - [x] T028 [US3] Implement LogOperation function returning closure in
-  sdk/go/pluginsdk/logging.go
+      sdk/go/pluginsdk/logging.go
 - [x] T029 [US3] Log operation name and duration_ms using standard field
-  constants in sdk/go/pluginsdk/logging.go
+      constants in sdk/go/pluginsdk/logging.go
 
 **Checkpoint**: User Story 3 complete - operation timing works independently
 
@@ -167,13 +167,13 @@ JSON uses exact field names
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
 - [x] T030 [P] [US4] Unit test verifying all 11 field constants have correct
-  string values in sdk/go/pluginsdk/logging_test.go
+      string values in sdk/go/pluginsdk/logging_test.go
 
 ### Implementation for User Story 4
 
 - [x] T031 [US4] Code review: verify all 11 field constants from T006 are
-  exported, have godoc comments, and match data-model.md values in
-  sdk/go/pluginsdk/logging.go
+      exported, have godoc comments, and match data-model.md values in
+      sdk/go/pluginsdk/logging.go
 
 **Checkpoint**: User Story 4 complete - field constants verified
 
@@ -184,13 +184,13 @@ JSON uses exact field names
 **Purpose**: Documentation, benchmarks, and final validation
 
 - [x] T032 [P] Add package documentation, function godoc comments, and logging
-  best practices (SC-005, SC-006) in sdk/go/pluginsdk/logging.go
+      best practices (SC-005, SC-006) in sdk/go/pluginsdk/logging.go
 - [x] T033 [P] Create benchmark tests for logger construction in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T034 [P] Create benchmark tests for log call overhead in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T035 [P] Create benchmark tests for interceptor performance in
-  sdk/go/pluginsdk/logging_test.go
+      sdk/go/pluginsdk/logging_test.go
 - [x] T036 Verify 90%+ test coverage with go test -cover
 - [x] T037 Run all tests and benchmarks, fix any issues
 - [x] T038 Validate quickstart.md examples compile and run correctly

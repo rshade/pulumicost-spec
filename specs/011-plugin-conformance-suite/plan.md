@@ -24,17 +24,17 @@ with structured JSON output for CI/CD integration.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Evidence |
-|-----------|--------|----------|
-| I. Proto-First Development | PASS | Extends SDK generated from proto; no proto changes needed |
-| II. Multi-Provider Consistency | PASS | Tests validate cross-provider behavior via existing mocks |
-| III. Test-First Protocol | PASS | Feature IS a testing framework; tests validate the suite itself |
-| IV. Protobuf Backward Compatibility | PASS | No proto changes; SDK extension only |
-| V. Comprehensive Documentation | PASS | Spec requires documentation and quickstart guide |
-| VI. Performance as Requirement | PASS | Performance benchmarks are core feature (FR-006, FR-007) |
-| VII. Validation at Multiple Levels | PASS | Suite implements conformance testing layer |
+| Principle                           | Status | Evidence                                                        |
+| ----------------------------------- | ------ | --------------------------------------------------------------- |
+| I. Proto-First Development          | PASS   | Extends SDK generated from proto; no proto changes needed       |
+| II. Multi-Provider Consistency      | PASS   | Tests validate cross-provider behavior via existing mocks       |
+| III. Test-First Protocol            | PASS   | Feature IS a testing framework; tests validate the suite itself |
+| IV. Protobuf Backward Compatibility | PASS   | No proto changes; SDK extension only                            |
+| V. Comprehensive Documentation      | PASS   | Spec requires documentation and quickstart guide                |
+| VI. Performance as Requirement      | PASS   | Performance benchmarks are core feature (FR-006, FR-007)        |
+| VII. Validation at Multiple Levels  | PASS   | Suite implements conformance testing layer                      |
 
 **Gate Result**: PASS - All principles satisfied. No violations requiring justification.
 

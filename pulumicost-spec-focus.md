@@ -38,7 +38,7 @@ plugin developers from schema complexity.
 
 ### 4.1 New Protobuf Message: `FocusCostRecord`
 
-*File:* `proto/pulumicost/v1/focus.proto`
+_File:_ `proto/pulumicost/v1/focus.proto`
 
 ```protobuf
 // FocusCostRecord implements FinOps FOCUS 1.2 columns
@@ -89,7 +89,7 @@ message FocusCostRecord {
 
 ### 4.2 Enum Standardization and Examples
 
-*File:* `proto/pulumicost/v1/enums.proto`
+_File:_ `proto/pulumicost/v1/enums.proto`
 
 We will define strict Enums for categories with controlled vocabularies.
 
@@ -129,7 +129,7 @@ enum FocusPricingCategory {
 
 ### 4.3 SDK Builder Pattern (The "Shield")
 
-*File:* `sdk/go/pluginsdk/focus_builder.go`
+_File:_ `sdk/go/pluginsdk/focus_builder.go`
 
 The SDK serves as an **Anti-Corruption Layer**. The plugin developer depends on the SDK's
 method signatures, not the Proto's struct layout.
@@ -166,9 +166,9 @@ record, err := pluginsdk.NewFocusRecordBuilder().
 ### Phase 1: Schema Definition
 
 - [ ] Create `proto/pulumicost/v1/focus.proto` with `extended_columns` and updated
-  enum types for fields.
+      enum types for fields.
 - [ ] Create `proto/pulumicost/v1/enums.proto` with the detailed enum definitions
-  (FocusServiceCategory, FocusChargeCategory, FocusPricingCategory).
+      (FocusServiceCategory, FocusChargeCategory, FocusPricingCategory).
 - [ ] Update `costsource.proto` to import both `focus.proto` and `enums.proto`.
 - [ ] Run `buf generate`.
 
@@ -191,6 +191,6 @@ record, err := pluginsdk.NewFocusRecordBuilder().
 
 - **Spec:** Defines the data wire format (`extended_columns` handles the unknown)
   and strict enumerations.
-- **SDK:** Defines the *Developer API* (The Builder). This is the stability boundary
+- **SDK:** Defines the _Developer API_ (The Builder). This is the stability boundary
   and enforces enum usage.
 - **Core:** Renders `extended_columns` dynamically, ensuring new data is visible immediately.

@@ -50,12 +50,12 @@
 
 ## Audit Summary
 
-| Metric | Original Claim | Corrected Value |
-|--------|----------------|-----------------|
-| Total FOCUS 1.2 Columns | 35 | **57** |
-| Currently Implemented | 34 | **38** |
-| Missing | 1 | **19** |
-| Missing Mandatory | 0 | **1 (ContractedCost)** |
+| Metric                  | Original Claim | Corrected Value        |
+| ----------------------- | -------------- | ---------------------- |
+| Total FOCUS 1.2 Columns | 35             | **57**                 |
+| Currently Implemented   | 34             | **38**                 |
+| Missing                 | 1              | **19**                 |
+| Missing Mandatory       | 0              | **1 (ContractedCost)** |
 
 ## Notes
 

@@ -30,7 +30,7 @@ maintaining 100% backward compatibility and establishing consistent patterns acr
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 ### I. gRPC Proto Specification-First Development
 
@@ -156,4 +156,4 @@ benchmark tests in `sdk/go/registry/domain_test.go`. Reference patterns from `sd
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-*No constitution violations - this section is empty.*
+_No constitution violations - this section is empty._

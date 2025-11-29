@@ -8,12 +8,12 @@ Reference: <https://focus.finops.org/focus-specification/v1-2/>
 
 ## Column Summary
 
-| Level | Count | Description |
-|-------|-------|-------------|
-| Mandatory | 14 | Required for all cost records |
-| Recommended | 1 | Strongly suggested for completeness |
-| Conditional | 42 | Required when applicable conditions are met |
-| **Total** | **57** | Complete FOCUS 1.2 coverage |
+| Level       | Count  | Description                                 |
+| ----------- | ------ | ------------------------------------------- |
+| Mandatory   | 14     | Required for all cost records               |
+| Recommended | 1      | Strongly suggested for completeness         |
+| Conditional | 42     | Required when applicable conditions are met |
+| **Total**   | **57** | Complete FOCUS 1.2 coverage                 |
 
 ## Mandatory Columns (14)
 
@@ -21,54 +21,54 @@ These columns MUST be present in every FOCUS-compliant cost record.
 
 ### Identity & Hierarchy
 
-| Column | Type | Description | Provider Mapping |
-|--------|------|-------------|------------------|
-| **ProviderName** | string | Cloud provider name | AWS, Azure, GCP, Kubernetes |
-| **BillingAccountId** | string | Billing account identifier | AWS: Payer Account ID, Azure: Billing Account ID, GCP: Billing Account ID |
+| Column                 | Type   | Description                      | Provider Mapping                                                           |
+| ---------------------- | ------ | -------------------------------- | -------------------------------------------------------------------------- |
+| **ProviderName**       | string | Cloud provider name              | AWS, Azure, GCP, Kubernetes                                                |
+| **BillingAccountId**   | string | Billing account identifier       | AWS: Payer Account ID, Azure: Billing Account ID, GCP: Billing Account ID  |
 | **BillingAccountName** | string | Display name for billing account | AWS: Account Alias, Azure: Billing Account Name, GCP: Billing Account Name |
 
 ### Billing Period
 
-| Column | Type | Description | Provider Mapping |
-|--------|------|-------------|------------------|
+| Column                 | Type     | Description             | Provider Mapping           |
+| ---------------------- | -------- | ----------------------- | -------------------------- |
 | **BillingPeriodStart** | DateTime | Start of billing period | First day of billing month |
-| **BillingPeriodEnd** | DateTime | End of billing period | Last day of billing month |
-| **BillingCurrency** | string | ISO 4217 currency code | USD, EUR, GBP, etc. |
+| **BillingPeriodEnd**   | DateTime | End of billing period   | Last day of billing month  |
+| **BillingCurrency**    | string   | ISO 4217 currency code  | USD, EUR, GBP, etc.        |
 
 ### Charge Period
 
-| Column | Type | Description | Provider Mapping |
-|--------|------|-------------|------------------|
+| Column                | Type     | Description       | Provider Mapping     |
+| --------------------- | -------- | ----------------- | -------------------- |
 | **ChargePeriodStart** | DateTime | When charge began | Line item start time |
-| **ChargePeriodEnd** | DateTime | When charge ended | Line item end time |
+| **ChargePeriodEnd**   | DateTime | When charge ended | Line item end time   |
 
 ### Charge Details
 
-| Column | Type | Description | Provider Mapping |
-|--------|------|-------------|------------------|
-| **ChargeCategory** | Enum | Nature of charge | Usage, Purchase, Credit, Tax, Refund, Adjustment |
-| **ChargeClass** | Enum | Classification | Regular, Correction |
-| **ChargeDescription** | string | Human-readable description | AWS: lineItem/LineItemDescription |
+| Column                | Type   | Description                | Provider Mapping                                 |
+| --------------------- | ------ | -------------------------- | ------------------------------------------------ |
+| **ChargeCategory**    | Enum   | Nature of charge           | Usage, Purchase, Credit, Tax, Refund, Adjustment |
+| **ChargeClass**       | Enum   | Classification             | Regular, Correction                              |
+| **ChargeDescription** | string | Human-readable description | AWS: lineItem/LineItemDescription                |
 
 ### Service
 
-| Column | Type | Description | Provider Mapping |
-|--------|------|-------------|------------------|
+| Column          | Type   | Description         | Provider Mapping                                           |
+| --------------- | ------ | ------------------- | ---------------------------------------------------------- |
 | **ServiceName** | string | Name of the service | AWS: EC2, S3; Azure: Virtual Machines; GCP: Compute Engine |
 
 ### Financial Amounts
 
-| Column | Type | Description | Provider Mapping |
-|--------|------|-------------|------------------|
-| **BilledCost** | Decimal | Amount billed | AWS: lineItem/BlendedCost, Azure: BilledCost |
-| **ContractedCost** | Decimal | ContractedUnitPrice × PricingQuantity | Calculated from contracted rates |
+| Column             | Type    | Description                           | Provider Mapping                             |
+| ------------------ | ------- | ------------------------------------- | -------------------------------------------- |
+| **BilledCost**     | Decimal | Amount billed                         | AWS: lineItem/BlendedCost, Azure: BilledCost |
+| **ContractedCost** | Decimal | ContractedUnitPrice × PricingQuantity | Calculated from contracted rates             |
 
 ## Recommended Column (1)
 
 This column is strongly recommended but not mandatory.
 
-| Column | Type | Description | Provider Mapping |
-|--------|------|-------------|------------------|
+| Column              | Type | Description              | Provider Mapping               |
+| ------------------- | ---- | ------------------------ | ------------------------------ |
 | **ChargeFrequency** | Enum | How often charge applies | OneTime, Recurring, UsageBased |
 
 ## Conditional Columns (42)
@@ -77,104 +77,104 @@ These columns are required when specific conditions apply.
 
 ### Identity & Hierarchy - Conditional
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **SubAccountId** | string | When sub-accounts exist | AWS: Account ID, Azure: Subscription ID, GCP: Project ID |
-| **SubAccountName** | string | When sub-accounts exist | Account/Subscription/Project name |
-| **BillingAccountType** | string | When account types vary | Enterprise, PayAsYouGo, etc. |
-| **SubAccountType** | string | When sub-account types vary | LinkedAccount, Subscription, Project |
+| Column                 | Type   | Condition                   | Provider Mapping                                         |
+| ---------------------- | ------ | --------------------------- | -------------------------------------------------------- |
+| **SubAccountId**       | string | When sub-accounts exist     | AWS: Account ID, Azure: Subscription ID, GCP: Project ID |
+| **SubAccountName**     | string | When sub-accounts exist     | Account/Subscription/Project name                        |
+| **BillingAccountType** | string | When account types vary     | Enterprise, PayAsYouGo, etc.                             |
+| **SubAccountType**     | string | When sub-account types vary | LinkedAccount, Subscription, Project                     |
 
 ### Location
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **RegionId** | string | When resource has region | AWS: us-east-1, Azure: eastus, GCP: us-central1 |
-| **RegionName** | string | When resource has region | US East (N. Virginia), East US, etc. |
-| **AvailabilityZone** | string | When AZ is applicable | AWS: us-east-1a, Azure: 1, GCP: us-central1-a |
+| Column               | Type   | Condition                | Provider Mapping                                |
+| -------------------- | ------ | ------------------------ | ----------------------------------------------- |
+| **RegionId**         | string | When resource has region | AWS: us-east-1, Azure: eastus, GCP: us-central1 |
+| **RegionName**       | string | When resource has region | US East (N. Virginia), East US, etc.            |
+| **AvailabilityZone** | string | When AZ is applicable    | AWS: us-east-1a, Azure: 1, GCP: us-central1-a   |
 
 ### Resource Details
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **ResourceId** | string | When resource is identifiable | AWS: ARN, Azure: Resource ID, GCP: Resource ID |
-| **ResourceName** | string | When resource has name | User-assigned resource name |
-| **ResourceType** | string | When resource type is known | m5.large, Standard_D2s_v3, n1-standard-1 |
+| Column           | Type   | Condition                     | Provider Mapping                               |
+| ---------------- | ------ | ----------------------------- | ---------------------------------------------- |
+| **ResourceId**   | string | When resource is identifiable | AWS: ARN, Azure: Resource ID, GCP: Resource ID |
+| **ResourceName** | string | When resource has name        | User-assigned resource name                    |
+| **ResourceType** | string | When resource type is known   | m5.large, Standard_D2s_v3, n1-standard-1       |
 
 ### SKU Details
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **SkuId** | string | When SKU is known | Provider-specific SKU identifier |
-| **SkuPriceId** | string | When SKU price is known | Specific price list ID |
-| **SkuMeter** | string | When meter exists | AWS: BoxUsage, Azure: Meter Name |
+| Column              | Type   | Condition                     | Provider Mapping                     |
+| ------------------- | ------ | ----------------------------- | ------------------------------------ |
+| **SkuId**           | string | When SKU is known             | Provider-specific SKU identifier     |
+| **SkuPriceId**      | string | When SKU price is known       | Specific price list ID               |
+| **SkuMeter**        | string | When meter exists             | AWS: BoxUsage, Azure: Meter Name     |
 | **SkuPriceDetails** | string | When additional details exist | Operating system, license type, etc. |
 
 ### Pricing Details
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **PricingQuantity** | Decimal | When pricing is quantifiable | Number of units priced |
-| **PricingUnit** | string | When pricing unit exists | Hours, GB, Requests |
-| **ListUnitPrice** | Decimal | When list price is known | Public on-demand rate |
-| **ContractedUnitPrice** | Decimal | When contracted price exists | Reserved/committed rate |
-| **PricingCategory** | Enum | When pricing model varies | Standard, Committed, Dynamic, Other |
-| **PricingCurrency** | string | When different from billing currency | ISO 4217 code |
-| **PricingCurrencyContractedUnitPrice** | Decimal | When pricing currency differs | Contracted price in pricing currency |
-| **PricingCurrencyEffectiveCost** | Decimal | When pricing currency differs | Effective cost in pricing currency |
-| **PricingCurrencyListUnitPrice** | Decimal | When pricing currency differs | List price in pricing currency |
+| Column                                 | Type    | Condition                            | Provider Mapping                     |
+| -------------------------------------- | ------- | ------------------------------------ | ------------------------------------ |
+| **PricingQuantity**                    | Decimal | When pricing is quantifiable         | Number of units priced               |
+| **PricingUnit**                        | string  | When pricing unit exists             | Hours, GB, Requests                  |
+| **ListUnitPrice**                      | Decimal | When list price is known             | Public on-demand rate                |
+| **ContractedUnitPrice**                | Decimal | When contracted price exists         | Reserved/committed rate              |
+| **PricingCategory**                    | Enum    | When pricing model varies            | Standard, Committed, Dynamic, Other  |
+| **PricingCurrency**                    | string  | When different from billing currency | ISO 4217 code                        |
+| **PricingCurrencyContractedUnitPrice** | Decimal | When pricing currency differs        | Contracted price in pricing currency |
+| **PricingCurrencyEffectiveCost**       | Decimal | When pricing currency differs        | Effective cost in pricing currency   |
+| **PricingCurrencyListUnitPrice**       | Decimal | When pricing currency differs        | List price in pricing currency       |
 
 ### Financial Amounts - Conditional
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **ListCost** | Decimal | When list price is known | On-demand cost at list price |
-| **EffectiveCost** | Decimal | When discounts apply | Actual cost after all adjustments |
+| Column            | Type    | Condition                | Provider Mapping                  |
+| ----------------- | ------- | ------------------------ | --------------------------------- |
+| **ListCost**      | Decimal | When list price is known | On-demand cost at list price      |
+| **EffectiveCost** | Decimal | When discounts apply     | Actual cost after all adjustments |
 
 ### Consumption/Usage
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
+| Column               | Type    | Condition                | Provider Mapping                    |
+| -------------------- | ------- | ------------------------ | ----------------------------------- |
 | **ConsumedQuantity** | Decimal | When usage is measurable | AWS: UsageQuantity, Azure: Quantity |
-| **ConsumedUnit** | string | When usage unit exists | Hours, GB, Requests |
+| **ConsumedUnit**     | string  | When usage unit exists   | Hours, GB, Requests                 |
 
 ### Service - Conditional
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **ServiceCategory** | Enum | When categorization is possible | Compute, Storage, Network, Database, etc. |
-| **ServiceSubcategory** | string | When granular categorization exists | Virtual Machine, Container, Serverless |
-| **Publisher** | string | When publisher differs from provider | Amazon Web Services, Microsoft, Google, Third-party |
+| Column                 | Type   | Condition                            | Provider Mapping                                    |
+| ---------------------- | ------ | ------------------------------------ | --------------------------------------------------- |
+| **ServiceCategory**    | Enum   | When categorization is possible      | Compute, Storage, Network, Database, etc.           |
+| **ServiceSubcategory** | string | When granular categorization exists  | Virtual Machine, Container, Serverless              |
+| **Publisher**          | string | When publisher differs from provider | Amazon Web Services, Microsoft, Google, Third-party |
 
 ### Commitment Discounts
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **CommitmentDiscountCategory** | Enum | When commitment exists | Spend, Usage |
-| **CommitmentDiscountId** | string | When commitment exists | RI ID, Savings Plan ID |
-| **CommitmentDiscountName** | string | When commitment has name | User-assigned name |
-| **CommitmentDiscountQuantity** | Decimal | When commitment has quantity | Amount purchased/consumed |
-| **CommitmentDiscountStatus** | Enum | When commitment applies | Used, Unused |
-| **CommitmentDiscountType** | string | When type is known | Reserved Instance, Savings Plan |
-| **CommitmentDiscountUnit** | string | When unit exists | Hours, USD/Hour |
+| Column                         | Type    | Condition                    | Provider Mapping                |
+| ------------------------------ | ------- | ---------------------------- | ------------------------------- |
+| **CommitmentDiscountCategory** | Enum    | When commitment exists       | Spend, Usage                    |
+| **CommitmentDiscountId**       | string  | When commitment exists       | RI ID, Savings Plan ID          |
+| **CommitmentDiscountName**     | string  | When commitment has name     | User-assigned name              |
+| **CommitmentDiscountQuantity** | Decimal | When commitment has quantity | Amount purchased/consumed       |
+| **CommitmentDiscountStatus**   | Enum    | When commitment applies      | Used, Unused                    |
+| **CommitmentDiscountType**     | string  | When type is known           | Reserved Instance, Savings Plan |
+| **CommitmentDiscountUnit**     | string  | When unit exists             | Hours, USD/Hour                 |
 
 ### Capacity Reservation
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **CapacityReservationId** | string | When capacity reservation exists | CR ID from provider |
-| **CapacityReservationStatus** | Enum | When CR applies | Used, Unused |
+| Column                        | Type   | Condition                        | Provider Mapping    |
+| ----------------------------- | ------ | -------------------------------- | ------------------- |
+| **CapacityReservationId**     | string | When capacity reservation exists | CR ID from provider |
+| **CapacityReservationStatus** | Enum   | When CR applies                  | Used, Unused        |
 
 ### Invoice Details
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
-| **InvoiceId** | string | When invoice exists | AWS: bill/InvoiceId, Azure: InvoiceId |
-| **InvoiceIssuer** | string | When issuer is identifiable | Legal entity name |
+| Column            | Type   | Condition                   | Provider Mapping                      |
+| ----------------- | ------ | --------------------------- | ------------------------------------- |
+| **InvoiceId**     | string | When invoice exists         | AWS: bill/InvoiceId, Azure: InvoiceId |
+| **InvoiceIssuer** | string | When issuer is identifiable | Legal entity name                     |
 
 ### Metadata
 
-| Column | Type | Condition | Provider Mapping |
-|--------|------|-----------|------------------|
+| Column   | Type                 | Condition              | Provider Mapping             |
+| -------- | -------------------- | ---------------------- | ---------------------------- |
 | **Tags** | map\<string,string\> | When resource has tags | User-defined key-value pairs |
 
 ## Provider Mapping Examples

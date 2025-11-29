@@ -24,17 +24,17 @@ registries used by `pulumicost plugin install`, aligning field patterns and enum
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Proto Specification-First | **PASS** | Schema aligns with existing registry.proto |
-| II. Multi-Provider Consistency | **PASS** | Examples include AWS, Kubernetes plugins |
-| III. Test-First Protocol | **PASS** | Schema validation tests before implementation |
-| IV. Protobuf Backward Compatibility | **N/A** | No proto changes (schema only) |
-| V. Comprehensive Documentation | **PASS** | Schema has descriptions, examples provided |
-| VI. Performance as gRPC Requirement | **N/A** | Not a gRPC feature |
-| VII. Validation at Multiple Levels | **PASS** | JSON Schema validates registry entries |
+| Principle                           | Status   | Notes                                         |
+| ----------------------------------- | -------- | --------------------------------------------- |
+| I. Proto Specification-First        | **PASS** | Schema aligns with existing registry.proto    |
+| II. Multi-Provider Consistency      | **PASS** | Examples include AWS, Kubernetes plugins      |
+| III. Test-First Protocol            | **PASS** | Schema validation tests before implementation |
+| IV. Protobuf Backward Compatibility | **N/A**  | No proto changes (schema only)                |
+| V. Comprehensive Documentation      | **PASS** | Schema has descriptions, examples provided    |
+| VI. Performance as gRPC Requirement | **N/A**  | Not a gRPC feature                            |
+| VII. Validation at Multiple Levels  | **PASS** | JSON Schema validates registry entries        |
 
 **Gate Result**: PASS - All applicable principles satisfied
 

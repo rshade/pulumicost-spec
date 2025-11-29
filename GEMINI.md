@@ -22,7 +22,7 @@ tools to create a robust ecosystem of cost-estimation plugins.
 - **Developer Experience (DX) for Plugin Creators:** The primary audience for the SDK is the
   plugin developer. The SDK should provide simple, consistent, and powerful building blocks
   that make creating high-quality plugins as easy as possible.
-- **Strict Separation of Concerns:** This repository defines the *specification* and foundational
+- **Strict Separation of Concerns:** This repository defines the _specification_ and foundational
   tooling. It is not a monolithic application.
   - `pulumicost-spec`: Defines the interfaces and data schemas. Provides SDKs for implementation.
   - `pulumicost-core`: (Separate repo) Contains higher-level application logic, such as the
@@ -34,7 +34,7 @@ tools to create a robust ecosystem of cost-estimation plugins.
 - **The Spec Consumes, It Does Not Calculate:** The `pulumicost-spec` and the plugins that directly
   implement it are not responsible for complex pricing logic (e.g., tiered pricing, committed-use
   discounts). This logic belongs to upstream data providers (like Kubecost, Vantage, Flexera, etc.).
-  The spec's role is to consume the final, *adjusted* cost from these services and provide a
+  The spec's role is to consume the final, _adjusted_ cost from these services and provide a
   standardized model for it.
 - **Observability is for Maintainers:** Features like metrics (Prometheus) are intended for plugin
   maintainers to diagnose performance and efficiency. They are not primarily for end-users of the

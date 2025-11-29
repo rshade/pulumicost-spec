@@ -26,71 +26,71 @@ that downstream rework risk increases.
 Execution steps:
 
 1. Run `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` from repo root **once**
-    (combined `--json --paths-only` mode / `-Json -PathsOnly`). Parse minimal JSON payload fields:
-    - `FEATURE_DIR`
-    - `FEATURE_SPEC`
-    - (Optionally capture `IMPL_PLAN`, `TASKS` for future chained flows.)
-       - If JSON parsing fails, abort and instruct user to re-run `/speckit.specify` or verify feature branch
-         environment.
-       - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if
-         possible: "I'm Groot").
+   (combined `--json --paths-only` mode / `-Json -PathsOnly`). Parse minimal JSON payload fields:
+   - `FEATURE_DIR`
+   - `FEATURE_SPEC`
+   - (Optionally capture `IMPL_PLAN`, `TASKS` for future chained flows.)
+     - If JSON parsing fails, abort and instruct user to re-run `/speckit.specify` or verify feature branch
+       environment.
+     - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if
+       possible: "I'm Groot").
 2. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each
    category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization
    (do not output raw map unless no questions will be asked).
 
-    Functional Scope & Behavior:
-    - Core user goals & success criteria
-    - Explicit out-of-scope declarations
-    - User roles / personas differentiation
+   Functional Scope & Behavior:
+   - Core user goals & success criteria
+   - Explicit out-of-scope declarations
+   - User roles / personas differentiation
 
-    Domain & Data Model:
-    - Entities, attributes, relationships
-    - Identity & uniqueness rules
-    - Lifecycle/state transitions
-    - Data volume / scale assumptions
+   Domain & Data Model:
+   - Entities, attributes, relationships
+   - Identity & uniqueness rules
+   - Lifecycle/state transitions
+   - Data volume / scale assumptions
 
-    Interaction & UX Flow:
-    - Critical user journeys / sequences
-    - Error/empty/loading states
-    - Accessibility or localization notes
+   Interaction & UX Flow:
+   - Critical user journeys / sequences
+   - Error/empty/loading states
+   - Accessibility or localization notes
 
-    Non-Functional Quality Attributes:
-    - Performance (latency, throughput targets)
-    - Scalability (horizontal/vertical, limits)
-    - Reliability & availability (uptime, recovery expectations)
-    - Observability (logging, metrics, tracing signals)
-    - Security & privacy (authN/Z, data protection, threat assumptions)
-    - Compliance / regulatory constraints (if any)
+   Non-Functional Quality Attributes:
+   - Performance (latency, throughput targets)
+   - Scalability (horizontal/vertical, limits)
+   - Reliability & availability (uptime, recovery expectations)
+   - Observability (logging, metrics, tracing signals)
+   - Security & privacy (authN/Z, data protection, threat assumptions)
+   - Compliance / regulatory constraints (if any)
 
-    Integration & External Dependencies:
-    - External services/APIs and failure modes
-    - Data import/export formats
-    - Protocol/versioning assumptions
+   Integration & External Dependencies:
+   - External services/APIs and failure modes
+   - Data import/export formats
+   - Protocol/versioning assumptions
 
-    Edge Cases & Failure Handling:
-    - Negative scenarios
-    - Rate limiting / throttling
-    - Conflict resolution (e.g., concurrent edits)
+   Edge Cases & Failure Handling:
+   - Negative scenarios
+   - Rate limiting / throttling
+   - Conflict resolution (e.g., concurrent edits)
 
-    Constraints & Tradeoffs:
-    - Technical constraints (language, storage, hosting)
-    - Explicit tradeoffs or rejected alternatives
+   Constraints & Tradeoffs:
+   - Technical constraints (language, storage, hosting)
+   - Explicit tradeoffs or rejected alternatives
 
-    Terminology & Consistency:
-    - Canonical glossary terms
-    - Avoided synonyms / deprecated terms
+   Terminology & Consistency:
+   - Canonical glossary terms
+   - Avoided synonyms / deprecated terms
 
-    Completion Signals:
-    - Acceptance criteria testability
-    - Measurable Definition of Done style indicators
+   Completion Signals:
+   - Acceptance criteria testability
+   - Measurable Definition of Done style indicators
 
-    Misc / Placeholders:
-    - TODO markers / unresolved decisions
-    - Ambiguous adjectives ("robust", "intuitive") lacking quantification
+   Misc / Placeholders:
+   - TODO markers / unresolved decisions
+   - Ambiguous adjectives ("robust", "intuitive") lacking quantification
 
-    For each category with Partial or Missing status, add a candidate question opportunity unless:
-    - Clarification would not materially change implementation or validation strategy
-    - Information is better deferred to planning phase (note internally)
+   For each category with Partial or Missing status, add a candidate question opportunity unless:
+   - Clarification would not materially change implementation or validation strategy
+   - Information is better deferred to planning phase (note internally)
 
 3. Generate (internally) a prioritized queue of candidate clarification questions (maximum 5).
    Do NOT output them all at once. Apply these constraints:
@@ -122,19 +122,19 @@ Execution steps:
      - Then render all options as a Markdown table:
 
 ```markdown
-| Option | Description |
-| ------ | ----------- |
-| A      | [Option A description] |
-| B      | [Option B description] |
+| Option | Description                                        |
+| ------ | -------------------------------------------------- |
+| A      | [Option A description]                             |
+| B      | [Option B description]                             |
 | C      | [Option C description] (add D/E as needed up to 5) |
-| Short  | Provide a different short answer (<=5 words) |
+| Short  | Provide a different short answer (<=5 words)       |
 ```
 
 - For short-answer style (no meaningful discrete options):
   - Provide your **suggested answer** based on best practices and context.
   - Format as: `**Suggested:** [your proposed answer] - [brief reasoning]`
   - Then output: `Format: Short answer (<=5 words). You can accept the suggestion by
-    saying "yes" or "suggested", or provide your own answer.`
+saying "yes" or "suggested", or provide your own answer.`
 - After the user answers:
   - If the user replies with "yes", "recommended", or "suggested", use your previously
     stated recommendation/suggestion as the answer.

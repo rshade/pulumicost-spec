@@ -61,7 +61,7 @@ Given that feature description, do this:
    - Bash example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --json --number 5
 --short-name "user-auth" "Add user authentication"`
    - PowerShell example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS"
-     -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
+-Json -Number 5 -ShortName "user-auth" "Add user authentication"`
 
    **IMPORTANT**:
    - Check all three sources (remote branches, local branches, specs directories) to find the highest number
@@ -106,8 +106,8 @@ Given that feature description, do this:
 6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
    a. **Create Spec Quality Checklist**: Generate a checklist file at
-      `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with
-      these validation items:
+   `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with
+   these validation items:
 
    ```markdown
    # Specification Quality Checklist: [FEATURE NAME]

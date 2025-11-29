@@ -27,17 +27,17 @@ call overhead
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Proto Spec-First | ✅ PASS | No proto changes - SDK helper package only |
-| II. Multi-Provider Consistency | ✅ PASS | Logging utilities are provider-agnostic |
-| III. Test-First Protocol | ✅ PASS | Tests will be written first per TDD |
-| IV. Backward Compatibility | ✅ PASS | New package, no breaking changes |
-| V. Comprehensive Documentation | ✅ PASS | Documentation required in spec |
-| VI. Performance Requirements | ✅ PASS | Benchmarks will track logging overhead |
-| VII. Multi-Level Validation | ✅ PASS | Unit + integration tests planned |
+| Principle                      | Status  | Notes                                      |
+| ------------------------------ | ------- | ------------------------------------------ |
+| I. Proto Spec-First            | ✅ PASS | No proto changes - SDK helper package only |
+| II. Multi-Provider Consistency | ✅ PASS | Logging utilities are provider-agnostic    |
+| III. Test-First Protocol       | ✅ PASS | Tests will be written first per TDD        |
+| IV. Backward Compatibility     | ✅ PASS | New package, no breaking changes           |
+| V. Comprehensive Documentation | ✅ PASS | Documentation required in spec             |
+| VI. Performance Requirements   | ✅ PASS | Benchmarks will track logging overhead     |
+| VII. Multi-Level Validation    | ✅ PASS | Unit + integration tests planned           |
 
 **Gate Result**: PASS - All principles satisfied. Proceed to Phase 0.
 

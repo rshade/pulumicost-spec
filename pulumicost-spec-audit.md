@@ -36,7 +36,7 @@ We will cross-reference `proto/pulumicost/v1/focus.proto` against the master lis
 - [ ] `RegionName` (String)
 - [ ] `SubAccountId` (String)
 - [ ] `SubAccountName` (String)
-- [ ] `AvailabilityZone` (String) - *Conditional*
+- [ ] `AvailabilityZone` (String) - _Conditional_
 
 #### Cost & Usage
 
@@ -45,7 +45,7 @@ We will cross-reference `proto/pulumicost/v1/focus.proto` against the master lis
 - [ ] `BillingPeriodStart` (Timestamp)
 - [ ] `BillingPeriodEnd` (Timestamp)
 - [ ] `ChargeCategory` (Enum)
-- [ ] `ChargeClass` (Enum) - *New in 1.0+*
+- [ ] `ChargeClass` (Enum) - _New in 1.0+_
 - [ ] `ChargeDescription` (String)
 - [ ] `ChargeFrequency` (Enum)
 - [ ] `ChargePeriodStart` (Timestamp)
@@ -75,7 +75,7 @@ We will cross-reference `proto/pulumicost/v1/focus.proto` against the master lis
 - [ ] `CommitmentDiscountId` (String)
 - [ ] `CommitmentDiscountName` (String)
 - [ ] `InvoiceIssuer` (String)
-- [ ] `InvoiceId` (String) - *Critical for Reconciliation*
+- [ ] `InvoiceId` (String) - _Critical for Reconciliation_
 - [ ] `Tags` (Map)
 
 ## 4. Implementation Plan
@@ -83,15 +83,15 @@ We will cross-reference `proto/pulumicost/v1/focus.proto` against the master lis
 ### Phase 1: Audit Script
 
 - [ ] Create `scripts/audit_focus_columns.sh` (or a Go test) that parses `focus.proto`
-  and reports missing fields.
+      and reports missing fields.
 
 ### Phase 2: Schema Expansion
 
 - [ ] Add any missing fields to `proto/pulumicost/v1/focus.proto`.
 - [ ] Ensure comments in the Proto file reference the specific FOCUS section
-  (e.g., "// Section 2.4: Charge Details").
+      (e.g., "// Section 2.4: Charge Details").
 
 ### Phase 3: Builder Update
 
 - [ ] Update `sdk/go/pluginsdk/focus_builder.go` to include methods for any newly added
-  columns (e.g., `WithCommitmentDetails(...)`).
+      columns (e.g., `WithCommitmentDetails(...)`).

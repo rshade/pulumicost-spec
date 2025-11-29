@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: GitHub Issue #81 - Feature: Plugin Conformance Test Suite
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Validate Plugin Specification Compliance (Priority: P1)
 
@@ -134,7 +134,7 @@ suite against any plugin. Returns a comprehensive report with pass/fail status f
 - How does the suite behave when testing against a nil plugin implementation?
 - What happens when network errors occur during in-memory gRPC testing?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -191,7 +191,7 @@ suite against any plugin. Returns a comprehensive report with pass/fail status f
 - Performance baseline thresholds reference the canonical values defined in `sdk/go/testing/README.md`
   (e.g., Name < 100ms, Supports < 50ms for Standard; stricter values for Advanced)
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

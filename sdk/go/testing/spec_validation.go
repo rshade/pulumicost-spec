@@ -421,7 +421,6 @@ func ValidateCurrencyFormatPublic(currency string) *ValidationError {
 // ValidateRequiredFieldsPublic is a public wrapper for required fields validation (for testing).
 func ValidateRequiredFieldsPublic(provider, resourceType, billingMode, currency string) []ValidationError {
 	// Create a mock spec structure to validate
-	spec := &pbc.PricingSpec{}
 	// We need to set fields - but PricingSpec is generated proto, we can test with a helper
 
 	var errors []ValidationError
@@ -445,9 +444,6 @@ func ValidateRequiredFieldsPublic(provider, resourceType, billingMode, currency 
 		errors = append(errors, NewValidationError(
 			"currency", currency, "3-character ISO code", "currency is required"))
 	}
-
-	// Silence unused variable warning
-	_ = spec
 
 	return errors
 }

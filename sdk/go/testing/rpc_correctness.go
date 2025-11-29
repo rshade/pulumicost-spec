@@ -228,7 +228,7 @@ func testGetPricingSpecRPC(harness *TestHarness) TestResult {
 // testNilResourceHandling tests that the plugin handles nil resources gracefully.
 func testNilResourceHandling(harness *TestHarness) TestResult {
 	start := time.Now()
-	_, err := harness.Client().Supports(context.Background(), &pbc.SupportsRequest{
+	resp, err := harness.Client().Supports(context.Background(), &pbc.SupportsRequest{
 		Resource: nil,
 	})
 	duration := time.Since(start)
@@ -256,26 +256,36 @@ func testNilResourceHandling(harness *TestHarness) TestResult {
 	}
 
 	// If no error, it should at least indicate not supported
+	if resp.GetSupported() {
+		return TestResult{
+			Method:   "Supports",
+			Category: CategoryRPCCorrectness,
+			Success:  false,
+			Duration: duration,
+			Details:  "Plugin returned Supported: true for nil resource",
+		}
+	}
+
 	return TestResult{
 		Method:   "Supports",
 		Category: CategoryRPCCorrectness,
 		Success:  true,
 		Duration: duration,
-		Details:  "Handled nil resource without error (returned response)",
+		Details:  "Handled nil resource without error (returned Supported: false)",
 	}
 }
 
 // testInvalidTimeRangeHandling tests that the plugin handles invalid time ranges.
 func testInvalidTimeRangeHandling(harness *TestHarness) TestResult {
-	start := time.Now()
+	startTest := time.Now()
 	// Create invalid time range (end before start)
-	timeEnd, timeStart := CreateTimeRange(HoursPerDay)
+	start, end := CreateTimeRange(HoursPerDay)
 	_, err := harness.Client().GetActualCost(context.Background(), &pbc.GetActualCostRequest{
 		ResourceId: "test-resource",
-		Start:      timeStart,
-		End:        timeEnd,
+		Start:      end,   // Swap start/end to create invalid range
+		End:        start, // Swap start/end to create invalid range
 	})
-	duration := time.Since(start)
+	duration := time.Since(startTest)
 
 	if err == nil {
 		return TestResult{

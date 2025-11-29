@@ -15,17 +15,17 @@ The trace ID flows through the request context during gRPC call processing.
 
 A distributed tracing correlation identifier following OpenTelemetry W3C format.
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| value | string | See validation rules | 32-character hexadecimal identifier |
+| Attribute | Type   | Constraints          | Description                         |
+| --------- | ------ | -------------------- | ----------------------------------- |
+| value     | string | See validation rules | 32-character hexadecimal identifier |
 
 **Validation Rules**:
 
-| Rule | Pattern/Value | Error Condition |
-|------|---------------|-----------------|
-| Format | `^[0-9a-f]{32}$` | Non-hex characters or wrong length |
-| Not empty | `len > 0` | Empty string (for validation; generation handles this) |
-| Not all zeros | `!= "00000000000000000000000000000000"` | Reserved invalid value |
+| Rule          | Pattern/Value                           | Error Condition                                        |
+| ------------- | --------------------------------------- | ------------------------------------------------------ |
+| Format        | `^[0-9a-f]{32}$`                        | Non-hex characters or wrong length                     |
+| Not empty     | `len > 0`                               | Empty string (for validation; generation handles this) |
+| Not all zeros | `!= "00000000000000000000000000000000"` | Reserved invalid value                                 |
 
 **Lifecycle States**:
 
@@ -54,10 +54,10 @@ A distributed tracing correlation identifier following OpenTelemetry W3C format.
 
 Go context carrying the validated trace ID through the request handler.
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
+| Attribute  | Type       | Description                                |
+| ---------- | ---------- | ------------------------------------------ |
 | traceIDKey | contextKey | Private key type for context value storage |
-| value | string | Validated or generated trace ID |
+| value      | string     | Validated or generated trace ID            |
 
 **Context Key Definition**:
 
@@ -70,10 +70,10 @@ const traceIDKey contextKey = "pulumicost-trace-id"
 
 Incoming request metadata containing trace ID header.
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| key | string | `"x-pulumicost-trace-id"` (constant: `TraceIDMetadataKey`) |
-| values | []string | Header values (first value used if multiple) |
+| Attribute | Type     | Description                                                |
+| --------- | -------- | ---------------------------------------------------------- |
+| key       | string   | `"x-pulumicost-trace-id"` (constant: `TraceIDMetadataKey`) |
+| values    | []string | Header values (first value used if multiple)               |
 
 ## Data Flow
 
@@ -104,18 +104,18 @@ Client Request
 
 ## Validation Decision Table
 
-| Incoming Value | Action | Result |
-|----------------|--------|--------|
-| Valid 32 hex chars | Preserve | Original trace ID |
-| Empty string `""` | Generate | New trace ID |
-| No metadata header | Generate | New trace ID |
-| Too short (<32 chars) | Generate | New trace ID |
-| Too long (>32 chars) | Generate | New trace ID |
-| Non-hex characters | Generate | New trace ID |
-| All zeros | Generate | New trace ID |
-| Control characters | Generate | New trace ID |
-| Unicode characters | Generate | New trace ID |
-| Multiple values | Validate first | First value or new ID |
+| Incoming Value        | Action         | Result                |
+| --------------------- | -------------- | --------------------- |
+| Valid 32 hex chars    | Preserve       | Original trace ID     |
+| Empty string `""`     | Generate       | New trace ID          |
+| No metadata header    | Generate       | New trace ID          |
+| Too short (<32 chars) | Generate       | New trace ID          |
+| Too long (>32 chars)  | Generate       | New trace ID          |
+| Non-hex characters    | Generate       | New trace ID          |
+| All zeros             | Generate       | New trace ID          |
+| Control characters    | Generate       | New trace ID          |
+| Unicode characters    | Generate       | New trace ID          |
+| Multiple values       | Validate first | First value or new ID |
 
 ## Generation Specification
 
@@ -174,8 +174,8 @@ func ValidateTraceID(traceID string) error
 
 ## Constants
 
-| Constant | Value | Package | Description |
-|----------|-------|---------|-------------|
+| Constant             | Value                     | Package   | Description              |
+| -------------------- | ------------------------- | --------- | ------------------------ |
 | `TraceIDMetadataKey` | `"x-pulumicost-trace-id"` | pluginsdk | gRPC metadata header key |
-| `FieldTraceID` | `"trace_id"` | pluginsdk | Logging field name |
-| `traceIDKey` | `"pulumicost-trace-id"` | pluginsdk | Context key (private) |
+| `FieldTraceID`       | `"trace_id"`              | pluginsdk | Logging field name       |
+| `traceIDKey`         | `"pulumicost-trace-id"`   | pluginsdk | Context key (private)    |

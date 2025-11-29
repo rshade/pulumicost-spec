@@ -17,7 +17,7 @@
 - Q: Should schema validate that `max_spec_version` >= `min_spec_version`?
   → A: No, document as invalid for consumer validation (JSON Schema limitation)
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Validate Registry Index File (Priority: P1)
 
@@ -133,7 +133,7 @@ and providers and verifying filtering operations work correctly.
 - **Multiple providers display**: How plugins with multiple `supported_providers` are
   displayed is a consumer UX concern (CLI formatting); schema validates array correctness.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -171,7 +171,7 @@ and providers and verifying filtering operations work correctly.
 - **Capabilities**: Plugin features aligned with gRPC service capabilities
 - **Security Level**: Trust tier indicating verification status
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

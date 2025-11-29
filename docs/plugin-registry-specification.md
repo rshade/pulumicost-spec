@@ -153,15 +153,31 @@ Defines plugin capabilities and interface compliance:
     "supported_resources": {
       "aws": {
         "resource_types": ["ec2", "s3", "lambda", "rds"],
-        "billing_modes": ["per_hour", "per_gb_month", "per_invocation", "per_dtu"],
+        "billing_modes": [
+          "per_hour",
+          "per_gb_month",
+          "per_invocation",
+          "per_dtu"
+        ],
         "regions": ["us-east-1", "us-west-2", "eu-west-1"]
       }
     },
-    "capabilities": ["cost_retrieval", "cost_projection", "pricing_specs", "historical_data"],
+    "capabilities": [
+      "cost_retrieval",
+      "cost_projection",
+      "pricing_specs",
+      "historical_data"
+    ],
     "service_definition": {
       "service_name": "CostSourceService",
       "package_name": "pulumicost.v1",
-      "methods": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"],
+      "methods": [
+        "Name",
+        "Supports",
+        "GetActualCost",
+        "GetProjectedCost",
+        "GetPricingSpec"
+      ],
       "port": 50051,
       "health_check_path": "/health"
     },
@@ -222,10 +238,7 @@ Provides installation instructions:
     "checksum": "sha256:a1b2c3d4e5f6...",
     "checksum_algorithm": "sha256",
     "install_script": "#!/bin/bash\ntar -xzf aws-plugin-v1.2.3-linux-amd64.tar.gz\n...",
-    "pre_install_checks": [
-      "check_system_requirements",
-      "verify_dependencies"
-    ],
+    "pre_install_checks": ["check_system_requirements", "verify_dependencies"],
     "post_install_steps": [
       "create_config_directory",
       "set_permissions",
@@ -445,7 +458,7 @@ Plugins can depend on other plugins:
       "optional": false
     },
     {
-      "name": "metrics-collector", 
+      "name": "metrics-collector",
       "version_constraint": ">=2.0.0,<3.0.0",
       "optional": true
     }
@@ -459,7 +472,7 @@ Supported version constraint syntax:
 
 - `1.2.3` - Exact version
 - `^1.2.3` - Compatible within major version
-- `~1.2.3` - Compatible within minor version  
+- `~1.2.3` - Compatible within minor version
 - `>=1.2.3` - Greater than or equal
 - `<2.0.0` - Less than
 - `>=1.2.3,<2.0.0` - Range constraint
@@ -510,7 +523,7 @@ Plugins should be cryptographically signed for integrity verification:
 ```json
 {
   "security": {
-    "signature": "MEUCIQD...", 
+    "signature": "MEUCIQD...",
     "public_key": "-----BEGIN PUBLIC KEY-----\nMII...",
     "certificate_chain": ["-----BEGIN CERTIFICATE-----\n..."]
   }
@@ -857,23 +870,42 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
       "aws": {
         "resource_types": ["ec2", "s3", "lambda", "rds", "dynamodb"],
         "billing_modes": [
-          "per_hour", "per_gb_month", "per_invocation", 
-          "per_rcu", "per_wcu", "reserved", "spot"
+          "per_hour",
+          "per_gb_month",
+          "per_invocation",
+          "per_rcu",
+          "per_wcu",
+          "reserved",
+          "spot"
         ],
         "regions": [
-          "us-east-1", "us-west-2", "eu-west-1", 
-          "ap-southeast-1", "ap-northeast-1"
+          "us-east-1",
+          "us-west-2",
+          "eu-west-1",
+          "ap-southeast-1",
+          "ap-northeast-1"
         ]
       }
     },
     "capabilities": [
-      "cost_retrieval", "cost_projection", "pricing_specs",
-      "historical_data", "real_time_data", "caching", "filtering"
+      "cost_retrieval",
+      "cost_projection",
+      "pricing_specs",
+      "historical_data",
+      "real_time_data",
+      "caching",
+      "filtering"
     ],
     "service_definition": {
       "service_name": "CostSourceService",
       "package_name": "pulumicost.v1",
-      "methods": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"],
+      "methods": [
+        "Name",
+        "Supports",
+        "GetActualCost",
+        "GetProjectedCost",
+        "GetPricingSpec"
+      ],
       "port": 50051,
       "health_check_path": "/health"
     },
@@ -890,7 +922,10 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
     "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFA...",
     "security_level": "verified",
     "permissions": [
-      "network_access", "filesystem_read", "config_read", "temp_files"
+      "network_access",
+      "filesystem_read",
+      "config_read",
+      "temp_files"
     ],
     "sandbox_required": false
   },
@@ -921,7 +956,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
         "config": "{\"aws_access_key_id\":\"AKIA...\",\"aws_secret_access_key\":\"your-secret\",\"region\":\"us-east-1\",\"timeout\":60,\"cache_ttl\":600,\"enable_metrics\":true}"
       },
       {
-        "name": "development_config",  
+        "name": "development_config",
         "description": "Development configuration with debug logging",
         "config": "{\"aws_access_key_id\":\"AKIA...\",\"aws_secret_access_key\":\"your-secret\",\"region\":\"us-west-2\",\"debug\":true,\"cache_ttl\":60}"
       }
@@ -974,7 +1009,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
       },
       {
         "name": "local_filesystem",
-        "type": "filesystem", 
+        "type": "filesystem",
         "path": "/usr/local/pulumicost/plugins",
         "priority": 2,
         "recursive": true,

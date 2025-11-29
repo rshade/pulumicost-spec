@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "Optimize registry domain enum validation performance with map-based lookups"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Plugin Developer Validates Domain Values (Priority: P1)
 
@@ -82,7 +82,7 @@ follow consistent patterns.
 - How does validation perform when called in tight loops (e.g., validating thousands of entries)?
 - What happens when new enum values are added - does the validation pattern remain maintainable?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -102,7 +102,7 @@ follow consistent patterns.
   requiring validation
 - **PluginStatus Enum**: Represents plugin operational states (active, inactive, error, unknown) requiring validation
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -114,7 +114,7 @@ follow consistent patterns.
 - **SC-005**: No breaking changes to existing validation behavior or interfaces
 - **SC-006**: Code review confirms consistent validation patterns across registry and pricing packages
 
-## Dependencies and Assumptions *(mandatory)*
+## Dependencies and Assumptions _(mandatory)_
 
 ### Dependencies
 

@@ -282,14 +282,14 @@ message EstimateCostResponse {
 
 These two RPCs serve different use cases. Understanding when to use each is important:
 
-| Aspect | GetProjectedCost | EstimateCost |
-|--------|------------------|--------------|
-| **Input** | `ResourceDescriptor` (provider, type, SKU, region) | Pulumi resource type + attributes `Struct` |
-| **Output** | Unit price, monthly cost, billing detail | Monthly cost only |
-| **Use Case** | Generic cost projection for any resource | Pre-deployment "what-if" analysis |
-| **Resource ID** | Generic format per provider | Pulumi format (`aws:ec2/instance:Instance`) |
-| **Idempotency** | Not specified | Guaranteed deterministic |
-| **Response Time** | Not specified | <500ms target |
+| Aspect            | GetProjectedCost                                   | EstimateCost                                |
+| ----------------- | -------------------------------------------------- | ------------------------------------------- |
+| **Input**         | `ResourceDescriptor` (provider, type, SKU, region) | Pulumi resource type + attributes `Struct`  |
+| **Output**        | Unit price, monthly cost, billing detail           | Monthly cost only                           |
+| **Use Case**      | Generic cost projection for any resource           | Pre-deployment "what-if" analysis           |
+| **Resource ID**   | Generic format per provider                        | Pulumi format (`aws:ec2/instance:Instance`) |
+| **Idempotency**   | Not specified                                      | Guaranteed deterministic                    |
+| **Response Time** | Not specified                                      | <500ms target                               |
 
 **Use GetProjectedCost when**:
 
@@ -387,29 +387,29 @@ license: "Apache-2.0"
 homepage: "https://github.com/yourorg/my-plugin"
 
 # Plugin capabilities
-provider: "custom"               # Primary provider this plugin supports
-resource_types:                  # List of supported resource types
+provider: "custom" # Primary provider this plugin supports
+resource_types: # List of supported resource types
   - "vm"
   - "storage"
   - "database"
-regions:                        # Supported regions (empty = all)
+regions: # Supported regions (empty = all)
   - "us-east-1"
   - "us-west-2"
   - "eu-west-1"
 
 # Runtime configuration
 runtime:
-  protocol: "grpc"              # Currently only "grpc" supported
+  protocol: "grpc" # Currently only "grpc" supported
   executable: "bin/plugin-{{.OS}}-{{.ARCH}}"
-  port_range: "5000-6000"       # Preferred port range
-  
+  port_range: "5000-6000" # Preferred port range
+
 # Authentication requirements
 auth:
   required: true
-  methods:                      # Supported auth methods
+  methods: # Supported auth methods
     - "api_key"
     - "oauth2"
-  env_vars:                     # Required environment variables
+  env_vars: # Required environment variables
     - "CUSTOM_API_KEY"
     - "CUSTOM_API_ENDPOINT"
 
@@ -422,7 +422,7 @@ dependencies:
 health_check:
   enabled: true
   timeout: "30s"
-  endpoint: "/health"           # HTTP endpoint for health checks
+  endpoint: "/health" # HTTP endpoint for health checks
 ```
 
 ### Manifest Field Reference
@@ -481,15 +481,15 @@ Plugins can specify authentication requirements:
 auth:
   required: true
   methods:
-    - "api_key"      # API key authentication
-    - "oauth2"       # OAuth 2.0 flow
-    - "jwt"          # JWT token
-    - "basic"        # Basic authentication
-    - "cert"         # Client certificate
+    - "api_key" # API key authentication
+    - "oauth2" # OAuth 2.0 flow
+    - "jwt" # JWT token
+    - "basic" # Basic authentication
+    - "cert" # Client certificate
   env_vars:
-    - "API_KEY"      # Required environment variables
+    - "API_KEY" # Required environment variables
     - "API_ENDPOINT"
-  config_file:       # Optional config file path
+  config_file: # Optional config file path
     path: "~/.config/plugin/config.yaml"
     format: "yaml"
 ```
@@ -618,7 +618,7 @@ func (s *server) Name(ctx context.Context, req *pb.NameRequest) (*pb.NameRespons
 
 // Supports checks if the plugin supports a resource type
 func (s *server) Supports(ctx context.Context, req *pb.SupportsRequest) (*pb.SupportsResponse, error) {
- log.Printf("Supports RPC called for provider=%s, resource_type=%s", 
+ log.Printf("Supports RPC called for provider=%s, resource_type=%s",
   req.Resource.Provider, req.Resource.ResourceType)
 
  // This example plugin supports "custom" provider with "vm" and "storage" resources
@@ -664,7 +664,7 @@ func (s *server) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest
 
 // GetProjectedCost calculates projected costs
 func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostRequest) (*pb.GetProjectedCostResponse, error) {
- log.Printf("GetProjectedCost RPC called for provider=%s, resource_type=%s, sku=%s", 
+ log.Printf("GetProjectedCost RPC called for provider=%s, resource_type=%s, sku=%s",
   req.Resource.Provider, req.Resource.ResourceType, req.Resource.Sku)
 
  // Validate resource
@@ -706,7 +706,7 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
 
 // GetPricingSpec returns detailed pricing specification
 func (s *server) GetPricingSpec(ctx context.Context, req *pb.GetPricingSpecRequest) (*pb.GetPricingSpecResponse, error) {
- log.Printf("GetPricingSpec RPC called for provider=%s, resource_type=%s", 
+ log.Printf("GetPricingSpec RPC called for provider=%s, resource_type=%s",
   req.Resource.Provider, req.Resource.ResourceType)
 
  // Validate resource
@@ -774,7 +774,7 @@ func validateResourceDescriptor(rd *pb.ResourceDescriptor) error {
 // generateMockActualCostData creates sample historical cost data
 func generateMockActualCostData(resourceID string, start, end time.Time) []*pb.ActualCostResult {
  var results []*pb.ActualCostResult
- 
+
  // Generate daily cost data points
  current := start
  for current.Before(end) {
@@ -991,9 +991,9 @@ import (
 
 func TestName(t *testing.T) {
  server := &server{name: "test-plugin"}
- 
+
  resp, err := server.Name(context.Background(), &pb.NameRequest{})
- 
+
  assert.NoError(t, err)
  assert.NotNil(t, resp)
  assert.Equal(t, "test-plugin", resp.Name)
@@ -1001,7 +1001,7 @@ func TestName(t *testing.T) {
 
 func TestSupports(t *testing.T) {
  server := &server{name: "test-plugin"}
- 
+
  tests := []struct {
   name       string
   resource   *pb.ResourceDescriptor
@@ -1041,7 +1041,7 @@ func TestSupports(t *testing.T) {
   t.Run(tt.name, func(t *testing.T) {
    req := &pb.SupportsRequest{Resource: tt.resource}
    resp, err := server.Supports(context.Background(), req)
-   
+
    assert.NoError(t, err)
    assert.NotNil(t, resp)
    assert.Equal(t, tt.wantSupported, resp.Supported)
@@ -1054,7 +1054,7 @@ func TestSupports(t *testing.T) {
 
 func TestGetActualCost(t *testing.T) {
  server := &server{name: "test-plugin"}
- 
+
  tests := []struct {
   name      string
   request   *pb.GetActualCostRequest
@@ -1092,11 +1092,11 @@ func TestGetActualCost(t *testing.T) {
  for _, tt := range tests {
   t.Run(tt.name, func(t *testing.T) {
    resp, err := server.GetActualCost(context.Background(), tt.request)
-   
+
    if tt.wantError {
     assert.Error(t, err)
     assert.Nil(t, resp)
-    
+
     st, ok := status.FromError(err)
     assert.True(t, ok)
     assert.Equal(t, tt.errorCode, st.Code())
@@ -1104,7 +1104,7 @@ func TestGetActualCost(t *testing.T) {
     assert.NoError(t, err)
     assert.NotNil(t, resp)
     assert.NotEmpty(t, resp.Results)
-    
+
     // Verify result structure
     for _, result := range resp.Results {
      assert.Greater(t, result.Cost, 0.0)
@@ -1118,7 +1118,7 @@ func TestGetActualCost(t *testing.T) {
 
 func TestGetProjectedCost(t *testing.T) {
  server := &server{name: "test-plugin"}
- 
+
  tests := []struct {
   name         string
   resource     *pb.ResourceDescriptor
@@ -1161,7 +1161,7 @@ func TestGetProjectedCost(t *testing.T) {
   t.Run(tt.name, func(t *testing.T) {
    req := &pb.GetProjectedCostRequest{Resource: tt.resource}
    resp, err := server.GetProjectedCost(context.Background(), req)
-   
+
    if tt.wantError {
     assert.Error(t, err)
     assert.Nil(t, resp)
@@ -1179,7 +1179,7 @@ func TestGetProjectedCost(t *testing.T) {
 
 func TestGetPricingSpec(t *testing.T) {
  server := &server{name: "test-plugin"}
- 
+
  req := &pb.GetPricingSpecRequest{
   Resource: &pb.ResourceDescriptor{
    Provider:     "custom",
@@ -1188,13 +1188,13 @@ func TestGetPricingSpec(t *testing.T) {
    Region:       "us-east-1",
   },
  }
- 
+
  resp, err := server.GetPricingSpec(context.Background(), req)
- 
+
  assert.NoError(t, err)
  assert.NotNil(t, resp)
  assert.NotNil(t, resp.Spec)
- 
+
  spec := resp.Spec
  assert.Equal(t, "custom", spec.Provider)
  assert.Equal(t, "vm", spec.ResourceType)
@@ -1217,7 +1217,7 @@ func BenchmarkGetProjectedCost(b *testing.B) {
    Region:       "us-east-1",
   },
  }
- 
+
  b.ResetTimer()
  for i := 0; i < b.N; i++ {
   _, err := server.GetProjectedCost(context.Background(), req)
@@ -1256,17 +1256,17 @@ func TestIntegration(t *testing.T) {
  // Start server
  lis, err := net.Listen("tcp", ":0")
  require.NoError(t, err)
- 
+
  s := grpc.NewServer()
  pb.RegisterCostSourceServiceServer(s, &server{name: "integration-test-plugin"})
- 
+
  go func() {
   if err := s.Serve(lis); err != nil {
    log.Printf("Server error: %v", err)
   }
  }()
  defer s.Stop()
- 
+
  // Connect client
  conn, err := grpc.NewClient(
   lis.Addr().String(),
@@ -1274,16 +1274,16 @@ func TestIntegration(t *testing.T) {
  )
  require.NoError(t, err)
  defer conn.Close()
- 
+
  client := pb.NewCostSourceServiceClient(conn)
  ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
  defer cancel()
- 
+
  // Test Name RPC
  nameResp, err := client.Name(ctx, &pb.NameRequest{})
  require.NoError(t, err)
  assert.Equal(t, "integration-test-plugin", nameResp.Name)
- 
+
  // Test Supports RPC
  supportsResp, err := client.Supports(ctx, &pb.SupportsRequest{
   Resource: &pb.ResourceDescriptor{
@@ -1293,7 +1293,7 @@ func TestIntegration(t *testing.T) {
  })
  require.NoError(t, err)
  assert.True(t, supportsResp.Supported)
- 
+
  // Test GetProjectedCost RPC
  projectedResp, err := client.GetProjectedCost(ctx, &pb.GetProjectedCostRequest{
   Resource: &pb.ResourceDescriptor{
@@ -1306,7 +1306,7 @@ func TestIntegration(t *testing.T) {
  require.NoError(t, err)
  assert.Greater(t, projectedResp.UnitPrice, 0.0)
  assert.Equal(t, "USD", projectedResp.Currency)
- 
+
  // Test GetActualCost RPC
  actualResp, err := client.GetActualCost(ctx, &pb.GetActualCostRequest{
   ResourceId: "test-vm-123",
@@ -1315,7 +1315,7 @@ func TestIntegration(t *testing.T) {
  })
  require.NoError(t, err)
  assert.NotEmpty(t, actualResp.Results)
- 
+
  // Test GetPricingSpec RPC
  specResp, err := client.GetPricingSpec(ctx, &pb.GetPricingSpecRequest{
   Resource: &pb.ResourceDescriptor{
@@ -1403,10 +1403,10 @@ func TestPricingSpecValidation(t *testing.T) {
    // Convert to JSON bytes
    data, err := json.Marshal(tt.spec)
    require.NoError(t, err)
-   
+
    // Validate using the schema
    err = types.ValidatePricingSpec(data)
-   
+
    if tt.wantErr {
     assert.Error(t, err)
    } else {
@@ -1425,20 +1425,20 @@ func TestBillingModeValidation(t *testing.T) {
   "per_day",
   "per_cpu_hour",
  }
- 
+
  for _, mode := range validModes {
   t.Run(mode, func(t *testing.T) {
    assert.True(t, types.ValidBillingMode(mode))
   })
  }
- 
+
  invalidModes := []string{
   "per_second",
   "hourly",
   "",
   "invalid",
  }
- 
+
  for _, mode := range invalidModes {
   t.Run(mode, func(t *testing.T) {
    assert.False(t, types.ValidBillingMode(mode))
@@ -1468,21 +1468,21 @@ import (
 
 func TestConcurrentRequests(t *testing.T) {
  server := &server{name: "load-test-plugin"}
- 
+
  const numGoroutines = 50
  const requestsPerGoroutine = 20
- 
+
  var wg sync.WaitGroup
  errorChan := make(chan error, numGoroutines*requestsPerGoroutine)
- 
+
  for i := 0; i < numGoroutines; i++ {
   wg.Add(1)
   go func(workerID int) {
    defer wg.Done()
-   
+
    for j := 0; j < requestsPerGoroutine; j++ {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    
+
     _, err := server.GetProjectedCost(ctx, &pb.GetProjectedCostRequest{
      Resource: &pb.ResourceDescriptor{
       Provider:     "custom",
@@ -1491,25 +1491,25 @@ func TestConcurrentRequests(t *testing.T) {
       Region:       "us-east-1",
      },
     })
-    
+
     cancel()
-    
+
     if err != nil {
      errorChan <- err
     }
    }
   }(i)
  }
- 
+
  wg.Wait()
  close(errorChan)
- 
+
  // Check for errors
  var errors []error
  for err := range errorChan {
   errors = append(errors, err)
  }
- 
+
  assert.Empty(t, errors, "Expected no errors during load test, got: %v", errors)
 }
 ```
@@ -1558,23 +1558,23 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.19
-    
-    - name: Install dependencies
-      run: go mod tidy
-    
-    - name: Run tests
-      run: go test -race -cover ./test/...
-    
-    - name: Run benchmarks
-      run: go test -bench=. ./test/...
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run tests
+        run: go test -race -cover ./test/...
+
+      - name: Run benchmarks
+        run: go test -bench=. ./test/...
 ```
 
 ### Test Data Management
@@ -1647,27 +1647,27 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
     if req.Resource == nil {
         return nil, status.Error(codes.InvalidArgument, "resource descriptor is required")
     }
-    
+
     // Authentication/authorization errors
     if !s.isAuthorized(ctx) {
         return nil, status.Error(codes.Unauthenticated, "authentication required")
     }
-    
+
     // Not found errors
     if !s.resourceExists(req.Resource) {
         return nil, status.Error(codes.NotFound, "resource not found")
     }
-    
+
     // External service errors
     if !s.isExternalServiceAvailable() {
         return nil, status.Error(codes.Unavailable, "pricing service temporarily unavailable")
     }
-    
+
     // Rate limiting
     if s.isRateLimited() {
         return nil, status.Error(codes.ResourceExhausted, "rate limit exceeded")
     }
-    
+
     // Implementation errors (should be rare in production)
     return nil, status.Error(codes.Internal, "internal server error")
 }
@@ -1675,17 +1675,17 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
 
 #### Status Code Guidelines
 
-| Code | When to Use | Example |
-|------|-------------|---------|
-| `InvalidArgument` | Bad request parameters | Missing required fields, invalid format |
-| `Unauthenticated` | Authentication failed | Invalid API key, expired token |
-| `PermissionDenied` | Authorization failed | Insufficient permissions |
-| `NotFound` | Resource doesn't exist | Unknown resource ID |
-| `AlreadyExists` | Resource already exists | Duplicate creation attempts |
-| `FailedPrecondition` | System state issue | Service not initialized |
-| `ResourceExhausted` | Rate limiting | Too many requests |
-| `Unavailable` | Temporary failure | External service down |
-| `Internal` | Implementation error | Unexpected exceptions |
+| Code                 | When to Use             | Example                                 |
+| -------------------- | ----------------------- | --------------------------------------- |
+| `InvalidArgument`    | Bad request parameters  | Missing required fields, invalid format |
+| `Unauthenticated`    | Authentication failed   | Invalid API key, expired token          |
+| `PermissionDenied`   | Authorization failed    | Insufficient permissions                |
+| `NotFound`           | Resource doesn't exist  | Unknown resource ID                     |
+| `AlreadyExists`      | Resource already exists | Duplicate creation attempts             |
+| `FailedPrecondition` | System state issue      | Service not initialized                 |
+| `ResourceExhausted`  | Rate limiting           | Too many requests                       |
+| `Unavailable`        | Temporary failure       | External service down                   |
+| `Internal`           | Implementation error    | Unexpected exceptions                   |
 
 ### Performance Considerations
 
@@ -1718,19 +1718,19 @@ func NewPricingCache(ttl time.Duration) *PricingCache {
 func (c *PricingCache) Get(key string) (interface{}, bool) {
     c.mu.RLock()
     defer c.mu.RUnlock()
-    
+
     entry, exists := c.cache[key]
     if !exists || time.Now().After(entry.ExpiresAt) {
         return nil, false
     }
-    
+
     return entry.Data, true
 }
 
 func (c *PricingCache) Set(key string, data interface{}) {
     c.mu.Lock()
     defer c.mu.Unlock()
-    
+
     c.cache[key] = CacheEntry{
         Data:      data,
         ExpiresAt: time.Now().Add(c.ttl),
@@ -1746,21 +1746,21 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
         req.Resource.Sku,
         req.Resource.Region,
     )
-    
+
     // Check cache first
     if cached, found := s.cache.Get(cacheKey); found {
         return cached.(*pb.GetProjectedCostResponse), nil
     }
-    
+
     // Calculate cost
     response, err := s.calculateProjectedCost(req)
     if err != nil {
         return nil, err
     }
-    
+
     // Cache result
     s.cache.Set(cacheKey, response)
-    
+
     return response, nil
 }
 ```
@@ -1787,7 +1787,7 @@ func NewHTTPClient(config *PluginConfig) *http.Client {
         IdleConnTimeout:     90 * time.Second,
         DisableCompression:  false,
     }
-    
+
     return &http.Client{
         Transport: transport,
         Timeout:   config.Timeout,
@@ -1802,7 +1802,7 @@ func NewHTTPClient(config *PluginConfig) *http.Client {
 func (s *server) batchGetPricing(resources []*pb.ResourceDescriptor) ([]*pb.PricingSpec, error) {
     // Group resources by provider/region for efficient API calls
     batches := s.groupResourcesByBatch(resources)
-    
+
     var allSpecs []*pb.PricingSpec
     for _, batch := range batches {
         specs, err := s.fetchPricingBatch(batch)
@@ -1811,7 +1811,7 @@ func (s *server) batchGetPricing(resources []*pb.ResourceDescriptor) ([]*pb.Pric
         }
         allSpecs = append(allSpecs, specs...)
     }
-    
+
     return allSpecs, nil
 }
 ```
@@ -1836,12 +1836,12 @@ func LoadCredentials() (*Credentials, error) {
     if apiKey == "" {
         return nil, fmt.Errorf("PLUGIN_API_KEY environment variable is required")
     }
-    
+
     endpoint := os.Getenv("PLUGIN_API_ENDPOINT")
     if endpoint == "" {
         endpoint = "https://api.example.com" // Default endpoint
     }
-    
+
     return &Credentials{
         APIKey:      apiKey,
         APIEndpoint: endpoint,
@@ -1856,7 +1856,7 @@ func validateResourceDescriptor(rd *pb.ResourceDescriptor) error {
     if rd == nil {
         return status.Error(codes.InvalidArgument, "resource descriptor is required")
     }
-    
+
     // Provider validation
     if rd.Provider == "" {
         return status.Error(codes.InvalidArgument, "provider is required")
@@ -1864,7 +1864,7 @@ func validateResourceDescriptor(rd *pb.ResourceDescriptor) error {
     if len(rd.Provider) > 50 {
         return status.Error(codes.InvalidArgument, "provider name too long")
     }
-    
+
     // Resource type validation
     if rd.ResourceType == "" {
         return status.Error(codes.InvalidArgument, "resource_type is required")
@@ -1872,28 +1872,28 @@ func validateResourceDescriptor(rd *pb.ResourceDescriptor) error {
     if len(rd.ResourceType) > 100 {
         return status.Error(codes.InvalidArgument, "resource_type name too long")
     }
-    
+
     // SKU validation (optional field)
     if len(rd.Sku) > 100 {
         return status.Error(codes.InvalidArgument, "sku name too long")
     }
-    
+
     // Region validation
     if len(rd.Region) > 50 {
         return status.Error(codes.InvalidArgument, "region name too long")
     }
-    
+
     // Tags validation
     if len(rd.Tags) > 50 {
         return status.Error(codes.InvalidArgument, "too many tags (max 50)")
     }
-    
+
     for key, value := range rd.Tags {
         if len(key) > 128 || len(value) > 256 {
             return status.Error(codes.InvalidArgument, "tag key/value too long")
         }
     }
-    
+
     return nil
 }
 ```
@@ -1926,7 +1926,7 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
     if err := s.rateLimiter.Wait(ctx); err != nil {
         return nil, status.Error(codes.DeadlineExceeded, "request timeout due to rate limiting")
     }
-    
+
     // Process request...
 }
 ```
@@ -1942,19 +1942,19 @@ type PluginConfig struct {
     Host         string        `yaml:"host" env:"PLUGIN_HOST" default:"localhost"`
     ReadTimeout  time.Duration `yaml:"read_timeout" env:"PLUGIN_READ_TIMEOUT" default:"30s"`
     WriteTimeout time.Duration `yaml:"write_timeout" env:"PLUGIN_WRITE_TIMEOUT" default:"30s"`
-    
+
     // API configuration
     APIEndpoint string `yaml:"api_endpoint" env:"API_ENDPOINT" required:"true"`
     APIKey      string `yaml:"api_key" env:"API_KEY" required:"true"`
     APITimeout  time.Duration `yaml:"api_timeout" env:"API_TIMEOUT" default:"10s"`
-    
+
     // Cache configuration
     CacheTTL     time.Duration `yaml:"cache_ttl" env:"CACHE_TTL" default:"5m"`
     CacheSize    int           `yaml:"cache_size" env:"CACHE_SIZE" default:"1000"`
-    
+
     // Rate limiting
     RateLimit    int `yaml:"rate_limit" env:"RATE_LIMIT" default:"100"`
-    
+
     // Logging
     LogLevel     string `yaml:"log_level" env:"LOG_LEVEL" default:"info"`
     LogFormat    string `yaml:"log_format" env:"LOG_FORMAT" default:"json"`
@@ -1962,16 +1962,16 @@ type PluginConfig struct {
 
 func LoadConfig() (*PluginConfig, error) {
     config := &PluginConfig{}
-    
+
     // Load from file, then override with env vars
     if err := loadFromFile("config.yaml", config); err != nil {
         log.Printf("No config file found, using defaults: %v", err)
     }
-    
+
     if err := loadFromEnv(config); err != nil {
         return nil, fmt.Errorf("failed to load configuration: %w", err)
     }
-    
+
     return config, nil
 }
 ```
@@ -1988,17 +1988,17 @@ import (
 
 func setupLogging(config *PluginConfig) *slog.Logger {
     var handler slog.Handler
-    
+
     opts := &slog.HandlerOptions{
         Level: parseLogLevel(config.LogLevel),
     }
-    
+
     if config.LogFormat == "json" {
         handler = slog.NewJSONHandler(os.Stdout, opts)
     } else {
         handler = slog.NewTextHandler(os.Stdout, opts)
     }
-    
+
     return slog.New(handler)
 }
 
@@ -2009,16 +2009,16 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
         "resource_type", req.Resource.ResourceType,
         "region", req.Resource.Region,
     )
-    
+
     logger.Info("processing projected cost request")
-    
+
     start := time.Now()
     defer func() {
         logger.Info("completed projected cost request",
             "duration", time.Since(start),
         )
     }()
-    
+
     // Process request...
 }
 ```
@@ -2046,14 +2046,14 @@ func getTraceID(ctx context.Context) string {
 // Middleware for adding trace IDs
 func (s *server) traceMiddleware(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
     ctx = withTraceID(ctx)
-    
+
     s.logger.Info("request started",
         "trace_id", getTraceID(ctx),
         "method", info.FullMethod,
     )
-    
+
     resp, err := handler(ctx, req)
-    
+
     if err != nil {
         s.logger.Error("request failed",
             "trace_id", getTraceID(ctx),
@@ -2061,7 +2061,7 @@ func (s *server) traceMiddleware(ctx context.Context, req interface{}, info *grp
             "error", err,
         )
     }
-    
+
     return resp, err
 }
 ```
@@ -2104,12 +2104,12 @@ func (rm *ResourceMapper) MapResourceType(provider, resourceType string) (string
     if !exists {
         return "", fmt.Errorf("unsupported provider: %s", provider)
     }
-    
+
     mappedType, exists := providerMap[resourceType]
     if !exists {
         return "", fmt.Errorf("unsupported resource type: %s for provider: %s", resourceType, provider)
     }
-    
+
     return mappedType, nil
 }
 ```
@@ -2163,30 +2163,30 @@ type BillingTier struct {
 
 func (uc *UsageCalculator) CalculateCost(usage map[string]float64) float64 {
     totalCost := uc.baseCost
-    
+
     for metric, amount := range usage {
         if rate, exists := uc.usageMetrics[metric]; exists {
             totalCost += uc.calculateTieredCost(amount, rate)
         }
     }
-    
+
     return totalCost
 }
 
 func (uc *UsageCalculator) calculateTieredCost(usage, baseRate float64) float64 {
     cost := 0.0
     remaining := usage
-    
+
     for _, tier := range uc.billingTiers {
         tierUsage := math.Min(remaining, tier.MaxUsage-tier.MinUsage)
         cost += tierUsage * tier.Rate * baseRate
         remaining -= tierUsage
-        
+
         if remaining <= 0 {
             break
         }
     }
-    
+
     return cost
 }
 ```
@@ -2211,14 +2211,14 @@ type HealthStatus struct {
 func (s *server) setupHealthCheck() {
     http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
         status := s.checkHealth()
-        
+
         w.Header().Set("Content-Type", "application/json")
         if status.Status == "healthy" {
             w.WriteHeader(http.StatusOK)
         } else {
             w.WriteHeader(http.StatusServiceUnavailable)
         }
-        
+
         json.NewEncoder(w).Encode(status)
     })
 }
@@ -2226,7 +2226,7 @@ func (s *server) setupHealthCheck() {
 func (s *server) checkHealth() *HealthStatus {
     checks := make(map[string]string)
     overallStatus := "healthy"
-    
+
     // Check external API connectivity
     if err := s.pingExternalAPI(); err != nil {
         checks["external_api"] = "unhealthy: " + err.Error()
@@ -2234,7 +2234,7 @@ func (s *server) checkHealth() *HealthStatus {
     } else {
         checks["external_api"] = "healthy"
     }
-    
+
     // Check cache connectivity
     if s.cache != nil {
         checks["cache"] = "healthy"
@@ -2242,7 +2242,7 @@ func (s *server) checkHealth() *HealthStatus {
         checks["cache"] = "unhealthy: cache not initialized"
         overallStatus = "unhealthy"
     }
-    
+
     return &HealthStatus{
         Status:    overallStatus,
         Version:   "1.0.0",
@@ -2443,18 +2443,18 @@ func validateCredentials() error {
     if os.Getenv("PLUGIN_API_KEY") == "" {
         return fmt.Errorf("PLUGIN_API_KEY environment variable is required")
     }
-    
+
     // Test API connectivity
     resp, err := http.Get(os.Getenv("PLUGIN_API_ENDPOINT") + "/health")
     if err != nil {
         return fmt.Errorf("cannot reach API endpoint: %w", err)
     }
     defer resp.Body.Close()
-    
+
     if resp.StatusCode == 401 {
         return fmt.Errorf("invalid API credentials")
     }
-    
+
     return nil
 }
 ```
@@ -2503,13 +2503,13 @@ func parseFlexibleTime(timeStr string) (*timestamppb.Timestamp, error) {
         "2006-01-02 15:04:05",
         "2006-01-02",
     }
-    
+
     for _, format := range formats {
         if t, err := time.Parse(format, timeStr); err == nil {
             return timestamppb.New(t), nil
         }
     }
-    
+
     return nil, fmt.Errorf("unable to parse time: %s", timeStr)
 }
 ```
@@ -2529,12 +2529,12 @@ func setupDebugLogging() *slog.Logger {
     if os.Getenv("DEBUG") == "true" {
         level = slog.LevelDebug
     }
-    
+
     opts := &slog.HandlerOptions{
         Level: level,
         AddSource: true, // Include source code locations
     }
-    
+
     handler := slog.NewJSONHandler(os.Stdout, opts)
     return slog.New(handler)
 }
@@ -2547,14 +2547,14 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
         "sku", req.Resource.Sku,
         "region", req.Resource.Region,
     )
-    
+
     // Your implementation
-    
+
     s.logger.Debug("GetProjectedCost response",
         "unit_price", response.UnitPrice,
         "currency", response.Currency,
     )
-    
+
     return response, nil
 }
 ```
@@ -2633,7 +2633,7 @@ func (cc *CurrencyConverter) Convert(amount float64, from, to string) float64 {
     if from == to {
         return amount
     }
-    
+
     // Convert to base currency first, then to target
     baseAmount := amount / cc.rates[from]
     return baseAmount * cc.rates[to]
@@ -2664,23 +2664,23 @@ type CacheConfig struct {
 func (s *server) makeAPICallWithRetry(ctx context.Context, req interface{}) (interface{}, error) {
     backoff := time.Second
     maxRetries := 3
-    
+
     for i := 0; i < maxRetries; i++ {
         resp, err := s.makeAPICall(ctx, req)
         if err == nil {
             return resp, nil
         }
-        
+
         // Check if it's a rate limit error
         if isRateLimitError(err) {
             time.Sleep(backoff)
             backoff *= 2 // Exponential backoff
             continue
         }
-        
+
         return nil, err
     }
-    
+
     return nil, status.Error(codes.ResourceExhausted, "max retries exceeded")
 }
 ```
@@ -2698,12 +2698,12 @@ func (s *server) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest
         }
         return nil, status.Error(codes.Internal, err.Error())
     }
-    
+
     if len(data) == 0 {
         // Return empty results, not an error
         return &pb.GetActualCostResponse{Results: []*pb.ActualCostResult{}}, nil
     }
-    
+
     return &pb.GetActualCostResponse{Results: data}, nil
 }
 ```
@@ -2742,11 +2742,11 @@ type Metrics struct {
 func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostRequest) (*pb.GetProjectedCostResponse, error) {
     start := time.Now()
     s.metrics.RequestCount.Inc()
-    
+
     defer func() {
         s.metrics.RequestDuration.Observe(time.Since(start).Seconds())
     }()
-    
+
     // Your implementation
 }
 ```

@@ -17,19 +17,19 @@ The testing framework consists of several key components:
 
 The conformance suite organizes tests into four categories:
 
-| Category | Description | Example Tests |
-|----------|-------------|---------------|
-| **Spec Validation** | JSON schema and data format compliance | Billing mode enum, currency format, required fields |
+| Category            | Description                               | Example Tests                                               |
+| ------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| **Spec Validation** | JSON schema and data format compliance    | Billing mode enum, currency format, required fields         |
 | **RPC Correctness** | Protocol behavior and response validation | Name response format, error handling, time range validation |
-| **Performance** | Latency thresholds and response time | Method latency, baseline variance (< 10%) |
-| **Concurrency** | Thread safety and parallel execution | Parallel requests, response consistency |
+| **Performance**     | Latency thresholds and response time      | Method latency, baseline variance (< 10%)                   |
+| **Concurrency**     | Thread safety and parallel execution      | Parallel requests, response consistency                     |
 
 ### Conformance Levels
 
-| Level | Description | Requirements |
-|-------|-------------|--------------|
-| **Basic** | Required for all plugins | Core functionality, spec compliance |
-| **Standard** | Production-ready plugins | Reliability, consistency, 10 parallel requests |
+| Level        | Description              | Requirements                                          |
+| ------------ | ------------------------ | ----------------------------------------------------- |
+| **Basic**    | Required for all plugins | Core functionality, spec compliance                   |
+| **Standard** | Production-ready plugins | Reliability, consistency, 10 parallel requests        |
 | **Advanced** | High-performance plugins | Strict latency, 50+ parallel requests, variance < 10% |
 
 ## Quick Start
@@ -41,7 +41,7 @@ package main
 
 import (
     "testing"
-    
+
     plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
     pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
@@ -49,21 +49,21 @@ import (
 // Assume you have a plugin implementation
 func TestMyPlugin(t *testing.T) {
     plugin := &MyPluginImpl{} // Your implementation
-    
+
     // Run basic integration tests
     harness := plugintesting.NewTestHarness(plugin)
     harness.Start(t)
     defer harness.Stop()
-    
+
     // Test individual methods
     client := harness.Client()
     ctx := context.Background()
-    
+
     resp, err := client.Name(ctx, &pbc.NameRequest{})
     if err != nil {
         t.Fatalf("Name() failed: %v", err)
     }
-    
+
     if err := plugintesting.ValidateNameResponse(resp); err != nil {
         t.Errorf("Invalid response: %v", err)
     }
@@ -124,10 +124,10 @@ func BenchmarkMyPlugin(b *testing.B) {
     harness := plugintesting.NewTestHarness(plugin)
     harness.Start(&testing.T{})
     defer harness.Stop()
-    
+
     client := harness.Client()
     ctx := context.Background()
-    
+
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         _, err := client.Name(ctx, &pbc.NameRequest{})
@@ -293,7 +293,7 @@ Tests core functionality of all RPC methods:
 
 ```go
 func TestBasicPluginFunctionality(t *testing.T)
-func TestErrorHandling(t *testing.T) 
+func TestErrorHandling(t *testing.T)
 func TestInputValidation(t *testing.T)
 func TestMultipleProviders(t *testing.T)
 func TestConcurrentRequests(t *testing.T)
@@ -314,7 +314,7 @@ Standardized performance tests for all RPC methods:
 func BenchmarkName(b *testing.B)
 func BenchmarkSupports(b *testing.B)
 func BenchmarkGetActualCost(b *testing.B)
-func BenchmarkGetProjectedCost(b *testing.B) 
+func BenchmarkGetProjectedCost(b *testing.B)
 func BenchmarkGetPricingSpec(b *testing.B)
 func BenchmarkAllMethods(b *testing.B)
 func BenchmarkConcurrentRequests(b *testing.B)
@@ -501,7 +501,7 @@ func ValidateNameResponse(response *pbc.NameResponse) error
 
 - `InvalidArgument`: Invalid input parameters
 - `NotFound`: Resource or data not found
-- `Unavailable`: Service temporarily unavailable  
+- `Unavailable`: Service temporarily unavailable
 - `PermissionDenied`: Access denied to resource/data
 - `ResourceExhausted`: Rate limit or quota exceeded
 - `Internal`: Internal service error
@@ -532,14 +532,14 @@ if st.Code() != codes.Internal {
 
 The conformance suite validates against these latency thresholds:
 
-| Method | Standard | Advanced |
-|--------|----------|----------|
-| Name() | 100ms | 50ms |
-| Supports() | 50ms | 25ms |
-| GetProjectedCost() | 200ms | 100ms |
-| GetPricingSpec() | 200ms | 100ms |
-| GetActualCost (24h) | 2000ms | 1000ms |
-| GetActualCost (30d) | N/A | 10000ms |
+| Method              | Standard | Advanced |
+| ------------------- | -------- | -------- |
+| Name()              | 100ms    | 50ms     |
+| Supports()          | 50ms     | 25ms     |
+| GetProjectedCost()  | 200ms    | 100ms    |
+| GetPricingSpec()    | 200ms    | 100ms    |
+| GetActualCost (24h) | 2000ms   | 1000ms   |
+| GetActualCost (30d) | N/A      | 10000ms  |
 
 ### Variance Requirements (SC-003)
 
@@ -549,10 +549,10 @@ The conformance suite validates against these latency thresholds:
 
 ### Concurrency Requirements
 
-| Level | Parallel Requests | Requirements |
-|-------|-------------------|--------------|
-| Standard | 10 | Thread-safe, no race conditions |
-| Advanced | 50 | Consistent responses under load |
+| Level    | Parallel Requests | Requirements                    |
+| -------- | ----------------- | ------------------------------- |
+| Standard | 10                | Thread-safe, no race conditions |
+| Advanced | 50                | Consistent responses under load |
 
 ### Memory Requirements
 
@@ -575,19 +575,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
-      with:
-        go-version: '1.21'
-    
-    - name: Run Integration Tests
-      run: go test -v ./...
-    
-    - name: Run Benchmarks
-      run: go test -bench=. -benchmem
-    
-    - name: Run Conformance Tests
-      run: go test -v -run TestConformance
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Run Integration Tests
+        run: go test -v ./...
+
+      - name: Run Benchmarks
+        run: go test -bench=. -benchmem
+
+      - name: Run Conformance Tests
+        run: go test -v -run TestConformance
 ```
 
 ### Makefile Integration

@@ -40,10 +40,10 @@
 
 Enumeration of certification levels with associated requirements.
 
-| Field | Type   | Description                       |
-| ----- | ------ | --------------------------------- |
+| Field | Type   | Description                                  |
+| ----- | ------ | -------------------------------------------- |
 | Value | int    | Enum value (0=Basic, 1=Standard, 2=Advanced) |
-| Name  | string | Human-readable name               |
+| Name  | string | Human-readable name                          |
 
 **Values**:
 
@@ -77,11 +77,11 @@ Grouping of related conformance tests.
 
 Main entry point for running conformance tests.
 
-| Field         | Type                   | Description                    |
-| ------------- | ---------------------- | ------------------------------ |
-| tests         | []ConformanceTest      | All registered tests           |
-| config        | SuiteConfig            | Runtime configuration          |
-| categories    | map string to int list | Test indices by category       |
+| Field      | Type                   | Description              |
+| ---------- | ---------------------- | ------------------------ |
+| tests      | []ConformanceTest      | All registered tests     |
+| config     | SuiteConfig            | Runtime configuration    |
+| categories | map string to int list | Test indices by category |
 
 **Relationships**:
 
@@ -92,25 +92,25 @@ Main entry point for running conformance tests.
 
 Configuration options for suite execution.
 
-| Field             | Type          | Default | Description                       |
-| ----------------- | ------------- | ------- | --------------------------------- |
-| TargetLevel       | int           | 1       | Target conformance level          |
-| Timeout           | time.Duration | 60s     | Per-test timeout                  |
-| ParallelRequests  | int           | 10      | Concurrency test parallelism      |
-| EnableBenchmarks  | bool          | true    | Run performance benchmarks        |
-| BenchmarkDuration | time.Duration | 5s      | Duration per benchmark            |
+| Field             | Type          | Default | Description                  |
+| ----------------- | ------------- | ------- | ---------------------------- |
+| TargetLevel       | int           | 1       | Target conformance level     |
+| Timeout           | time.Duration | 60s     | Per-test timeout             |
+| ParallelRequests  | int           | 10      | Concurrency test parallelism |
+| EnableBenchmarks  | bool          | true    | Run performance benchmarks   |
+| BenchmarkDuration | time.Duration | 5s      | Duration per benchmark       |
 
 ### ConformanceTest
 
 Single conformance test definition.
 
-| Field       | Type                              | Description                  |
-| ----------- | --------------------------------- | ---------------------------- |
-| Name        | string                            | Unique test identifier       |
-| Description | string                            | What the test validates      |
-| Category    | TestCategory                      | Parent category              |
-| MinLevel    | ConformanceLevel                  | Minimum level for this test  |
-| TestFunc    | func(*TestHarness) TestResult     | Test implementation          |
+| Field       | Type                           | Description                 |
+| ----------- | ------------------------------ | --------------------------- |
+| Name        | string                         | Unique test identifier      |
+| Description | string                         | What the test validates     |
+| Category    | TestCategory                   | Parent category             |
+| MinLevel    | ConformanceLevel               | Minimum level for this test |
+| TestFunc    | func(\*TestHarness) TestResult | Test implementation         |
 
 **Validation Rules**:
 
@@ -121,41 +121,41 @@ Single conformance test definition.
 
 Result of a single test execution (existing type, extended).
 
-| Field    | Type          | Description                         |
-| -------- | ------------- | ----------------------------------- |
-| Name     | string        | Test name                           |
-| Method   | string        | RPC method tested                   |
-| Success  | bool          | Pass/fail status                    |
-| Error    | error         | Error if failed (nil if passed)     |
-| Duration | time.Duration | Execution time                      |
-| Details  | string        | Human-readable details              |
-| Category | string        | Parent category name                |
+| Field    | Type          | Description                     |
+| -------- | ------------- | ------------------------------- |
+| Name     | string        | Test name                       |
+| Method   | string        | RPC method tested               |
+| Success  | bool          | Pass/fail status                |
+| Error    | error         | Error if failed (nil if passed) |
+| Duration | time.Duration | Execution time                  |
+| Details  | string        | Human-readable details          |
+| Category | string        | Parent category name            |
 
 ### CategoryResult
 
 Aggregated results for a test category.
 
-| Field   | Type         | Description                      |
-| ------- | ------------ | -------------------------------- |
-| Name    | string       | Category name                    |
-| Passed  | int          | Number of passed tests           |
-| Failed  | int          | Number of failed tests           |
-| Skipped | int          | Number of skipped tests          |
-| Results | []TestResult | Individual test results          |
+| Field   | Type         | Description             |
+| ------- | ------------ | ----------------------- |
+| Name    | string       | Category name           |
+| Passed  | int          | Number of passed tests  |
+| Failed  | int          | Number of failed tests  |
+| Skipped | int          | Number of skipped tests |
+| Results | []TestResult | Individual test results |
 
 ### ConformanceResult
 
 Complete result of suite execution (JSON output).
 
-| Field         | Type                      | Description                       |
-| ------------- | ------------------------- | --------------------------------- |
-| Version       | string                    | Report schema version ("1.0.0")   |
-| Timestamp     | time.Time                 | Execution timestamp               |
-| PluginName    | string                    | Name from plugin's Name() RPC     |
-| LevelAchieved | ConformanceLevel          | Highest level passed              |
-| Summary       | ResultSummary             | Aggregate counts                  |
-| Categories    | map[string]CategoryResult | Results by category               |
-| Duration      | time.Duration             | Total execution time              |
+| Field         | Type                      | Description                     |
+| ------------- | ------------------------- | ------------------------------- |
+| Version       | string                    | Report schema version ("1.0.0") |
+| Timestamp     | time.Time                 | Execution timestamp             |
+| PluginName    | string                    | Name from plugin's Name() RPC   |
+| LevelAchieved | ConformanceLevel          | Highest level passed            |
+| Summary       | ResultSummary             | Aggregate counts                |
+| Categories    | map[string]CategoryResult | Results by category             |
+| Duration      | time.Duration             | Total execution time            |
 
 **JSON Serialization**:
 
@@ -175,45 +175,45 @@ type ConformanceResult struct {
 
 Aggregate test counts.
 
-| Field   | Type | Description               |
-| ------- | ---- | ------------------------- |
-| Total   | int  | Total tests executed      |
-| Passed  | int  | Tests that passed         |
-| Failed  | int  | Tests that failed         |
-| Skipped | int  | Tests skipped (level)     |
+| Field   | Type | Description           |
+| ------- | ---- | --------------------- |
+| Total   | int  | Total tests executed  |
+| Passed  | int  | Tests that passed     |
+| Failed  | int  | Tests that failed     |
+| Skipped | int  | Tests skipped (level) |
 
 ### PerformanceBaseline
 
 Threshold values for performance conformance.
 
-| Field           | Type          | Description                    |
-| --------------- | ------------- | ------------------------------ |
-| Method          | string        | RPC method name                |
-| StandardLatency | time.Duration | Standard level threshold       |
-| AdvancedLatency | time.Duration | Advanced level threshold       |
-| MaxAllocBytes   | int64         | Maximum allocation per call    |
+| Field           | Type          | Description                 |
+| --------------- | ------------- | --------------------------- |
+| Method          | string        | RPC method name             |
+| StandardLatency | time.Duration | Standard level threshold    |
+| AdvancedLatency | time.Duration | Advanced level threshold    |
+| MaxAllocBytes   | int64         | Maximum allocation per call |
 
 **Canonical Values** (from sdk/go/testing/README.md):
 
-| Method               | Standard    | Advanced   |
-| -------------------- | ----------- | ---------- |
-| Name                 | 100ms       | 50ms       |
-| Supports             | 50ms        | 25ms       |
-| GetProjectedCost     | 200ms       | 100ms      |
-| GetPricingSpec       | 200ms       | 100ms      |
-| GetActualCost (24h)  | 2s          | 1s         |
-| GetActualCost (30d)  | N/A         | 10s        |
+| Method              | Standard | Advanced |
+| ------------------- | -------- | -------- |
+| Name                | 100ms    | 50ms     |
+| Supports            | 50ms     | 25ms     |
+| GetProjectedCost    | 200ms    | 100ms    |
+| GetPricingSpec      | 200ms    | 100ms    |
+| GetActualCost (24h) | 2s       | 1s       |
+| GetActualCost (30d) | N/A      | 10s      |
 
 ### ValidationError
 
 Structured error for field-level validation failures.
 
-| Field    | Type        | Description                       |
-| -------- | ----------- | --------------------------------- |
-| Field    | string      | Field name that failed            |
-| Value    | interface{} | Actual value received             |
-| Expected | string      | Expected value or constraint      |
-| Message  | string      | Human-readable error message      |
+| Field    | Type        | Description                  |
+| -------- | ----------- | ---------------------------- |
+| Field    | string      | Field name that failed       |
+| Value    | interface{} | Actual value received        |
+| Expected | string      | Expected value or constraint |
+| Message  | string      | Human-readable error message |
 
 **Implements**: `error` interface
 
@@ -238,11 +238,11 @@ Determination logic:
 
 ## Relationships Summary
 
-| From             | To                | Cardinality | Description                  |
-| ---------------- | ----------------- | ----------- | ---------------------------- |
-| ConformanceSuite | ConformanceTest   | 1:N         | Suite contains tests         |
-| ConformanceTest  | TestCategory      | N:1         | Test belongs to category     |
-| ConformanceTest  | ConformanceLevel  | N:1         | Test has minimum level       |
-| ConformanceSuite | ConformanceResult | 1:1         | Execution produces result    |
-| ConformanceResult| CategoryResult    | 1:N         | Result has category results  |
-| CategoryResult   | TestResult        | 1:N         | Category has test results    |
+| From              | To                | Cardinality | Description                 |
+| ----------------- | ----------------- | ----------- | --------------------------- |
+| ConformanceSuite  | ConformanceTest   | 1:N         | Suite contains tests        |
+| ConformanceTest   | TestCategory      | N:1         | Test belongs to category    |
+| ConformanceTest   | ConformanceLevel  | N:1         | Test has minimum level      |
+| ConformanceSuite  | ConformanceResult | 1:1         | Execution produces result   |
+| ConformanceResult | CategoryResult    | 1:N         | Result has category results |
+| CategoryResult    | TestResult        | 1:N         | Category has test results   |

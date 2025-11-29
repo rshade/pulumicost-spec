@@ -11,12 +11,12 @@ The logger is configured at plugin startup and carries plugin metadata.
 
 **Fields**:
 
-| Field | Type | Description | Validation |
-|-------|------|-------------|------------|
-| pluginName | string | Plugin identifier | Non-empty for meaningful logs |
-| pluginVersion | string | Semantic version | Non-empty for meaningful logs |
-| level | zerolog.Level | Minimum log level | Valid zerolog level (Trace-Disabled) |
-| output | io.Writer | Log destination | Defaults to os.Stderr if nil |
+| Field         | Type          | Description       | Validation                           |
+| ------------- | ------------- | ----------------- | ------------------------------------ |
+| pluginName    | string        | Plugin identifier | Non-empty for meaningful logs        |
+| pluginVersion | string        | Semantic version  | Non-empty for meaningful logs        |
+| level         | zerolog.Level | Minimum log level | Valid zerolog level (Trace-Disabled) |
+| output        | io.Writer     | Log destination   | Defaults to os.Stderr if nil         |
 
 **Relationships**:
 
@@ -29,8 +29,8 @@ Trace ID propagates through gRPC calls for distributed tracing.
 
 **Fields**:
 
-| Field | Type | Description | Validation |
-|-------|------|-------------|------------|
+| Field   | Type   | Description               | Validation                   |
+| ------- | ------ | ------------------------- | ---------------------------- |
 | traceID | string | Unique request identifier | Any string, empty if not set |
 
 **Relationships**:
@@ -44,19 +44,19 @@ Standardized field names for ecosystem-wide consistency.
 
 **Constants**:
 
-| Constant | Value | Usage |
-|----------|-------|-------|
-| FieldTraceID | "trace_id" | Distributed tracing correlation |
-| FieldComponent | "component" | System component identifier |
-| FieldOperation | "operation" | RPC method or operation name |
-| FieldDurationMs | "duration_ms" | Operation timing in milliseconds |
-| FieldResourceURN | "resource_urn" | Pulumi resource identifier |
-| FieldResourceType | "resource_type" | Cloud resource type |
-| FieldPluginName | "plugin_name" | Plugin identifier |
-| FieldPluginVersion | "plugin_version" | Plugin version |
-| FieldCostMonthly | "cost_monthly" | Monthly cost value |
-| FieldAdapter | "adapter" | Cost data source adapter |
-| FieldErrorCode | "error_code" | Error classification |
+| Constant           | Value            | Usage                            |
+| ------------------ | ---------------- | -------------------------------- |
+| FieldTraceID       | "trace_id"       | Distributed tracing correlation  |
+| FieldComponent     | "component"      | System component identifier      |
+| FieldOperation     | "operation"      | RPC method or operation name     |
+| FieldDurationMs    | "duration_ms"    | Operation timing in milliseconds |
+| FieldResourceURN   | "resource_urn"   | Pulumi resource identifier       |
+| FieldResourceType  | "resource_type"  | Cloud resource type              |
+| FieldPluginName    | "plugin_name"    | Plugin identifier                |
+| FieldPluginVersion | "plugin_version" | Plugin version                   |
+| FieldCostMonthly   | "cost_monthly"   | Monthly cost value               |
+| FieldAdapter       | "adapter"        | Cost data source adapter         |
+| FieldErrorCode     | "error_code"     | Error classification             |
 
 ### 4. Metadata Keys
 
@@ -64,8 +64,8 @@ gRPC metadata keys for trace propagation.
 
 **Constants**:
 
-| Constant | Value | Description |
-|----------|-------|-------------|
+| Constant           | Value                   | Description               |
+| ------------------ | ----------------------- | ------------------------- |
 | TraceIDMetadataKey | "x-pulumicost-trace-id" | gRPC metadata header name |
 
 ### 5. Context Keys
@@ -76,8 +76,8 @@ Internal context keys for value storage.
 
 **Values**:
 
-| Key | Value | Description |
-|-----|-------|-------------|
+| Key        | Value                 | Description              |
+| ---------- | --------------------- | ------------------------ |
 | traceIDKey | "pulumicost-trace-id" | Context key for trace ID |
 
 ## State Transitions
