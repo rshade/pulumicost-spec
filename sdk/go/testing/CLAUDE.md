@@ -105,44 +105,59 @@ go test -v -run TestStructuredLoggingExample/RequestLogging
 go test -v -run TestStructuredLoggingExample/ErrorLogging
 ```
 
-### Conformance Testing (`conformance_test.go`)
+### Conformance Suite System
 
-**Three-Tier Validation System**:
+**Four Test Categories**:
 
-- **Basic Conformance**: Core functionality required for all plugins (4 tests)
-- **Standard Conformance**: Production-readiness validation (extends Basic + 3 tests)  
-- **Advanced Conformance**: High-performance requirements (extends Standard + 3 tests)
+| Category | File | Description |
+|----------|------|-------------|
+| **Spec Validation** | `spec_validation.go` | JSON schema compliance, billing mode validation |
+| **RPC Correctness** | `rpc_correctness.go` | Protocol behavior, response validation |
+| **Performance** | `performance.go` | Latency baselines, variance testing |
+| **Concurrency** | `concurrency.go` | Parallel requests, thread safety |
 
 **Conformance Levels**:
 
-**Basic** (Required for all plugins):
+| Level | Description | Tests Included |
+|-------|-------------|----------------|
+| **Basic** | Required for all plugins | Spec Validation, Core RPC |
+| **Standard** | Production-ready | Basic + Full RPC + Performance |
+| **Advanced** | High-performance | Standard + Concurrency + Strict Latency |
 
-- Name validation and response format
-- Supports handling for valid/invalid resources
-- ProjectedCost basic functionality
+**Key Components**:
 
-**Standard** (Production deployment):
-
-- ActualCost time range validation  
-- Error handling with proper gRPC codes
-- PricingSpec consistency across calls
-- 24-hour data handling capability
-
-**Advanced** (High-performance environments):
-
-- Performance baseline (Name < 100ms)
-- Concurrent request handling (10+ requests)
-- Large dataset support (30-day queries < 10s)
+- `ConformanceSuite` - Main test orchestrator (`conformance.go`)
+- `ConformanceSuiteTest` - Individual test definition
+- `ConformanceResult` - Detailed test execution results
+- `TestResult` - Individual test outcome
 
 **Usage Patterns**:
 
 ```go
-// Run conformance tests
-result := RunBasicConformanceTests(t, plugin)
-PrintConformanceReport(t, result)
+// Create and run conformance suite
+suite := NewConformanceSuite()
+RegisterSpecValidationTests(suite)
+RegisterRPCCorrectnessTests(suite)
+RegisterPerformanceTests(suite)
+RegisterConcurrencyTests(suite)
 
-// Command-line conformance testing
-ConformanceTestMain(plugin, ConformanceStandard)
+result := suite.Run(plugin, ConformanceLevelStandard)
+PrintReportTo(result, os.Stdout)
+
+// Or use convenience functions
+result := RunBasicConformance(plugin)
+result := RunStandardConformance(plugin)
+result := RunAdvancedConformance(plugin)
+```
+
+**Report Generation**:
+
+```go
+// Print detailed report
+PrintReportTo(result, os.Stdout)
+
+// Get JSON output
+jsonData := result.ToJSON()
 ```
 
 ### Performance Testing (`benchmark_test.go`)

@@ -55,6 +55,7 @@ pulumicost-spec/
 │  └─ pricing_spec.schema.json    # Comprehensive v0.1.0 pricing schema
 ├─ sdk/go/                        # Production Go SDK
 │  ├─ proto/                      # Generated protobuf bindings (auto-generated)
+│  ├─ pluginsdk/                  # Plugin development SDK
 │  ├─ types/                      # Helper types and validation
 │  └─ testing/                    # Complete testing framework
 ├─ examples/                      # Cross-vendor examples
@@ -70,6 +71,7 @@ pulumicost-spec/
 - **[gRPC Service](proto/pulumicost/v1/costsource.proto)**: Complete v0.1.0 CostSourceService with 6 RPC methods
 - **[JSON Schema](schemas/pricing_spec.schema.json)**: Comprehensive validation supporting all major cloud providers
 - **[Go SDK](sdk/go/)**: Production-ready SDK with automatic protobuf generation
+- **[Plugin SDK](sdk/go/pluginsdk/)**: ServeConfig, helpers, and testing
 - **[Testing Framework](sdk/go/testing/)**: Multi-level conformance testing (Basic, Standard, Advanced)
 - **[Examples](examples/)**: Cross-vendor examples demonstrating all major billing models
 - **[CI/CD Pipeline](.github/workflows/ci.yml)**: Complete validation, testing, and performance benchmarks
@@ -81,6 +83,7 @@ pulumicost-spec/
 ```bash
 # Add SDK to your Go project
 go get github.com/rshade/pulumicost-spec/sdk/go/proto
+go get github.com/rshade/pulumicost-spec/sdk/go/pluginsdk  # Plugin development SDK
 go get github.com/rshade/pulumicost-spec/sdk/go/types
 ```
 

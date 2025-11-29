@@ -7,11 +7,30 @@ implementations, including integration tests, performance benchmarks, and confor
 
 The testing framework consists of several key components:
 
-- **Test Harness**: In-memory gRPC testing environment
+- **Test Harness**: In-memory gRPC testing environment using bufconn
 - **Mock Plugin**: Configurable mock implementation for testing
-- **Integration Tests**: Comprehensive RPC method validation
-- **Performance Benchmarks**: Standardized performance testing
-- **Conformance Tests**: Multi-level plugin validation
+- **Conformance Suite**: Four-category test suite with three conformance levels
+- **Performance Benchmarks**: Standardized performance testing with latency baselines
+- **Concurrency Tests**: Thread safety and parallel request handling validation
+
+### Test Categories
+
+The conformance suite organizes tests into four categories:
+
+| Category | Description | Example Tests |
+|----------|-------------|---------------|
+| **Spec Validation** | JSON schema and data format compliance | Billing mode enum, currency format, required fields |
+| **RPC Correctness** | Protocol behavior and response validation | Name response format, error handling, time range validation |
+| **Performance** | Latency thresholds and response time | Method latency, baseline variance (< 10%) |
+| **Concurrency** | Thread safety and parallel execution | Parallel requests, response consistency |
+
+### Conformance Levels
+
+| Level | Description | Requirements |
+|-------|-------------|--------------|
+| **Basic** | Required for all plugins | Core functionality, spec compliance |
+| **Standard** | Production-ready plugins | Reliability, consistency, 10 parallel requests |
+| **Advanced** | High-performance plugins | Strict latency, 50+ parallel requests, variance < 10% |
 
 ## Quick Start
 
@@ -56,13 +75,37 @@ func TestMyPlugin(t *testing.T) {
 ```go
 func TestPluginConformance(t *testing.T) {
     plugin := &MyPluginImpl{}
-    
-    // Run standard conformance tests
-    result := plugintesting.RunStandardConformanceTests(t, plugin)
-    plugintesting.PrintConformanceReport(result)
-    
-    if result.FailedTests > 0 {
-        t.Errorf("Plugin failed conformance tests: %s", result.Summary)
+
+    // Create conformance suite
+    suite := plugintesting.NewConformanceSuite()
+
+    // Register all test categories
+    plugintesting.RegisterSpecValidationTests(suite)
+    plugintesting.RegisterRPCCorrectnessTests(suite)
+    plugintesting.RegisterPerformanceTests(suite)
+    plugintesting.RegisterConcurrencyTests(suite)
+
+    // Run tests at desired conformance level
+    result := suite.Run(plugin, plugintesting.ConformanceLevelStandard)
+
+    // Print detailed report
+    plugintesting.PrintReportTo(result, os.Stdout)
+
+    if result.FailedCount > 0 {
+        t.Errorf("Plugin failed conformance tests")
+    }
+}
+
+// Or use convenience functions
+func TestPluginConformanceSimple(t *testing.T) {
+    plugin := &MyPluginImpl{}
+
+    // Run standard conformance (includes Basic + Standard tests)
+    result := plugintesting.RunStandardConformance(plugin)
+    plugintesting.PrintReportTo(result, os.Stdout)
+
+    if result.FailedCount > 0 {
+        t.Errorf("Plugin failed conformance: %s", result.Summary)
     }
 }
 ```
@@ -96,6 +139,39 @@ func BenchmarkMyPlugin(b *testing.B) {
 ```
 
 ## Components
+
+### Conformance Suite
+
+The `ConformanceSuite` is the main entry point for plugin validation:
+
+```go
+// Create and configure suite
+suite := plugintesting.NewConformanceSuite()
+
+// Configure options
+suite.WithConfig(plugintesting.SuiteConfig{
+    Timeout:          60 * time.Second,
+    ParallelRequests: 10,
+})
+
+// Register test categories
+plugintesting.RegisterSpecValidationTests(suite)
+plugintesting.RegisterRPCCorrectnessTests(suite)
+plugintesting.RegisterPerformanceTests(suite)
+plugintesting.RegisterConcurrencyTests(suite)
+
+// Run at desired level
+result := suite.Run(plugin, plugintesting.ConformanceLevelStandard)
+```
+
+**Convenience Functions:**
+
+```go
+// Run all tests at specific level
+result := plugintesting.RunBasicConformance(plugin)
+result := plugintesting.RunStandardConformance(plugin)
+result := plugintesting.RunAdvancedConformance(plugin)
+```
 
 ### Test Harness
 
@@ -158,6 +234,43 @@ err := plugintesting.ValidatePricingSpec(spec)
 err := plugintesting.ValidateActualCostResult(result)
 ```
 
+### Conformance Result
+
+The `ConformanceResult` contains detailed test execution information:
+
+```go
+type ConformanceResult struct {
+    PluginName   string          // Name of the tested plugin
+    Level        ConformanceLevel // Tested conformance level
+    PassedCount  int             // Number of passed tests
+    FailedCount  int             // Number of failed tests
+    SkippedCount int             // Number of skipped tests
+    TotalTests   int             // Total number of tests
+    Duration     time.Duration   // Total execution time
+    Results      []TestResult    // Individual test results
+    Summary      string          // Human-readable summary
+}
+
+type TestResult struct {
+    Method   string        // RPC method tested
+    Category TestCategory  // Test category
+    Success  bool          // Pass/fail status
+    Error    error         // Error if failed
+    Duration time.Duration // Test execution time
+    Details  string        // Additional information
+}
+```
+
+**Reporting:**
+
+```go
+// Print to stdout
+plugintesting.PrintReportTo(result, os.Stdout)
+
+// Get JSON report
+jsonReport := result.ToJSON()
+```
+
 ### Helper Functions
 
 ```go
@@ -215,64 +328,92 @@ go test -bench=. -benchmem
 
 ### 3. Conformance Tests
 
-Multi-level validation for plugin certification:
+The conformance suite provides multi-level validation across four test categories.
 
-#### Basic Conformance
+#### Test Categories
 
-- All plugins MUST pass these tests
-- Validates core functionality and error handling
-- Required for plugin submission
+**Spec Validation Tests:**
 
-#### Standard Conformance  
+- `SpecValidation_ValidPricingSpec` - Schema-compliant response validation
+- `SpecValidation_BillingModeEnum` - Valid billing mode enumeration
+- `SpecValidation_RequiredFields` - Required field presence
 
-- Production-ready plugins should pass these tests
-- Includes data consistency and reliability tests
-- Recommended for enterprise deployments
+**RPC Correctness Tests:**
 
-#### Advanced Conformance
+- `RPCCorrectness_NameResponse` - Valid Name response format
+- `RPCCorrectness_SupportsValidation` - Supports validation behavior
+- `RPCCorrectness_ErrorHandling` - Proper gRPC error codes
+- `RPCCorrectness_TimeRangeValidation` - Time range validation
+- `RPCCorrectness_ConsistentResponses` - Response consistency
 
-- High-performance plugins should pass these tests  
-- Includes performance, concurrency, and scalability tests
-- Required for high-throughput environments
+**Performance Tests:**
+
+- `Performance_NameLatency` - Name RPC latency threshold
+- `Performance_SupportsLatency` - Supports RPC latency threshold
+- `Performance_GetProjectedCostLatency` - GetProjectedCost latency
+- `Performance_GetPricingSpecLatency` - GetPricingSpec latency
+- `Performance_BaselineVariance` - Variance within 10% (SC-003)
+
+**Concurrency Tests:**
+
+- `Concurrency_ParallelRequests` - Thread-safe parallel execution
+- `Concurrency_ConsistentUnderLoad` - Consistent responses under load
+- `Concurrency_NoRaceConditions` - Race condition detection
+
+#### Conformance Levels
+
+**Basic Conformance** (Required for all plugins):
+
+- All Spec Validation tests
+- Core RPC Correctness tests
+
+**Standard Conformance** (Production-ready):
+
+- All Basic tests
+- All RPC Correctness tests
+- Standard Performance tests (10 parallel requests)
+
+**Advanced Conformance** (High-performance):
+
+- All Standard tests
+- All Performance tests (strict latency thresholds)
+- All Concurrency tests (50+ parallel requests)
 
 **Run conformance tests:**
 
 ```go
-// In your test file
 func TestConformance(t *testing.T) {
     plugin := &MyPluginImpl{}
-    
+
     // Choose conformance level
-    result := plugintesting.RunBasicConformanceTests(t, plugin)
-    // result := plugintesting.RunStandardConformanceTests(t, plugin)  
-    // result := plugintesting.RunAdvancedConformanceTests(t, plugin)
-    
-    plugintesting.PrintConformanceReport(result)
-    
-    if result.FailedTests > 0 {
+    result := plugintesting.RunBasicConformance(plugin)
+    // result := plugintesting.RunStandardConformance(plugin)
+    // result := plugintesting.RunAdvancedConformance(plugin)
+
+    plugintesting.PrintReportTo(result, os.Stdout)
+
+    if result.FailedCount > 0 {
         t.Fatalf("Plugin failed conformance: %s", result.Summary)
     }
 }
 ```
 
-**Command-line conformance testing:**
+**Custom test selection:**
 
 ```go
-// main.go
-package main
-
-import (
-    plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
-)
-
-func main() {
+func TestCustomConformance(t *testing.T) {
     plugin := &MyPluginImpl{}
-    plugintesting.ConformanceTestMain(plugin, plugintesting.ConformanceStandard)
-}
-```
 
-```bash
-go run main.go
+    suite := plugintesting.NewConformanceSuite()
+
+    // Register only specific categories
+    plugintesting.RegisterSpecValidationTests(suite)
+    plugintesting.RegisterRPCCorrectnessTests(suite)
+    // Skip performance and concurrency tests
+
+    result := suite.Run(plugin, plugintesting.ConformanceLevelBasic)
+    plugintesting.PrintReportTo(result, os.Stdout)
+}
 ```
 
 ## Test Requirements by RPC Method
@@ -387,23 +528,37 @@ if st.Code() != codes.Internal {
 
 ## Performance Requirements
 
-### Response Time Requirements
+### Latency Baselines
 
-- **Name()**: < 100ms (advanced)
-- **Supports()**: < 50ms (standard), < 25ms (advanced)
-- **GetProjectedCost()**: < 200ms (standard), < 100ms (advanced)
-- **GetPricingSpec()**: < 200ms (standard), < 100ms (advanced)
-- **GetActualCost()**: < 2s for 24h data (standard), < 10s for 30d data (advanced)
+The conformance suite validates against these latency thresholds:
+
+| Method | Standard | Advanced |
+|--------|----------|----------|
+| Name() | 100ms | 50ms |
+| Supports() | 50ms | 25ms |
+| GetProjectedCost() | 200ms | 100ms |
+| GetPricingSpec() | 200ms | 100ms |
+| GetActualCost (24h) | 2000ms | 1000ms |
+| GetActualCost (30d) | N/A | 10000ms |
+
+### Variance Requirements (SC-003)
+
+- Advanced conformance requires benchmark variance ≤ 10% from baseline
+- Measured over multiple iterations (default: 50 iterations)
+- Helps ensure consistent performance under load
 
 ### Concurrency Requirements
 
-- **Standard**: Must handle 10 concurrent requests
-- **Advanced**: Must handle 50+ concurrent requests safely
+| Level | Parallel Requests | Requirements |
+|-------|-------------------|--------------|
+| Standard | 10 | Thread-safe, no race conditions |
+| Advanced | 50 | Consistent responses under load |
 
 ### Memory Requirements
 
 - Should not consume excessive memory for normal operations
 - Must handle large datasets (30+ days) without memory issues
+- Allocations tracked via benchmark tests
 
 ## CI/CD Integration
 
@@ -485,35 +640,60 @@ test-all: test-integration test-conformance test-performance
 package myplugin_test
 
 import (
+    "os"
     "testing"
-    
+
     "github.com/myplugin/internal"
     plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 )
 
 func TestMyPlugin(t *testing.T) {
     plugin := internal.NewMyPlugin()
-    
-    // Basic integration tests
-    plugintesting.TestBasicPluginFunctionality(t, plugin)
-    plugintesting.TestErrorHandling(t, plugin) 
-    plugintesting.TestInputValidation(t, plugin)
+
+    // Create test harness
+    harness := plugintesting.NewTestHarness(plugin)
+    harness.Start(t)
+    defer harness.Stop()
+
+    // Test individual methods
+    t.Run("Name", func(t *testing.T) {
+        resp, err := harness.Client().Name(context.Background(), &pbc.NameRequest{})
+        if err != nil {
+            t.Fatalf("Name() failed: %v", err)
+        }
+        if err := plugintesting.ValidateNameResponse(resp); err != nil {
+            t.Errorf("Invalid response: %v", err)
+        }
+    })
 }
 
 func TestMyPluginConformance(t *testing.T) {
     plugin := internal.NewMyPlugin()
-    result := plugintesting.RunStandardConformanceTests(t, plugin)
-    
-    if result.FailedTests > 0 {
+
+    // Run full conformance suite at Standard level
+    result := plugintesting.RunStandardConformance(plugin)
+
+    // Print detailed report
+    plugintesting.PrintReportTo(result, os.Stdout)
+
+    if result.FailedCount > 0 {
         t.Errorf("Plugin failed conformance: %s", result.Summary)
-        plugintesting.PrintConformanceReport(result)
     }
 }
 
-func TestMyPluginPerformance(t *testing.T) {
+func TestMyPluginCustomConformance(t *testing.T) {
     plugin := internal.NewMyPlugin()
-    suite := plugintesting.NewPerformanceTestSuite(plugin)
-    suite.RunPerformanceTests(t)
+
+    // Create custom suite with specific tests
+    suite := plugintesting.NewConformanceSuite()
+    plugintesting.RegisterSpecValidationTests(suite)
+    plugintesting.RegisterRPCCorrectnessTests(suite)
+
+    result := suite.Run(plugin, plugintesting.ConformanceLevelBasic)
+
+    if result.FailedCount > 0 {
+        t.Errorf("Plugin failed: %d/%d tests failed", result.FailedCount, result.TotalTests)
+    }
 }
 
 func BenchmarkMyPlugin(b *testing.B) {
@@ -521,9 +701,59 @@ func BenchmarkMyPlugin(b *testing.B) {
     harness := plugintesting.NewTestHarness(plugin)
     harness.Start(&testing.T{})
     defer harness.Stop()
-    
-    // Add your benchmarks here
+
+    client := harness.Client()
+    ctx := context.Background()
+
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        _, _ = client.Name(ctx, &pbc.NameRequest{})
+    }
 }
+```
+
+## Conformance Report Example
+
+Running conformance tests produces a detailed report:
+
+```text
+================================================================================
+                     PulumiCost Plugin Conformance Report
+================================================================================
+
+Plugin:     my-cost-plugin
+Level:      Standard
+Duration:   1.234s
+
+--------------------------------------------------------------------------------
+                                Test Results
+--------------------------------------------------------------------------------
+
+Category: spec_validation
+  ✓ SpecValidation_ValidPricingSpec                     [PASS]     12ms
+  ✓ SpecValidation_BillingModeEnum                      [PASS]      8ms
+  ✓ SpecValidation_RequiredFields                       [PASS]      5ms
+
+Category: rpc_correctness
+  ✓ RPCCorrectness_NameResponse                         [PASS]     15ms
+  ✓ RPCCorrectness_SupportsValidation                   [PASS]     22ms
+  ✓ RPCCorrectness_ErrorHandling                        [PASS]     18ms
+
+Category: performance
+  ✓ Performance_NameLatency                             [PASS]     45ms
+  ✓ Performance_SupportsLatency                         [PASS]     32ms
+
+--------------------------------------------------------------------------------
+                                   Summary
+--------------------------------------------------------------------------------
+
+Total:    8 tests
+Passed:   8
+Failed:   0
+Skipped:  0
+
+Result:   PASS - Plugin conforms to Standard level
+================================================================================
 ```
 
 This testing framework ensures your plugin meets the PulumiCost specification requirements and
