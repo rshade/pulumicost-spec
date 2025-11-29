@@ -76,8 +76,10 @@ func TestPerformanceVarianceWithinThreshold(t *testing.T) {
 			// For a mock plugin, variance should be well within threshold
 			// since mock plugins respond quickly
 			if !result.Success {
-				t.Logf("Variance test result: %s", result.Details)
-				// This is acceptable for slow environments
+				if testing.Short() {
+					t.Skipf("Variance test skipped in short mode: %s", result.Details)
+				}
+				t.Logf("Variance test result (may be environment-dependent): %s", result.Details)
 			}
 			break
 		}
@@ -97,10 +99,10 @@ func TestPerformanceExcessiveAllocationsWarning(t *testing.T) {
 	// Run performance tests
 	tests := plugintesting.PerformanceTests()
 	for _, test := range tests {
-		t.Run(test.Name+"_AllocCheck", func(_ *testing.T) {
+		t.Run(test.Name+"_AllocCheck", func(t *testing.T) {
 			result := test.TestFunc(harness)
-			// Verify test completes without panic
-			_ = result
+			// Scaffold: allocation tracking would go here
+			t.Logf("Test %s completed in %v", test.Name, result.Duration)
 		})
 	}
 }

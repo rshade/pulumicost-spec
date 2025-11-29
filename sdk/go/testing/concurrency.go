@@ -46,7 +46,7 @@ func DefaultConcurrencyConfig() ConcurrencyConfig {
 func runParallelRequests(harness *TestHarness, config ConcurrencyConfig) ([]TestResult, error) {
 	var wg sync.WaitGroup
 	results := make(chan TestResult, config.ParallelRequests)
-	errors := make(chan error, config.ParallelRequests)
+	errChan := make(chan error, config.ParallelRequests)
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.Timeout)
 	defer cancel()
@@ -78,7 +78,7 @@ func runParallelRequests(harness *TestHarness, config ConcurrencyConfig) ([]Test
 			duration := time.Since(start)
 
 			if err != nil {
-				errors <- fmt.Errorf("request %d failed: %w", reqNum, err)
+				errChan <- fmt.Errorf("request %d failed: %w", reqNum, err)
 				results <- TestResult{
 					Method:   config.Method,
 					Category: CategoryConcurrency,
@@ -102,7 +102,7 @@ func runParallelRequests(harness *TestHarness, config ConcurrencyConfig) ([]Test
 	// Wait for all requests to complete
 	wg.Wait()
 	close(results)
-	close(errors)
+	close(errChan)
 
 	// Collect results
 	var testResults []TestResult
@@ -112,7 +112,7 @@ func runParallelRequests(harness *TestHarness, config ConcurrencyConfig) ([]Test
 
 	// Check for errors
 	var errs []error
-	for err := range errors {
+	for err := range errChan {
 		errs = append(errs, err)
 	}
 
@@ -127,9 +127,10 @@ func runParallelRequests(harness *TestHarness, config ConcurrencyConfig) ([]Test
 func validateConsistentResponses(harness *TestHarness, numRequests int) (bool, error) {
 	var wg sync.WaitGroup
 	names := make(chan string, numRequests)
-	errors := make(chan error, numRequests)
+	errChan := make(chan error, numRequests)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), ConcurrencyTestTimeoutSeconds*time.Second)
+	defer cancel()
 
 	for range numRequests {
 		wg.Add(1)
@@ -137,7 +138,7 @@ func validateConsistentResponses(harness *TestHarness, numRequests int) (bool, e
 			defer wg.Done()
 			resp, err := harness.Client().Name(ctx, &pbc.NameRequest{})
 			if err != nil {
-				errors <- err
+				errChan <- err
 				return
 			}
 			names <- resp.GetName()
@@ -146,10 +147,10 @@ func validateConsistentResponses(harness *TestHarness, numRequests int) (bool, e
 
 	wg.Wait()
 	close(names)
-	close(errors)
+	close(errChan)
 
 	// Check for errors
-	for err := range errors {
+	for err := range errChan {
 		return false, err
 	}
 
@@ -331,6 +332,7 @@ func RegisterConcurrencyTests(suite *ConformanceSuite) {
 // RunConcurrencyTests runs concurrency tests against a plugin.
 func RunConcurrencyTests(impl pbc.CostSourceServiceServer) ([]TestResult, error) {
 	harness := NewTestHarness(impl)
+	defer harness.Stop()
 
 	conn, err := harness.createClientConnection()
 	if err != nil {
@@ -346,6 +348,5 @@ func RunConcurrencyTests(impl pbc.CostSourceServiceServer) ([]TestResult, error)
 		results = append(results, result)
 	}
 
-	harness.Stop()
 	return results, nil
 }

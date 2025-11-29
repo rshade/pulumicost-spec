@@ -39,11 +39,12 @@ func TestRaceDetectionIntegration(t *testing.T) {
 	// Run concurrent tests - any race conditions should be caught by -race flag
 	tests := plugintesting.ConcurrencyTests()
 	for _, test := range tests {
-		t.Run(test.Name+"_RaceCheck", func(_ *testing.T) {
+		t.Run(test.Name+"_RaceCheck", func(t *testing.T) {
 			result := test.TestFunc(harness)
-			// We're checking for race conditions, not success
-			// The -race flag will catch any issues
-			_ = result
+			// Log result for debugging if race detector doesn't catch anything
+			if !result.Success {
+				t.Logf("Test completed with failure (race detector may still catch issues): %v", result.Error)
+			}
 		})
 	}
 }
@@ -114,33 +115,35 @@ func TestRegisterConcurrencyTests(t *testing.T) {
 	if config.TargetLevel != plugintesting.ConformanceLevelStandard {
 		t.Errorf("Expected default target level Standard, got %v", config.TargetLevel)
 	}
+
+	// Verify tests were actually registered
+	tests := plugintesting.ConcurrencyTests()
+	if len(tests) == 0 {
+		t.Error("Expected concurrency tests to be available for registration")
+	}
 }
 
 // TestSuiteEnforcesTimeoutForSlowPlugins validates timeout enforcement (T078).
 func TestSuiteEnforcesTimeoutForSlowPlugins(t *testing.T) {
-	// Use a mock plugin - we can't easily make it slow, but we can verify
-	// that the framework has timeout support
 	plugin := plugintesting.NewMockPlugin()
 	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
 
-	// Create a config with a short timeout
+	// Verify DefaultConcurrencyConfig has a reasonable timeout
 	config := plugintesting.DefaultConcurrencyConfig()
-	config.Timeout = 100 * time.Millisecond
-
-	// Verify the config has a timeout set
-	if config.Timeout == 0 {
-		t.Error("Expected timeout to be set")
+	if config.Timeout <= 0 {
+		t.Error("Expected positive timeout in default config")
 	}
 
-	// Run a quick test to verify framework doesn't hang
+	// Run a test to verify mock plugin completes promptly
 	start := time.Now()
 	tests := plugintesting.ConcurrencyTests()
 	for _, test := range tests {
 		if test.Name == "Concurrency_ParallelRequests_Standard" {
 			result := test.TestFunc(harness)
-			_ = result
+			// Log result for debugging
+			t.Logf("Test %s completed in %v, success: %v", test.Name, result.Duration, result.Success)
 			break
 		}
 	}
