@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1](https://github.com/rshade/pulumicost-spec/compare/v0.4.0...v0.4.1) (2025-11-29)
+
+
+### Added
+
+* add trace ID validation to TracingUnaryServerInterceptor ([#96](https://github.com/rshade/pulumicost-spec/issues/96)) ([dd410cd](https://github.com/rshade/pulumicost-spec/commit/dd410cdbc2ca88ecc87dc3bef3e4fa3488efd714)), closes [#94](https://github.com/rshade/pulumicost-spec/issues/94)
+* **focus:** add complete FOCUS 1.2 column coverage with builder API ([#100](https://github.com/rshade/pulumicost-spec/issues/100)) ([2355acf](https://github.com/rshade/pulumicost-spec/commit/2355acf206f5d2ed70d9cd47fd9033525f8fe552))
+* **focus:** Implement FOCUS 1.2 integration ([#99](https://github.com/rshade/pulumicost-spec/issues/99)) ([913b6ef](https://github.com/rshade/pulumicost-spec/commit/913b6ef9d9a9ca277058ded46dcf5f7cfadc7aab))
+* **sdk:** migrate pluginsdk from core to spec ([#97](https://github.com/rshade/pulumicost-spec/issues/97)) ([2e35cbf](https://github.com/rshade/pulumicost-spec/commit/2e35cbf548f91f0151901795227dc07d578f3220))
+* **testing:** add structured logging example for EstimateCost RPC ([#93](https://github.com/rshade/pulumicost-spec/issues/93)) ([4c583c0](https://github.com/rshade/pulumicost-spec/commit/4c583c0fc0cc179b57fb919eef6ba349d4cf7187)), closes [#83](https://github.com/rshade/pulumicost-spec/issues/83)
+
 ## [Unreleased]
 
 ### Added
