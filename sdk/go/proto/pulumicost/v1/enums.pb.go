@@ -159,6 +159,7 @@ func (FocusChargeCategory) EnumDescriptor() ([]byte, []int) {
 }
 
 // FocusPricingCategory represents the pricing model applied.
+// FOCUS 1.2 Section 2.4: Pricing Category
 type FocusPricingCategory int32
 
 const (
@@ -214,6 +215,268 @@ func (FocusPricingCategory) EnumDescriptor() ([]byte, []int) {
 	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{2}
 }
 
+// FocusChargeClass represents the classification of charges.
+// FOCUS 1.2 Section 2.4: Charge Class (New in 1.0+)
+type FocusChargeClass int32
+
+const (
+	FocusChargeClass_FOCUS_CHARGE_CLASS_UNSPECIFIED FocusChargeClass = 0
+	FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR     FocusChargeClass = 1
+	FocusChargeClass_FOCUS_CHARGE_CLASS_CORRECTION  FocusChargeClass = 2
+)
+
+// Enum value maps for FocusChargeClass.
+var (
+	FocusChargeClass_name = map[int32]string{
+		0: "FOCUS_CHARGE_CLASS_UNSPECIFIED",
+		1: "FOCUS_CHARGE_CLASS_REGULAR",
+		2: "FOCUS_CHARGE_CLASS_CORRECTION",
+	}
+	FocusChargeClass_value = map[string]int32{
+		"FOCUS_CHARGE_CLASS_UNSPECIFIED": 0,
+		"FOCUS_CHARGE_CLASS_REGULAR":     1,
+		"FOCUS_CHARGE_CLASS_CORRECTION":  2,
+	}
+)
+
+func (x FocusChargeClass) Enum() *FocusChargeClass {
+	p := new(FocusChargeClass)
+	*p = x
+	return p
+}
+
+func (x FocusChargeClass) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FocusChargeClass) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_enums_proto_enumTypes[3].Descriptor()
+}
+
+func (FocusChargeClass) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_enums_proto_enumTypes[3]
+}
+
+func (x FocusChargeClass) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FocusChargeClass.Descriptor instead.
+func (FocusChargeClass) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{3}
+}
+
+// FocusChargeFrequency represents how often a charge is applied.
+// FOCUS 1.2 Section 2.4: Charge Frequency
+type FocusChargeFrequency int32
+
+const (
+	FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_UNSPECIFIED FocusChargeFrequency = 0
+	FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_ONE_TIME    FocusChargeFrequency = 1
+	FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_RECURRING   FocusChargeFrequency = 2
+	FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_USAGE_BASED FocusChargeFrequency = 3
+)
+
+// Enum value maps for FocusChargeFrequency.
+var (
+	FocusChargeFrequency_name = map[int32]string{
+		0: "FOCUS_CHARGE_FREQUENCY_UNSPECIFIED",
+		1: "FOCUS_CHARGE_FREQUENCY_ONE_TIME",
+		2: "FOCUS_CHARGE_FREQUENCY_RECURRING",
+		3: "FOCUS_CHARGE_FREQUENCY_USAGE_BASED",
+	}
+	FocusChargeFrequency_value = map[string]int32{
+		"FOCUS_CHARGE_FREQUENCY_UNSPECIFIED": 0,
+		"FOCUS_CHARGE_FREQUENCY_ONE_TIME":    1,
+		"FOCUS_CHARGE_FREQUENCY_RECURRING":   2,
+		"FOCUS_CHARGE_FREQUENCY_USAGE_BASED": 3,
+	}
+)
+
+func (x FocusChargeFrequency) Enum() *FocusChargeFrequency {
+	p := new(FocusChargeFrequency)
+	*p = x
+	return p
+}
+
+func (x FocusChargeFrequency) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FocusChargeFrequency) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_enums_proto_enumTypes[4].Descriptor()
+}
+
+func (FocusChargeFrequency) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_enums_proto_enumTypes[4]
+}
+
+func (x FocusChargeFrequency) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FocusChargeFrequency.Descriptor instead.
+func (FocusChargeFrequency) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{4}
+}
+
+// FocusCommitmentDiscountCategory represents the type of commitment discount.
+// FOCUS 1.2 Section 2.6: Commitment Discounts
+type FocusCommitmentDiscountCategory int32
+
+const (
+	FocusCommitmentDiscountCategory_FOCUS_COMMITMENT_DISCOUNT_CATEGORY_UNSPECIFIED FocusCommitmentDiscountCategory = 0
+	FocusCommitmentDiscountCategory_FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND       FocusCommitmentDiscountCategory = 1
+	FocusCommitmentDiscountCategory_FOCUS_COMMITMENT_DISCOUNT_CATEGORY_USAGE       FocusCommitmentDiscountCategory = 2
+)
+
+// Enum value maps for FocusCommitmentDiscountCategory.
+var (
+	FocusCommitmentDiscountCategory_name = map[int32]string{
+		0: "FOCUS_COMMITMENT_DISCOUNT_CATEGORY_UNSPECIFIED",
+		1: "FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND",
+		2: "FOCUS_COMMITMENT_DISCOUNT_CATEGORY_USAGE",
+	}
+	FocusCommitmentDiscountCategory_value = map[string]int32{
+		"FOCUS_COMMITMENT_DISCOUNT_CATEGORY_UNSPECIFIED": 0,
+		"FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND":       1,
+		"FOCUS_COMMITMENT_DISCOUNT_CATEGORY_USAGE":       2,
+	}
+)
+
+func (x FocusCommitmentDiscountCategory) Enum() *FocusCommitmentDiscountCategory {
+	p := new(FocusCommitmentDiscountCategory)
+	*p = x
+	return p
+}
+
+func (x FocusCommitmentDiscountCategory) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FocusCommitmentDiscountCategory) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_enums_proto_enumTypes[5].Descriptor()
+}
+
+func (FocusCommitmentDiscountCategory) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_enums_proto_enumTypes[5]
+}
+
+func (x FocusCommitmentDiscountCategory) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FocusCommitmentDiscountCategory.Descriptor instead.
+func (FocusCommitmentDiscountCategory) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{5}
+}
+
+// FocusCommitmentDiscountStatus represents the utilization status of a
+// commitment discount. FOCUS 1.2 Section 3.17: Commitment Discount Status
+type FocusCommitmentDiscountStatus int32
+
+const (
+	FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED FocusCommitmentDiscountStatus = 0
+	// Used: Charges utilizing a specific commitment discount amount.
+	FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_USED FocusCommitmentDiscountStatus = 1
+	// Unused: Charges representing the unused portion of a commitment discount.
+	FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNUSED FocusCommitmentDiscountStatus = 2
+)
+
+// Enum value maps for FocusCommitmentDiscountStatus.
+var (
+	FocusCommitmentDiscountStatus_name = map[int32]string{
+		0: "FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED",
+		1: "FOCUS_COMMITMENT_DISCOUNT_STATUS_USED",
+		2: "FOCUS_COMMITMENT_DISCOUNT_STATUS_UNUSED",
+	}
+	FocusCommitmentDiscountStatus_value = map[string]int32{
+		"FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED": 0,
+		"FOCUS_COMMITMENT_DISCOUNT_STATUS_USED":        1,
+		"FOCUS_COMMITMENT_DISCOUNT_STATUS_UNUSED":      2,
+	}
+)
+
+func (x FocusCommitmentDiscountStatus) Enum() *FocusCommitmentDiscountStatus {
+	p := new(FocusCommitmentDiscountStatus)
+	*p = x
+	return p
+}
+
+func (x FocusCommitmentDiscountStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FocusCommitmentDiscountStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_enums_proto_enumTypes[6].Descriptor()
+}
+
+func (FocusCommitmentDiscountStatus) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_enums_proto_enumTypes[6]
+}
+
+func (x FocusCommitmentDiscountStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FocusCommitmentDiscountStatus.Descriptor instead.
+func (FocusCommitmentDiscountStatus) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{6}
+}
+
+// FocusCapacityReservationStatus represents the utilization status of a
+// capacity reservation. FOCUS 1.2 Section 3.7: Capacity Reservation Status
+type FocusCapacityReservationStatus int32
+
+const (
+	FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED FocusCapacityReservationStatus = 0
+	// Used: Charges utilizing a specific capacity reservation amount.
+	FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_USED FocusCapacityReservationStatus = 1
+	// Unused: Charges representing the unused portion of a capacity reservation.
+	FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED FocusCapacityReservationStatus = 2
+)
+
+// Enum value maps for FocusCapacityReservationStatus.
+var (
+	FocusCapacityReservationStatus_name = map[int32]string{
+		0: "FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED",
+		1: "FOCUS_CAPACITY_RESERVATION_STATUS_USED",
+		2: "FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED",
+	}
+	FocusCapacityReservationStatus_value = map[string]int32{
+		"FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED": 0,
+		"FOCUS_CAPACITY_RESERVATION_STATUS_USED":        1,
+		"FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED":      2,
+	}
+)
+
+func (x FocusCapacityReservationStatus) Enum() *FocusCapacityReservationStatus {
+	p := new(FocusCapacityReservationStatus)
+	*p = x
+	return p
+}
+
+func (x FocusCapacityReservationStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FocusCapacityReservationStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_enums_proto_enumTypes[7].Descriptor()
+}
+
+func (FocusCapacityReservationStatus) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_enums_proto_enumTypes[7]
+}
+
+func (x FocusCapacityReservationStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FocusCapacityReservationStatus.Descriptor instead.
+func (FocusCapacityReservationStatus) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{7}
+}
+
 var File_pulumicost_v1_enums_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_enums_proto_rawDesc = "" +
@@ -245,7 +508,28 @@ const file_pulumicost_v1_enums_proto_rawDesc = "" +
 	"\x1fFOCUS_PRICING_CATEGORY_STANDARD\x10\x01\x12$\n" +
 	" FOCUS_PRICING_CATEGORY_COMMITTED\x10\x02\x12\"\n" +
 	"\x1eFOCUS_PRICING_CATEGORY_DYNAMIC\x10\x03\x12 \n" +
-	"\x1cFOCUS_PRICING_CATEGORY_OTHER\x10\x04B4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
+	"\x1cFOCUS_PRICING_CATEGORY_OTHER\x10\x04*y\n" +
+	"\x10FocusChargeClass\x12\"\n" +
+	"\x1eFOCUS_CHARGE_CLASS_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aFOCUS_CHARGE_CLASS_REGULAR\x10\x01\x12!\n" +
+	"\x1dFOCUS_CHARGE_CLASS_CORRECTION\x10\x02*\xb1\x01\n" +
+	"\x14FocusChargeFrequency\x12&\n" +
+	"\"FOCUS_CHARGE_FREQUENCY_UNSPECIFIED\x10\x00\x12#\n" +
+	"\x1fFOCUS_CHARGE_FREQUENCY_ONE_TIME\x10\x01\x12$\n" +
+	" FOCUS_CHARGE_FREQUENCY_RECURRING\x10\x02\x12&\n" +
+	"\"FOCUS_CHARGE_FREQUENCY_USAGE_BASED\x10\x03*\xb1\x01\n" +
+	"\x1fFocusCommitmentDiscountCategory\x122\n" +
+	".FOCUS_COMMITMENT_DISCOUNT_CATEGORY_UNSPECIFIED\x10\x00\x12,\n" +
+	"(FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND\x10\x01\x12,\n" +
+	"(FOCUS_COMMITMENT_DISCOUNT_CATEGORY_USAGE\x10\x02*\xa9\x01\n" +
+	"\x1dFocusCommitmentDiscountStatus\x120\n" +
+	",FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED\x10\x00\x12)\n" +
+	"%FOCUS_COMMITMENT_DISCOUNT_STATUS_USED\x10\x01\x12+\n" +
+	"'FOCUS_COMMITMENT_DISCOUNT_STATUS_UNUSED\x10\x02*\xad\x01\n" +
+	"\x1eFocusCapacityReservationStatus\x121\n" +
+	"-FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED\x10\x00\x12*\n" +
+	"&FOCUS_CAPACITY_RESERVATION_STATUS_USED\x10\x01\x12,\n" +
+	"(FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED\x10\x02B4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
 
 var (
 	file_pulumicost_v1_enums_proto_rawDescOnce sync.Once
@@ -259,11 +543,16 @@ func file_pulumicost_v1_enums_proto_rawDescGZIP() []byte {
 	return file_pulumicost_v1_enums_proto_rawDescData
 }
 
-var file_pulumicost_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_pulumicost_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
 var file_pulumicost_v1_enums_proto_goTypes = []any{
-	(FocusServiceCategory)(0), // 0: pulumicost.v1.FocusServiceCategory
-	(FocusChargeCategory)(0),  // 1: pulumicost.v1.FocusChargeCategory
-	(FocusPricingCategory)(0), // 2: pulumicost.v1.FocusPricingCategory
+	(FocusServiceCategory)(0),            // 0: pulumicost.v1.FocusServiceCategory
+	(FocusChargeCategory)(0),             // 1: pulumicost.v1.FocusChargeCategory
+	(FocusPricingCategory)(0),            // 2: pulumicost.v1.FocusPricingCategory
+	(FocusChargeClass)(0),                // 3: pulumicost.v1.FocusChargeClass
+	(FocusChargeFrequency)(0),            // 4: pulumicost.v1.FocusChargeFrequency
+	(FocusCommitmentDiscountCategory)(0), // 5: pulumicost.v1.FocusCommitmentDiscountCategory
+	(FocusCommitmentDiscountStatus)(0),   // 6: pulumicost.v1.FocusCommitmentDiscountStatus
+	(FocusCapacityReservationStatus)(0),  // 7: pulumicost.v1.FocusCapacityReservationStatus
 }
 var file_pulumicost_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -283,7 +572,7 @@ func file_pulumicost_v1_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_enums_proto_rawDesc), len(file_pulumicost_v1_enums_proto_rawDesc)),
-			NumEnums:      3,
+			NumEnums:      8,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

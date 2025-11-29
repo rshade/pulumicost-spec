@@ -8,6 +8,45 @@ This guide explains how to update existing plugins to support the FinOps FOCUS 1
 - **Builder Pattern**: Direct struct initialization of cost records is discouraged. Use `NewFocusRecordBuilder`.
 - **Strict Enums**: Service, Charge, and Pricing categories are now Enums.
 
+## Breaking Changes (v0.2.0)
+
+The following proto field renames align with FOCUS 1.2 naming conventions:
+
+| Old Field Name | New Field Name | Proto Field # | Notes |
+|----------------|----------------|---------------|-------|
+| `currency` | `billing_currency` | 18 | Aligns with FOCUS BillingCurrency |
+| `usage_quantity` | `consumed_quantity` | 20 | Aligns with FOCUS ConsumedQuantity |
+| `usage_unit` | `consumed_unit` | 21 | Aligns with FOCUS ConsumedUnit |
+
+### Wire Format Impact
+
+- **Binary protobuf**: Field numbers unchanged; binary compatibility preserved.
+- **JSON serialization**: Field names changed (e.g., `currency` → `billingCurrency`).
+- **Go SDK**: Use `FocusRecordBuilder` methods which handle naming automatically.
+
+### Migration Example
+
+**Before (v0.1.x):**
+
+```go
+record.Currency = "USD"
+record.UsageQuantity = 100.0
+record.UsageUnit = "Hours"
+```
+
+**After (v0.2.0):**
+
+```go
+// Option 1: Use the builder (recommended)
+builder.WithFinancials(billed, list, effective, "USD", invoiceID)
+builder.WithUsage(100.0, "Hours")
+
+// Option 2: Direct field access (if needed)
+record.BillingCurrency = "USD"
+record.ConsumedQuantity = 100.0
+record.ConsumedUnit = "Hours"
+```
+
 ## Migration Steps
 
 ### 1. Update Imports

@@ -522,20 +522,12 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
-- Go 1.24+ (toolchain go1.25.4) + google.golang.org/grpc v1.77.0, crypto/rand (stdlib) (008-trace-id-validation)
-- N/A (in-memory context propagation only) (008-trace-id-validation)
-
-- Go 1.24+ (toolchain go1.25.4) + zerolog v1.34.0+, google.golang.org/grpc, sdk/go/testing harness (007-zerolog-logging-example)
+- Go 1.24.10 (toolchain go1.25.4)
+- Protocol Buffers v3 + google.golang.org/protobuf
+- google.golang.org/grpc
+- buf v1.32.1 (010-focus-column-audit)
+- crypto/rand (stdlib) (008-trace-id-validation)
+- zerolog v1.34.0+
+- sdk/go/testing harness (007-zerolog-logging-example)
 - N/A (example code, no data persistence) (007-zerolog-logging-example)
-
-- Go 1.24+ (matches existing SDK, toolchain go1.25.4), Protocol Buffers v3 (006-estimate-cost)
-- N/A (specification repository - no runtime storage) (006-estimate-cost)
-
-- Go 1.24+ (matches existing SDK) + zerolog v1.34.0+, google.golang.org/grpc (005-zerolog)
-- JSON Schema draft 2020-12 + AJV (validation), existing `registry.proto` definitions (004-plugin-registry-schema)
-- Go 1.24.10 (toolchain go1.25.4) + Standard library only (no external dependencies for validation) (001-domain-enum-optimization)
-
-## Recent Changes
-
-- 001-domain-enum-optimization: Added Go 1.24.10 (toolchain go1.25.4) + Standard library only (no external
-  dependencies for validation)
+- JSON Schema draft 2020-12 + AJV (validation)(004-plugin-registry-schema)

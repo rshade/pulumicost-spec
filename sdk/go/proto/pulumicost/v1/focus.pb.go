@@ -23,40 +23,151 @@ const (
 )
 
 // FocusCostRecord represents a single cost line item normalized to the
-// FinOps FOCUS 1.2 specification.
+// FinOps FOCUS 1.2 specification. All field names follow FOCUS naming conventions.
+// Reference: https://focus.finops.org
 type FocusCostRecord struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// --- Identity & Hierarchy ---
-	ProviderName       string `protobuf:"bytes,1,opt,name=provider_name,json=providerName,proto3" json:"provider_name,omitempty"`
-	BillingAccountId   string `protobuf:"bytes,2,opt,name=billing_account_id,json=billingAccountId,proto3" json:"billing_account_id,omitempty"`
+	// ProviderName: The name of the cloud provider (e.g., "AWS", "Azure", "GCP").
+	ProviderName string `protobuf:"bytes,1,opt,name=provider_name,json=providerName,proto3" json:"provider_name,omitempty"`
+	// BillingAccountId: The identifier for the billing account.
+	BillingAccountId string `protobuf:"bytes,2,opt,name=billing_account_id,json=billingAccountId,proto3" json:"billing_account_id,omitempty"`
+	// BillingAccountName: The display name for the billing account.
 	BillingAccountName string `protobuf:"bytes,3,opt,name=billing_account_name,json=billingAccountName,proto3" json:"billing_account_name,omitempty"`
-	// --- Time ---
+	// SubAccountId: The identifier for the sub-account (e.g., AWS Account ID,
+	// Azure Subscription ID, GCP Project ID).
+	SubAccountId string `protobuf:"bytes,24,opt,name=sub_account_id,json=subAccountId,proto3" json:"sub_account_id,omitempty"`
+	// SubAccountName: The display name for the sub-account.
+	SubAccountName string `protobuf:"bytes,25,opt,name=sub_account_name,json=subAccountName,proto3" json:"sub_account_name,omitempty"`
+	// BillingAccountType: Provider-assigned name to identify the type of billing
+	// account. FOCUS 1.2 Section 3.3: Billing Account Type (CONDITIONAL).
+	BillingAccountType string `protobuf:"bytes,42,opt,name=billing_account_type,json=billingAccountType,proto3" json:"billing_account_type,omitempty"`
+	// SubAccountType: Provider-assigned identifier for sub-account classification.
+	// FOCUS 1.2 Section 3.45: Sub Account Type (CONDITIONAL).
+	SubAccountType string `protobuf:"bytes,43,opt,name=sub_account_type,json=subAccountType,proto3" json:"sub_account_type,omitempty"`
+	// BillingPeriodStart: The start date/time of the billing period.
+	BillingPeriodStart *timestamppb.Timestamp `protobuf:"bytes,26,opt,name=billing_period_start,json=billingPeriodStart,proto3" json:"billing_period_start,omitempty"`
+	// BillingPeriodEnd: The end date/time of the billing period.
+	BillingPeriodEnd *timestamppb.Timestamp `protobuf:"bytes,27,opt,name=billing_period_end,json=billingPeriodEnd,proto3" json:"billing_period_end,omitempty"`
+	// BillingCurrency: The currency used for billing (ISO 4217 code).
+	BillingCurrency string `protobuf:"bytes,18,opt,name=billing_currency,json=billingCurrency,proto3" json:"billing_currency,omitempty"`
+	// ChargePeriodStart: The start date/time when the charge was incurred.
 	ChargePeriodStart *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=charge_period_start,json=chargePeriodStart,proto3" json:"charge_period_start,omitempty"`
-	ChargePeriodEnd   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=charge_period_end,json=chargePeriodEnd,proto3" json:"charge_period_end,omitempty"`
-	// --- Service & Product ---
-	ServiceCategory FocusServiceCategory `protobuf:"varint,6,opt,name=service_category,json=serviceCategory,proto3,enum=pulumicost.v1.FocusServiceCategory" json:"service_category,omitempty"`
-	ServiceName     string               `protobuf:"bytes,7,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
-	ResourceId      string               `protobuf:"bytes,12,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
-	ResourceName    string               `protobuf:"bytes,13,opt,name=resource_name,json=resourceName,proto3" json:"resource_name,omitempty"`
-	SkuId           string               `protobuf:"bytes,14,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`
-	RegionId        string               `protobuf:"bytes,10,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
-	RegionName      string               `protobuf:"bytes,11,opt,name=region_name,json=regionName,proto3" json:"region_name,omitempty"`
-	// --- Charge Details ---
-	ChargeCategory  FocusChargeCategory  `protobuf:"varint,8,opt,name=charge_category,json=chargeCategory,proto3,enum=pulumicost.v1.FocusChargeCategory" json:"charge_category,omitempty"`
+	// ChargePeriodEnd: The end date/time when the charge was incurred.
+	ChargePeriodEnd *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=charge_period_end,json=chargePeriodEnd,proto3" json:"charge_period_end,omitempty"`
+	// ChargeCategory: The nature of the charge (Usage, Purchase, Credit, etc.).
+	ChargeCategory FocusChargeCategory `protobuf:"varint,8,opt,name=charge_category,json=chargeCategory,proto3,enum=pulumicost.v1.FocusChargeCategory" json:"charge_category,omitempty"`
+	// ChargeClass: Classification of the charge (Regular, Correction).
+	// New in FOCUS 1.0+.
+	ChargeClass FocusChargeClass `protobuf:"varint,28,opt,name=charge_class,json=chargeClass,proto3,enum=pulumicost.v1.FocusChargeClass" json:"charge_class,omitempty"`
+	// ChargeDescription: A human-readable description of the charge.
+	ChargeDescription string `protobuf:"bytes,29,opt,name=charge_description,json=chargeDescription,proto3" json:"charge_description,omitempty"`
+	// ChargeFrequency: How often the charge is applied (OneTime, Recurring, UsageBased).
+	ChargeFrequency FocusChargeFrequency `protobuf:"varint,30,opt,name=charge_frequency,json=chargeFrequency,proto3,enum=pulumicost.v1.FocusChargeFrequency" json:"charge_frequency,omitempty"`
+	// PricingCategory: The pricing model applied (Standard, Committed, Dynamic).
 	PricingCategory FocusPricingCategory `protobuf:"varint,9,opt,name=pricing_category,json=pricingCategory,proto3,enum=pulumicost.v1.FocusPricingCategory" json:"pricing_category,omitempty"`
-	// --- Financials ---
-	BilledCost    float64 `protobuf:"fixed64,15,opt,name=billed_cost,json=billedCost,proto3" json:"billed_cost,omitempty"`
-	ListCost      float64 `protobuf:"fixed64,16,opt,name=list_cost,json=listCost,proto3" json:"list_cost,omitempty"`
+	// PricingQuantity: The quantity used for pricing calculations.
+	PricingQuantity float64 `protobuf:"fixed64,31,opt,name=pricing_quantity,json=pricingQuantity,proto3" json:"pricing_quantity,omitempty"`
+	// PricingUnit: The unit of measure for pricing (e.g., "Hours", "GB").
+	PricingUnit string `protobuf:"bytes,32,opt,name=pricing_unit,json=pricingUnit,proto3" json:"pricing_unit,omitempty"`
+	// ListUnitPrice: The published unit price before any discounts.
+	ListUnitPrice float64 `protobuf:"fixed64,33,opt,name=list_unit_price,json=listUnitPrice,proto3" json:"list_unit_price,omitempty"`
+	// PricingCurrency: Currency for pricing-related columns when different from
+	// billing currency. FOCUS 1.2 Section 3.34: Pricing Currency (CONDITIONAL).
+	// Format: ISO 4217 currency code.
+	PricingCurrency string `protobuf:"bytes,51,opt,name=pricing_currency,json=pricingCurrency,proto3" json:"pricing_currency,omitempty"`
+	// PricingCurrencyContractedUnitPrice: Contracted unit price denominated in
+	// pricing currency. FOCUS 1.2 Section 3.35 (CONDITIONAL).
+	PricingCurrencyContractedUnitPrice float64 `protobuf:"fixed64,52,opt,name=pricing_currency_contracted_unit_price,json=pricingCurrencyContractedUnitPrice,proto3" json:"pricing_currency_contracted_unit_price,omitempty"`
+	// PricingCurrencyEffectiveCost: Effective cost denominated in pricing
+	// currency. FOCUS 1.2 Section 3.36 (CONDITIONAL).
+	PricingCurrencyEffectiveCost float64 `protobuf:"fixed64,53,opt,name=pricing_currency_effective_cost,json=pricingCurrencyEffectiveCost,proto3" json:"pricing_currency_effective_cost,omitempty"`
+	// PricingCurrencyListUnitPrice: List unit price denominated in pricing
+	// currency. FOCUS 1.2 Section 3.37 (CONDITIONAL).
+	PricingCurrencyListUnitPrice float64 `protobuf:"fixed64,54,opt,name=pricing_currency_list_unit_price,json=pricingCurrencyListUnitPrice,proto3" json:"pricing_currency_list_unit_price,omitempty"`
+	// ServiceCategory: The category of the service (Compute, Storage, Network, etc.).
+	ServiceCategory FocusServiceCategory `protobuf:"varint,6,opt,name=service_category,json=serviceCategory,proto3,enum=pulumicost.v1.FocusServiceCategory" json:"service_category,omitempty"`
+	// ServiceName: The name of the service (e.g., "Amazon EC2", "Azure VMs").
+	ServiceName string `protobuf:"bytes,7,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
+	// ServiceSubcategory: Granular service classification supporting functional
+	// categorization. FOCUS 1.2 Section 3.43: Service Subcategory (CONDITIONAL).
+	ServiceSubcategory string `protobuf:"bytes,56,opt,name=service_subcategory,json=serviceSubcategory,proto3" json:"service_subcategory,omitempty"`
+	// Publisher: Entity that published the service or product.
+	// FOCUS 1.2 Section 3.39: Publisher (CONDITIONAL).
+	Publisher string `protobuf:"bytes,55,opt,name=publisher,proto3" json:"publisher,omitempty"`
+	// ResourceId: The unique identifier for the resource.
+	ResourceId string `protobuf:"bytes,12,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
+	// ResourceName: The display name of the resource.
+	ResourceName string `protobuf:"bytes,13,opt,name=resource_name,json=resourceName,proto3" json:"resource_name,omitempty"`
+	// ResourceType: The type of resource (e.g., "m5.large", "Standard_D2s_v3").
+	ResourceType string `protobuf:"bytes,34,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
+	// SkuId: The identifier for the SKU.
+	SkuId string `protobuf:"bytes,14,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`
+	// SkuPriceId: The identifier for the specific SKU price.
+	SkuPriceId string `protobuf:"bytes,35,opt,name=sku_price_id,json=skuPriceId,proto3" json:"sku_price_id,omitempty"`
+	// SkuMeter: Provider-assigned meter identifier for the SKU.
+	// FOCUS 1.2 Section 3.46: SKU Meter (CONDITIONAL).
+	SkuMeter string `protobuf:"bytes,57,opt,name=sku_meter,json=skuMeter,proto3" json:"sku_meter,omitempty"`
+	// SkuPriceDetails: Additional provider-specific pricing details.
+	// FOCUS 1.2 Section 3.48: SKU Price Details (CONDITIONAL).
+	SkuPriceDetails string `protobuf:"bytes,58,opt,name=sku_price_details,json=skuPriceDetails,proto3" json:"sku_price_details,omitempty"`
+	// RegionId: The identifier for the region (e.g., "us-east-1", "eastus").
+	RegionId string `protobuf:"bytes,10,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
+	// RegionName: The display name of the region.
+	RegionName string `protobuf:"bytes,11,opt,name=region_name,json=regionName,proto3" json:"region_name,omitempty"`
+	// AvailabilityZone: The availability zone within the region (conditional).
+	AvailabilityZone string `protobuf:"bytes,36,opt,name=availability_zone,json=availabilityZone,proto3" json:"availability_zone,omitempty"`
+	// BilledCost: The amount billed for the charge.
+	BilledCost float64 `protobuf:"fixed64,15,opt,name=billed_cost,json=billedCost,proto3" json:"billed_cost,omitempty"`
+	// ListCost: The cost at list price before any discounts.
+	ListCost float64 `protobuf:"fixed64,16,opt,name=list_cost,json=listCost,proto3" json:"list_cost,omitempty"`
+	// EffectiveCost: The actual cost after all discounts and adjustments.
 	EffectiveCost float64 `protobuf:"fixed64,17,opt,name=effective_cost,json=effectiveCost,proto3" json:"effective_cost,omitempty"`
-	Currency      string  `protobuf:"bytes,18,opt,name=currency,proto3" json:"currency,omitempty"`
-	InvoiceId     string  `protobuf:"bytes,19,opt,name=invoice_id,json=invoiceId,proto3" json:"invoice_id,omitempty"`
-	// --- Usage ---
-	UsageQuantity float64 `protobuf:"fixed64,20,opt,name=usage_quantity,json=usageQuantity,proto3" json:"usage_quantity,omitempty"`
-	UsageUnit     string  `protobuf:"bytes,21,opt,name=usage_unit,json=usageUnit,proto3" json:"usage_unit,omitempty"`
-	// --- Metadata & Extension ---
+	// ContractedCost: Cost calculated by multiplying contracted unit price and
+	// pricing quantity. FOCUS 1.2 Section 3.20: Contracted Cost (MANDATORY).
+	// Constraint: Must equal ContractedUnitPrice × PricingQuantity when both
+	// are present and ChargeClass is not "Correction".
+	ContractedCost float64 `protobuf:"fixed64,41,opt,name=contracted_cost,json=contractedCost,proto3" json:"contracted_cost,omitempty"`
+	// ContractedUnitPrice: Agreed-upon unit price per pricing unit for the
+	// associated SKU. FOCUS 1.2 Section 3.21: Contracted Unit Price (CONDITIONAL).
+	ContractedUnitPrice float64 `protobuf:"fixed64,50,opt,name=contracted_unit_price,json=contractedUnitPrice,proto3" json:"contracted_unit_price,omitempty"`
+	// ConsumedQuantity: The amount of usage consumed.
+	ConsumedQuantity float64 `protobuf:"fixed64,20,opt,name=consumed_quantity,json=consumedQuantity,proto3" json:"consumed_quantity,omitempty"`
+	// ConsumedUnit: The unit of measure for consumption (e.g., "Hours", "GB").
+	ConsumedUnit string `protobuf:"bytes,21,opt,name=consumed_unit,json=consumedUnit,proto3" json:"consumed_unit,omitempty"`
+	// CommitmentDiscountCategory: The type of commitment discount (Spend, Usage).
+	CommitmentDiscountCategory FocusCommitmentDiscountCategory `protobuf:"varint,37,opt,name=commitment_discount_category,json=commitmentDiscountCategory,proto3,enum=pulumicost.v1.FocusCommitmentDiscountCategory" json:"commitment_discount_category,omitempty"`
+	// CommitmentDiscountId: The identifier for the commitment discount.
+	CommitmentDiscountId string `protobuf:"bytes,38,opt,name=commitment_discount_id,json=commitmentDiscountId,proto3" json:"commitment_discount_id,omitempty"`
+	// CommitmentDiscountName: The display name of the commitment discount.
+	CommitmentDiscountName string `protobuf:"bytes,39,opt,name=commitment_discount_name,json=commitmentDiscountName,proto3" json:"commitment_discount_name,omitempty"`
+	// CommitmentDiscountQuantity: Amount of commitment discount purchased or
+	// accounted for. FOCUS 1.2 Section 3.14 (CONDITIONAL).
+	CommitmentDiscountQuantity float64 `protobuf:"fixed64,46,opt,name=commitment_discount_quantity,json=commitmentDiscountQuantity,proto3" json:"commitment_discount_quantity,omitempty"`
+	// CommitmentDiscountStatus: Utilization status of commitment discount.
+	// FOCUS 1.2 Section 3.17 (CONDITIONAL). Required when CommitmentDiscountId
+	// is not null and ChargeCategory is "Usage".
+	CommitmentDiscountStatus FocusCommitmentDiscountStatus `protobuf:"varint,47,opt,name=commitment_discount_status,json=commitmentDiscountStatus,proto3,enum=pulumicost.v1.FocusCommitmentDiscountStatus" json:"commitment_discount_status,omitempty"`
+	// CommitmentDiscountType: Provider-assigned identifier for the type of
+	// commitment discount applied. FOCUS 1.2 Section 3.18 (CONDITIONAL).
+	CommitmentDiscountType string `protobuf:"bytes,48,opt,name=commitment_discount_type,json=commitmentDiscountType,proto3" json:"commitment_discount_type,omitempty"`
+	// CommitmentDiscountUnit: Provider-specified measurement unit for commitment
+	// discount quantity. FOCUS 1.2 Section 3.19 (CONDITIONAL).
+	CommitmentDiscountUnit string `protobuf:"bytes,49,opt,name=commitment_discount_unit,json=commitmentDiscountUnit,proto3" json:"commitment_discount_unit,omitempty"`
+	// CapacityReservationId: Identifier assigned to a capacity reservation by
+	// the provider. FOCUS 1.2 Section 3.6 (CONDITIONAL).
+	CapacityReservationId string `protobuf:"bytes,44,opt,name=capacity_reservation_id,json=capacityReservationId,proto3" json:"capacity_reservation_id,omitempty"`
+	// CapacityReservationStatus: Utilization status of capacity reservation.
+	// FOCUS 1.2 Section 3.7 (CONDITIONAL). Required when CapacityReservationId
+	// is not null and ChargeCategory is "Usage".
+	CapacityReservationStatus FocusCapacityReservationStatus `protobuf:"varint,45,opt,name=capacity_reservation_status,json=capacityReservationStatus,proto3,enum=pulumicost.v1.FocusCapacityReservationStatus" json:"capacity_reservation_status,omitempty"`
+	// InvoiceId: The identifier for the invoice. Critical for reconciliation.
+	InvoiceId string `protobuf:"bytes,19,opt,name=invoice_id,json=invoiceId,proto3" json:"invoice_id,omitempty"`
+	// InvoiceIssuer: The entity that issued the invoice.
+	InvoiceIssuer string `protobuf:"bytes,40,opt,name=invoice_issuer,json=invoiceIssuer,proto3" json:"invoice_issuer,omitempty"`
+	// Tags: User-defined key-value pairs for resource tagging.
 	Tags map[string]string `protobuf:"bytes,22,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// The "Backpack": Supports future FOCUS columns or provider-specific
-	// extensions without requiring a schema update.
+	// ExtendedColumns: The "Backpack" - supports future FOCUS columns or
+	// provider-specific extensions without requiring a schema update.
 	ExtendedColumns map[string]string `protobuf:"bytes,23,rep,name=extended_columns,json=extendedColumns,proto3" json:"extended_columns,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -113,6 +224,55 @@ func (x *FocusCostRecord) GetBillingAccountName() string {
 	return ""
 }
 
+func (x *FocusCostRecord) GetSubAccountId() string {
+	if x != nil {
+		return x.SubAccountId
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetSubAccountName() string {
+	if x != nil {
+		return x.SubAccountName
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetBillingAccountType() string {
+	if x != nil {
+		return x.BillingAccountType
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetSubAccountType() string {
+	if x != nil {
+		return x.SubAccountType
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetBillingPeriodStart() *timestamppb.Timestamp {
+	if x != nil {
+		return x.BillingPeriodStart
+	}
+	return nil
+}
+
+func (x *FocusCostRecord) GetBillingPeriodEnd() *timestamppb.Timestamp {
+	if x != nil {
+		return x.BillingPeriodEnd
+	}
+	return nil
+}
+
+func (x *FocusCostRecord) GetBillingCurrency() string {
+	if x != nil {
+		return x.BillingCurrency
+	}
+	return ""
+}
+
 func (x *FocusCostRecord) GetChargePeriodStart() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ChargePeriodStart
@@ -127,6 +287,90 @@ func (x *FocusCostRecord) GetChargePeriodEnd() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *FocusCostRecord) GetChargeCategory() FocusChargeCategory {
+	if x != nil {
+		return x.ChargeCategory
+	}
+	return FocusChargeCategory_FOCUS_CHARGE_CATEGORY_UNSPECIFIED
+}
+
+func (x *FocusCostRecord) GetChargeClass() FocusChargeClass {
+	if x != nil {
+		return x.ChargeClass
+	}
+	return FocusChargeClass_FOCUS_CHARGE_CLASS_UNSPECIFIED
+}
+
+func (x *FocusCostRecord) GetChargeDescription() string {
+	if x != nil {
+		return x.ChargeDescription
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetChargeFrequency() FocusChargeFrequency {
+	if x != nil {
+		return x.ChargeFrequency
+	}
+	return FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_UNSPECIFIED
+}
+
+func (x *FocusCostRecord) GetPricingCategory() FocusPricingCategory {
+	if x != nil {
+		return x.PricingCategory
+	}
+	return FocusPricingCategory_FOCUS_PRICING_CATEGORY_UNSPECIFIED
+}
+
+func (x *FocusCostRecord) GetPricingQuantity() float64 {
+	if x != nil {
+		return x.PricingQuantity
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetPricingUnit() string {
+	if x != nil {
+		return x.PricingUnit
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetListUnitPrice() float64 {
+	if x != nil {
+		return x.ListUnitPrice
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetPricingCurrency() string {
+	if x != nil {
+		return x.PricingCurrency
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetPricingCurrencyContractedUnitPrice() float64 {
+	if x != nil {
+		return x.PricingCurrencyContractedUnitPrice
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetPricingCurrencyEffectiveCost() float64 {
+	if x != nil {
+		return x.PricingCurrencyEffectiveCost
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetPricingCurrencyListUnitPrice() float64 {
+	if x != nil {
+		return x.PricingCurrencyListUnitPrice
+	}
+	return 0
+}
+
 func (x *FocusCostRecord) GetServiceCategory() FocusServiceCategory {
 	if x != nil {
 		return x.ServiceCategory
@@ -137,6 +381,20 @@ func (x *FocusCostRecord) GetServiceCategory() FocusServiceCategory {
 func (x *FocusCostRecord) GetServiceName() string {
 	if x != nil {
 		return x.ServiceName
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetServiceSubcategory() string {
+	if x != nil {
+		return x.ServiceSubcategory
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetPublisher() string {
+	if x != nil {
+		return x.Publisher
 	}
 	return ""
 }
@@ -155,9 +413,37 @@ func (x *FocusCostRecord) GetResourceName() string {
 	return ""
 }
 
+func (x *FocusCostRecord) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
 func (x *FocusCostRecord) GetSkuId() string {
 	if x != nil {
 		return x.SkuId
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetSkuPriceId() string {
+	if x != nil {
+		return x.SkuPriceId
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetSkuMeter() string {
+	if x != nil {
+		return x.SkuMeter
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetSkuPriceDetails() string {
+	if x != nil {
+		return x.SkuPriceDetails
 	}
 	return ""
 }
@@ -176,18 +462,11 @@ func (x *FocusCostRecord) GetRegionName() string {
 	return ""
 }
 
-func (x *FocusCostRecord) GetChargeCategory() FocusChargeCategory {
+func (x *FocusCostRecord) GetAvailabilityZone() string {
 	if x != nil {
-		return x.ChargeCategory
+		return x.AvailabilityZone
 	}
-	return FocusChargeCategory_FOCUS_CHARGE_CATEGORY_UNSPECIFIED
-}
-
-func (x *FocusCostRecord) GetPricingCategory() FocusPricingCategory {
-	if x != nil {
-		return x.PricingCategory
-	}
-	return FocusPricingCategory_FOCUS_PRICING_CATEGORY_UNSPECIFIED
+	return ""
 }
 
 func (x *FocusCostRecord) GetBilledCost() float64 {
@@ -211,11 +490,95 @@ func (x *FocusCostRecord) GetEffectiveCost() float64 {
 	return 0
 }
 
-func (x *FocusCostRecord) GetCurrency() string {
+func (x *FocusCostRecord) GetContractedCost() float64 {
 	if x != nil {
-		return x.Currency
+		return x.ContractedCost
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetContractedUnitPrice() float64 {
+	if x != nil {
+		return x.ContractedUnitPrice
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetConsumedQuantity() float64 {
+	if x != nil {
+		return x.ConsumedQuantity
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetConsumedUnit() string {
+	if x != nil {
+		return x.ConsumedUnit
 	}
 	return ""
+}
+
+func (x *FocusCostRecord) GetCommitmentDiscountCategory() FocusCommitmentDiscountCategory {
+	if x != nil {
+		return x.CommitmentDiscountCategory
+	}
+	return FocusCommitmentDiscountCategory_FOCUS_COMMITMENT_DISCOUNT_CATEGORY_UNSPECIFIED
+}
+
+func (x *FocusCostRecord) GetCommitmentDiscountId() string {
+	if x != nil {
+		return x.CommitmentDiscountId
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetCommitmentDiscountName() string {
+	if x != nil {
+		return x.CommitmentDiscountName
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetCommitmentDiscountQuantity() float64 {
+	if x != nil {
+		return x.CommitmentDiscountQuantity
+	}
+	return 0
+}
+
+func (x *FocusCostRecord) GetCommitmentDiscountStatus() FocusCommitmentDiscountStatus {
+	if x != nil {
+		return x.CommitmentDiscountStatus
+	}
+	return FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED
+}
+
+func (x *FocusCostRecord) GetCommitmentDiscountType() string {
+	if x != nil {
+		return x.CommitmentDiscountType
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetCommitmentDiscountUnit() string {
+	if x != nil {
+		return x.CommitmentDiscountUnit
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetCapacityReservationId() string {
+	if x != nil {
+		return x.CapacityReservationId
+	}
+	return ""
+}
+
+func (x *FocusCostRecord) GetCapacityReservationStatus() FocusCapacityReservationStatus {
+	if x != nil {
+		return x.CapacityReservationStatus
+	}
+	return FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED
 }
 
 func (x *FocusCostRecord) GetInvoiceId() string {
@@ -225,16 +588,9 @@ func (x *FocusCostRecord) GetInvoiceId() string {
 	return ""
 }
 
-func (x *FocusCostRecord) GetUsageQuantity() float64 {
+func (x *FocusCostRecord) GetInvoiceIssuer() string {
 	if x != nil {
-		return x.UsageQuantity
-	}
-	return 0
-}
-
-func (x *FocusCostRecord) GetUsageUnit() string {
-	if x != nil {
-		return x.UsageUnit
+		return x.InvoiceIssuer
 	}
 	return ""
 }
@@ -257,35 +613,70 @@ var File_pulumicost_v1_focus_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_focus_proto_rawDesc = "" +
 	"\n" +
-	"\x19pulumicost/v1/focus.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19pulumicost/v1/enums.proto\"\xd6\t\n" +
+	"\x19pulumicost/v1/focus.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19pulumicost/v1/enums.proto\"\xb7\x19\n" +
 	"\x0fFocusCostRecord\x12#\n" +
 	"\rprovider_name\x18\x01 \x01(\tR\fproviderName\x12,\n" +
 	"\x12billing_account_id\x18\x02 \x01(\tR\x10billingAccountId\x120\n" +
-	"\x14billing_account_name\x18\x03 \x01(\tR\x12billingAccountName\x12J\n" +
+	"\x14billing_account_name\x18\x03 \x01(\tR\x12billingAccountName\x12$\n" +
+	"\x0esub_account_id\x18\x18 \x01(\tR\fsubAccountId\x12(\n" +
+	"\x10sub_account_name\x18\x19 \x01(\tR\x0esubAccountName\x120\n" +
+	"\x14billing_account_type\x18* \x01(\tR\x12billingAccountType\x12(\n" +
+	"\x10sub_account_type\x18+ \x01(\tR\x0esubAccountType\x12L\n" +
+	"\x14billing_period_start\x18\x1a \x01(\v2\x1a.google.protobuf.TimestampR\x12billingPeriodStart\x12H\n" +
+	"\x12billing_period_end\x18\x1b \x01(\v2\x1a.google.protobuf.TimestampR\x10billingPeriodEnd\x12)\n" +
+	"\x10billing_currency\x18\x12 \x01(\tR\x0fbillingCurrency\x12J\n" +
 	"\x13charge_period_start\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x11chargePeriodStart\x12F\n" +
-	"\x11charge_period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0fchargePeriodEnd\x12N\n" +
+	"\x11charge_period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0fchargePeriodEnd\x12K\n" +
+	"\x0fcharge_category\x18\b \x01(\x0e2\".pulumicost.v1.FocusChargeCategoryR\x0echargeCategory\x12B\n" +
+	"\fcharge_class\x18\x1c \x01(\x0e2\x1f.pulumicost.v1.FocusChargeClassR\vchargeClass\x12-\n" +
+	"\x12charge_description\x18\x1d \x01(\tR\x11chargeDescription\x12N\n" +
+	"\x10charge_frequency\x18\x1e \x01(\x0e2#.pulumicost.v1.FocusChargeFrequencyR\x0fchargeFrequency\x12N\n" +
+	"\x10pricing_category\x18\t \x01(\x0e2#.pulumicost.v1.FocusPricingCategoryR\x0fpricingCategory\x12)\n" +
+	"\x10pricing_quantity\x18\x1f \x01(\x01R\x0fpricingQuantity\x12!\n" +
+	"\fpricing_unit\x18  \x01(\tR\vpricingUnit\x12&\n" +
+	"\x0flist_unit_price\x18! \x01(\x01R\rlistUnitPrice\x12)\n" +
+	"\x10pricing_currency\x183 \x01(\tR\x0fpricingCurrency\x12R\n" +
+	"&pricing_currency_contracted_unit_price\x184 \x01(\x01R\"pricingCurrencyContractedUnitPrice\x12E\n" +
+	"\x1fpricing_currency_effective_cost\x185 \x01(\x01R\x1cpricingCurrencyEffectiveCost\x12F\n" +
+	" pricing_currency_list_unit_price\x186 \x01(\x01R\x1cpricingCurrencyListUnitPrice\x12N\n" +
 	"\x10service_category\x18\x06 \x01(\x0e2#.pulumicost.v1.FocusServiceCategoryR\x0fserviceCategory\x12!\n" +
-	"\fservice_name\x18\a \x01(\tR\vserviceName\x12\x1f\n" +
+	"\fservice_name\x18\a \x01(\tR\vserviceName\x12/\n" +
+	"\x13service_subcategory\x188 \x01(\tR\x12serviceSubcategory\x12\x1c\n" +
+	"\tpublisher\x187 \x01(\tR\tpublisher\x12\x1f\n" +
 	"\vresource_id\x18\f \x01(\tR\n" +
 	"resourceId\x12#\n" +
-	"\rresource_name\x18\r \x01(\tR\fresourceName\x12\x15\n" +
-	"\x06sku_id\x18\x0e \x01(\tR\x05skuId\x12\x1b\n" +
+	"\rresource_name\x18\r \x01(\tR\fresourceName\x12#\n" +
+	"\rresource_type\x18\" \x01(\tR\fresourceType\x12\x15\n" +
+	"\x06sku_id\x18\x0e \x01(\tR\x05skuId\x12 \n" +
+	"\fsku_price_id\x18# \x01(\tR\n" +
+	"skuPriceId\x12\x1b\n" +
+	"\tsku_meter\x189 \x01(\tR\bskuMeter\x12*\n" +
+	"\x11sku_price_details\x18: \x01(\tR\x0fskuPriceDetails\x12\x1b\n" +
 	"\tregion_id\x18\n" +
 	" \x01(\tR\bregionId\x12\x1f\n" +
 	"\vregion_name\x18\v \x01(\tR\n" +
-	"regionName\x12K\n" +
-	"\x0fcharge_category\x18\b \x01(\x0e2\".pulumicost.v1.FocusChargeCategoryR\x0echargeCategory\x12N\n" +
-	"\x10pricing_category\x18\t \x01(\x0e2#.pulumicost.v1.FocusPricingCategoryR\x0fpricingCategory\x12\x1f\n" +
+	"regionName\x12+\n" +
+	"\x11availability_zone\x18$ \x01(\tR\x10availabilityZone\x12\x1f\n" +
 	"\vbilled_cost\x18\x0f \x01(\x01R\n" +
 	"billedCost\x12\x1b\n" +
 	"\tlist_cost\x18\x10 \x01(\x01R\blistCost\x12%\n" +
-	"\x0eeffective_cost\x18\x11 \x01(\x01R\reffectiveCost\x12\x1a\n" +
-	"\bcurrency\x18\x12 \x01(\tR\bcurrency\x12\x1d\n" +
+	"\x0eeffective_cost\x18\x11 \x01(\x01R\reffectiveCost\x12'\n" +
+	"\x0fcontracted_cost\x18) \x01(\x01R\x0econtractedCost\x122\n" +
+	"\x15contracted_unit_price\x182 \x01(\x01R\x13contractedUnitPrice\x12+\n" +
+	"\x11consumed_quantity\x18\x14 \x01(\x01R\x10consumedQuantity\x12#\n" +
+	"\rconsumed_unit\x18\x15 \x01(\tR\fconsumedUnit\x12p\n" +
+	"\x1ccommitment_discount_category\x18% \x01(\x0e2..pulumicost.v1.FocusCommitmentDiscountCategoryR\x1acommitmentDiscountCategory\x124\n" +
+	"\x16commitment_discount_id\x18& \x01(\tR\x14commitmentDiscountId\x128\n" +
+	"\x18commitment_discount_name\x18' \x01(\tR\x16commitmentDiscountName\x12@\n" +
+	"\x1ccommitment_discount_quantity\x18. \x01(\x01R\x1acommitmentDiscountQuantity\x12j\n" +
+	"\x1acommitment_discount_status\x18/ \x01(\x0e2,.pulumicost.v1.FocusCommitmentDiscountStatusR\x18commitmentDiscountStatus\x128\n" +
+	"\x18commitment_discount_type\x180 \x01(\tR\x16commitmentDiscountType\x128\n" +
+	"\x18commitment_discount_unit\x181 \x01(\tR\x16commitmentDiscountUnit\x126\n" +
+	"\x17capacity_reservation_id\x18, \x01(\tR\x15capacityReservationId\x12m\n" +
+	"\x1bcapacity_reservation_status\x18- \x01(\x0e2-.pulumicost.v1.FocusCapacityReservationStatusR\x19capacityReservationStatus\x12\x1d\n" +
 	"\n" +
 	"invoice_id\x18\x13 \x01(\tR\tinvoiceId\x12%\n" +
-	"\x0eusage_quantity\x18\x14 \x01(\x01R\rusageQuantity\x12\x1d\n" +
-	"\n" +
-	"usage_unit\x18\x15 \x01(\tR\tusageUnit\x12<\n" +
+	"\x0einvoice_issuer\x18( \x01(\tR\rinvoiceIssuer\x12<\n" +
 	"\x04tags\x18\x16 \x03(\v2(.pulumicost.v1.FocusCostRecord.TagsEntryR\x04tags\x12^\n" +
 	"\x10extended_columns\x18\x17 \x03(\v23.pulumicost.v1.FocusCostRecord.ExtendedColumnsEntryR\x0fextendedColumns\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
@@ -309,27 +700,39 @@ func file_pulumicost_v1_focus_proto_rawDescGZIP() []byte {
 
 var file_pulumicost_v1_focus_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_pulumicost_v1_focus_proto_goTypes = []any{
-	(*FocusCostRecord)(nil),       // 0: pulumicost.v1.FocusCostRecord
-	nil,                           // 1: pulumicost.v1.FocusCostRecord.TagsEntry
-	nil,                           // 2: pulumicost.v1.FocusCostRecord.ExtendedColumnsEntry
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
-	(FocusServiceCategory)(0),     // 4: pulumicost.v1.FocusServiceCategory
-	(FocusChargeCategory)(0),      // 5: pulumicost.v1.FocusChargeCategory
-	(FocusPricingCategory)(0),     // 6: pulumicost.v1.FocusPricingCategory
+	(*FocusCostRecord)(nil),              // 0: pulumicost.v1.FocusCostRecord
+	nil,                                  // 1: pulumicost.v1.FocusCostRecord.TagsEntry
+	nil,                                  // 2: pulumicost.v1.FocusCostRecord.ExtendedColumnsEntry
+	(*timestamppb.Timestamp)(nil),        // 3: google.protobuf.Timestamp
+	(FocusChargeCategory)(0),             // 4: pulumicost.v1.FocusChargeCategory
+	(FocusChargeClass)(0),                // 5: pulumicost.v1.FocusChargeClass
+	(FocusChargeFrequency)(0),            // 6: pulumicost.v1.FocusChargeFrequency
+	(FocusPricingCategory)(0),            // 7: pulumicost.v1.FocusPricingCategory
+	(FocusServiceCategory)(0),            // 8: pulumicost.v1.FocusServiceCategory
+	(FocusCommitmentDiscountCategory)(0), // 9: pulumicost.v1.FocusCommitmentDiscountCategory
+	(FocusCommitmentDiscountStatus)(0),   // 10: pulumicost.v1.FocusCommitmentDiscountStatus
+	(FocusCapacityReservationStatus)(0),  // 11: pulumicost.v1.FocusCapacityReservationStatus
 }
 var file_pulumicost_v1_focus_proto_depIdxs = []int32{
-	3, // 0: pulumicost.v1.FocusCostRecord.charge_period_start:type_name -> google.protobuf.Timestamp
-	3, // 1: pulumicost.v1.FocusCostRecord.charge_period_end:type_name -> google.protobuf.Timestamp
-	4, // 2: pulumicost.v1.FocusCostRecord.service_category:type_name -> pulumicost.v1.FocusServiceCategory
-	5, // 3: pulumicost.v1.FocusCostRecord.charge_category:type_name -> pulumicost.v1.FocusChargeCategory
-	6, // 4: pulumicost.v1.FocusCostRecord.pricing_category:type_name -> pulumicost.v1.FocusPricingCategory
-	1, // 5: pulumicost.v1.FocusCostRecord.tags:type_name -> pulumicost.v1.FocusCostRecord.TagsEntry
-	2, // 6: pulumicost.v1.FocusCostRecord.extended_columns:type_name -> pulumicost.v1.FocusCostRecord.ExtendedColumnsEntry
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	3,  // 0: pulumicost.v1.FocusCostRecord.billing_period_start:type_name -> google.protobuf.Timestamp
+	3,  // 1: pulumicost.v1.FocusCostRecord.billing_period_end:type_name -> google.protobuf.Timestamp
+	3,  // 2: pulumicost.v1.FocusCostRecord.charge_period_start:type_name -> google.protobuf.Timestamp
+	3,  // 3: pulumicost.v1.FocusCostRecord.charge_period_end:type_name -> google.protobuf.Timestamp
+	4,  // 4: pulumicost.v1.FocusCostRecord.charge_category:type_name -> pulumicost.v1.FocusChargeCategory
+	5,  // 5: pulumicost.v1.FocusCostRecord.charge_class:type_name -> pulumicost.v1.FocusChargeClass
+	6,  // 6: pulumicost.v1.FocusCostRecord.charge_frequency:type_name -> pulumicost.v1.FocusChargeFrequency
+	7,  // 7: pulumicost.v1.FocusCostRecord.pricing_category:type_name -> pulumicost.v1.FocusPricingCategory
+	8,  // 8: pulumicost.v1.FocusCostRecord.service_category:type_name -> pulumicost.v1.FocusServiceCategory
+	9,  // 9: pulumicost.v1.FocusCostRecord.commitment_discount_category:type_name -> pulumicost.v1.FocusCommitmentDiscountCategory
+	10, // 10: pulumicost.v1.FocusCostRecord.commitment_discount_status:type_name -> pulumicost.v1.FocusCommitmentDiscountStatus
+	11, // 11: pulumicost.v1.FocusCostRecord.capacity_reservation_status:type_name -> pulumicost.v1.FocusCapacityReservationStatus
+	1,  // 12: pulumicost.v1.FocusCostRecord.tags:type_name -> pulumicost.v1.FocusCostRecord.TagsEntry
+	2,  // 13: pulumicost.v1.FocusCostRecord.extended_columns:type_name -> pulumicost.v1.FocusCostRecord.ExtendedColumnsEntry
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_pulumicost_v1_focus_proto_init() }

@@ -9,3 +9,10 @@ lint:
 breaking:
   use:
     - FILE
+  # Ignore FOCUS 1.2 alignment renames introduced in PR #99.
+  # These are intentional breaking changes to align with FinOps FOCUS 1.2 spec:
+  #   - currency → billing_currency (field 18)
+  #   - usage_quantity → consumed_quantity (field 20)
+  #   - usage_unit → consumed_unit (field 21)
+  ignore:
+    - proto/pulumicost/v1/focus.proto

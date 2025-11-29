@@ -32,10 +32,56 @@ enum FocusChargeCategory {
 }
 
 // FocusPricingCategory represents the pricing model applied.
+// FOCUS 1.2 Section 2.4: Pricing Category
 enum FocusPricingCategory {
   FOCUS_PRICING_CATEGORY_UNSPECIFIED = 0;
   FOCUS_PRICING_CATEGORY_STANDARD = 1;
   FOCUS_PRICING_CATEGORY_COMMITTED = 2;
   FOCUS_PRICING_CATEGORY_DYNAMIC = 3;
   FOCUS_PRICING_CATEGORY_OTHER = 4;
+}
+
+// FocusChargeClass represents the classification of charges.
+// FOCUS 1.2 Section 2.4: Charge Class (New in 1.0+)
+enum FocusChargeClass {
+  FOCUS_CHARGE_CLASS_UNSPECIFIED = 0;
+  FOCUS_CHARGE_CLASS_REGULAR = 1;
+  FOCUS_CHARGE_CLASS_CORRECTION = 2;
+}
+
+// FocusChargeFrequency represents how often a charge is applied.
+// FOCUS 1.2 Section 2.4: Charge Frequency
+enum FocusChargeFrequency {
+  FOCUS_CHARGE_FREQUENCY_UNSPECIFIED = 0;
+  FOCUS_CHARGE_FREQUENCY_ONE_TIME = 1;
+  FOCUS_CHARGE_FREQUENCY_RECURRING = 2;
+  FOCUS_CHARGE_FREQUENCY_USAGE_BASED = 3;
+}
+
+// FocusCommitmentDiscountCategory represents the type of commitment discount.
+// FOCUS 1.2 Section 2.6: Commitment Discounts
+enum FocusCommitmentDiscountCategory {
+  FOCUS_COMMITMENT_DISCOUNT_CATEGORY_UNSPECIFIED = 0;
+  FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND = 1;
+  FOCUS_COMMITMENT_DISCOUNT_CATEGORY_USAGE = 2;
+}
+
+// FocusCommitmentDiscountStatus represents the utilization status of a
+// commitment discount. FOCUS 1.2 Section 3.17: Commitment Discount Status
+enum FocusCommitmentDiscountStatus {
+  FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED = 0;
+  // Used: Charges utilizing a specific commitment discount amount.
+  FOCUS_COMMITMENT_DISCOUNT_STATUS_USED = 1;
+  // Unused: Charges representing the unused portion of a commitment discount.
+  FOCUS_COMMITMENT_DISCOUNT_STATUS_UNUSED = 2;
+}
+
+// FocusCapacityReservationStatus represents the utilization status of a
+// capacity reservation. FOCUS 1.2 Section 3.7: Capacity Reservation Status
+enum FocusCapacityReservationStatus {
+  FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED = 0;
+  // Used: Charges utilizing a specific capacity reservation amount.
+  FOCUS_CAPACITY_RESERVATION_STATUS_USED = 1;
+  // Unused: Charges representing the unused portion of a capacity reservation.
+  FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED = 2;
 }

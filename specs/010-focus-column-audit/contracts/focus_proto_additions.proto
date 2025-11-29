@@ -1,0 +1,152 @@
+// FOCUS 1.2 Column Audit - Proto Field Additions
+// This file documents the proto field additions required for full FOCUS 1.2 compliance.
+// These definitions should be merged into proto/pulumicost/v1/focus.proto and enums.proto.
+
+syntax = "proto3";
+
+package pulumicost.v1;
+
+// =============================================================================
+// NEW ENUM TYPES (add to enums.proto)
+// =============================================================================
+
+// FocusCommitmentDiscountStatus represents the status of commitment discount usage.
+// FOCUS 1.2 Section 3.17: Commitment Discount Status
+enum FocusCommitmentDiscountStatus {
+  FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED = 0;
+  // Used: Charges utilizing a specific commitment discount amount.
+  FOCUS_COMMITMENT_DISCOUNT_STATUS_USED = 1;
+  // Unused: Charges representing the unused portion of a commitment discount.
+  FOCUS_COMMITMENT_DISCOUNT_STATUS_UNUSED = 2;
+}
+
+// FocusCapacityReservationStatus represents the status of capacity reservation usage.
+// FOCUS 1.2 Section 3.7: Capacity Reservation Status
+enum FocusCapacityReservationStatus {
+  FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED = 0;
+  // Used: Charges utilizing a specific capacity reservation amount.
+  FOCUS_CAPACITY_RESERVATION_STATUS_USED = 1;
+  // Unused: Charges representing the unused portion of a capacity reservation.
+  FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED = 2;
+}
+
+// =============================================================================
+// NEW FIELDS FOR FocusCostRecord (add to focus.proto)
+// =============================================================================
+
+// The following fields should be added to the FocusCostRecord message.
+// Field numbers 41-58 are reserved for these additions.
+
+message FocusCostRecordAdditions {
+  // ==========================================================================
+  // Financial Fields (FOCUS 1.2 Section 3.20)
+  // ==========================================================================
+
+  // ContractedCost: Cost calculated by multiplying contracted unit price and
+  // pricing quantity. MANDATORY column.
+  // Constraint: Must equal ContractedUnitPrice × PricingQuantity when both
+  // are present and ChargeClass is not "Correction".
+  double contracted_cost = 41;
+
+  // ==========================================================================
+  // Account Type Fields (FOCUS 1.2 Sections 3.3, 3.45)
+  // ==========================================================================
+
+  // BillingAccountType: Provider-assigned name to identify the type of
+  // billing account. CONDITIONAL column.
+  string billing_account_type = 42;
+
+  // SubAccountType: Provider-assigned identifier for sub-account
+  // classification. CONDITIONAL column.
+  string sub_account_type = 43;
+
+  // ==========================================================================
+  // Capacity Reservation Fields (FOCUS 1.2 Sections 3.6, 3.7)
+  // ==========================================================================
+
+  // CapacityReservationId: Identifier assigned to a capacity reservation
+  // by the provider. CONDITIONAL column.
+  string capacity_reservation_id = 44;
+
+  // CapacityReservationStatus: Used/Unused status of capacity reservation.
+  // CONDITIONAL column. Required when CapacityReservationId is not null
+  // and ChargeCategory is "Usage".
+  FocusCapacityReservationStatus capacity_reservation_status = 45;
+
+  // ==========================================================================
+  // Commitment Discount Extended Fields (FOCUS 1.2 Sections 3.14-3.19)
+  // ==========================================================================
+
+  // CommitmentDiscountQuantity: Amount of commitment discount purchased or
+  // accounted for. CONDITIONAL column.
+  double commitment_discount_quantity = 46;
+
+  // CommitmentDiscountStatus: Used/Unused status of commitment discount.
+  // CONDITIONAL column. Required when CommitmentDiscountId is not null
+  // and ChargeCategory is "Usage".
+  FocusCommitmentDiscountStatus commitment_discount_status = 47;
+
+  // CommitmentDiscountType: Provider-assigned identifier for the type of
+  // commitment discount applied. CONDITIONAL column.
+  string commitment_discount_type = 48;
+
+  // CommitmentDiscountUnit: Provider-specified measurement unit for
+  // commitment discount quantity. CONDITIONAL column.
+  string commitment_discount_unit = 49;
+
+  // ==========================================================================
+  // Contracted Pricing Fields (FOCUS 1.2 Section 3.21)
+  // ==========================================================================
+
+  // ContractedUnitPrice: Agreed-upon unit price per pricing unit for
+  // associated SKU. CONDITIONAL column.
+  double contracted_unit_price = 50;
+
+  // ==========================================================================
+  // Pricing Currency Fields (FOCUS 1.2 Sections 3.34-3.37)
+  // ==========================================================================
+
+  // PricingCurrency: Currency for pricing-related columns when different
+  // from billing currency. ISO 4217 format. CONDITIONAL column.
+  string pricing_currency = 51;
+
+  // PricingCurrencyContractedUnitPrice: Contracted unit price denominated
+  // in pricing currency. CONDITIONAL column.
+  double pricing_currency_contracted_unit_price = 52;
+
+  // PricingCurrencyEffectiveCost: Effective cost denominated in pricing
+  // currency. CONDITIONAL column.
+  double pricing_currency_effective_cost = 53;
+
+  // PricingCurrencyListUnitPrice: List unit price denominated in pricing
+  // currency. CONDITIONAL column.
+  double pricing_currency_list_unit_price = 54;
+
+  // ==========================================================================
+  // Origination Fields (FOCUS 1.2 Section 3.39)
+  // ==========================================================================
+
+  // Publisher: Entity that published the service or product.
+  // CONDITIONAL column.
+  string publisher = 55;
+
+  // ==========================================================================
+  // Service Fields (FOCUS 1.2 Section 3.43)
+  // ==========================================================================
+
+  // ServiceSubcategory: Granular service classification supporting
+  // functional categorization. CONDITIONAL column.
+  string service_subcategory = 56;
+
+  // ==========================================================================
+  // SKU Extended Fields (FOCUS 1.2 Sections 3.46, 3.48)
+  // ==========================================================================
+
+  // SkuMeter: Provider-assigned meter identifier for the SKU.
+  // CONDITIONAL column.
+  string sku_meter = 57;
+
+  // SkuPriceDetails: Additional provider-specific pricing details.
+  // CONDITIONAL column.
+  string sku_price_details = 58;
+}
