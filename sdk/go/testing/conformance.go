@@ -269,6 +269,7 @@ func (s *ConformanceSuite) AddTest(test ConformanceSuiteTest) {
 // Run executes all conformance tests against the plugin implementation.
 func (s *ConformanceSuite) Run(impl pbc.CostSourceServiceServer) (*ConformanceResult, error) {
 	harness := NewTestHarness(impl)
+	defer harness.Stop()
 
 	conn, err := harness.createClientConnection()
 	if err != nil {
@@ -339,7 +340,6 @@ func (s *ConformanceSuite) Run(impl pbc.CostSourceServiceServer) (*ConformanceRe
 	result.Duration = time.Since(start)
 	result.DurationStr = result.Duration.String()
 
-	harness.Stop()
 	return result, nil
 }
 
@@ -349,6 +349,7 @@ func (s *ConformanceSuite) RunCategory(
 	category TestCategory,
 ) (*CategoryResult, error) {
 	harness := NewTestHarness(impl)
+	defer harness.Stop()
 
 	conn, err := harness.createClientConnection()
 	if err != nil {
@@ -387,43 +388,28 @@ func (s *ConformanceSuite) RunCategory(
 		}
 	}
 
-	harness.Stop()
 	return result, nil
 }
 
 // determineLevelAchieved determines the highest conformance level passed.
+// Since TestResult doesn't store MinLevel, we use a simplified approach:
+//   - If no tests failed, return the target level.
+//   - If tests failed and target > Basic, return one level below target.
+//   - If tests failed at Basic level, return Basic (floor).
 func determineLevelAchieved(result *ConformanceResult, targetLevel ConformanceLevel) ConformanceLevel {
-	// If any tests failed, check which level was achieved
-	if result.Summary.Failed > 0 {
-		// Check if all Basic tests passed
-		basicPassed := true
-		for _, catResult := range result.Categories {
-			for _, testResult := range catResult.Results {
-				// Check if this is a Basic level test that failed
-				// Since we don't store MinLevel in TestResult, we assume all failed tests
-				// affect the level determination
-				if !testResult.Success {
-					basicPassed = false
-					break
-				}
-			}
-			if !basicPassed {
-				break
-			}
-		}
-
-		if !basicPassed {
-			return ConformanceLevelBasic - 1 // None
-		}
-
-		// If we got here, Basic passed but something higher failed
-		if targetLevel >= ConformanceLevelStandard {
-			return ConformanceLevelBasic
-		}
+	// All tests passed at target level
+	if result.Summary.Failed == 0 {
+		return targetLevel
 	}
 
-	// All tests at target level passed
-	return targetLevel
+	// Some tests failed - return one level below target, with Basic as the floor
+	if targetLevel > ConformanceLevelBasic {
+		return targetLevel - 1
+	}
+
+	// At Basic level with failures - still return Basic as the floor
+	// The Summary.Failed > 0 already indicates failure status
+	return ConformanceLevelBasic
 }
 
 // AggregateResults aggregates results from multiple categories.

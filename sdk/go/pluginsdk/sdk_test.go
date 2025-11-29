@@ -455,6 +455,9 @@ func TestCreateTestResource(t *testing.T) {
 // =============================================================================
 
 // trackingInterceptor creates an interceptor that records invocation order.
+// Note: This helper appends to a shared slice without synchronization.
+// This is acceptable for the current sequential test usage.
+// For concurrent testing scenarios, use a sync.Mutex or channel-based approach.
 func trackingInterceptor(id string, order *[]string) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
