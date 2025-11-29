@@ -14,12 +14,13 @@
       "matchManagers": ["gomod"],
       "matchDepNames": ["go"],
       "matchDepTypes": ["golang"],
-      "allowedVersions": "~1.24",
-      "description": "Pin Go version to 1.24.x, prevent upgrade to 1.25"
+      "allowedVersions": "~1.25",
+      "description": "Pin Go version to 1.25.x to match CI configuration"
     },
     {
       "groupName": "gRPC and protobuf dependencies",
       "groupSlug": "grpc-protobuf",
+      "matchManagers": ["gomod"],
       "matchPackageNames": [
         "/^google\\.golang\\.org//"
       ]
@@ -27,6 +28,7 @@
     {
       "groupName": "GitHub dependencies",
       "groupSlug": "github-deps",
+      "matchManagers": ["gomod"],
       "matchPackageNames": [
         "/^github\\.com//"
       ]
@@ -34,6 +36,7 @@
     {
       "groupName": "Go x packages",
       "groupSlug": "go-x-packages",
+      "matchManagers": ["gomod"],
       "matchPackageNames": [
         "/^golang\\.org/x//"
       ]
@@ -41,13 +44,27 @@
     {
       "groupName": "Buf dependencies",
       "groupSlug": "buf-deps",
+      "matchManagers": ["gomod"],
       "matchPackageNames": [
         "/^buf\\.build//"
       ]
+    },
+    {
+      "groupName": "NPM dev dependencies",
+      "groupSlug": "npm-dev",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "groupSlug": "github-actions",
+      "matchManagers": ["github-actions"]
     }
   ],
   "enabledManagers": [
-    "gomod"
+    "gomod",
+    "npm",
+    "github-actions"
   ],
   "gomod": {
     "enabled": true,
