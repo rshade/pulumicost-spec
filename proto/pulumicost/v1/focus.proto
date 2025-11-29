@@ -8,45 +8,266 @@ import "pulumicost/v1/enums.proto";
 option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
 
 // FocusCostRecord represents a single cost line item normalized to the
-// FinOps FOCUS 1.2 specification.
+// FinOps FOCUS 1.2 specification. All field names follow FOCUS naming conventions.
+// Reference: https://focus.finops.org
 message FocusCostRecord {
-  // --- Identity & Hierarchy ---
+  // ==========================================================================
+  // Identity & Hierarchy (FOCUS 1.2 Section 2.1)
+  // ==========================================================================
+
+  // ProviderName: The name of the cloud provider (e.g., "AWS", "Azure", "GCP").
   string provider_name = 1;
+
+  // BillingAccountId: The identifier for the billing account.
   string billing_account_id = 2;
+
+  // BillingAccountName: The display name for the billing account.
   string billing_account_name = 3;
-  
-  // --- Time ---
+
+  // SubAccountId: The identifier for the sub-account (e.g., AWS Account ID,
+  // Azure Subscription ID, GCP Project ID).
+  string sub_account_id = 24;
+
+  // SubAccountName: The display name for the sub-account.
+  string sub_account_name = 25;
+
+  // BillingAccountType: Provider-assigned name to identify the type of billing
+  // account. FOCUS 1.2 Section 3.3: Billing Account Type (CONDITIONAL).
+  string billing_account_type = 42;
+
+  // SubAccountType: Provider-assigned identifier for sub-account classification.
+  // FOCUS 1.2 Section 3.45: Sub Account Type (CONDITIONAL).
+  string sub_account_type = 43;
+
+  // ==========================================================================
+  // Billing Period (FOCUS 1.2 Section 2.2)
+  // ==========================================================================
+
+  // BillingPeriodStart: The start date/time of the billing period.
+  google.protobuf.Timestamp billing_period_start = 26;
+
+  // BillingPeriodEnd: The end date/time of the billing period.
+  google.protobuf.Timestamp billing_period_end = 27;
+
+  // BillingCurrency: The currency used for billing (ISO 4217 code).
+  string billing_currency = 18;
+
+  // ==========================================================================
+  // Charge Period (FOCUS 1.2 Section 2.3)
+  // ==========================================================================
+
+  // ChargePeriodStart: The start date/time when the charge was incurred.
   google.protobuf.Timestamp charge_period_start = 4;
+
+  // ChargePeriodEnd: The end date/time when the charge was incurred.
   google.protobuf.Timestamp charge_period_end = 5;
 
-  // --- Service & Product ---
-  FocusServiceCategory service_category = 6;
-  string service_name = 7;
-  string resource_id = 12;
-  string resource_name = 13;
-  string sku_id = 14;
-  string region_id = 10;
-  string region_name = 11;
+  // ==========================================================================
+  // Charge Details (FOCUS 1.2 Section 2.4)
+  // ==========================================================================
 
-  // --- Charge Details ---
+  // ChargeCategory: The nature of the charge (Usage, Purchase, Credit, etc.).
   FocusChargeCategory charge_category = 8;
+
+  // ChargeClass: Classification of the charge (Regular, Correction).
+  // New in FOCUS 1.0+.
+  FocusChargeClass charge_class = 28;
+
+  // ChargeDescription: A human-readable description of the charge.
+  string charge_description = 29;
+
+  // ChargeFrequency: How often the charge is applied (OneTime, Recurring, UsageBased).
+  FocusChargeFrequency charge_frequency = 30;
+
+  // ==========================================================================
+  // Pricing Details (FOCUS 1.2 Section 2.5)
+  // ==========================================================================
+
+  // PricingCategory: The pricing model applied (Standard, Committed, Dynamic).
   FocusPricingCategory pricing_category = 9;
 
-  // --- Financials ---
+  // PricingQuantity: The quantity used for pricing calculations.
+  double pricing_quantity = 31;
+
+  // PricingUnit: The unit of measure for pricing (e.g., "Hours", "GB").
+  string pricing_unit = 32;
+
+  // ListUnitPrice: The published unit price before any discounts.
+  double list_unit_price = 33;
+
+  // PricingCurrency: Currency for pricing-related columns when different from
+  // billing currency. FOCUS 1.2 Section 3.34: Pricing Currency (CONDITIONAL).
+  // Format: ISO 4217 currency code.
+  string pricing_currency = 51;
+
+  // PricingCurrencyContractedUnitPrice: Contracted unit price denominated in
+  // pricing currency. FOCUS 1.2 Section 3.35 (CONDITIONAL).
+  double pricing_currency_contracted_unit_price = 52;
+
+  // PricingCurrencyEffectiveCost: Effective cost denominated in pricing
+  // currency. FOCUS 1.2 Section 3.36 (CONDITIONAL).
+  double pricing_currency_effective_cost = 53;
+
+  // PricingCurrencyListUnitPrice: List unit price denominated in pricing
+  // currency. FOCUS 1.2 Section 3.37 (CONDITIONAL).
+  double pricing_currency_list_unit_price = 54;
+
+  // ==========================================================================
+  // Service & Product (FOCUS 1.2 Section 2.6)
+  // ==========================================================================
+
+  // ServiceCategory: The category of the service (Compute, Storage, Network, etc.).
+  FocusServiceCategory service_category = 6;
+
+  // ServiceName: The name of the service (e.g., "Amazon EC2", "Azure VMs").
+  string service_name = 7;
+
+  // ServiceSubcategory: Granular service classification supporting functional
+  // categorization. FOCUS 1.2 Section 3.43: Service Subcategory (CONDITIONAL).
+  string service_subcategory = 56;
+
+  // Publisher: Entity that published the service or product.
+  // FOCUS 1.2 Section 3.39: Publisher (CONDITIONAL).
+  string publisher = 55;
+
+  // ==========================================================================
+  // Resource Details (FOCUS 1.2 Section 2.7)
+  // ==========================================================================
+
+  // ResourceId: The unique identifier for the resource.
+  string resource_id = 12;
+
+  // ResourceName: The display name of the resource.
+  string resource_name = 13;
+
+  // ResourceType: The type of resource (e.g., "m5.large", "Standard_D2s_v3").
+  string resource_type = 34;
+
+  // ==========================================================================
+  // SKU Details (FOCUS 1.2 Section 2.8)
+  // ==========================================================================
+
+  // SkuId: The identifier for the SKU.
+  string sku_id = 14;
+
+  // SkuPriceId: The identifier for the specific SKU price.
+  string sku_price_id = 35;
+
+  // SkuMeter: Provider-assigned meter identifier for the SKU.
+  // FOCUS 1.2 Section 3.46: SKU Meter (CONDITIONAL).
+  string sku_meter = 57;
+
+  // SkuPriceDetails: Additional provider-specific pricing details.
+  // FOCUS 1.2 Section 3.48: SKU Price Details (CONDITIONAL).
+  string sku_price_details = 58;
+
+  // ==========================================================================
+  // Location (FOCUS 1.2 Section 2.9)
+  // ==========================================================================
+
+  // RegionId: The identifier for the region (e.g., "us-east-1", "eastus").
+  string region_id = 10;
+
+  // RegionName: The display name of the region.
+  string region_name = 11;
+
+  // AvailabilityZone: The availability zone within the region (conditional).
+  string availability_zone = 36;
+
+  // ==========================================================================
+  // Financial Amounts (FOCUS 1.2 Section 2.10)
+  // ==========================================================================
+
+  // BilledCost: The amount billed for the charge.
   double billed_cost = 15;
+
+  // ListCost: The cost at list price before any discounts.
   double list_cost = 16;
+
+  // EffectiveCost: The actual cost after all discounts and adjustments.
   double effective_cost = 17;
-  string currency = 18;
+
+  // ContractedCost: Cost calculated by multiplying contracted unit price and
+  // pricing quantity. FOCUS 1.2 Section 3.20: Contracted Cost (MANDATORY).
+  // Constraint: Must equal ContractedUnitPrice × PricingQuantity when both
+  // are present and ChargeClass is not "Correction".
+  double contracted_cost = 41;
+
+  // ContractedUnitPrice: Agreed-upon unit price per pricing unit for the
+  // associated SKU. FOCUS 1.2 Section 3.21: Contracted Unit Price (CONDITIONAL).
+  double contracted_unit_price = 50;
+
+  // ==========================================================================
+  // Consumption/Usage (FOCUS 1.2 Section 2.11)
+  // ==========================================================================
+
+  // ConsumedQuantity: The amount of usage consumed.
+  double consumed_quantity = 20;
+
+  // ConsumedUnit: The unit of measure for consumption (e.g., "Hours", "GB").
+  string consumed_unit = 21;
+
+  // ==========================================================================
+  // Commitment Discounts (FOCUS 1.2 Section 2.12)
+  // ==========================================================================
+
+  // CommitmentDiscountCategory: The type of commitment discount (Spend, Usage).
+  FocusCommitmentDiscountCategory commitment_discount_category = 37;
+
+  // CommitmentDiscountId: The identifier for the commitment discount.
+  string commitment_discount_id = 38;
+
+  // CommitmentDiscountName: The display name of the commitment discount.
+  string commitment_discount_name = 39;
+
+  // CommitmentDiscountQuantity: Amount of commitment discount purchased or
+  // accounted for. FOCUS 1.2 Section 3.14 (CONDITIONAL).
+  double commitment_discount_quantity = 46;
+
+  // CommitmentDiscountStatus: Utilization status of commitment discount.
+  // FOCUS 1.2 Section 3.17 (CONDITIONAL). Required when CommitmentDiscountId
+  // is not null and ChargeCategory is "Usage".
+  FocusCommitmentDiscountStatus commitment_discount_status = 47;
+
+  // CommitmentDiscountType: Provider-assigned identifier for the type of
+  // commitment discount applied. FOCUS 1.2 Section 3.18 (CONDITIONAL).
+  string commitment_discount_type = 48;
+
+  // CommitmentDiscountUnit: Provider-specified measurement unit for commitment
+  // discount quantity. FOCUS 1.2 Section 3.19 (CONDITIONAL).
+  string commitment_discount_unit = 49;
+
+  // ==========================================================================
+  // Capacity Reservation (FOCUS 1.2 Sections 3.6, 3.7)
+  // ==========================================================================
+
+  // CapacityReservationId: Identifier assigned to a capacity reservation by
+  // the provider. FOCUS 1.2 Section 3.6 (CONDITIONAL).
+  string capacity_reservation_id = 44;
+
+  // CapacityReservationStatus: Utilization status of capacity reservation.
+  // FOCUS 1.2 Section 3.7 (CONDITIONAL). Required when CapacityReservationId
+  // is not null and ChargeCategory is "Usage".
+  FocusCapacityReservationStatus capacity_reservation_status = 45;
+
+  // ==========================================================================
+  // Invoice Details (FOCUS 1.2 Section 2.13)
+  // ==========================================================================
+
+  // InvoiceId: The identifier for the invoice. Critical for reconciliation.
   string invoice_id = 19;
 
-  // --- Usage ---
-  double usage_quantity = 20;
-  string usage_unit = 21;
+  // InvoiceIssuer: The entity that issued the invoice.
+  string invoice_issuer = 40;
 
-  // --- Metadata & Extension ---
+  // ==========================================================================
+  // Metadata & Extension (FOCUS 1.2 Section 2.14)
+  // ==========================================================================
+
+  // Tags: User-defined key-value pairs for resource tagging.
   map<string, string> tags = 22;
-  
-  // The "Backpack": Supports future FOCUS columns or provider-specific
-  // extensions without requiring a schema update.
+
+  // ExtendedColumns: The "Backpack" - supports future FOCUS columns or
+  // provider-specific extensions without requiring a schema update.
   map<string, string> extended_columns = 23;
 }

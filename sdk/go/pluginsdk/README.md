@@ -323,6 +323,166 @@ err := pluginsdk.NoDataError("resource-id")
 // Returns: "no cost data available for resource resource-id"
 ```
 
+## FOCUS 1.2 Cost Records
+
+The SDK includes a comprehensive `FocusRecordBuilder` for constructing FinOps FOCUS 1.2 compliant cost records.
+FOCUS (FinOps Open Cost and Usage Specification) is a standard for cloud billing data.
+
+### Quick Start
+
+```go
+import (
+    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+)
+
+builder := pluginsdk.NewFocusRecordBuilder()
+
+// Set mandatory fields
+builder.WithIdentity("AWS", "123456789012", "Production Account")
+builder.WithBillingPeriod(billingStart, billingEnd, "USD")
+builder.WithChargePeriod(chargeStart, chargeEnd)
+builder.WithChargeDetails(
+    pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+    pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+)
+builder.WithService(pbc.FocusServiceCategory_FOCUS_SERVICE_CATEGORY_COMPUTE, "Amazon EC2")
+builder.WithFinancials(73.0, 80.0, 70.0, "USD", "INV-2025-11")
+builder.WithContractedCost(65.0)  // New in FOCUS 1.2
+
+record, err := builder.Build()
+```
+
+### FOCUS 1.2 Column Coverage
+
+The `FocusCostRecord` proto message implements all 57 columns defined in FOCUS 1.2:
+
+| Category | Mandatory | Recommended | Conditional |
+|----------|-----------|-------------|-------------|
+| Identity & Hierarchy | 3 | 0 | 4 |
+| Billing Period | 3 | 0 | 0 |
+| Charge Period | 2 | 0 | 0 |
+| Charge Details | 3 | 1 | 0 |
+| Pricing | 0 | 0 | 10 |
+| Service & Product | 1 | 0 | 3 |
+| Resource Details | 0 | 0 | 3 |
+| SKU Details | 0 | 0 | 4 |
+| Location | 0 | 0 | 3 |
+| Financial Amounts | 2 | 0 | 3 |
+| Consumption/Usage | 0 | 0 | 2 |
+| Commitment Discounts | 0 | 0 | 7 |
+| Capacity Reservation | 0 | 0 | 2 |
+| Invoice | 0 | 0 | 2 |
+| Metadata | 0 | 0 | 1 |
+| **Total** | **14** | **1** | **42** |
+
+### Builder Methods by Category
+
+**Mandatory Fields (14 columns)**:
+
+| Method | Fields Set | FOCUS Section |
+|--------|------------|---------------|
+| `WithIdentity(provider, accountID, accountName)` | ProviderName, BillingAccountId, BillingAccountName | 2.1 |
+| `WithBillingPeriod(start, end, currency)` | BillingPeriodStart, BillingPeriodEnd, BillingCurrency | 2.2 |
+| `WithChargePeriod(start, end)` | ChargePeriodStart, ChargePeriodEnd | 2.3 |
+| `WithChargeDetails(chargeCat, pricingCat)` | ChargeCategory, PricingCategory | 2.4 |
+| `WithChargeClassification(class, desc, freq)` | ChargeClass, ChargeDescription | 2.4 |
+| `WithService(category, name)` | ServiceCategory, ServiceName | 2.6 |
+| `WithFinancials(billed, list, effective, currency, invoiceID)` | BilledCost, ListCost, EffectiveCost | 2.10 |
+| `WithContractedCost(cost)` | ContractedCost | 3.20 |
+
+**Conditional Fields - New in FOCUS 1.2**:
+
+| Method | Fields Set | FOCUS Section |
+|--------|------------|---------------|
+| `WithBillingAccountType(type)` | BillingAccountType | 3.3 |
+| `WithSubAccountType(type)` | SubAccountType | 3.45 |
+| `WithCapacityReservation(id, status)` | CapacityReservationId, CapacityReservationStatus | 3.6, 3.7 |
+| `WithCommitmentDiscountDetails(qty, status, type, unit)` | CommitmentDiscountQuantity, Status, Type, Unit | 3.14-3.19 |
+| `WithContractedUnitPrice(price)` | ContractedUnitPrice | 3.21 |
+| `WithPricingCurrency(currency)` | PricingCurrency | 3.34 |
+| `WithPricingCurrencyPrices(contracted, effective, list)` | PricingCurrency*Prices | 3.35-3.37 |
+| `WithPublisher(publisher)` | Publisher | 3.39 |
+| `WithServiceSubcategory(subcategory)` | ServiceSubcategory | 3.43 |
+| `WithSkuDetails(meter, priceDetails)` | SkuMeter, SkuPriceDetails | 3.46, 3.48 |
+
+**Other Conditional Fields**:
+
+| Method | Fields Set | FOCUS Section |
+|--------|------------|---------------|
+| `WithSubAccount(id, name)` | SubAccountId, SubAccountName | 2.1 |
+| `WithLocation(regionID, regionName, az)` | RegionId, RegionName, AvailabilityZone | 2.9 |
+| `WithResource(id, name, type)` | ResourceId, ResourceName, ResourceType | 2.7 |
+| `WithSKU(skuID, skuPriceID)` | SkuId, SkuPriceId | 2.8 |
+| `WithPricing(quantity, unit, listUnitPrice)` | PricingQuantity, PricingUnit, ListUnitPrice | 2.5 |
+| `WithUsage(quantity, unit)` | ConsumedQuantity, ConsumedUnit | 2.11 |
+| `WithCommitmentDiscount(category, id, name)` | CommitmentDiscount* | 2.12 |
+| `WithInvoice(id, issuer)` | InvoiceId, InvoiceIssuer | 2.13 |
+| `WithTag(key, value)` / `WithTags(map)` | Tags | 2.14 |
+| `WithExtension(key, value)` | ExtendedColumns | 2.14 |
+
+### Validation
+
+The builder validates mandatory fields and business rules on `Build()`:
+
+```go
+record, err := builder.Build()
+if err != nil {
+    // Handle validation error
+    // e.g., "billing_account_id is required"
+}
+```
+
+**Validated Rules**:
+
+- BillingAccountId is required
+- ChargePeriod (start/end) is required
+- ServiceCategory must be specified (not UNSPECIFIED)
+- ChargeCategory must be specified (not UNSPECIFIED)
+- BillingCurrency is required
+- Usage records must have non-zero ConsumedQuantity
+
+### Migration Guide
+
+If you're updating from an earlier version without FOCUS 1.2 support:
+
+**New Mandatory Field**: `ContractedCost` is now mandatory in FOCUS 1.2. Add it to all records:
+
+```go
+builder.WithContractedCost(65.0)
+```
+
+**New Builder Methods**: 11 new builder methods for FOCUS 1.2 columns:
+
+- `WithContractedCost`
+- `WithBillingAccountType`
+- `WithSubAccountType`
+- `WithCapacityReservation`
+- `WithCommitmentDiscountDetails`
+- `WithContractedUnitPrice`
+- `WithPricingCurrency`
+- `WithPricingCurrencyPrices`
+- `WithPublisher`
+- `WithServiceSubcategory`
+- `WithSkuDetails`
+
+### Troubleshooting
+
+**Common Validation Errors**:
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `billing_account_id is required` | Missing identity | Call `WithIdentity()` |
+| `charge_period (start/end) is required` | Missing charge period | Call `WithChargePeriod()` |
+| `service_category is required` | Unspecified category | Call `WithService()` or `WithServiceCategory()` |
+| `charge_category is required` | Unspecified category | Call `WithChargeDetails()` |
+| `billing_currency is required` | Missing currency | Call `WithBillingPeriod()` or `WithFinancials()` |
+| `consumed_quantity must be positive for usage` | Zero or negative usage for Usage category | Set positive usage via `WithUsage()` |
+
+### Complete Example
+
+See `examples/plugins/focus_example.go` for a comprehensive example demonstrating all 57 FOCUS 1.2 columns.
+
 ## Manifest Management
 
 Load and save plugin manifests:

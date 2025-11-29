@@ -81,16 +81,6 @@
   "automergeStrategy": "auto",
   "platformAutomerge": false,
   "hostRules": [],
-  "onboarding": true,
-  "requireConfig": "optional",
-  "onboardingConfig": {
-    "extends": [
-      "config:recommended"
-    ]
-  },
   "configMigration": true,
-  "binarySource": "global",
-  "cacheDir": "/tmp/renovate/cache",
-  "baseDir": "/tmp/renovate/repos",
   "gitAuthor": "Renovate Bot <bot@renovateapp.com>"
 }
