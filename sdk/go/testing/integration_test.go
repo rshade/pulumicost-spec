@@ -860,3 +860,509 @@ func assertLogNotContains(t *testing.T, logOutput, unexpected, errMsg string) {
 		t.Errorf("%s: unexpected '%s' found in log output:\n%s", errMsg, unexpected, logOutput)
 	}
 }
+
+// =============================================================================
+// METRICS TRACKING EXAMPLE
+// =============================================================================
+//
+// TestMetricsTrackingExample demonstrates metrics collection patterns for the
+// EstimateCost RPC, per NFR-002 of spec 006-estimate-cost.
+//
+// This example serves as the canonical reference for plugin developers to
+// understand how to properly implement metrics tracking for PulumiCost plugin
+// operations.
+//
+// Key patterns demonstrated:
+//   - Tracking latency (response time) for EstimateCost calls
+//   - Tracking success rate and error rates
+//   - Calculating percentiles (p50, p95, p99)
+//   - Aggregating metrics across multiple requests
+//   - Using standard field constants for metric labels
+//
+// Best Practices:
+//   - ALWAYS track both latency and outcome (success/error) together
+//   - Use consistent metric naming conventions across plugins
+//   - Track error rates by error type/code for debugging
+//   - Calculate percentiles for latency to understand tail performance
+//   - Include resource_type and operation as metric dimensions
+//
+// Note: This example uses in-memory metrics collection for demonstration.
+// Production implementations should use a metrics library like Prometheus,
+// OpenTelemetry, or similar for proper aggregation and export.
+func TestMetricsTrackingExample(t *testing.T) {
+	// T041: LatencyTracking subtest
+	t.Run("LatencyTracking", testMetricsLatencyTracking)
+
+	// T041: SuccessRateTracking subtest
+	t.Run("SuccessRateTracking", testMetricsSuccessRateTracking)
+
+	// T041: ErrorRateByCode subtest
+	t.Run("ErrorRateByCode", testMetricsErrorRateByCode)
+
+	// T041: PercentileCalculation subtest
+	t.Run("PercentileCalculation", testMetricsPercentileCalculation)
+
+	// T041: MetricsWithDimensions subtest
+	t.Run("MetricsWithDimensions", testMetricsWithDimensions)
+
+	// T041: MetricsBestPractices subtest
+	t.Run("MetricsBestPractices", testMetricsBestPractices)
+}
+
+// metricsCollector is a simple in-memory metrics aggregator for demonstration.
+// In production, use a proper metrics library (Prometheus, OpenTelemetry).
+// This collector demonstrates the essential patterns:
+//   - Tracking individual request latencies
+//   - Counting success and error outcomes
+//   - Calculating percentiles for latency distribution
+type metricsCollector struct {
+	latencies    []time.Duration
+	successCount int
+	errorCount   int
+	errorCodes   map[string]int
+}
+
+func newMetricsCollector() *metricsCollector {
+	return &metricsCollector{
+		latencies:  make([]time.Duration, 0),
+		errorCodes: make(map[string]int),
+	}
+}
+
+// recordRequest records the outcome and latency of a request.
+func (m *metricsCollector) recordRequest(duration time.Duration, err error) {
+	m.latencies = append(m.latencies, duration)
+	if err != nil {
+		m.errorCount++
+		st, ok := status.FromError(err)
+		if ok {
+			m.errorCodes[st.Code().String()]++
+		} else {
+			m.errorCodes["Unknown"]++
+		}
+	} else {
+		m.successCount++
+	}
+}
+
+// calculatePercentile calculates the pth percentile of latencies.
+// Uses linear interpolation for more accurate results.
+func (m *metricsCollector) calculatePercentile(p float64) time.Duration {
+	if len(m.latencies) == 0 {
+		return 0
+	}
+
+	// Sort latencies for percentile calculation
+	sorted := make([]time.Duration, len(m.latencies))
+	copy(sorted, m.latencies)
+	sortDurations(sorted)
+
+	// Calculate index using linear interpolation
+	n := float64(len(sorted))
+	idx := (p / 100.0) * (n - 1)
+	lower := int(idx)
+	upper := lower + 1
+	if upper >= len(sorted) {
+		return sorted[len(sorted)-1]
+	}
+
+	// Linear interpolation between lower and upper bounds
+	weight := idx - float64(lower)
+	return time.Duration(
+		float64(sorted[lower])*(1-weight) + float64(sorted[upper])*weight,
+	)
+}
+
+// successRate returns the success rate as a percentage.
+func (m *metricsCollector) successRate() float64 {
+	total := m.successCount + m.errorCount
+	if total == 0 {
+		return 0
+	}
+	return float64(m.successCount) / float64(total) * 100
+}
+
+func testMetricsLatencyTracking(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	metrics := newMetricsCollector()
+
+	// Best Practice: Track latency for every request, successful or not
+	// This enables understanding of both happy path and error path performance
+	for i := range 10 {
+		start := time.Now()
+		attrs, _ := structpb.NewStruct(map[string]interface{}{
+			"instanceType": "t3.micro",
+			"region":       "us-east-1",
+		})
+		_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: "aws:ec2/instance:Instance",
+			Attributes:   attrs,
+		})
+		duration := time.Since(start)
+
+		metrics.recordRequest(duration, err)
+
+		// Log each request with timing information
+		// Best Practice: Include operation and iteration for debugging
+		t.Logf("Request %d: duration=%v, success=%v", i+1, duration, err == nil)
+	}
+
+	// Verify latency tracking
+	if len(metrics.latencies) != 10 {
+		t.Errorf("Expected 10 latency measurements, got %d", len(metrics.latencies))
+	}
+
+	// Calculate and log average latency
+	var totalLatency time.Duration
+	for _, d := range metrics.latencies {
+		totalLatency += d
+	}
+	avgLatency := totalLatency / time.Duration(len(metrics.latencies))
+	t.Logf("Average latency: %v", avgLatency)
+
+	// Verify all latencies are positive (valid measurements)
+	for i, d := range metrics.latencies {
+		if d <= 0 {
+			t.Errorf("Latency %d should be positive, got %v", i, d)
+		}
+	}
+}
+
+func testMetricsSuccessRateTracking(t *testing.T) {
+	// Create standard mock for successful requests
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	metrics := newMetricsCollector()
+
+	// Make 8 successful requests
+	for range 8 {
+		start := time.Now()
+		attrs, _ := structpb.NewStruct(map[string]interface{}{
+			"instanceType": "t3.micro",
+		})
+		_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: "aws:ec2/instance:Instance",
+			Attributes:   attrs,
+		})
+		metrics.recordRequest(time.Since(start), err)
+	}
+
+	// Create error mock for failed requests
+	errorPlugin := plugintesting.ConfigurableErrorMockPlugin()
+	errorPlugin.ShouldErrorOnEstimateCost = true
+	errorHarness := plugintesting.NewTestHarness(errorPlugin)
+	errorHarness.Start(t)
+	defer errorHarness.Stop()
+	errorClient := errorHarness.Client()
+
+	// Make 2 requests that will fail
+	for range 2 {
+		start := time.Now()
+		attrs, _ := structpb.NewStruct(map[string]interface{}{})
+		_, err := errorClient.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: "invalid:resource:Type",
+			Attributes:   attrs,
+		})
+		metrics.recordRequest(time.Since(start), err)
+	}
+
+	// Verify success rate calculation
+	// Best Practice: Track success rate per operation and resource type
+	rate := metrics.successRate()
+	expectedRate := 80.0 // 8 success / 10 total = 80%
+	if rate != expectedRate {
+		t.Errorf("Expected success rate %.1f%%, got %.1f%%", expectedRate, rate)
+	}
+
+	// Verify counts
+	if metrics.successCount != 8 {
+		t.Errorf("Expected 8 successful requests, got %d", metrics.successCount)
+	}
+	if metrics.errorCount != 2 {
+		t.Errorf("Expected 2 failed requests, got %d", metrics.errorCount)
+	}
+
+	t.Logf("Success rate: %.1f%% (%d/%d)",
+		rate, metrics.successCount, metrics.successCount+metrics.errorCount)
+}
+
+func testMetricsErrorRateByCode(t *testing.T) {
+	// Best Practice: Track errors by gRPC status code for debugging
+	// This helps identify specific failure modes (e.g., InvalidArgument vs Internal)
+	errorPlugin := plugintesting.ConfigurableErrorMockPlugin()
+	errorPlugin.ShouldErrorOnEstimateCost = true
+
+	harness := plugintesting.NewTestHarness(errorPlugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	metrics := newMetricsCollector()
+
+	// Generate errors
+	for range 5 {
+		start := time.Now()
+		attrs, _ := structpb.NewStruct(map[string]interface{}{})
+		_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: "test:resource:Type",
+			Attributes:   attrs,
+		})
+		metrics.recordRequest(time.Since(start), err)
+	}
+
+	// Verify error code tracking
+	if len(metrics.errorCodes) == 0 {
+		t.Error("Expected error codes to be tracked")
+	}
+
+	// Log error distribution
+	// Best Practice: Understanding error distribution helps prioritize fixes
+	t.Log("Error distribution by gRPC code:")
+	for code, count := range metrics.errorCodes {
+		t.Logf("  %s: %d", code, count)
+	}
+
+	// Verify total errors matches error count
+	totalFromCodes := 0
+	for _, count := range metrics.errorCodes {
+		totalFromCodes += count
+	}
+	if totalFromCodes != metrics.errorCount {
+		t.Errorf("Error code counts (%d) don't match total errors (%d)",
+			totalFromCodes, metrics.errorCount)
+	}
+}
+
+func testMetricsPercentileCalculation(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	metrics := newMetricsCollector()
+
+	// Make enough requests for meaningful percentile calculation
+	// Best Practice: Use at least 100 samples for accurate percentiles
+	const numRequests = 100
+	for range numRequests {
+		start := time.Now()
+		attrs, _ := structpb.NewStruct(map[string]interface{}{
+			"instanceType": "t3.micro",
+			"region":       "us-east-1",
+		})
+		_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+			ResourceType: "aws:ec2/instance:Instance",
+			Attributes:   attrs,
+		})
+		metrics.recordRequest(time.Since(start), err)
+	}
+
+	// Calculate percentiles
+	// Best Practice: p50, p95, p99 provide insight into typical and tail latency
+	p50 := metrics.calculatePercentile(50)
+	p95 := metrics.calculatePercentile(95)
+	p99 := metrics.calculatePercentile(99)
+
+	// Log percentile results
+	t.Logf("Latency percentiles (n=%d):", numRequests)
+	t.Logf("  p50: %v", p50)
+	t.Logf("  p95: %v", p95)
+	t.Logf("  p99: %v", p99)
+
+	// Verify percentile ordering: p50 <= p95 <= p99
+	// This is a fundamental property of percentiles
+	if p50 > p95 {
+		t.Errorf("p50 (%v) should be <= p95 (%v)", p50, p95)
+	}
+	if p95 > p99 {
+		t.Errorf("p95 (%v) should be <= p99 (%v)", p95, p99)
+	}
+
+	// Verify all percentiles are positive
+	if p50 <= 0 {
+		t.Error("p50 should be positive")
+	}
+	if p95 <= 0 {
+		t.Error("p95 should be positive")
+	}
+	if p99 <= 0 {
+		t.Error("p99 should be positive")
+	}
+}
+
+// dimensionedMetrics tracks metrics by operation and resource_type dimensions.
+// Best Practice: Track metrics by operation and resource_type dimensions
+// This enables drilling down into performance by specific resource types.
+type dimensionedMetrics struct {
+	byOperation    map[string]*metricsCollector
+	byResourceType map[string]*metricsCollector
+}
+
+func testMetricsWithDimensions(t *testing.T) {
+	dimMetrics := dimensionedMetrics{
+		byOperation:    make(map[string]*metricsCollector),
+		byResourceType: make(map[string]*metricsCollector),
+	}
+
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	// Test different resource types
+	resourceTypes := []string{
+		"aws:ec2/instance:Instance",
+		"aws:s3/bucket:Bucket",
+		"azure:compute/virtualMachine:VirtualMachine",
+	}
+
+	for _, resType := range resourceTypes {
+		// Initialize metrics for this resource type if needed
+		if _, ok := dimMetrics.byResourceType[resType]; !ok {
+			dimMetrics.byResourceType[resType] = newMetricsCollector()
+		}
+		if _, ok := dimMetrics.byOperation["EstimateCost"]; !ok {
+			dimMetrics.byOperation["EstimateCost"] = newMetricsCollector()
+		}
+
+		// Make requests for this resource type
+		for range 5 {
+			start := time.Now()
+			attrs, _ := structpb.NewStruct(map[string]interface{}{
+				"type": "standard",
+			})
+			_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+				ResourceType: resType,
+				Attributes:   attrs,
+			})
+			duration := time.Since(start)
+
+			// Record in both dimension buckets
+			dimMetrics.byResourceType[resType].recordRequest(duration, err)
+			dimMetrics.byOperation["EstimateCost"].recordRequest(duration, err)
+		}
+	}
+
+	// Verify metrics by resource type
+	t.Log("Metrics by resource type:")
+	for resType, m := range dimMetrics.byResourceType {
+		rate := m.successRate()
+		p50 := m.calculatePercentile(50)
+		t.Logf("  %s: success_rate=%.1f%%, p50=%v, requests=%d",
+			resType, rate, p50, len(m.latencies))
+
+		// Verify each resource type has metrics
+		if len(m.latencies) != 5 {
+			t.Errorf("Resource type %s should have 5 requests, got %d",
+				resType, len(m.latencies))
+		}
+	}
+
+	// Verify aggregate operation metrics
+	opMetrics := dimMetrics.byOperation["EstimateCost"]
+	expectedTotal := len(resourceTypes) * 5
+	if len(opMetrics.latencies) != expectedTotal {
+		t.Errorf("EstimateCost operation should have %d requests, got %d",
+			expectedTotal, len(opMetrics.latencies))
+	}
+	t.Logf("Aggregate EstimateCost: success_rate=%.1f%%, p50=%v, total=%d",
+		opMetrics.successRate(), opMetrics.calculatePercentile(50), len(opMetrics.latencies))
+}
+
+func testMetricsBestPractices(t *testing.T) {
+	// This test documents best practices for metrics in comments
+	// and validates the recommended patterns
+
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	// Best Practice 1: Always track both latency AND outcome together
+	// This enables calculating latency separately for success vs error cases
+	successMetrics := newMetricsCollector()
+	errorMetrics := newMetricsCollector()
+
+	// Successful request
+	start := time.Now()
+	attrs, _ := structpb.NewStruct(map[string]interface{}{"instanceType": "t3.micro"})
+	_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+		ResourceType: "aws:ec2/instance:Instance",
+		Attributes:   attrs,
+	})
+	if err == nil {
+		successMetrics.recordRequest(time.Since(start), nil)
+	}
+
+	// Error request (using error plugin)
+	errorPlugin := plugintesting.ConfigurableErrorMockPlugin()
+	errorPlugin.ShouldErrorOnEstimateCost = true
+	errorHarness := plugintesting.NewTestHarness(errorPlugin)
+	errorHarness.Start(t)
+	defer errorHarness.Stop()
+
+	start = time.Now()
+	_, err = errorHarness.Client().EstimateCost(ctx, &pbc.EstimateCostRequest{
+		ResourceType: "test:resource:Type",
+		Attributes:   attrs,
+	})
+	if err != nil {
+		errorMetrics.recordRequest(time.Since(start), err)
+	}
+
+	// Verify separate tracking works
+	if successMetrics.successCount != 1 {
+		t.Errorf("Success metrics should have 1 success, got %d", successMetrics.successCount)
+	}
+	if errorMetrics.errorCount != 1 {
+		t.Errorf("Error metrics should have 1 error, got %d", errorMetrics.errorCount)
+	}
+
+	// Best Practice 2: Use standard field names for metric labels
+	// This ensures consistency across all plugins for aggregation
+	t.Logf("Standard metric label names:")
+	t.Logf("  operation: %s", pluginsdk.FieldOperation)
+	t.Logf("  resource_type: %s", pluginsdk.FieldResourceType)
+	t.Logf("  error_code: %s", pluginsdk.FieldErrorCode)
+
+	// Best Practice 3: Calculate statistics that matter
+	// - p50: median performance (typical user experience)
+	// - p95: captures most users' experience including slower requests
+	// - p99: identifies tail latency issues
+	// - success_rate: overall reliability metric
+	t.Log("Recommended statistics: p50, p95, p99, success_rate")
+}
+
+// sortDurations sorts a slice of durations in ascending order.
+// Uses simple insertion sort - efficient for small slices.
+func sortDurations(durations []time.Duration) {
+	for i := 1; i < len(durations); i++ {
+		key := durations[i]
+		j := i - 1
+		for j >= 0 && durations[j] > key {
+			durations[j+1] = durations[j]
+			j--
+		}
+		durations[j+1] = key
+	}
+}
