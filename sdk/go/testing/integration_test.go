@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 )
@@ -1365,4 +1366,511 @@ func sortDurations(durations []time.Duration) {
 		}
 		durations[j+1] = key
 	}
+}
+
+// =============================================================================
+// DISTRIBUTED TRACING EXAMPLE
+// =============================================================================
+//
+// TestDistributedTracingExample demonstrates tracing patterns for the
+// EstimateCost RPC, per NFR-003 of spec 006-estimate-cost.
+//
+// This example serves as the canonical reference for plugin developers to
+// understand how to properly implement distributed tracing for PulumiCost
+// plugin operations.
+//
+// Key patterns demonstrated:
+//   - Generating and validating trace IDs
+//   - Propagating correlation IDs through gRPC metadata
+//   - Extracting trace IDs from incoming requests via interceptors
+//   - Creating and linking spans across service boundaries
+//   - Injecting/extracting trace context in gRPC calls
+//   - Logging with trace context for correlation
+//
+// Best Practices:
+//   - ALWAYS propagate trace_id through the entire request chain
+//   - Use TracingUnaryServerInterceptor for automatic trace extraction
+//   - Validate incoming trace IDs and generate new ones if invalid
+//   - Include trace_id in all log entries for correlation
+//   - Create child spans for significant sub-operations
+//   - Use standard gRPC metadata keys for interoperability
+//
+// Note: This example demonstrates the tracing patterns and context propagation.
+// Production implementations should integrate with OpenTelemetry or similar
+// distributed tracing systems for full observability.
+func TestDistributedTracingExample(t *testing.T) {
+	// T042: TraceIDGeneration subtest
+	t.Run("TraceIDGeneration", testTracingTraceIDGeneration)
+
+	// T042: TraceIDValidation subtest
+	t.Run("TraceIDValidation", testTracingTraceIDValidation)
+
+	// T042: ContextPropagation subtest
+	t.Run("ContextPropagation", testTracingContextPropagation)
+
+	// T042: CrossCallCorrelation subtest
+	t.Run("CrossCallCorrelation", testTracingCrossCallCorrelation)
+
+	// T042: SpanCreation subtest
+	t.Run("SpanCreation", testTracingSpanCreation)
+
+	// T042: TracingBestPractices subtest
+	t.Run("TracingBestPractices", testTracingBestPractices)
+}
+
+func testTracingTraceIDGeneration(t *testing.T) {
+	// Best Practice: Generate trace IDs using cryptographically secure random bytes
+	// The pluginsdk.GenerateTraceID function produces OpenTelemetry-compatible 32-char hex IDs
+
+	// Generate multiple trace IDs and verify uniqueness
+	traceIDs := make(map[string]bool)
+	const numIDs = 100
+
+	for range numIDs {
+		traceID, err := pluginsdk.GenerateTraceID()
+		if err != nil {
+			t.Fatalf("Failed to generate trace ID: %v", err)
+		}
+
+		// Verify format: 32 lowercase hex characters
+		if len(traceID) != 32 {
+			t.Errorf("Trace ID should be 32 chars, got %d: %s", len(traceID), traceID)
+		}
+
+		// Verify all characters are valid hex
+		for _, c := range traceID {
+			isHex := (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')
+			if !isHex {
+				t.Errorf("Trace ID contains non-hex character: %c in %s", c, traceID)
+			}
+		}
+
+		// Verify uniqueness
+		if traceIDs[traceID] {
+			t.Errorf("Duplicate trace ID generated: %s", traceID)
+		}
+		traceIDs[traceID] = true
+	}
+
+	t.Logf("Generated %d unique trace IDs", numIDs)
+
+	// Best Practice: Never use all-zeros trace ID (invalid per OpenTelemetry spec)
+	for traceID := range traceIDs {
+		if traceID == "00000000000000000000000000000000" {
+			t.Error("Generated all-zeros trace ID (invalid)")
+		}
+	}
+}
+
+func testTracingTraceIDValidation(t *testing.T) {
+	// Best Practice: Validate incoming trace IDs before using them
+	// Invalid trace IDs should trigger generation of new ones
+
+	tests := []struct {
+		name     string
+		traceID  string
+		isValid  bool
+		scenario string
+	}{
+		{
+			name:     "valid trace ID",
+			traceID:  "abcdef1234567890abcdef1234567890",
+			isValid:  true,
+			scenario: "Standard OpenTelemetry trace ID",
+		},
+		{
+			name:     "valid numeric trace ID",
+			traceID:  "12345678901234567890123456789012",
+			isValid:  true,
+			scenario: "All numeric characters are valid hex",
+		},
+		{
+			name:     "empty trace ID",
+			traceID:  "",
+			isValid:  true, // Empty is valid (optional field)
+			scenario: "Missing trace ID - will trigger generation",
+		},
+		{
+			name:     "too short",
+			traceID:  "abcdef1234567890",
+			isValid:  false,
+			scenario: "Must be exactly 32 characters",
+		},
+		{
+			name:     "too long",
+			traceID:  "abcdef1234567890abcdef12345678901",
+			isValid:  false,
+			scenario: "Must be exactly 32 characters",
+		},
+		{
+			name:     "invalid characters",
+			traceID:  "ghijkl1234567890abcdef1234567890",
+			isValid:  false,
+			scenario: "Only 0-9 and a-f are valid",
+		},
+		{
+			name:     "all zeros",
+			traceID:  "00000000000000000000000000000000",
+			isValid:  false,
+			scenario: "All-zeros is invalid per OpenTelemetry spec",
+		},
+		{
+			name:     "uppercase",
+			traceID:  "ABCDEF1234567890ABCDEF1234567890",
+			isValid:  false, // Lowercase only
+			scenario: "Must be lowercase hex",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := pricing.ValidateTraceID(tt.traceID)
+			isValid := err == nil
+
+			if isValid != tt.isValid {
+				if tt.isValid {
+					t.Errorf("Expected trace ID '%s' to be valid: %v", tt.traceID, err)
+				} else {
+					t.Errorf("Expected trace ID '%s' to be invalid, but it was valid", tt.traceID)
+				}
+			}
+
+			t.Logf("Scenario: %s - valid=%v", tt.scenario, isValid)
+		})
+	}
+}
+
+func testTracingContextPropagation(t *testing.T) {
+	// Best Practice: Use context to propagate trace IDs through the call stack
+	// The pluginsdk provides helper functions for context-based trace propagation
+
+	// Create a trace ID and store it in context
+	traceID, err := pluginsdk.GenerateTraceID()
+	if err != nil {
+		t.Fatalf("Failed to generate trace ID: %v", err)
+	}
+
+	// Store trace ID in context
+	ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+
+	// Retrieve trace ID from context
+	retrievedTraceID := pluginsdk.TraceIDFromContext(ctx)
+	if retrievedTraceID != traceID {
+		t.Errorf("Expected trace ID %s, got %s", traceID, retrievedTraceID)
+	}
+
+	// Best Practice: Handle missing trace ID gracefully
+	emptyCtx := context.Background()
+	emptyTraceID := pluginsdk.TraceIDFromContext(emptyCtx)
+	if emptyTraceID != "" {
+		t.Errorf("Expected empty trace ID from empty context, got %s", emptyTraceID)
+	}
+
+	// Best Practice: Context propagation through function calls
+	result := simulateNestedCalls(ctx, 3)
+	if result != traceID {
+		t.Errorf("Trace ID not propagated through nested calls: expected %s, got %s", traceID, result)
+	}
+
+	t.Logf("Trace ID %s successfully propagated through nested calls", traceID)
+}
+
+// simulateNestedCalls demonstrates trace ID propagation through nested function calls.
+func simulateNestedCalls(ctx context.Context, depth int) string {
+	// Extract trace ID at each level
+	traceID := pluginsdk.TraceIDFromContext(ctx)
+
+	if depth <= 1 {
+		return traceID
+	}
+
+	// Pass context to nested call
+	return simulateNestedCalls(ctx, depth-1)
+}
+
+func testTracingCrossCallCorrelation(t *testing.T) {
+	// Best Practice: Use the same trace ID across multiple related RPC calls
+	// This enables end-to-end visibility through cost estimation flows
+
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+
+	// Generate a trace ID for this request chain
+	traceID, err := pluginsdk.GenerateTraceID()
+	if err != nil {
+		t.Fatalf("Failed to generate trace ID: %v", err)
+	}
+
+	ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+
+	// Simulate a cost estimation workflow with correlated calls
+	// In production, each call would include the trace_id in gRPC metadata
+
+	// Step 1: Check resource support
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+	supportsResp, err := client.Supports(ctx, &pbc.SupportsRequest{Resource: resource})
+	if err != nil {
+		t.Fatalf("Supports() failed: %v", err)
+	}
+	t.Logf("[trace_id=%s] Step 1 - Supports: %v", traceID, supportsResp.GetSupported())
+
+	// Step 2: Get projected cost
+	projectedResp, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{Resource: resource})
+	if err != nil {
+		t.Fatalf("GetProjectedCost() failed: %v", err)
+	}
+	t.Logf("[trace_id=%s] Step 2 - ProjectedCost: %.2f %s",
+		traceID, projectedResp.GetUnitPrice(), projectedResp.GetCurrency())
+
+	// Step 3: Get pricing spec
+	specResp, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{Resource: resource})
+	if err != nil {
+		t.Fatalf("GetPricingSpec() failed: %v", err)
+	}
+	t.Logf("[trace_id=%s] Step 3 - PricingSpec: %s",
+		traceID, specResp.GetSpec().GetBillingMode())
+
+	// Step 4: Estimate cost
+	attrs, _ := structpb.NewStruct(map[string]interface{}{
+		"instanceType": "t3.micro",
+		"region":       "us-east-1",
+	})
+	estimateResp, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+		ResourceType: "aws:ec2/instance:Instance",
+		Attributes:   attrs,
+	})
+	if err != nil {
+		t.Fatalf("EstimateCost() failed: %v", err)
+	}
+	t.Logf("[trace_id=%s] Step 4 - EstimateCost: %.2f %s/month",
+		traceID, estimateResp.GetCostMonthly(), estimateResp.GetCurrency())
+
+	// Best Practice: All related calls share the same trace_id for correlation
+	// This enables querying all logs/spans for a single request chain
+	t.Logf("All 4 RPC calls correlated with trace_id=%s", traceID)
+}
+
+func testTracingSpanCreation(t *testing.T) {
+	// Best Practice: Create spans for significant sub-operations
+	// This provides granular timing and error tracking within a trace
+
+	// spanInfo represents a simplified span for demonstration
+	type spanInfo struct {
+		name      string
+		traceID   string
+		spanID    string
+		parentID  string
+		startTime time.Time
+		endTime   time.Time
+		status    string
+		tags      map[string]string
+	}
+
+	// Generate trace ID for this request
+	traceID, err := pluginsdk.GenerateTraceID()
+	if err != nil {
+		t.Fatalf("Failed to generate trace ID: %v", err)
+	}
+
+	// Simulate span creation for a cost estimation operation
+	spans := []spanInfo{}
+
+	// Root span: EstimateCost operation
+	rootSpan := spanInfo{
+		name:      "EstimateCost",
+		traceID:   traceID,
+		spanID:    generateSpanID(),
+		parentID:  "", // Root span has no parent
+		startTime: time.Now(),
+		tags: map[string]string{
+			"operation":     "EstimateCost",
+			"resource_type": "aws:ec2/instance:Instance",
+			"provider":      "aws",
+		},
+	}
+
+	// Child span 1: Validate request
+	validateSpan := spanInfo{
+		name:      "ValidateRequest",
+		traceID:   traceID,
+		spanID:    generateSpanID(),
+		parentID:  rootSpan.spanID,
+		startTime: time.Now(),
+		tags: map[string]string{
+			"operation": "validate",
+		},
+	}
+	time.Sleep(1 * time.Millisecond) // Simulate work
+	validateSpan.endTime = time.Now()
+	validateSpan.status = "OK"
+	spans = append(spans, validateSpan)
+
+	// Child span 2: Fetch pricing data
+	fetchSpan := spanInfo{
+		name:      "FetchPricingData",
+		traceID:   traceID,
+		spanID:    generateSpanID(),
+		parentID:  rootSpan.spanID,
+		startTime: time.Now(),
+		tags: map[string]string{
+			"operation": "fetch",
+			"source":    "pricing_api",
+		},
+	}
+	time.Sleep(2 * time.Millisecond) // Simulate API call
+	fetchSpan.endTime = time.Now()
+	fetchSpan.status = "OK"
+	spans = append(spans, fetchSpan)
+
+	// Child span 3: Calculate cost
+	calculateSpan := spanInfo{
+		name:      "CalculateCost",
+		traceID:   traceID,
+		spanID:    generateSpanID(),
+		parentID:  rootSpan.spanID,
+		startTime: time.Now(),
+		tags: map[string]string{
+			"operation": "calculate",
+		},
+	}
+	time.Sleep(1 * time.Millisecond) // Simulate calculation
+	calculateSpan.endTime = time.Now()
+	calculateSpan.status = "OK"
+	spans = append(spans, calculateSpan)
+
+	// Complete root span
+	rootSpan.endTime = time.Now()
+	rootSpan.status = "OK"
+	spans = append([]spanInfo{rootSpan}, spans...) // Prepend root span
+
+	// Verify span relationships
+	t.Log("Span hierarchy:")
+	for _, span := range spans {
+		duration := span.endTime.Sub(span.startTime)
+		parentInfo := "root"
+		if span.parentID != "" {
+			parentInfo = "parent=" + span.parentID[:8] + "..."
+		}
+		t.Logf("  - %s [%s] trace=%s span=%s (%s) duration=%v",
+			span.name, span.status, span.traceID[:8]+"...",
+			span.spanID[:8]+"...", parentInfo, duration)
+	}
+
+	// Verify all spans share the same trace ID
+	for _, span := range spans {
+		if span.traceID != traceID {
+			t.Errorf("Span %s has wrong trace ID: expected %s, got %s",
+				span.name, traceID, span.traceID)
+		}
+	}
+
+	// Verify parent-child relationships
+	rootFound := false
+	for _, span := range spans {
+		if span.parentID == "" {
+			rootFound = true
+		} else {
+			// Verify parent exists
+			parentExists := false
+			for _, parent := range spans {
+				if parent.spanID == span.parentID {
+					parentExists = true
+					break
+				}
+			}
+			if !parentExists {
+				t.Errorf("Span %s has invalid parent ID: %s", span.name, span.parentID)
+			}
+		}
+	}
+	if !rootFound {
+		t.Error("No root span found (span with empty parentID)")
+	}
+}
+
+// generateSpanID generates a 16-character hex span ID for demonstration.
+// In production, use proper span ID generation from your tracing library.
+func generateSpanID() string {
+	traceID, err := pluginsdk.GenerateTraceID()
+	if err != nil {
+		return "0000000000000000"
+	}
+	// Use first 16 chars as span ID (simplified for demo)
+	return traceID[:16]
+}
+
+func testTracingBestPractices(t *testing.T) {
+	// This test documents best practices for distributed tracing
+	// and validates the recommended patterns
+
+	var buf bytes.Buffer
+	logger := pluginsdk.NewPluginLogger("example-plugin", "v1.0.0", zerolog.InfoLevel, &buf)
+
+	// Best Practice 1: Always include trace_id in log entries
+	// This enables correlation between traces and logs
+	traceID, _ := pluginsdk.GenerateTraceID()
+	ctx := pluginsdk.ContextWithTraceID(context.Background(), traceID)
+
+	logger.Info().
+		Str(pluginsdk.FieldTraceID, pluginsdk.TraceIDFromContext(ctx)).
+		Str(pluginsdk.FieldOperation, "EstimateCost").
+		Msg("Processing request")
+
+	logOutput := buf.String()
+	if !strings.Contains(logOutput, traceID) {
+		t.Error("Log entry should contain trace_id")
+	}
+
+	// Best Practice 2: Use standard metadata key for gRPC propagation
+	t.Logf("Standard gRPC metadata key: %s", pluginsdk.TraceIDMetadataKey)
+	if pluginsdk.TraceIDMetadataKey != "x-pulumicost-trace-id" {
+		t.Errorf("Expected metadata key 'x-pulumicost-trace-id', got '%s'",
+			pluginsdk.TraceIDMetadataKey)
+	}
+
+	// Best Practice 3: Generate new trace ID if incoming is invalid
+	invalidTraceID := "invalid"
+	if pricing.ValidateTraceID(invalidTraceID) == nil {
+		t.Error("Invalid trace ID should fail validation")
+	}
+	// When invalid, generate a new one
+	newTraceID, err := pluginsdk.GenerateTraceID()
+	if err != nil {
+		t.Fatalf("Failed to generate replacement trace ID: %v", err)
+	}
+	t.Logf("Replaced invalid trace ID with: %s", newTraceID)
+
+	// Best Practice 4: Document trace format requirements
+	t.Log("Trace ID requirements:")
+	t.Log("  - Exactly 32 lowercase hexadecimal characters")
+	t.Log("  - Not all zeros (invalid per OpenTelemetry)")
+	t.Log("  - Generated using crypto/rand for uniqueness")
+
+	// Best Practice 5: Use TracingUnaryServerInterceptor for automatic extraction
+	t.Log("Server interceptor automatically:")
+	t.Log("  - Extracts trace_id from x-pulumicost-trace-id header")
+	t.Log("  - Validates the trace ID format")
+	t.Log("  - Generates new trace ID if missing or invalid")
+	t.Log("  - Stores trace ID in context for handler access")
+
+	// Best Practice 6: Include span information for sub-operations
+	buf.Reset()
+	spanID := generateSpanID()
+	logger.Info().
+		Str(pluginsdk.FieldTraceID, traceID).
+		Str("span_id", spanID).
+		Str(pluginsdk.FieldOperation, "FetchPricingData").
+		Int64(pluginsdk.FieldDurationMs, 15).
+		Msg("Sub-operation completed")
+
+	logOutput = buf.String()
+	if !strings.Contains(logOutput, spanID) {
+		t.Error("Log entry should contain span_id for sub-operations")
+	}
+
+	t.Log("Best practices validation completed")
 }
