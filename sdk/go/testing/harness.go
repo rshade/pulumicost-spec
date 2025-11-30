@@ -33,6 +33,58 @@ const (
 	MaxLargeQueryTimeSeconds = 10  // Maximum time for large dataset queries in seconds
 	NumConsistencyChecks     = 3   // Number of consistency check iterations
 	SuccessRateMultiplier    = 100 // Multiplier for success rate percentage calculation
+
+	// DefaultTestTimeoutSeconds is the default timeout for test operations.
+	DefaultTestTimeoutSeconds = 60
+	// AdvancedTestTimeoutSeconds is the timeout for advanced conformance tests.
+	AdvancedTestTimeoutSeconds = 120
+	// ConcurrencyTestTimeoutSeconds is the default timeout for concurrency tests.
+	ConcurrencyTestTimeoutSeconds = 30
+
+	// DefaultBenchmarkDurationSeconds is the default duration for benchmarks.
+	DefaultBenchmarkDurationSeconds = 5
+	// AdvancedBenchmarkDurationSeconds is the duration for advanced benchmarks.
+	AdvancedBenchmarkDurationSeconds = 10
+
+	// StandardParallelRequests is the number of concurrent requests for Standard conformance.
+	StandardParallelRequests = 10
+	// AdvancedParallelRequests is the number of concurrent requests for Advanced conformance.
+	AdvancedParallelRequests = 50
+
+	// NameStandardLatencyMs is the Name RPC standard latency threshold in milliseconds.
+	NameStandardLatencyMs = 100
+	// NameAdvancedLatencyMs is the Name RPC advanced latency threshold in milliseconds.
+	NameAdvancedLatencyMs = 50
+	// SupportsStandardLatencyMs is the Supports RPC standard latency threshold in milliseconds.
+	SupportsStandardLatencyMs = 50
+	// SupportsAdvancedLatencyMs is the Supports RPC advanced latency threshold in milliseconds.
+	SupportsAdvancedLatencyMs = 25
+	// ProjectedCostStandardLatencyMs is the GetProjectedCost standard latency threshold in milliseconds.
+	ProjectedCostStandardLatencyMs = 200
+	// ProjectedCostAdvancedLatencyMs is the GetProjectedCost advanced latency threshold in milliseconds.
+	ProjectedCostAdvancedLatencyMs = 100
+	// PricingSpecStandardLatencyMs is the GetPricingSpec standard latency threshold in milliseconds.
+	PricingSpecStandardLatencyMs = 200
+	// PricingSpecAdvancedLatencyMs is the GetPricingSpec advanced latency threshold in milliseconds.
+	PricingSpecAdvancedLatencyMs = 100
+	// ActualCost24hStandardLatencyMs is the GetActualCost 24h standard latency threshold in milliseconds.
+	ActualCost24hStandardLatencyMs = 2000
+	// ActualCost24hAdvancedLatencyMs is the GetActualCost 24h advanced latency threshold in milliseconds.
+	ActualCost24hAdvancedLatencyMs = 1000
+	// ActualCost30dAdvancedLatencyMs is the GetActualCost 30d advanced latency threshold in milliseconds.
+	ActualCost30dAdvancedLatencyMs = 10000
+
+	// AdvancedConcurrencyTimeoutSeconds is the timeout for advanced concurrency tests.
+	AdvancedConcurrencyTimeoutSeconds = 60
+
+	// LatencyTestIterations is the number of iterations for latency tests.
+	LatencyTestIterations = 10
+	// VarianceTestIterations is the number of iterations for variance tests.
+	VarianceTestIterations = 20
+	// PercentageCalculationFactor is the multiplier for percentage calculations.
+	PercentageCalculationFactor = 100
+	// CurrencyCodeRequiredLength is the required length for ISO 4217 currency codes.
+	CurrencyCodeRequiredLength = 3
 )
 
 // TestHarness provides a testing framework for CostSource plugin implementations.
@@ -99,6 +151,7 @@ type TestResult struct {
 	Error    error
 	Duration time.Duration
 	Details  string
+	Category TestCategory // Category this test belongs to (for conformance suite)
 }
 
 // ConformanceTest represents a single conformance test case.
@@ -113,8 +166,10 @@ type PluginConformanceSuite struct {
 	tests []ConformanceTest
 }
 
-// NewConformanceSuite creates a new conformance test suite.
-func NewConformanceSuite() *PluginConformanceSuite {
+// NewPluginConformanceSuite creates a new conformance test suite.
+//
+// Deprecated: Use NewConformanceSuite() for the new conformance framework.
+func NewPluginConformanceSuite() *PluginConformanceSuite {
 	return &PluginConformanceSuite{
 		tests: make([]ConformanceTest, 0),
 	}

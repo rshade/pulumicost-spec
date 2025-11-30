@@ -4,13 +4,19 @@ package pluginsdk
 import (
 	"context"
 	"errors"
+	"net"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/test/bufconn"
 )
 
 // mockPlugin implements Plugin interface for testing.
@@ -70,6 +76,55 @@ func (m *mockSupportsPlugin) Supports(
 	}, nil
 }
 
+// contextCapturingMockPlugin implements Plugin and captures context in handler calls.
+// This allows tests to verify that the handler receives the final modified context.
+type contextCapturingMockPlugin struct {
+	name        string
+	captureFunc func(ctx context.Context)
+}
+
+func (m *contextCapturingMockPlugin) Name() string { return m.name }
+
+func (m *contextCapturingMockPlugin) GetProjectedCost(
+	ctx context.Context,
+	_ *pbc.GetProjectedCostRequest,
+) (*pbc.GetProjectedCostResponse, error) {
+	if m.captureFunc != nil {
+		m.captureFunc(ctx)
+	}
+	return &pbc.GetProjectedCostResponse{}, nil
+}
+
+func (m *contextCapturingMockPlugin) GetActualCost(
+	ctx context.Context,
+	_ *pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+	if m.captureFunc != nil {
+		m.captureFunc(ctx)
+	}
+	return &pbc.GetActualCostResponse{}, nil
+}
+
+func (m *contextCapturingMockPlugin) GetPricingSpec(
+	ctx context.Context,
+	_ *pbc.GetPricingSpecRequest,
+) (*pbc.GetPricingSpecResponse, error) {
+	if m.captureFunc != nil {
+		m.captureFunc(ctx)
+	}
+	return &pbc.GetPricingSpecResponse{}, nil
+}
+
+func (m *contextCapturingMockPlugin) EstimateCost(
+	ctx context.Context,
+	_ *pbc.EstimateCostRequest,
+) (*pbc.EstimateCostResponse, error) {
+	if m.captureFunc != nil {
+		m.captureFunc(ctx)
+	}
+	return &pbc.EstimateCostResponse{}, nil
+}
+
 // mockRegistry implements RegistryLookup for testing.
 type mockRegistry struct {
 	plugins map[string]string // key: "provider:region", value: plugin name
@@ -78,6 +133,76 @@ type mockRegistry struct {
 func (m *mockRegistry) FindPlugin(provider, region string) string {
 	key := provider + ":" + region
 	return m.plugins[key]
+}
+
+// =============================================================================
+// Interceptor Integration Test Harness
+// =============================================================================
+
+const bufConnSize = 1024 * 1024
+
+// interceptorTestHarness provides an in-memory gRPC server for testing interceptors.
+// It uses bufconn to avoid network dependencies and enables testing of interceptor chains.
+type interceptorTestHarness struct {
+	server   *grpc.Server
+	listener *bufconn.Listener
+	client   pbc.CostSourceServiceClient
+	conn     *grpc.ClientConn
+}
+
+// newInterceptorTestHarness creates and starts an in-memory gRPC server with the
+// tracing interceptor (built-in) followed by any user-provided interceptors.
+// The harness.Stop() method must be called (typically via defer) to clean up resources.
+func newInterceptorTestHarness(
+	t *testing.T,
+	plugin Plugin,
+	userInterceptors ...grpc.UnaryServerInterceptor,
+) *interceptorTestHarness {
+	t.Helper()
+
+	listener := bufconn.Listen(bufConnSize)
+
+	// Build interceptor chain: tracing first, then user interceptors (matches Serve() behavior)
+	interceptors := make([]grpc.UnaryServerInterceptor, 0, 1+len(userInterceptors))
+	interceptors = append(interceptors, TracingUnaryServerInterceptor())
+	interceptors = append(interceptors, userInterceptors...)
+
+	server := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptors...))
+	pbc.RegisterCostSourceServiceServer(server, NewServer(plugin))
+
+	// Start server in background
+	go func() {
+		_ = server.Serve(listener)
+	}()
+
+	// Create client connection
+	//nolint:staticcheck // grpc.NewClient doesn't work with bufconn
+	conn, err := grpc.DialContext(context.Background(), "bufnet",
+		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+			return listener.Dial()
+		}),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	return &interceptorTestHarness{
+		server:   server,
+		listener: listener,
+		conn:     conn,
+		client:   pbc.NewCostSourceServiceClient(conn),
+	}
+}
+
+// Stop shuts down the gRPC server and closes the client connection.
+func (h *interceptorTestHarness) Stop() {
+	if h.conn != nil {
+		_ = h.conn.Close()
+	}
+	if h.server != nil {
+		h.server.Stop()
+	}
 }
 
 // TestName tests the Name RPC.
@@ -446,4 +571,349 @@ func TestCreateTestResource(t *testing.T) {
 	assert.Equal(t, "azure:compute:VirtualMachine", resourceNilProps.GetResourceType())
 	assert.NotNil(t, resourceNilProps.GetTags())
 	assert.Empty(t, resourceNilProps.GetTags())
+}
+
+// =============================================================================
+// UnaryInterceptors Tests (User Stories 1, 2, 3)
+// =============================================================================
+
+// trackingInterceptor creates an interceptor that tracks execution order.
+// For concurrent testing scenarios, pass a non-nil mutex to protect slice access.
+func trackingInterceptor(id string, order *[]string, mu *sync.Mutex) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		_ *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		if mu != nil {
+			mu.Lock()
+			*order = append(*order, id)
+			mu.Unlock()
+		} else {
+			*order = append(*order, id)
+		}
+		return handler(ctx, req)
+	}
+}
+
+// contextModifyingInterceptor creates an interceptor that adds a value to context.
+type testContextKey string
+
+func contextModifyingInterceptor(key testContextKey, value string) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		_ *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		ctx = context.WithValue(ctx, key, value)
+		return handler(ctx, req)
+	}
+}
+
+// countingInterceptor creates an interceptor that counts invocations.
+func countingInterceptor(counter *atomic.Int32) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		_ *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		counter.Add(1)
+		return handler(ctx, req)
+	}
+}
+
+// --- User Story 1 Tests: Single Interceptor Registration ---
+
+// TestIntegration_SingleInterceptorInvocation tests T003: single interceptor is invoked via actual gRPC call.
+// This test starts an in-memory gRPC server with bufconn, registers a counting interceptor,
+// makes an actual RPC call, and verifies the interceptor was invoked.
+func TestIntegration_SingleInterceptorInvocation(t *testing.T) {
+	var counter atomic.Int32
+	interceptor := countingInterceptor(&counter)
+
+	// Create server with our interceptor chain
+	harness := newInterceptorTestHarness(t, &mockPlugin{name: "test-plugin"}, interceptor)
+	defer harness.Stop()
+
+	// Make an actual RPC call to trigger the interceptor
+	resp, err := harness.client.Name(context.Background(), &pbc.NameRequest{})
+
+	// Verify the call succeeded
+	require.NoError(t, err)
+	assert.Equal(t, "test-plugin", resp.GetName())
+
+	// Verify the interceptor was invoked exactly once
+	assert.Equal(t, int32(1), counter.Load(), "interceptor should have been invoked once")
+
+	// Make another call and verify counter increments
+	_, err = harness.client.Name(context.Background(), &pbc.NameRequest{})
+	require.NoError(t, err)
+	assert.Equal(t, int32(2), counter.Load(), "interceptor should have been invoked twice")
+}
+
+// TestIntegration_TraceIDPropagation tests T004: trace ID propagates through interceptor.
+// This test starts an in-memory gRPC server, makes an actual RPC call, and verifies
+// that the tracing interceptor generates a valid trace ID that is accessible in subsequent interceptors.
+func TestIntegration_TraceIDPropagation(t *testing.T) {
+	var capturedTraceID string
+	var mu sync.Mutex
+	interceptor := func(
+		ctx context.Context,
+		req interface{},
+		_ *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		// Capture trace ID from context (set by TracingUnaryServerInterceptor which runs before us)
+		mu.Lock()
+		capturedTraceID = TraceIDFromContext(ctx)
+		mu.Unlock()
+		return handler(ctx, req)
+	}
+
+	// Create server with tracing interceptor (built-in) + our capturing interceptor
+	harness := newInterceptorTestHarness(t, &mockPlugin{name: "test-plugin"}, interceptor)
+	defer harness.Stop()
+
+	// Make an actual RPC call to trigger the interceptors
+	resp, err := harness.client.Name(context.Background(), &pbc.NameRequest{})
+
+	// Verify the call succeeded
+	require.NoError(t, err)
+	assert.Equal(t, "test-plugin", resp.GetName())
+
+	// Verify trace ID was captured and is valid (32 hex chars)
+	mu.Lock()
+	traceID := capturedTraceID
+	mu.Unlock()
+
+	assert.NotEmpty(t, traceID, "trace ID should have been captured from context")
+	assert.Len(t, traceID, 32, "trace ID should be 32 hex characters")
+
+	// Verify it's valid hex
+	for _, c := range traceID {
+		isHex := (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')
+		assert.True(t, isHex, "trace ID should only contain hex characters, got: %c", c)
+	}
+}
+
+// --- User Story 2 Tests: Multiple Interceptors Chaining ---
+
+// TestIntegration_MultipleInterceptorsOrder tests T008: multiple interceptors execute in order via actual gRPC call.
+// This test verifies that interceptors execute in the order they are provided.
+func TestIntegration_MultipleInterceptorsOrder(t *testing.T) {
+	var order []string
+	var mu sync.Mutex
+
+	interceptor1 := trackingInterceptor("first", &order, &mu)
+	interceptor2 := trackingInterceptor("second", &order, &mu)
+	interceptor3 := trackingInterceptor("third", &order, &mu)
+
+	// Create server with multiple user interceptors
+	harness := newInterceptorTestHarness(t, &mockPlugin{name: "test-plugin"},
+		interceptor1, interceptor2, interceptor3)
+	defer harness.Stop()
+
+	// Make an actual RPC call to trigger the interceptors
+	resp, err := harness.client.Name(context.Background(), &pbc.NameRequest{})
+
+	// Verify the call succeeded
+	require.NoError(t, err)
+	assert.Equal(t, "test-plugin", resp.GetName())
+
+	// Verify interceptors executed in the correct order
+	mu.Lock()
+	executionOrder := make([]string, len(order))
+	copy(executionOrder, order)
+	mu.Unlock()
+
+	assert.Equal(t, []string{"first", "second", "third"}, executionOrder,
+		"interceptors should execute in the order they were registered")
+}
+
+// TestIntegration_ContextModificationsPropagation tests T009: context modifications propagate between interceptors.
+// This test verifies that context values set by earlier interceptors are visible to later interceptors,
+// and that the handler (plugin) receives the final modified context with all values.
+func TestIntegration_ContextModificationsPropagation(t *testing.T) {
+	key1 := testContextKey("key1")
+	key2 := testContextKey("key2")
+
+	var capturedVal1InInterceptor2, capturedVal2InInterceptor3 string
+	var capturedVal1InHandler, capturedVal2InHandler string
+	var mu sync.Mutex
+
+	// First interceptor sets key1
+	interceptor1 := contextModifyingInterceptor(key1, "value1")
+
+	// Second interceptor sets key2 AND verifies it can see key1
+	interceptor2 := func(
+		ctx context.Context,
+		req interface{},
+		_ *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		// Capture value from first interceptor
+		mu.Lock()
+		if val := ctx.Value(key1); val != nil {
+			capturedVal1InInterceptor2 = val.(string)
+		}
+		mu.Unlock()
+		// Add our own value
+		ctx = context.WithValue(ctx, key2, "value2")
+		return handler(ctx, req)
+	}
+
+	// Third interceptor verifies it can see both values
+	interceptor3 := func(
+		ctx context.Context,
+		req interface{},
+		_ *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		mu.Lock()
+		if val := ctx.Value(key2); val != nil {
+			capturedVal2InInterceptor3 = val.(string)
+		}
+		mu.Unlock()
+		return handler(ctx, req)
+	}
+
+	// Create a custom plugin that captures context values when handler is called
+	contextCapturingPlugin := &contextCapturingMockPlugin{
+		name: "context-test-plugin",
+		captureFunc: func(ctx context.Context) {
+			mu.Lock()
+			defer mu.Unlock()
+			if val := ctx.Value(key1); val != nil {
+				capturedVal1InHandler = val.(string)
+			}
+			if val := ctx.Value(key2); val != nil {
+				capturedVal2InHandler = val.(string)
+			}
+		},
+	}
+
+	// Create server with the interceptor chain
+	harness := newInterceptorTestHarness(t, contextCapturingPlugin,
+		interceptor1, interceptor2, interceptor3)
+	defer harness.Stop()
+
+	// Make an actual RPC call using GetProjectedCost (which passes context to plugin)
+	// Note: Name() doesn't pass context to the plugin, so we use GetProjectedCost instead
+	_, err := harness.client.GetProjectedCost(context.Background(), &pbc.GetProjectedCostRequest{})
+
+	// Verify the call succeeded
+	require.NoError(t, err)
+
+	// Verify context values were propagated correctly through interceptors
+	mu.Lock()
+	defer mu.Unlock()
+	assert.Equal(t, "value1", capturedVal1InInterceptor2,
+		"interceptor2 should see value1 from interceptor1")
+	assert.Equal(t, "value2", capturedVal2InInterceptor3,
+		"interceptor3 should see value2 from interceptor2")
+
+	// Verify the handler received the final context with ALL values
+	assert.Equal(t, "value1", capturedVal1InHandler,
+		"handler should receive context with value1 from interceptor1")
+	assert.Equal(t, "value2", capturedVal2InHandler,
+		"handler should receive context with value2 from interceptor2")
+}
+
+// --- User Story 3 Tests: Backward Compatibility ---
+
+// TestIntegration_NilUnaryInterceptorsField tests T012: nil field works (backward compat).
+// This test verifies that a server with no user interceptors still works correctly,
+// with only the built-in tracing interceptor running.
+func TestIntegration_NilUnaryInterceptorsField(t *testing.T) {
+	// Create server with no user interceptors (backward compatibility pattern)
+	harness := newInterceptorTestHarness(t, &mockPlugin{name: "backward-compat-test"})
+	defer harness.Stop()
+
+	// Make an actual RPC call - should work with just the tracing interceptor
+	resp, err := harness.client.Name(context.Background(), &pbc.NameRequest{})
+
+	// Verify the call succeeded
+	require.NoError(t, err)
+	assert.Equal(t, "backward-compat-test", resp.GetName())
+}
+
+// TestIntegration_EmptySliceUnaryInterceptors tests T013: empty slice works.
+// This is functionally identical to nil interceptors but tests the explicit empty slice case.
+func TestIntegration_EmptySliceUnaryInterceptors(t *testing.T) {
+	// newInterceptorTestHarness with no variadic args is equivalent to empty slice
+	harness := newInterceptorTestHarness(t, &mockPlugin{name: "empty-slice-test"})
+	defer harness.Stop()
+
+	// Make an actual RPC call
+	resp, err := harness.client.Name(context.Background(), &pbc.NameRequest{})
+
+	// Verify the call succeeded
+	require.NoError(t, err)
+	assert.Equal(t, "empty-slice-test", resp.GetName())
+}
+
+// TestInterceptorChainBuilding tests the interceptor chain building logic from Serve().
+// This is a unit test of the chain building pattern used in Serve().
+func TestInterceptorChainBuilding(t *testing.T) {
+	tests := []struct {
+		name             string
+		userInterceptors []grpc.UnaryServerInterceptor
+		expectedChainLen int
+		description      string
+	}{
+		{
+			name:             "nil user interceptors",
+			userInterceptors: nil,
+			expectedChainLen: 1, // just tracing
+			description:      "tracing only",
+		},
+		{
+			name:             "empty user interceptors",
+			userInterceptors: []grpc.UnaryServerInterceptor{},
+			expectedChainLen: 1, // just tracing
+			description:      "tracing only",
+		},
+		{
+			name: "one user interceptor",
+			userInterceptors: []grpc.UnaryServerInterceptor{
+				func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+					return handler(ctx, req)
+				},
+			},
+			expectedChainLen: 2, // tracing + user
+			description:      "tracing + 1 user",
+		},
+		{
+			name: "three user interceptors",
+			userInterceptors: []grpc.UnaryServerInterceptor{
+				func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+					return handler(ctx, req)
+				},
+				func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+					return handler(ctx, req)
+				},
+				func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+					return handler(ctx, req)
+				},
+			},
+			expectedChainLen: 4, // tracing + 3 user
+			description:      "tracing + 3 user",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Simulate the chain building logic from Serve()
+			interceptors := make([]grpc.UnaryServerInterceptor, 0, 1+len(tt.userInterceptors))
+			interceptors = append(interceptors, TracingUnaryServerInterceptor())
+			interceptors = append(interceptors, tt.userInterceptors...)
+
+			assert.Len(t, interceptors, tt.expectedChainLen, tt.description)
+			// First interceptor should always be tracing
+			assert.NotNil(t, interceptors[0], "tracing interceptor should be first")
+		})
+	}
 }

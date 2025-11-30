@@ -50,7 +50,7 @@ cloud providers.
 
 **Schema Features**:
 
-- **Required fields**: provider, resource_type, billing_mode, rate_per_unit, currency  
+- **Required fields**: provider, resource_type, billing_mode, rate_per_unit, currency
 - **Advanced structures**: metric_hints, pricing_tiers, time_aggregation, commitment_terms
 - **Flexible metadata**: resource_tags (string-only), plugin_metadata (any type)
 - **ISO compliance**: 3-character currency codes, ISO 8601 date formats
@@ -176,7 +176,7 @@ Tests are organized by **functional categories**:
 
 - **Domain tests** (`domain_test.go`): Enum validation, string conversion, completeness
 - **Schema validation** (`validate_test.go`): Valid examples across all providers
-- **Invalid input tests** (`validate_invalid_test.go`): Error condition coverage  
+- **Invalid input tests** (`validate_invalid_test.go`): Error condition coverage
 - **Resource tags tests** (`resource_tags_test.go`): Tag validation and metadata handling
 
 **Test Coverage**:
@@ -243,7 +243,7 @@ go test -run TestValidBillingMode
 go test -run TestBillingModeString
 go test -run TestAllBillingModesCompleteness
 
-# Provider validation  
+# Provider validation
 go test -run TestValidProvider
 go test -run TestProviderString
 go test -run TestAllProvidersCompleteness
@@ -260,7 +260,7 @@ go test -run TestAllProvidersCompleteness
 ### Schema Synchronization
 
 - **Embedded schema** ensures validation consistency
-- **Single source of truth** in `schemas/pricing_spec.schema.json`  
+- **Single source of truth** in `schemas/pricing_spec.schema.json`
 - **Runtime compilation** balances performance and flexibility
 
 ### Test Coverage Strategy

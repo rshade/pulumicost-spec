@@ -55,6 +55,7 @@ pulumicost-spec/
 │  └─ pricing_spec.schema.json    # Comprehensive v0.1.0 pricing schema
 ├─ sdk/go/                        # Production Go SDK
 │  ├─ proto/                      # Generated protobuf bindings (auto-generated)
+│  ├─ pluginsdk/                  # Plugin development SDK
 │  ├─ types/                      # Helper types and validation
 │  └─ testing/                    # Complete testing framework
 ├─ examples/                      # Cross-vendor examples
@@ -70,6 +71,7 @@ pulumicost-spec/
 - **[gRPC Service](proto/pulumicost/v1/costsource.proto)**: Complete v0.1.0 CostSourceService with 6 RPC methods
 - **[JSON Schema](schemas/pricing_spec.schema.json)**: Comprehensive validation supporting all major cloud providers
 - **[Go SDK](sdk/go/)**: Production-ready SDK with automatic protobuf generation
+- **[Plugin SDK](sdk/go/pluginsdk/)**: ServeConfig, helpers, and testing
 - **[Testing Framework](sdk/go/testing/)**: Multi-level conformance testing (Basic, Standard, Advanced)
 - **[Examples](examples/)**: Cross-vendor examples demonstrating all major billing models
 - **[CI/CD Pipeline](.github/workflows/ci.yml)**: Complete validation, testing, and performance benchmarks
@@ -81,6 +83,7 @@ pulumicost-spec/
 ```bash
 # Add SDK to your Go project
 go get github.com/rshade/pulumicost-spec/sdk/go/proto
+go get github.com/rshade/pulumicost-spec/sdk/go/pluginsdk  # Plugin development SDK
 go get github.com/rshade/pulumicost-spec/sdk/go/types
 ```
 
@@ -126,10 +129,10 @@ import (
     "log"
     "net"
     "time"
-    
+
     "google.golang.org/grpc"
     "google.golang.org/protobuf/types/known/timestamppb"
-    
+
     pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
@@ -147,7 +150,7 @@ func (k *kubecostPlugin) Name(ctx context.Context, req *pbc.NameRequest) (*pbc.N
 // Supports checks if a resource type is supported
 func (k *kubecostPlugin) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.SupportsResponse, error) {
     resource := req.GetResource()
-    
+
     // Example: Support Kubernetes namespaces
     if resource.GetProvider() == "kubernetes" && resource.GetResourceType() == "namespace" {
         return &pbc.SupportsResponse{
@@ -155,7 +158,7 @@ func (k *kubecostPlugin) Supports(ctx context.Context, req *pbc.SupportsRequest)
             Reason:    "",
         }, nil
     }
-    
+
     return &pbc.SupportsResponse{
         Supported: false,
         Reason:    "Only Kubernetes namespaces are supported",
@@ -181,7 +184,7 @@ func (k *kubecostPlugin) GetActualCost(ctx context.Context, req *pbc.GetActualCo
             Source:      "kubecost",
         },
     }
-    
+
     return &pbc.GetActualCostResponse{
         Results: results,
     }, nil
@@ -223,7 +226,7 @@ func (k *kubecostPlugin) GetPricingSpec(ctx context.Context, req *pbc.GetPricing
         },
         Source: "kubecost",
     }
-    
+
     return &pbc.GetPricingSpecResponse{
         Spec: spec,
     }, nil
@@ -245,12 +248,12 @@ func main() {
     if err != nil {
         log.Fatalf("Failed to listen: %v", err)
     }
-    
+
     server := grpc.NewServer()
     plugin := &kubecostPlugin{}
-    
+
     pbc.RegisterCostSourceServiceServer(server, plugin)
-    
+
     fmt.Println("Kubecost plugin server listening on :50051")
     if err := server.Serve(lis); err != nil {
         log.Fatalf("Failed to serve: %v", err)
@@ -284,17 +287,17 @@ func main() {
         log.Fatalf("Failed to connect: %v", err)
     }
     defer conn.Close()
-    
+
     client := pbc.NewCostSourceServiceClient(conn)
     ctx := context.Background()
-    
+
     // Get plugin name
     nameResp, err := client.Name(ctx, &pbc.NameRequest{})
     if err != nil {
         log.Fatalf("Failed to get name: %v", err)
     }
     fmt.Printf("Connected to plugin: %s\n", nameResp.GetName())
-    
+
     // Check if plugin supports a resource
     resource := &pbc.ResourceDescriptor{
         Provider:     "kubernetes",
@@ -305,19 +308,19 @@ func main() {
             "tier": "frontend",
         },
     }
-    
+
     supportsResp, err := client.Supports(ctx, &pbc.SupportsRequest{
         Resource: resource,
     })
     if err != nil {
         log.Fatalf("Failed to check support: %v", err)
     }
-    
+
     if !supportsResp.GetSupported() {
         fmt.Printf("Resource not supported: %s\n", supportsResp.GetReason())
         return
     }
-    
+
     // Get actual cost data
     actualCostResp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
         ResourceId: "namespace/production",
@@ -330,7 +333,7 @@ func main() {
     if err != nil {
         log.Fatalf("Failed to get actual cost: %v", err)
     }
-    
+
     fmt.Printf("\nActual cost data:\n")
     for _, result := range actualCostResp.GetResults() {
         fmt.Printf("  Time: %s, Cost: $%.2f, Usage: %.2f %s\n",
@@ -339,7 +342,7 @@ func main() {
             result.GetUsageAmount(),
             result.GetUsageUnit())
     }
-    
+
     // Get projected cost
     projectedResp, err := client.GetProjectedCost(ctx, &pbc.GetProjectedCostRequest{
         Resource: resource,
@@ -347,12 +350,12 @@ func main() {
     if err != nil {
         log.Fatalf("Failed to get projected cost: %v", err)
     }
-    
+
     fmt.Printf("\nProjected cost:\n")
     fmt.Printf("  Unit price: $%.4f %s\n", projectedResp.GetUnitPrice(), projectedResp.GetCurrency())
     fmt.Printf("  Monthly cost: $%.2f\n", projectedResp.GetCostPerMonth())
     fmt.Printf("  Billing detail: %s\n", projectedResp.GetBillingDetail())
-    
+
     // Get pricing specification
     specResp, err := client.GetPricingSpec(ctx, &pbc.GetPricingSpecRequest{
         Resource: resource,
@@ -360,7 +363,7 @@ func main() {
     if err != nil {
         log.Fatalf("Failed to get pricing spec: %v", err)
     }
-    
+
     spec := specResp.GetSpec()
     fmt.Printf("\nPricing specification:\n")
     fmt.Printf("  Provider: %s\n", spec.GetProvider())
@@ -368,7 +371,7 @@ func main() {
     fmt.Printf("  Billing Mode: %s\n", spec.GetBillingMode())
     fmt.Printf("  Rate per unit: $%.4f %s\n", spec.GetRatePerUnit(), spec.GetCurrency())
     fmt.Printf("  Description: %s\n", spec.GetDescription())
-    
+
     if len(spec.GetMetricHints()) > 0 {
         fmt.Printf("  Metric hints:\n")
         for _, hint := range spec.GetMetricHints() {
@@ -405,7 +408,7 @@ package main
 import (
     "fmt"
     "log"
-    
+
     "github.com/rshade/pulumicost-spec/sdk/go/types"
 )
 
@@ -429,13 +432,13 @@ func main() {
         ],
         "source": "aws"
     }`
-    
+
     // Validate the JSON document against the schema
     err := types.ValidatePricingSpec([]byte(pricingSpecJSON))
     if err != nil {
         log.Fatalf("Validation failed: %v", err)
     }
-    
+
     fmt.Println("PricingSpec JSON is valid!")
 }
 ```
@@ -449,7 +452,7 @@ package main
 
 import (
     "fmt"
-    
+
     "github.com/rshade/pulumicost-spec/sdk/go/types"
 )
 
@@ -457,12 +460,12 @@ func main() {
     // Check if a billing mode is valid
     validModes := []string{
         "per_hour",
-        "per_gb_month", 
+        "per_gb_month",
         "per_request",
         "spot",
         "reserved",
     }
-    
+
     for _, mode := range validModes {
         if types.IsValidBillingMode(mode) {
             fmt.Printf("✓ %s is a valid billing mode\n", mode)
@@ -470,7 +473,7 @@ func main() {
             fmt.Printf("✗ %s is not a valid billing mode\n", mode)
         }
     }
-    
+
     // Get all available billing modes
     fmt.Printf("\nAll available billing modes:\n")
     for _, mode := range types.GetAllBillingModes() {
@@ -495,12 +498,12 @@ import (
 
 func TestMyPlugin(t *testing.T) {
     plugin := &MyPluginImpl{}
-    
+
     // Run basic integration tests
     harness := plugintesting.NewTestHarness(plugin)
     harness.Start(t)
     defer harness.Stop()
-    
+
     // Test with mock client
     client := harness.Client()
     // ... test your plugin
@@ -535,11 +538,11 @@ Three levels of conformance testing ensure production readiness:
 ```go
 func TestPluginConformance(t *testing.T) {
     plugin := &MyPluginImpl{}
-    
+
     // Choose conformance level
     result := plugintesting.RunStandardConformanceTests(t, plugin)
     plugintesting.PrintConformanceReport(result)
-    
+
     if result.FailedTests > 0 {
         t.Errorf("Plugin failed conformance: %s", result.Summary)
     }

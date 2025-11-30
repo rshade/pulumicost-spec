@@ -72,7 +72,7 @@ func NameValidationTest(harness *plugintesting.TestHarness) plugintesting.TestRe
 
 // RunBasicConformanceTests runs basic conformance tests that all plugins must pass.
 func RunBasicConformanceTests(t *testing.T, impl pbc.CostSourceServiceServer) *ConformanceResult {
-	suite := plugintesting.NewConformanceSuite()
+	suite := plugintesting.NewPluginConformanceSuite()
 	addBasicConformanceTests(suite)
 	return runConformanceTestSuite(t, impl, suite, ConformanceBasic, "Basic conformance")
 }
@@ -358,7 +358,7 @@ func RunStandardConformanceTests(
 		)
 	}
 
-	suite := plugintesting.NewConformanceSuite()
+	suite := plugintesting.NewPluginConformanceSuite()
 	addStandardConformanceTests(suite)
 	results := suite.RunTests(t, impl)
 
@@ -460,7 +460,7 @@ func RunAdvancedConformanceTests(
 		)
 	}
 
-	suite := plugintesting.NewConformanceSuite()
+	suite := plugintesting.NewPluginConformanceSuite()
 	addAdvancedConformanceTests(suite)
 	results := suite.RunTests(t, impl)
 

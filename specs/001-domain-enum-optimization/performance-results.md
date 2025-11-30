@@ -23,25 +23,25 @@ The optimized slice-based validation approach achieves **zero allocation** (0 B/
 
 ### Optimized Slice-Based Validation (Implementation)
 
-| Enum Type            | Values | Performance (ns/op) | Memory (B/op) | Allocs/op |
-|----------------------|--------|---------------------|---------------|-----------|
-| DiscoverySource      | 4      | 5.0                 | 0             | 0         |
-| SecurityLevel        | 4      | 6.8                 | 0             | 0         |
-| InstallationMethod   | 4      | 6.1                 | 0             | 0         |
-| Provider             | 5      | 7.0                 | 0             | 0         |
-| PluginStatus         | 6      | 7.3                 | 0             | 0         |
-| AuthMethod           | 6      | 7.2                 | 0             | 0         |
-| SystemPermission     | 9      | 6.8                 | 0             | 0         |
-| PluginCapability     | 14     | 10.5                | 0             | 0         |
+| Enum Type          | Values | Performance (ns/op) | Memory (B/op) | Allocs/op |
+| ------------------ | ------ | ------------------- | ------------- | --------- |
+| DiscoverySource    | 4      | 5.0                 | 0             | 0         |
+| SecurityLevel      | 4      | 6.8                 | 0             | 0         |
+| InstallationMethod | 4      | 6.1                 | 0             | 0         |
+| Provider           | 5      | 7.0                 | 0             | 0         |
+| PluginStatus       | 6      | 7.3                 | 0             | 0         |
+| AuthMethod         | 6      | 7.2                 | 0             | 0         |
+| SystemPermission   | 9      | 6.8                 | 0             | 0         |
+| PluginCapability   | 14     | 10.5                | 0             | 0         |
 
 **Average**: ~7.1 ns/op across all enum types
 
 ### Map-Based Validation (Comparison)
 
-| Enum Type            | Values | Performance (ns/op) | Memory (B/op) | Allocs/op | vs Slice  |
-|----------------------|--------|---------------------|---------------|-----------|-----------|
-| Provider             | 5      | 15.1                | 0             | 0         | +115% ⚠️  |
-| PluginCapability     | 14     | 16.1                | 0             | 0         | +53% ⚠️   |
+| Enum Type        | Values | Performance (ns/op) | Memory (B/op) | Allocs/op | vs Slice |
+| ---------------- | ------ | ------------------- | ------------- | --------- | -------- |
+| Provider         | 5      | 15.1                | 0             | 0         | +115% ⚠️ |
+| PluginCapability | 14     | 16.1                | 0             | 0         | +53% ⚠️  |
 
 **Observation**: Map-based validation is 50-115% slower for small enums (4-14 values), despite both approaches
 achieving zero allocation.
@@ -50,13 +50,13 @@ achieving zero allocation.
 
 ### Performance by Enum Size
 
-| Enum Size | Representative Type | Performance (ns/op) | Scaling Factor |
-|-----------|---------------------|---------------------|----------------|
-| 4 values  | DiscoverySource     | 4.9                 | 1.0x (baseline)|
-| 5 values  | Provider            | 5.9                 | 1.2x           |
-| 6 values  | PluginStatus        | 9.4                 | 1.9x           |
-| 9 values  | SystemPermission    | 5.9                 | 1.2x           |
-| 14 values | PluginCapability    | 12.6                | 2.6x           |
+| Enum Size | Representative Type | Performance (ns/op) | Scaling Factor  |
+| --------- | ------------------- | ------------------- | --------------- |
+| 4 values  | DiscoverySource     | 4.9                 | 1.0x (baseline) |
+| 5 values  | Provider            | 5.9                 | 1.2x            |
+| 6 values  | PluginStatus        | 9.4                 | 1.9x            |
+| 9 values  | SystemPermission    | 5.9                 | 1.2x            |
+| 14 values | PluginCapability    | 12.6                | 2.6x            |
 
 **Analysis**:
 
@@ -69,12 +69,12 @@ achieving zero allocation.
 
 Based on measured scaling (~0.5 ns per value):
 
-| Enum Size | Projected Performance | Recommendation                    |
-|-----------|-----------------------|-----------------------------------|
-| 20 values | ~15 ns/op             | Slice-based optimal               |
-| 30 values | ~20 ns/op             | Slice-based still efficient       |
-| 40 values | ~25 ns/op             | Consider map-based (crossover)    |
-| 50+ values| ~30+ ns/op            | Map-based recommended (~16 ns/op) |
+| Enum Size  | Projected Performance | Recommendation                    |
+| ---------- | --------------------- | --------------------------------- |
+| 20 values  | ~15 ns/op             | Slice-based optimal               |
+| 30 values  | ~20 ns/op             | Slice-based still efficient       |
+| 40 values  | ~25 ns/op             | Consider map-based (crossover)    |
+| 50+ values | ~30+ ns/op            | Map-based recommended (~16 ns/op) |
 
 **Decision Rule**: For registry package (max 14 values), **slice-based validation is optimal**.
 
@@ -103,7 +103,7 @@ Actual measured performance:
 ### Slice-Based vs Map-Based Direct Comparison
 
 | Validation Approach | Provider (5 values) | PluginCapability (14 values) | Memory Footprint |
-|---------------------|---------------------|------------------------------|------------------|
+| ------------------- | ------------------- | ---------------------------- | ---------------- |
 | **Slice-based**     | 7.0 ns/op           | 10.5 ns/op                   | 608 bytes total  |
 | **Map-based**       | 15.1 ns/op (+115%)  | 16.1 ns/op (+53%)            | ~3.5 KB total    |
 | **Winner**          | ✅ Slice (2.2x)     | ✅ Slice (1.5x)              | ✅ Slice (6x)    |
@@ -156,14 +156,14 @@ Estimated Total:        608 bytes (including slice overhead)
 
 ### Research Predictions (from research.md)
 
-| Metric                  | Prediction           | Actual Result        | Accuracy |
-|-------------------------|----------------------|----------------------|----------|
-| Slice-based performance | 5-30 ns/op           | 5-12.6 ns/op         | ✅ Exact  |
-| Map-based performance   | 15-20 ns/op          | 15.1-16.1 ns/op      | ✅ Exact  |
-| Memory allocation       | 0 allocs/op          | 0 allocs/op          | ✅ Exact  |
-| Slice memory footprint  | ~600 bytes           | ~608 bytes           | ✅ Exact  |
-| Map memory footprint    | ~3-4 KB              | ~3.5 KB (estimated)  | ✅ Exact  |
-| Crossover point         | 40-50 values         | ~40 values (projected)| ✅ Exact  |
+| Metric                  | Prediction   | Actual Result          | Accuracy |
+| ----------------------- | ------------ | ---------------------- | -------- |
+| Slice-based performance | 5-30 ns/op   | 5-12.6 ns/op           | ✅ Exact |
+| Map-based performance   | 15-20 ns/op  | 15.1-16.1 ns/op        | ✅ Exact |
+| Memory allocation       | 0 allocs/op  | 0 allocs/op            | ✅ Exact |
+| Slice memory footprint  | ~600 bytes   | ~608 bytes             | ✅ Exact |
+| Map memory footprint    | ~3-4 KB      | ~3.5 KB (estimated)    | ✅ Exact |
+| Crossover point         | 40-50 values | ~40 values (projected) | ✅ Exact |
 
 **Conclusion**: Research predictions were highly accurate. The decision to use optimized slice-based validation was
 correct for registry package enum sizes.
@@ -195,13 +195,13 @@ recommended if it grows beyond 50 values.
 
 ### Performance Requirements
 
-| Requirement              | Target         | Actual Result          | Status |
-|--------------------------|----------------|------------------------|--------|
-| Response time            | < 100 ns/op    | 5-12.6 ns/op           | ✅ Pass |
-| Contract target          | < 30 ns/op     | 5-12.6 ns/op           | ✅ Pass |
-| Memory allocation        | 0 allocs/op    | 0 allocs/op            | ✅ Pass |
-| Backward compatibility   | 100%           | 100% (all tests pass)  | ✅ Pass |
-| Code quality             | 0 lint issues  | 0 issues (with nolint) | ✅ Pass |
+| Requirement            | Target        | Actual Result          | Status  |
+| ---------------------- | ------------- | ---------------------- | ------- |
+| Response time          | < 100 ns/op   | 5-12.6 ns/op           | ✅ Pass |
+| Contract target        | < 30 ns/op    | 5-12.6 ns/op           | ✅ Pass |
+| Memory allocation      | 0 allocs/op   | 0 allocs/op            | ✅ Pass |
+| Backward compatibility | 100%          | 100% (all tests pass)  | ✅ Pass |
+| Code quality           | 0 lint issues | 0 issues (with nolint) | ✅ Pass |
 
 **All contract requirements met and significantly exceeded.**
 

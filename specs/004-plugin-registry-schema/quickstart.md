@@ -55,27 +55,27 @@ schema.
 
 ### Required Fields
 
-| Field | Format | Example |
-|-------|--------|---------|
-| name | Lowercase alphanumeric with hyphens | `my-plugin` |
-| description | 10-500 characters | `A cost data plugin...` |
-| repository | owner/repo format | `myorg/my-plugin` |
-| author | 1-100 characters | `My Organization` |
-| supported_providers | Array of valid providers | `["aws", "azure"]` |
-| min_spec_version | Semantic version | `0.1.0` |
+| Field               | Format                              | Example                 |
+| ------------------- | ----------------------------------- | ----------------------- |
+| name                | Lowercase alphanumeric with hyphens | `my-plugin`             |
+| description         | 10-500 characters                   | `A cost data plugin...` |
+| repository          | owner/repo format                   | `myorg/my-plugin`       |
+| author              | 1-100 characters                    | `My Organization`       |
+| supported_providers | Array of valid providers            | `["aws", "azure"]`      |
+| min_spec_version    | Semantic version                    | `0.1.0`                 |
 
 ### Optional Fields
 
-| Field | Format | Default | Example |
-|-------|--------|---------|---------|
-| license | SPDX identifier | - | `Apache-2.0` |
-| homepage | Valid URI | - | `https://example.com` |
-| capabilities | Array of valid capabilities | - | `["cost_retrieval"]` |
-| security_level | Valid level | `community` | `verified` |
-| max_spec_version | Semantic version | - | `1.0.0` |
-| keywords | Array (max 10, each max 30 chars) | - | `["aws", "ec2"]` |
-| deprecated | Boolean | `false` | `true` |
-| deprecation_message | String (required if deprecated) | - | `Use aws-v2 instead` |
+| Field               | Format                            | Default     | Example               |
+| ------------------- | --------------------------------- | ----------- | --------------------- |
+| license             | SPDX identifier                   | -           | `Apache-2.0`          |
+| homepage            | Valid URI                         | -           | `https://example.com` |
+| capabilities        | Array of valid capabilities       | -           | `["cost_retrieval"]`  |
+| security_level      | Valid level                       | `community` | `verified`            |
+| max_spec_version    | Semantic version                  | -           | `1.0.0`               |
+| keywords            | Array (max 10, each max 30 chars) | -           | `["aws", "ec2"]`      |
+| deprecated          | Boolean                           | `false`     | `true`                |
+| deprecation_message | String (required if deprecated)   | -           | `Use aws-v2 instead`  |
 
 ## Validation
 

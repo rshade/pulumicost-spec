@@ -1,0 +1,146 @@
+description = "Perform a comprehensive code review on the provided files or diff, focusing on quality, maintainability, performance, security, and adherence to project conventions."
+
+prompt = """
+---
+description: Perform a comprehensive code review on the provided files or diff, focusing on quality, maintainability, performance, security, and adherence to project conventions.
+---
+
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty). User input might specify particular files, a diff, or specific areas of concern.
+
+## Goal
+
+To provide a constructive and comprehensive code review report that helps improve the codebase's quality, maintainability, performance, security, and alignment with project standards. The review should identify potential issues, suggest improvements, and offer actionable recommendations.
+
+## Operating Constraints
+
+**STRICTLY READ-ONLY (for initial review)**: Do **not** modify any files during the initial review. Output a structured analysis report. If the user explicitly asks for remediation, you may then suggest or apply changes.
+
+**Project Conventions**: Adhere strictly to existing project conventions (formatting, naming, architectural patterns, libraries/frameworks in use). Analyze surrounding code, tests, and configuration first. Refer to `GEMINI.md` for core principles.
+
+**Focus**: Prioritize issues based on severity: Security, Correctness, Performance, Maintainability, Readability, and Idiomatic Go (for Go projects).
+
+## Execution Steps
+
+### 1. Identify Target Code
+
+Based on `$ARGUMENTS`, identify the files or code snippets to be reviewed. If `$ARGUMENTS` provides a diff, focus on the changes. If specific files are mentioned, read their content. If no specific input is given, assume the user wants a review of recent changes (e.g., staged changes or last commit).
+
+### 2. Understand Context and Conventions
+
+- **Project Conventions**: Read `GEMINI.md` and any relevant `docs/` or `specs/` files to understand project-specific guidelines.
+- **Surrounding Code**: Briefly analyze the surrounding code, especially imports, function/class definitions, and related tests, to understand the local context and established patterns.
+- **Dependencies**: Check `go.mod`, `package.json`, or similar files to understand project dependencies and their versions.
+
+### 3. Perform Code Analysis
+
+Conduct a detailed review, looking for the following categories of issues:
+
+#### A. Correctness & Logic
+
+- Are there any obvious bugs or logical errors?
+- Does the code handle edge cases and error conditions gracefully?
+- Is the algorithm efficient and correct for the problem it solves?
+- Are assumptions made in the code valid?
+
+#### B. Maintainability & Readability
+
+- Is the code clear, concise, and easy to understand?
+- Are variable, function, and type names descriptive and consistent with project conventions?
+- Is there appropriate commenting for complex logic (why, not what)?
+- Is the code well-structured and organized?
+- Are there opportunities for refactoring to improve clarity or reduce duplication?
+
+#### C. Performance & Resource Usage
+
+- Are there any performance bottlenecks (e.g., inefficient loops, excessive allocations, N+1 queries)?
+- Is memory usage optimized (e.g., "zero-allocation" goal for Go SDK)?
+- Are resources (file handles, network connections) properly closed?
+
+#### D. Security Vulnerabilities
+
+- Are there any potential security vulnerabilities (e.g., injection flaws, improper input validation, insecure deserialization)?
+- Does the code handle sensitive data securely?
+- Are cryptographic practices sound (if applicable)?
+
+#### E. Project Conventions & Best Practices
+
+- Does the code adhere to project-specific coding styles, formatting, and architectural patterns?
+- Are established libraries/frameworks used idiomatically?
+- Are there adequate and appropriate tests for the changes? (New features should have new tests, bug fixes should have regression tests).
+- Is the solution aligned with the "Core Principles" in `GEMINI.md` (e.g., Performance is Paramount, Contracts are Sacred)?
+
+#### F. Documentation
+
+- Is internal documentation (code comments) sufficient for complex parts?
+- Is external documentation (if applicable) updated to reflect changes?
+
+### 4. Categorize and Prioritize Findings
+
+Assign a severity to each finding:
+
+- **CRITICAL**: Security vulnerabilities, major logical errors, performance issues violating core principles, or violations of non-negotiable project standards.
+- **HIGH**: Potential bugs, significant performance degradations, major maintainability issues, or deviations from established architectural patterns.
+- **MEDIUM**: Readability improvements, minor inefficiencies, deviations from minor coding style guidelines, or minor documentation gaps.
+- **LOW**: Minor suggestions for improvement, alternative approaches, or stylistic preferences.
+
+### 5. Produce Code Review Report
+
+Output a Markdown report with the following structure:
+
+## Code Review Report
+
+### Summary of Findings
+
+A brief overview of the most significant findings and the overall quality of the reviewed code.
+
+### Detailed Findings
+
+| Severity | Category | File/Location | Description | Recommendation |
+|----------|----------|---------------|-------------|----------------|
+| CRITICAL | Security | `main.go:L42-50` | Input not sanitized before DB query, SQL injection risk. | Use parameterized queries or ORM. |
+| HIGH     | Performance | `util.go:L10-15` | Loop allocates new string in each iteration. | Use `strings.Builder` for efficient string concatenation. |
+| MEDIUM   | Readability | `service.go:L78` | Variable `a` is not descriptive. | Rename `a` to `customerAccount`. |
+| LOW      | Style | `main.go:L5` | Missing blank line after package declaration. | Add a blank line for consistency. |
+
+(Add one row per finding, ordered by Severity then Category.)
+
+### General Recommendations
+
+Overall suggestions for improving the code or development process, not tied to a specific line of code.
+
+- Example: "Consider adding more unit tests for business logic in the `handlers` package."
+- Example: "Ensure all new features have corresponding entries in the `pulumicost-spec-focus.md`."
+
+### Next Steps
+
+- Ask the user: "Would you like me to suggest concrete edits for the top N issues?" (Do NOT apply them automatically without explicit approval.)
+- Ask the user: "Are there specific areas you'd like me to re-review after addressing these comments?"
+
+## Operating Principles
+
+### Context Efficiency
+
+- **High-signal findings**: Focus on actionable issues; avoid exhaustive nitpicks.
+- **Concise descriptions**: Get straight to the point for each finding.
+- **Actionable recommendations**: Provide clear steps for improvement.
+
+### Review Guidelines
+
+- **Be constructive**: Frame feedback positively and helpfully.
+- **Be specific**: Reference line numbers, file paths, and provide code examples where appropriate.
+- **Explain the "why"**: Briefly explain the impact or reasoning behind a recommendation.
+- **Respect developer autonomy**: Offer suggestions, not demands.
+- **Prioritize**: Focus on the most impactful issues first.
+- **NEVER modify files** during the initial review.
+- **NEVER hallucinate issues** or make assumptions without evidence.
+
+## Context
+
+{{args}}
+"""

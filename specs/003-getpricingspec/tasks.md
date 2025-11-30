@@ -41,22 +41,22 @@
 ### Tests for Foundation
 
 - [ ] T004 Write conformance test for GetPricingSpec with flat-rate response in
-  sdk/go/testing/conformance_test.go
+      sdk/go/testing/conformance_test.go
 - [ ] T005 [P] Write conformance test for GetPricingSpec with empty/default fields in
-  sdk/go/testing/conformance_test.go
+      sdk/go/testing/conformance_test.go
 - [ ] T006 Run tests - confirm they FAIL (proto fields don't exist yet)
 - [ ] T006a [P] Write validation helper for PricingSpec assumptions requirement in
-  sdk/go/pricing/validate.go (FR-009: assumptions SHOULD be populated when not not_implemented)
+      sdk/go/pricing/validate.go (FR-009: assumptions SHOULD be populated when not not_implemented)
 
 ### Proto Implementation
 
 - [ ] T007 Add PricingTier message to proto/pulumicost/v1/costsource.proto after line 162
-  with fields: min_quantity (1), max_quantity (2), rate_per_unit (3), description (4)
+      with fields: min_quantity (1), max_quantity (2), rate_per_unit (3), description (4)
 - [ ] T008 Add unit field (12) to PricingSpec message in proto/pulumicost/v1/costsource.proto
 - [ ] T009 [P] Add assumptions field (13) to PricingSpec message in
-  proto/pulumicost/v1/costsource.proto
+      proto/pulumicost/v1/costsource.proto
 - [ ] T010 [P] Add pricing_tiers field (14) to PricingSpec message in
-  proto/pulumicost/v1/costsource.proto
+      proto/pulumicost/v1/costsource.proto
 - [ ] T011 Add proto comments for all new fields explaining purpose and usage
 - [ ] T012 Run `make generate` to regenerate Go SDK from proto
 - [ ] T013 Run `make lint` to verify buf lint and buf breaking pass
@@ -76,27 +76,27 @@ billing_mode, and assumptions are populated
 ### Tests for User Story 1
 
 - [ ] T015 [P] [US1] Write unit test for flat-rate PricingSpec validation in
-  sdk/go/pricing/validate_test.go
+      sdk/go/pricing/validate_test.go
 - [ ] T016 [P] [US1] Write integration test for GetPricingSpec with EC2 example in
-  sdk/go/testing/integration_test.go
+      sdk/go/testing/integration_test.go
 - [ ] T017 [US1] Run tests - confirm they FAIL
 
 ### Implementation for User Story 1
 
 - [ ] T018 [P] [US1] Add Unit type constants to sdk/go/pricing/domain.go
-  (Hour, GBMonth, Request, Unknown)
+      (Hour, GBMonth, Request, Unknown)
 - [ ] T018a [P] [US1] Add BillingMode constants for Tiered and NotImplemented in
-  sdk/go/pricing/domain.go
+      sdk/go/pricing/domain.go
 - [ ] T019 [P] [US1] Update JSON schema with unit field (string) in
-  schemas/pricing_spec.schema.json
+      schemas/pricing_spec.schema.json
 - [ ] T020 [P] [US1] Update JSON schema with assumptions field (array of strings) in
-  schemas/pricing_spec.schema.json
+      schemas/pricing_spec.schema.json
 - [ ] T021 [US1] Update mock plugin GetPricingSpec to return unit and assumptions in
-  sdk/go/testing/mock_plugin.go
+      sdk/go/testing/mock_plugin.go
 - [ ] T022 [US1] Create flat-rate example ec2-t3-micro.json in examples/specs/ with
-  unit=hour, assumptions populated
+      unit=hour, assumptions populated
 - [ ] T023 [US1] Create flat-rate example ebs-gp3.json in examples/specs/ with
-  unit=GB-month, assumptions populated
+      unit=GB-month, assumptions populated
 - [ ] T024 [US1] Run `make validate-examples` to verify examples pass schema validation
 - [ ] T025 [US1] Run User Story 1 tests - confirm they PASS
 
@@ -114,21 +114,21 @@ contains multiple tiers with min/max quantities
 ### Tests for User Story 2
 
 - [ ] T026 [P] [US2] Write unit test for PricingTier validation in
-  sdk/go/pricing/validate_test.go
+      sdk/go/pricing/validate_test.go
 - [ ] T027 [P] [US2] Write integration test for GetPricingSpec with tiered response in
-  sdk/go/testing/integration_test.go
+      sdk/go/testing/integration_test.go
 - [ ] T028 [US2] Run tests - confirm they FAIL
 
 ### Implementation for User Story 2
 
 - [ ] T029 [US2] Update JSON schema with pricing_tiers array in
-  schemas/pricing_spec.schema.json
+      schemas/pricing_spec.schema.json
 - [ ] T030 [US2] Add PricingTier object schema with min_quantity, max_quantity,
-  rate_per_unit, description in schemas/pricing_spec.schema.json
+      rate_per_unit, description in schemas/pricing_spec.schema.json
 - [ ] T031 [US2] Update mock plugin to support tiered pricing responses in
-  sdk/go/testing/mock_plugin.go
+      sdk/go/testing/mock_plugin.go
 - [ ] T032 [US2] Create tiered example s3-standard.json in examples/specs/ with
-  billing_mode=tiered and 3 tiers
+      billing_mode=tiered and 3 tiers
 - [ ] T033 [US2] Run `make validate-examples` to verify tiered example passes
 - [ ] T034 [US2] Run User Story 2 tests - confirm they PASS
 
@@ -146,23 +146,23 @@ billing_mode=not_implemented and assumptions explain limitation
 ### Tests for User Story 3
 
 - [ ] T035 [P] [US3] Write integration test for GetPricingSpec with not_implemented
-  response in sdk/go/testing/integration_test.go
+      response in sdk/go/testing/integration_test.go
 - [ ] T036 [P] [US3] Write test for gRPC InvalidArgument error when provider missing in
-  sdk/go/testing/integration_test.go
+      sdk/go/testing/integration_test.go
 - [ ] T037 [P] [US3] Write test for gRPC NotFound error for unknown SKU in
-  sdk/go/testing/integration_test.go
+      sdk/go/testing/integration_test.go
 - [ ] T038 [US3] Run tests - confirm they FAIL
 
 ### Implementation for User Story 3
 
 - [ ] T039 [US3] Update mock plugin to return not_implemented for unknown resource types
-  in sdk/go/testing/mock_plugin.go
+      in sdk/go/testing/mock_plugin.go
 - [ ] T040 [US3] Update mock plugin to return InvalidArgument for missing provider in
-  sdk/go/testing/mock_plugin.go
+      sdk/go/testing/mock_plugin.go
 - [ ] T041 [US3] Update mock plugin to return NotFound for unknown SKU in
-  sdk/go/testing/mock_plugin.go
+      sdk/go/testing/mock_plugin.go
 - [ ] T042 [US3] Create not-implemented example lambda-stub.json in examples/specs/
-  with billing_mode=not_implemented
+      with billing_mode=not_implemented
 - [ ] T043 [US3] Run `make validate-examples` to verify not-implemented example passes
 - [ ] T044 [US3] Run User Story 3 tests - confirm they PASS
 
@@ -179,7 +179,7 @@ billing_mode=not_implemented and assumptions explain limitation
 - [ ] T047 Add GetPricingSpec enhancement entry to CHANGELOG.md under Unreleased
 - [ ] T048 Run `make validate` to verify all tests, linting, and schema validation pass
 - [ ] T049 [P] Run benchmarks `go test -bench=. -benchmem ./sdk/go/testing/` to verify
-  performance
+      performance
 - [ ] T050 Review and update quickstart.md if implementation differs from plan
 - [ ] T051 Final code review for proto comments and documentation completeness
 

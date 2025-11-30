@@ -40,7 +40,7 @@ defines three conformance levels with increasing requirements:
 **Required Metrics:**
 
 - `pulumicost_requests_total` - Total requests processed
-- `pulumicost_errors_total` - Total errors encountered  
+- `pulumicost_errors_total` - Total errors encountered
 - `pulumicost_request_duration_seconds` - Request processing time
 
 **Required SLIs:**
@@ -107,20 +107,20 @@ service ObservabilityService {
 func (p *Plugin) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
     status := pb.HealthCheckResponse_SERVING
     message := "All systems operational"
-    
+
     // Check critical dependencies
     if err := p.checkDatabase(ctx); err != nil {
         status = pb.HealthCheckResponse_NOT_SERVING
         message = fmt.Sprintf("Database unavailable: %v", err)
     }
-    
+
     if err := p.checkExternalAPIs(ctx); err != nil {
         if status == pb.HealthCheckResponse_SERVING {
             status = pb.HealthCheckResponse_SERVING // Degraded but still serving
             message = fmt.Sprintf("External APIs degraded: %v", err)
         }
     }
-    
+
     return &pb.HealthCheckResponse{
         Status:        status,
         Message:       message,
@@ -134,20 +134,20 @@ func (p *Plugin) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*
 ```go
 func (p *Plugin) GetMetrics(ctx context.Context, req *pb.GetMetricsRequest) (*pb.GetMetricsResponse, error) {
     var metrics []*pb.Metric
-    
+
     // Collect standard metrics
     if shouldIncludeMetric(req.MetricNames, pricing.StandardMetrics.RequestsTotal) {
         metrics = append(metrics, p.collectRequestMetrics())
     }
-    
+
     if shouldIncludeMetric(req.MetricNames, pricing.StandardMetrics.ErrorsTotal) {
         metrics = append(metrics, p.collectErrorMetrics())
     }
-    
+
     if shouldIncludeMetric(req.MetricNames, pricing.StandardMetrics.RequestDurationSeconds) {
         metrics = append(metrics, p.collectLatencyMetrics())
     }
-    
+
     return &pb.GetMetricsResponse{
         Metrics:   metrics,
         Timestamp: timestamppb.Now(),
@@ -181,7 +181,7 @@ func (p *Plugin) collectRequestMetrics() *pb.Metric {
 ```go
 func (p *Plugin) GetServiceLevelIndicators(ctx context.Context, req *pb.GetSLIRequest) (*pb.GetSLIResponse, error) {
     var slis []*pb.ServiceLevelIndicator
-    
+
     // Calculate availability SLI
     availability := p.calculateAvailability(req.TimeRange)
     slis = append(slis, &pb.ServiceLevelIndicator{
@@ -192,7 +192,7 @@ func (p *Plugin) GetServiceLevelIndicators(ctx context.Context, req *pb.GetSLIRe
         TargetValue: 99.9,
         Status:      p.getSLIStatus(availability, 99.9),
     })
-    
+
     // Calculate error rate SLI
     errorRate := p.calculateErrorRate(req.TimeRange)
     slis = append(slis, &pb.ServiceLevelIndicator{
@@ -203,7 +203,7 @@ func (p *Plugin) GetServiceLevelIndicators(ctx context.Context, req *pb.GetSLIRe
         TargetValue: 0.1,
         Status:      p.getSLIStatus(0.1, errorRate), // Lower is better
     })
-    
+
     return &pb.GetSLIResponse{
         Slis:            slis,
         MeasurementTime: timestamppb.Now(),
@@ -246,21 +246,21 @@ func (p *Plugin) GetServiceLevelIndicators(ctx context.Context, req *pb.GetSLIRe
 
 All plugins must implement these core metrics:
 
-| Metric Name | Type | Description | Labels |
-|-------------|------|-------------|---------|
-| `pulumicost_requests_total` | Counter | Total requests processed | `method`, `provider`, `status` |
-| `pulumicost_errors_total` | Counter | Total errors encountered | `method`, `provider`, `error_type` |
-| `pulumicost_request_duration_seconds` | Histogram | Request processing time | `method`, `provider` |
+| Metric Name                           | Type      | Description              | Labels                             |
+| ------------------------------------- | --------- | ------------------------ | ---------------------------------- |
+| `pulumicost_requests_total`           | Counter   | Total requests processed | `method`, `provider`, `status`     |
+| `pulumicost_errors_total`             | Counter   | Total errors encountered | `method`, `provider`, `error_type` |
+| `pulumicost_request_duration_seconds` | Histogram | Request processing time  | `method`, `provider`               |
 
 ### Advanced Metrics
 
 For Standard and Advanced conformance:
 
-| Metric Name | Type | Description | Labels |
-|-------------|------|-------------|---------|
-| `pulumicost_cache_hit_rate_percent` | Gauge | Cache effectiveness | `provider`, `cache_type` |
-| `pulumicost_active_connections` | Gauge | Active external connections | `service` |
-| `pulumicost_memory_usage_bytes` | Gauge | Memory consumption | `component` |
+| Metric Name                         | Type  | Description                 | Labels                   |
+| ----------------------------------- | ----- | --------------------------- | ------------------------ |
+| `pulumicost_cache_hit_rate_percent` | Gauge | Cache effectiveness         | `provider`, `cache_type` |
+| `pulumicost_active_connections`     | Gauge | Active external connections | `service`                |
+| `pulumicost_memory_usage_bytes`     | Gauge | Memory consumption          | `component`              |
 
 ### Metric Implementation Best Practices
 
@@ -268,7 +268,7 @@ For Standard and Advanced conformance:
 // Use consistent labeling
 labels := map[string]string{
     pricing.StandardLabels.Method:       "GetActualCost",
-    pricing.StandardLabels.Provider:     "aws", 
+    pricing.StandardLabels.Provider:     "aws",
     pricing.StandardLabels.ResourceType: "ec2",
     pricing.StandardLabels.Region:       "us-east-1",
 }
@@ -287,14 +287,14 @@ if err := pricing.ValidateMetricValue(value, pricing.MetricTypeCounter); err != 
 
 ### Core SLIs
 
-| SLI Name | Description | Target | Unit |
-|----------|-------------|--------|------|
-| `availability` | Service uptime percentage | 99.9% | percentage |
-| `error_rate` | Error rate percentage | <0.1% | percentage |
-| `latency_p95` | 95th percentile latency | <1s | seconds |
-| `latency_p99` | 99th percentile latency | <2s | seconds |
-| `throughput` | Requests per second | >100 | requests_per_second |
-| `data_freshness` | Cost data age | <24h | hours |
+| SLI Name         | Description               | Target | Unit                |
+| ---------------- | ------------------------- | ------ | ------------------- |
+| `availability`   | Service uptime percentage | 99.9%  | percentage          |
+| `error_rate`     | Error rate percentage     | <0.1%  | percentage          |
+| `latency_p95`    | 95th percentile latency   | <1s    | seconds             |
+| `latency_p99`    | 99th percentile latency   | <2s    | seconds             |
+| `throughput`     | Requests per second       | >100   | requests_per_second |
+| `data_freshness` | Cost data age             | <24h   | hours               |
 
 ### SLI Calculation Examples
 
@@ -326,14 +326,14 @@ func (p *Plugin) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest
     tracer := otel.Tracer("pulumicost-plugin")
     ctx, span := tracer.Start(ctx, "GetActualCost")
     defer span.End()
-    
+
     // Add span attributes
     span.SetAttributes(
         attribute.String("provider", req.Resource.Provider),
         attribute.String("resource_type", req.Resource.ResourceType),
         attribute.String("region", req.Resource.Region),
     )
-    
+
     // Process request
     result, err := p.processActualCostRequest(ctx, req)
     if err != nil {
@@ -341,16 +341,16 @@ func (p *Plugin) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest
         span.SetStatus(codes.Error, err.Error())
         return nil, err
     }
-    
+
     // Add telemetry metadata to response
     if result.Telemetry == nil {
         result.Telemetry = &pb.TelemetryMetadata{}
     }
-    
+
     result.Telemetry.TraceId = span.SpanContext().TraceID().String()
     result.Telemetry.SpanId = span.SpanContext().SpanID().String()
     result.Telemetry.ProcessingTimeMs = time.Since(startTime).Milliseconds()
-    
+
     return result, nil
 }
 ```
@@ -364,7 +364,7 @@ func extractTraceContext(ctx context.Context) context.Context {
     if !ok {
         return ctx
     }
-    
+
     return otel.GetTextMapPropagator().Extract(ctx, &metadataCarrier{md: md})
 }
 
@@ -404,20 +404,20 @@ func (p *Plugin) logWithContext(ctx context.Context, level pricing.LogLevel, com
         Component: component,
         Fields:    fields,
     }
-    
+
     // Extract trace context
     span := trace.SpanFromContext(ctx)
     if span.SpanContext().IsValid() {
         entry.TraceId = span.SpanContext().TraceID().String()
         entry.SpanId = span.SpanContext().SpanID().String()
     }
-    
+
     // Validate and emit log
     if suite := pricing.ValidateLogEntry(entry.Level, entry.Message, entry.Component, entry.TraceId, entry.SpanId, entry.Fields); !suite.IsValid() {
         // Handle validation errors
         return
     }
-    
+
     p.logger.Log(entry)
 }
 
@@ -437,7 +437,7 @@ p.logWithContext(ctx, pricing.LogLevelInfo, "cost-service", "Processing cost que
 ```go
 func TestObservabilityMetrics(t *testing.T) {
     plugin := NewTestPlugin()
-    
+
     // Test metrics collection
     suite := plugintesting.NewObservabilityTestSuite(plugin, t)
     if !suite.RunBasicObservabilityTests() {
@@ -447,12 +447,12 @@ func TestObservabilityMetrics(t *testing.T) {
 
 func TestHealthCheck(t *testing.T) {
     plugin := NewTestPlugin()
-    
+
     resp, err := plugin.HealthCheck(context.Background(), &pb.HealthCheckRequest{})
     if err != nil {
         t.Fatalf("Health check failed: %v", err)
     }
-    
+
     if resp.Status != pb.HealthCheckResponse_SERVING {
         t.Errorf("Expected SERVING status, got %v", resp.Status)
     }
@@ -464,22 +464,22 @@ func TestHealthCheck(t *testing.T) {
 ```go
 func TestObservabilityConformance(t *testing.T) {
     plugin := NewTestPlugin()
-    
+
     // Test conformance level
     level := pricing.ConformanceStandard
     requirements := pricing.GetObservabilityRequirements(level)
-    
+
     // Verify required metrics
     metrics, err := plugin.GetMetrics(context.Background(), &pb.GetMetricsRequest{})
     if err != nil {
         t.Fatalf("Failed to get metrics: %v", err)
     }
-    
+
     foundMetrics := make(map[string]bool)
     for _, metric := range metrics.Metrics {
         foundMetrics[metric.Name] = true
     }
-    
+
     for _, required := range requirements.RequiredMetrics {
         if !foundMetrics[required] {
             t.Errorf("Required metric '%s' not found", required)
@@ -617,7 +617,7 @@ Resources:
    ```bash
    # Test health check
    grpcurl -plaintext localhost:8080 pulumicost.v1.ObservabilityService/HealthCheck
-   
+
    # Test metrics collection
    grpcurl -plaintext localhost:8080 pulumicost.v1.ObservabilityService/GetMetrics
    ```

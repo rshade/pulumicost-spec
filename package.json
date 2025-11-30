@@ -69,5 +69,8 @@
   "engines": {
     "node": ">=24.11.1",
     "npm": ">=11.6.4"
+  },
+  "overrides": {
+    "fast-json-patch": "^3.1.1"
   }
 }

@@ -15,7 +15,7 @@
 - Q: How many columns are in the official FOCUS 1.2 specification? → A: 57 columns total
   (not 35 as originally stated). Source: [FOCUS Column Library](https://focus.finops.org/focus-columns/)
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Schema Completeness Verification (Priority: P1)
 
@@ -140,7 +140,7 @@ the meaning and purpose of each FOCUS column from the documentation alone.
   - Document which columns are universally supported vs. provider-specific, and explain
     how to handle missing data (null values, default values, or omission).
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -198,7 +198,7 @@ the meaning and purpose of each FOCUS column from the documentation alone.
 - **FocusRecordBuilder**: Go SDK helper that provides fluent API for constructing
   valid FOCUS records.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -233,99 +233,99 @@ the meaning and purpose of each FOCUS column from the documentation alone.
 **Source**: [FOCUS Specification v1.2](https://focus.finops.org/focus-specification/v1-2/)
 and [FOCUS Column Library](https://focus.finops.org/focus-columns/)
 
-| Metric | Count |
-|--------|-------|
-| Total FOCUS 1.2 Columns | 57 |
-| Currently Implemented | 38 |
-| Missing | 19 |
-| Missing Mandatory | 1 |
-| Missing Conditional | 18 |
+| Metric                  | Count |
+| ----------------------- | ----- |
+| Total FOCUS 1.2 Columns | 57    |
+| Currently Implemented   | 38    |
+| Missing                 | 19    |
+| Missing Mandatory       | 1     |
+| Missing Conditional     | 18    |
 
 ### Implemented Columns (38)
 
 #### Mandatory Columns (13 of 14 implemented)
 
-| Column | Type | Proto Field |
-|--------|------|-------------|
-| BilledCost | Decimal | `billed_cost` |
-| BillingAccountId | String | `billing_account_id` |
-| BillingAccountName | String | `billing_account_name` |
-| BillingCurrency | String | `billing_currency` |
-| BillingPeriodEnd | DateTime | `billing_period_end` |
-| BillingPeriodStart | DateTime | `billing_period_start` |
-| ChargeCategory | String | `charge_category` (enum) |
-| ChargeClass | String | `charge_class` (enum) |
-| ChargeDescription | String | `charge_description` |
-| ChargePeriodEnd | DateTime | `charge_period_end` |
-| ChargePeriodStart | DateTime | `charge_period_start` |
-| Provider | String | `provider_name` |
+| Column             | Type     | Proto Field              |
+| ------------------ | -------- | ------------------------ |
+| BilledCost         | Decimal  | `billed_cost`            |
+| BillingAccountId   | String   | `billing_account_id`     |
+| BillingAccountName | String   | `billing_account_name`   |
+| BillingCurrency    | String   | `billing_currency`       |
+| BillingPeriodEnd   | DateTime | `billing_period_end`     |
+| BillingPeriodStart | DateTime | `billing_period_start`   |
+| ChargeCategory     | String   | `charge_category` (enum) |
+| ChargeClass        | String   | `charge_class` (enum)    |
+| ChargeDescription  | String   | `charge_description`     |
+| ChargePeriodEnd    | DateTime | `charge_period_end`      |
+| ChargePeriodStart  | DateTime | `charge_period_start`    |
+| Provider           | String   | `provider_name`          |
 
 #### Recommended Columns (1 of 1 implemented)
 
-| Column | Type | Proto Field |
-|--------|------|-------------|
+| Column          | Type   | Proto Field               |
+| --------------- | ------ | ------------------------- |
 | ChargeFrequency | String | `charge_frequency` (enum) |
 
 #### Conditional Columns (24 of 42 implemented)
 
-| Column | Type | Proto Field |
-|--------|------|-------------|
-| AvailabilityZone | String | `availability_zone` |
-| CommitmentDiscountCategory | String | `commitment_discount_category` (enum) |
-| CommitmentDiscountId | String | `commitment_discount_id` |
-| CommitmentDiscountName | String | `commitment_discount_name` |
-| ConsumedQuantity | Decimal | `consumed_quantity` |
-| ConsumedUnit | String | `consumed_unit` |
-| EffectiveCost | Decimal | `effective_cost` |
-| InvoiceId | String | `invoice_id` |
-| InvoiceIssuer | String | `invoice_issuer` |
-| ListCost | Decimal | `list_cost` |
-| ListUnitPrice | Decimal | `list_unit_price` |
-| PricingCategory | String | `pricing_category` (enum) |
-| PricingQuantity | Decimal | `pricing_quantity` |
-| PricingUnit | String | `pricing_unit` |
-| RegionId | String | `region_id` |
-| RegionName | String | `region_name` |
-| ResourceId | String | `resource_id` |
-| ResourceName | String | `resource_name` |
-| ResourceType | String | `resource_type` |
-| ServiceCategory | String | `service_category` (enum) |
-| ServiceName | String | `service_name` |
-| SkuId | String | `sku_id` |
-| SkuPriceId | String | `sku_price_id` |
-| SubAccountId | String | `sub_account_id` |
-| SubAccountName | String | `sub_account_name` |
-| Tags | String | `tags` (map) |
+| Column                     | Type    | Proto Field                           |
+| -------------------------- | ------- | ------------------------------------- |
+| AvailabilityZone           | String  | `availability_zone`                   |
+| CommitmentDiscountCategory | String  | `commitment_discount_category` (enum) |
+| CommitmentDiscountId       | String  | `commitment_discount_id`              |
+| CommitmentDiscountName     | String  | `commitment_discount_name`            |
+| ConsumedQuantity           | Decimal | `consumed_quantity`                   |
+| ConsumedUnit               | String  | `consumed_unit`                       |
+| EffectiveCost              | Decimal | `effective_cost`                      |
+| InvoiceId                  | String  | `invoice_id`                          |
+| InvoiceIssuer              | String  | `invoice_issuer`                      |
+| ListCost                   | Decimal | `list_cost`                           |
+| ListUnitPrice              | Decimal | `list_unit_price`                     |
+| PricingCategory            | String  | `pricing_category` (enum)             |
+| PricingQuantity            | Decimal | `pricing_quantity`                    |
+| PricingUnit                | String  | `pricing_unit`                        |
+| RegionId                   | String  | `region_id`                           |
+| RegionName                 | String  | `region_name`                         |
+| ResourceId                 | String  | `resource_id`                         |
+| ResourceName               | String  | `resource_name`                       |
+| ResourceType               | String  | `resource_type`                       |
+| ServiceCategory            | String  | `service_category` (enum)             |
+| ServiceName                | String  | `service_name`                        |
+| SkuId                      | String  | `sku_id`                              |
+| SkuPriceId                 | String  | `sku_price_id`                        |
+| SubAccountId               | String  | `sub_account_id`                      |
+| SubAccountName             | String  | `sub_account_name`                    |
+| Tags                       | String  | `tags` (map)                          |
 
 ### Missing Columns (19)
 
 #### Missing Mandatory (1) - HIGH PRIORITY
 
-| Column | Type | Category |
-|--------|------|----------|
+| Column             | Type    | Category  |
+| ------------------ | ------- | --------- |
 | **ContractedCost** | Decimal | Financial |
 
 #### Missing Conditional (18)
 
-| Column | Type | Category |
-|--------|------|----------|
-| BillingAccountType | String | Account |
-| SubAccountType | String | Account |
-| CapacityReservationId | String | Capacity |
-| CapacityReservationStatus | String | Capacity |
-| CommitmentDiscountQuantity | Decimal | Commitment |
-| CommitmentDiscountStatus | String | Commitment |
-| CommitmentDiscountType | String | Commitment |
-| CommitmentDiscountUnit | String | Commitment |
-| ContractedUnitPrice | Decimal | Pricing |
-| PricingCurrency | String | Pricing |
-| PricingCurrencyContractedUnitPrice | Decimal | Pricing |
-| PricingCurrencyEffectiveCost | Decimal | Pricing |
-| PricingCurrencyListUnitPrice | Decimal | Pricing |
-| Publisher | String | Origination |
-| ServiceSubcategory | String | Service |
-| SkuMeter | String | SKU |
-| SkuPriceDetails | String | SKU |
+| Column                             | Type    | Category    |
+| ---------------------------------- | ------- | ----------- |
+| BillingAccountType                 | String  | Account     |
+| SubAccountType                     | String  | Account     |
+| CapacityReservationId              | String  | Capacity    |
+| CapacityReservationStatus          | String  | Capacity    |
+| CommitmentDiscountQuantity         | Decimal | Commitment  |
+| CommitmentDiscountStatus           | String  | Commitment  |
+| CommitmentDiscountType             | String  | Commitment  |
+| CommitmentDiscountUnit             | String  | Commitment  |
+| ContractedUnitPrice                | Decimal | Pricing     |
+| PricingCurrency                    | String  | Pricing     |
+| PricingCurrencyContractedUnitPrice | Decimal | Pricing     |
+| PricingCurrencyEffectiveCost       | Decimal | Pricing     |
+| PricingCurrencyListUnitPrice       | Decimal | Pricing     |
+| Publisher                          | String  | Origination |
+| ServiceSubcategory                 | String  | Service     |
+| SkuMeter                           | String  | SKU         |
+| SkuPriceDetails                    | String  | SKU         |
 
 ### Assumptions
 

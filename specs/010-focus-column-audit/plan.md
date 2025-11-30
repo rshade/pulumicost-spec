@@ -24,7 +24,7 @@ with 80%+ godoc coverage.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 ### Principle I: gRPC Proto Specification-First Development ✅
 
@@ -121,5 +121,5 @@ with proto definitions and generated SDK code. No web/mobile components.
 > No constitution violations requiring justification.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| N/A | N/A | N/A |
+| --------- | ---------- | ------------------------------------ |
+| N/A       | N/A        | N/A                                  |

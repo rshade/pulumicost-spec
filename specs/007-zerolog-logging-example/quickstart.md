@@ -80,26 +80,46 @@ go test -v ./sdk/go/testing/ -run TestStructuredLoggingExample
 ### Request Log
 
 ```json
-{"level":"info","time":"...","trace_id":"abc123","operation":"EstimateCost",
- "resource_type":"aws:ec2/instance:Instance","attribute_count":2,
- "message":"Processing cost estimation request"}
+{
+  "level": "info",
+  "time": "...",
+  "trace_id": "abc123",
+  "operation": "EstimateCost",
+  "resource_type": "aws:ec2/instance:Instance",
+  "attribute_count": 2,
+  "message": "Processing cost estimation request"
+}
 ```
 
 ### Success Log
 
 ```json
-{"level":"info","time":"...","trace_id":"abc123","operation":"EstimateCost",
- "cost_monthly":8.76,"currency":"USD","duration_ms":45,
- "message":"Cost estimation completed"}
+{
+  "level": "info",
+  "time": "...",
+  "trace_id": "abc123",
+  "operation": "EstimateCost",
+  "cost_monthly": 8.76,
+  "currency": "USD",
+  "duration_ms": 45,
+  "message": "Cost estimation completed"
+}
 ```
 
 ### Error Log
 
 ```json
-{"level":"error","time":"...","trace_id":"abc123","operation":"EstimateCost",
- "resource_type":"invalid:resource","error_code":"INVALID_ARGUMENT",
- "error":"invalid resource_type format","duration_ms":12,
- "message":"Cost estimation failed"}
+{
+  "level": "error",
+  "time": "...",
+  "trace_id": "abc123",
+  "operation": "EstimateCost",
+  "resource_type": "invalid:resource",
+  "error_code": "INVALID_ARGUMENT",
+  "error": "invalid resource_type format",
+  "duration_ms": 12,
+  "message": "Cost estimation failed"
+}
 ```
 
 ## Key Patterns to Follow
@@ -113,8 +133,8 @@ go test -v ./sdk/go/testing/ -run TestStructuredLoggingExample
 
 ## File Changes Summary
 
-| File | Change |
-|------|--------|
+| File                                 | Change                                      |
+| ------------------------------------ | ------------------------------------------- |
 | `sdk/go/testing/integration_test.go` | Add `TestStructuredLoggingExample` function |
 
 ## Next Steps

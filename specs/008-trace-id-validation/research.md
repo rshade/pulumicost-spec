@@ -25,11 +25,11 @@ The existing function provides comprehensive validation:
 
 ### Alternatives Considered
 
-| Alternative | Rejected Because |
-|-------------|-----------------|
-| Duplicate validation in pluginsdk | Violates DRY, maintenance burden |
-| Move validation to pluginsdk | Breaking change to pricing package API |
-| Create shared validation package | Over-engineering for single function |
+| Alternative                       | Rejected Because                       |
+| --------------------------------- | -------------------------------------- |
+| Duplicate validation in pluginsdk | Violates DRY, maintenance burden       |
+| Move validation to pluginsdk      | Breaking change to pricing package API |
+| Create shared validation package  | Over-engineering for single function   |
 
 ### Code Reference
 
@@ -65,12 +65,12 @@ Use `crypto/rand` with hex encoding to generate 16 random bytes (32 hex characte
 
 ### Alternatives Considered
 
-| Alternative | Rejected Because |
-|-------------|-----------------|
-| google/uuid package | External dependency, overkill for simple format |
-| time-based IDs | Not cryptographically random, predictable |
-| incrementing counter | Requires state, not thread-safe without locks |
-| Span ID format (16 chars) | Wrong format for trace ID |
+| Alternative               | Rejected Because                                |
+| ------------------------- | ----------------------------------------------- |
+| google/uuid package       | External dependency, overkill for simple format |
+| time-based IDs            | Not cryptographically random, predictable       |
+| incrementing counter      | Requires state, not thread-safe without locks   |
+| Span ID format (16 chars) | Wrong format for trace ID                       |
 
 ### Implementation Pattern
 
@@ -108,11 +108,11 @@ Modify `TracingUnaryServerInterceptor()` inline without changing function signat
 
 ### Alternatives Considered
 
-| Alternative | Rejected Because |
-|-------------|-----------------|
-| New interceptor function | Would require code changes in existing plugins |
-| Middleware chain | Over-engineering, gRPC already has interceptor chain |
-| Separate validation interceptor | Additional stack frame, harder to reason about |
+| Alternative                     | Rejected Because                                     |
+| ------------------------------- | ---------------------------------------------------- |
+| New interceptor function        | Would require code changes in existing plugins       |
+| Middleware chain                | Over-engineering, gRPC already has interceptor chain |
+| Separate validation interceptor | Additional stack frame, harder to reason about       |
 
 ### Current Implementation (to be modified)
 
@@ -184,19 +184,19 @@ Add table-driven tests with edge cases to `logging_test.go`.
 
 ### Test Cases Required
 
-| Test Case | Input | Expected Behavior |
-|-----------|-------|-------------------|
-| Valid trace ID | `"abcdef1234567890abcdef1234567890"` | Preserved unchanged |
-| Empty trace ID | `""` | New ID generated |
-| Missing metadata | No header | New ID generated |
-| Too short | `"abcdef"` | New ID generated |
-| Too long | `"abcdef...01"` (33+ chars) | New ID generated |
-| Non-hex chars | `"gggggggggggggggggggggggggggggggg"` | New ID generated |
-| All zeros | `"00000000000000000000000000000000"` | New ID generated |
-| Control chars | `"abc\ndef..."` | New ID generated |
-| Unicode | `"ąbcdef..."` | New ID generated |
-| Excessive length | `strings.Repeat("a", 10240)` | New ID generated |
-| Multiple headers | `["valid1", "invalid2"]` | First validated |
+| Test Case        | Input                                | Expected Behavior   |
+| ---------------- | ------------------------------------ | ------------------- |
+| Valid trace ID   | `"abcdef1234567890abcdef1234567890"` | Preserved unchanged |
+| Empty trace ID   | `""`                                 | New ID generated    |
+| Missing metadata | No header                            | New ID generated    |
+| Too short        | `"abcdef"`                           | New ID generated    |
+| Too long         | `"abcdef...01"` (33+ chars)          | New ID generated    |
+| Non-hex chars    | `"gggggggggggggggggggggggggggggggg"` | New ID generated    |
+| All zeros        | `"00000000000000000000000000000000"` | New ID generated    |
+| Control chars    | `"abc\ndef..."`                      | New ID generated    |
+| Unicode          | `"ąbcdef..."`                        | New ID generated    |
+| Excessive length | `strings.Repeat("a", 10240)`         | New ID generated    |
+| Multiple headers | `["valid1", "invalid2"]`             | First validated     |
 
 ### Benchmark Requirements
 
