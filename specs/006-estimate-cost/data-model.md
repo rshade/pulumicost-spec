@@ -54,13 +54,13 @@ EstimateCostRequest {
 | Field        | Type               | Number | Required | Description            | Constraints                                    |
 | ------------ | ------------------ | ------ | -------- | ---------------------- | ---------------------------------------------- |
 | currency     | string             | 1      | Yes      | ISO 4217 currency code | Typically "USD", must be uppercase             |
-| cost_monthly | double             | 2      | Yes      | Estimated monthly cost | Non-negative, precision per existing cost RPCs |
+| cost_monthly | double             | 2      | Yes      | Estimated monthly cost | Non-negative; `double` type consistent with `GetProjectedCostResponse.cost_per_month` |
 
 **Validation Rules**:
 
 - `currency` MUST be a valid ISO 4217 currency code (3 uppercase letters)
 - `cost_monthly` MUST be non-negative (≥0)
-- `cost_monthly` precision follows existing GetActualCost/GetProjectedCost patterns
+- `cost_monthly` uses `double` type, consistent with `GetProjectedCostResponse.cost_per_month`
 - Zero cost is valid (e.g., free tier resources per FR-013)
 
 **Example** (Successful Estimation):
@@ -68,7 +68,7 @@ EstimateCostRequest {
 ```protobuf
 EstimateCostResponse {
   currency: "USD"
-  cost_monthly: "7.30"  // Type depends on existing RPC pattern
+  cost_monthly: 7.30  // double, consistent with GetProjectedCost.cost_per_month
 }
 ```
 
@@ -77,7 +77,7 @@ EstimateCostResponse {
 ```protobuf
 EstimateCostResponse {
   currency: "USD"
-  cost_monthly: "0.00"
+  cost_monthly: 0.0
 }
 ```
 
@@ -134,7 +134,7 @@ rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
 │   EstimateCostResponse          │
 │                                 │
 │  + currency: string             │
-│  + cost_monthly: decimal        │
+│  + cost_monthly: double         │
 │                                 │
 └─────────────────────────────────┘
 ```
