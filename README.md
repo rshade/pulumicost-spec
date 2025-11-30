@@ -556,7 +556,7 @@ func TestPluginConformance(t *testing.T) {
 make test
 
 # Run performance benchmarks
-go test -bench=. -benchmem ./sdk/go/testing/
+go test -bench=. -benchmem ./sdk/go/...
 
 # Run conformance tests
 go test -v -run TestConformance ./sdk/go/testing/
@@ -642,7 +642,7 @@ Complete GitHub Actions pipeline with:
 
 - **SDK Generation**: Automatic protobuf compilation with up-to-date verification
 - **Testing**: Unit tests, integration tests, conformance tests
-- **Performance**: Benchmark testing with artifact upload
+- **Performance**: Automated performance regression testing (10% threshold) with artifact upload
 - **Validation**: Go linting, buf linting, JSON schema validation
 - **Breaking Changes**: Automatic detection with buf
 - **Coverage**: Code coverage reporting with Codecov
