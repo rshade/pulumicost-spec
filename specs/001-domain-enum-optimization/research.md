@@ -18,16 +18,16 @@
 
 The `sdk/go/registry/domain.go` contains **8 enum types** with linear slice search validation:
 
-| Enum Type | Count | Current Pattern | Memory Per Call |
-|-----------|-------|----------------|-----------------|
-| Provider | 5 | Linear search via `AllProviders()` | ~64 bytes |
-| DiscoverySource | 4 | Linear search via `AllDiscoverySources()` | ~56 bytes |
-| PluginStatus | 6 | Linear search via `AllPluginStatuses()` | ~72 bytes |
-| SecurityLevel | 4 | Linear search via `AllSecurityLevels()` | ~56 bytes |
-| InstallationMethod | 4 | Linear search via `AllInstallationMethods()` | ~56 bytes |
-| PluginCapability | 14 | Linear search via `AllPluginCapabilities()` | ~136 bytes |
-| SystemPermission | 9 | Linear search via `AllSystemPermissions()` | ~96 bytes |
-| AuthMethod | 6 | Linear search via `AllAuthMethods()` | ~72 bytes |
+| Enum Type          | Count | Current Pattern                              | Memory Per Call |
+| ------------------ | ----- | -------------------------------------------- | --------------- |
+| Provider           | 5     | Linear search via `AllProviders()`           | ~64 bytes       |
+| DiscoverySource    | 4     | Linear search via `AllDiscoverySources()`    | ~56 bytes       |
+| PluginStatus       | 6     | Linear search via `AllPluginStatuses()`      | ~72 bytes       |
+| SecurityLevel      | 4     | Linear search via `AllSecurityLevels()`      | ~56 bytes       |
+| InstallationMethod | 4     | Linear search via `AllInstallationMethods()` | ~56 bytes       |
+| PluginCapability   | 14    | Linear search via `AllPluginCapabilities()`  | ~136 bytes      |
+| SystemPermission   | 9     | Linear search via `AllSystemPermissions()`   | ~96 bytes       |
+| AuthMethod         | 6     | Linear search via `AllAuthMethods()`         | ~72 bytes       |
 
 **Current implementation pattern:**
 
@@ -111,13 +111,13 @@ performance is acceptable and consistency is valued.
 **Research finding**: For enum sizes < 20 values, slice and map performance is **comparable** when properly
 optimized (package-level variables):
 
-| Enum Size | Optimized Slice | Map Lookup | Difference | Winner |
-|-----------|----------------|------------|------------|---------|
-| 4 values | ~5-10 ns | ~15-25 ns | 2-3x faster | **Slice** |
-| 6 values | ~8-15 ns | ~15-25 ns | 1.5-2x faster | **Slice** |
-| 9 values | ~12-20 ns | ~15-25 ns | Similar | **Slight slice edge** |
-| 14 values | ~18-30 ns | ~15-25 ns | Similar | **Potential tie** |
-| 38 values | ~50-90 ns | ~15-25 ns | 2-4x faster | **Map** |
+| Enum Size | Optimized Slice | Map Lookup | Difference    | Winner                |
+| --------- | --------------- | ---------- | ------------- | --------------------- |
+| 4 values  | ~5-10 ns        | ~15-25 ns  | 2-3x faster   | **Slice**             |
+| 6 values  | ~8-15 ns        | ~15-25 ns  | 1.5-2x faster | **Slice**             |
+| 9 values  | ~12-20 ns       | ~15-25 ns  | Similar       | **Slight slice edge** |
+| 14 values | ~18-30 ns       | ~15-25 ns  | Similar       | **Potential tie**     |
+| 38 values | ~50-90 ns       | ~15-25 ns  | 2-4x faster   | **Map**               |
 
 **Key insight**: At registry package sizes (4-14 values), **absolute performance difference is negligible**
 (10-20 nanoseconds). Decision should prioritize:
@@ -201,11 +201,11 @@ func IsValidProvider(p string) bool {
 
 ### Recommended Patterns by Enum Size
 
-| Enum Size | Recommended Pattern | Rationale |
-|-----------|-------------------|-----------|
-| < 10 values | **Optimized slice** or **switch statement** | Cache-friendly, minimal overhead |
-| 10-20 values | **Optimized slice** or **map** | Performance similar, choose for consistency |
-| 20+ values | **Map-based validation** | O(1) lookup outweighs hash overhead |
+| Enum Size    | Recommended Pattern                         | Rationale                                   |
+| ------------ | ------------------------------------------- | ------------------------------------------- |
+| < 10 values  | **Optimized slice** or **switch statement** | Cache-friendly, minimal overhead            |
+| 10-20 values | **Optimized slice** or **map**              | Performance similar, choose for consistency |
+| 20+ values   | **Map-based validation**                    | O(1) lookup outweighs hash overhead         |
 
 ### Consistency Guideline
 
@@ -223,11 +223,11 @@ slice pattern** for:
 
 **Target**: < 100 nanoseconds per operation for enums with up to 50 values
 
-| Approach | 4-14 Value Enums | 38 Value Enum (BillingMode) | Meets Target? |
-|----------|-----------------|----------------------------|---------------|
-| Current (slice with allocation) | 25-80 ns | 70-120 ns | ✅ Yes (barely) |
-| Optimized slice (package-level) | 5-30 ns | 50-90 ns | ✅ Yes (comfortable) |
-| Map-based (package-level) | 15-25 ns | 15-25 ns | ✅ Yes (excellent) |
+| Approach                        | 4-14 Value Enums | 38 Value Enum (BillingMode) | Meets Target?        |
+| ------------------------------- | ---------------- | --------------------------- | -------------------- |
+| Current (slice with allocation) | 25-80 ns         | 70-120 ns                   | ✅ Yes (barely)      |
+| Optimized slice (package-level) | 5-30 ns          | 50-90 ns                    | ✅ Yes (comfortable) |
+| Map-based (package-level)       | 15-25 ns         | 15-25 ns                    | ✅ Yes (excellent)   |
 
 **All approaches meet the < 100ns target.** Decision based on other factors.
 
@@ -235,18 +235,18 @@ slice pattern** for:
 
 **Registry package total (8 enum types):**
 
-| Approach | Memory Footprint | Relative |
-|----------|-----------------|----------|
-| Current (per-call allocation) | ~600 bytes × calls | Unbounded (GC pressure) |
-| Optimized slice | ~600 bytes (one-time) | Baseline |
-| Map-based | ~3.5 KB (one-time) | 6x more |
+| Approach                      | Memory Footprint      | Relative                |
+| ----------------------------- | --------------------- | ----------------------- |
+| Current (per-call allocation) | ~600 bytes × calls    | Unbounded (GC pressure) |
+| Optimized slice               | ~600 bytes (one-time) | Baseline                |
+| Map-based                     | ~3.5 KB (one-time)    | 6x more                 |
 
 **Pricing package (BillingMode alone):**
 
-| Approach | Memory Footprint | Performance |
-|----------|-----------------|-------------|
-| Optimized slice | ~400 bytes | 50-90 ns |
-| Map-based | ~2.5 KB | 15-25 ns |
+| Approach        | Memory Footprint | Performance |
+| --------------- | ---------------- | ----------- |
+| Optimized slice | ~400 bytes       | 50-90 ns    |
+| Map-based       | ~2.5 KB          | 15-25 ns    |
 
 ### Consistency Analysis
 
@@ -452,21 +452,21 @@ All research predictions were validated with actual benchmark measurements:
 
 #### Optimized Slice-Based Validation (Actual)
 
-| Enum Type            | Predicted      | Actual Result   | Accuracy |
-|----------------------|----------------|-----------------|----------|
-| Provider (5 values)  | 5-10 ns/op     | 7.0 ns/op       | ✅ Exact  |
-| PluginCapability (14)| 10-30 ns/op    | 10.5 ns/op      | ✅ Exact  |
-| DiscoverySource (4)  | 5-8 ns/op      | 5.0 ns/op       | ✅ Exact  |
-| SystemPermission (9) | 8-15 ns/op     | 6.8 ns/op       | ✅ Better |
+| Enum Type             | Predicted   | Actual Result | Accuracy  |
+| --------------------- | ----------- | ------------- | --------- |
+| Provider (5 values)   | 5-10 ns/op  | 7.0 ns/op     | ✅ Exact  |
+| PluginCapability (14) | 10-30 ns/op | 10.5 ns/op    | ✅ Exact  |
+| DiscoverySource (4)   | 5-8 ns/op   | 5.0 ns/op     | ✅ Exact  |
+| SystemPermission (9)  | 8-15 ns/op  | 6.8 ns/op     | ✅ Better |
 
 **Memory Allocation**: 0 B/op, 0 allocs/op (all enums) - **Prediction validated ✅**
 
 #### Map-Based Alternative (Actual)
 
-| Enum Type            | Predicted      | Actual Result   | Accuracy |
-|----------------------|----------------|-----------------|----------|
-| Provider (5 values)  | 15-20 ns/op    | 15.1 ns/op      | ✅ Exact  |
-| PluginCapability (14)| 15-20 ns/op    | 16.1 ns/op      | ✅ Exact  |
+| Enum Type             | Predicted   | Actual Result | Accuracy |
+| --------------------- | ----------- | ------------- | -------- |
+| Provider (5 values)   | 15-20 ns/op | 15.1 ns/op    | ✅ Exact |
+| PluginCapability (14) | 15-20 ns/op | 16.1 ns/op    | ✅ Exact |
 
 **Memory Allocation**: 0 B/op, 0 allocs/op (maps pre-allocated) - **Prediction validated ✅**
 
@@ -481,13 +481,13 @@ All research predictions were validated with actual benchmark measurements:
 
 #### Scalability Analysis (Actual)
 
-| Enum Size | Predicted      | Actual Result   | Scaling |
-|-----------|----------------|-----------------|---------|
-| 4 values  | 5-8 ns/op      | 4.9 ns/op       | 1.0x    |
-| 5 values  | 6-10 ns/op     | 5.9 ns/op       | 1.2x    |
-| 6 values  | 7-12 ns/op     | 9.4 ns/op       | 1.9x    |
-| 9 values  | 10-15 ns/op    | 5.9 ns/op       | 1.2x    |
-| 14 values | 15-25 ns/op    | 12.6 ns/op      | 2.6x    |
+| Enum Size | Predicted   | Actual Result | Scaling |
+| --------- | ----------- | ------------- | ------- |
+| 4 values  | 5-8 ns/op   | 4.9 ns/op     | 1.0x    |
+| 5 values  | 6-10 ns/op  | 5.9 ns/op     | 1.2x    |
+| 6 values  | 7-12 ns/op  | 9.4 ns/op     | 1.9x    |
+| 9 values  | 10-15 ns/op | 5.9 ns/op     | 1.2x    |
+| 14 values | 15-25 ns/op | 12.6 ns/op    | 2.6x    |
 
 **Linear scaling confirmed**: ~0.4-0.5 ns per additional enum value - **Prediction validated ✅**
 

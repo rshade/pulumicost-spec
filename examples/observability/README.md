@@ -78,7 +78,7 @@ import "github.com/rshade/pulumicost-spec/sdk/go/testing"
 func TestObservability(t *testing.T) {
     plugin := &MyPlugin{}
     suite := testing.NewObservabilityTestSuite(plugin, t)
-    
+
     // Run conformance tests
     if !suite.RunStandardObservabilityTests() {
         t.Fatal("Observability tests failed")
@@ -94,10 +94,10 @@ func TestObservability(t *testing.T) {
 
    ```yaml
    scrape_configs:
-     - job_name: 'pulumicost-plugin'
+     - job_name: "pulumicost-plugin"
        static_configs:
-         - targets: ['plugin:8080']
-       metrics_path: '/metrics'
+         - targets: ["plugin:8080"]
+       metrics_path: "/metrics"
    ```
 
 2. Import the Grafana dashboard from `dashboards/grafana-dashboard.json`
@@ -117,24 +117,24 @@ aws cloudformation create-stack \
 
 ### Standard Metrics
 
-| Metric Name | Type | Description | Labels |
-|-------------|------|-------------|---------|
-| `pulumicost_requests_total` | Counter | Total requests processed | `method`, `provider`, `status` |
-| `pulumicost_errors_total` | Counter | Total errors encountered | `method`, `provider`, `error_type` |
-| `pulumicost_request_duration_seconds` | Histogram | Request processing time | `method`, `provider` |
-| `pulumicost_cache_hit_rate_percent` | Gauge | Cache effectiveness | `provider`, `cache_type` |
-| `pulumicost_active_connections` | Gauge | Active external connections | `service` |
+| Metric Name                           | Type      | Description                 | Labels                             |
+| ------------------------------------- | --------- | --------------------------- | ---------------------------------- |
+| `pulumicost_requests_total`           | Counter   | Total requests processed    | `method`, `provider`, `status`     |
+| `pulumicost_errors_total`             | Counter   | Total errors encountered    | `method`, `provider`, `error_type` |
+| `pulumicost_request_duration_seconds` | Histogram | Request processing time     | `method`, `provider`               |
+| `pulumicost_cache_hit_rate_percent`   | Gauge     | Cache effectiveness         | `provider`, `cache_type`           |
+| `pulumicost_active_connections`       | Gauge     | Active external connections | `service`                          |
 
 ### Standard SLIs
 
-| SLI Name | Description | Target | Unit |
-|----------|-------------|--------|------|
-| `availability` | Service uptime percentage | 99.9% | percentage |
-| `error_rate` | Error rate percentage | <0.1% | percentage |
-| `latency_p95` | 95th percentile latency | <1s | seconds |
-| `latency_p99` | 99th percentile latency | <2s | seconds |
-| `throughput` | Requests per second | >100 | requests_per_second |
-| `data_freshness` | Cost data age | <24h | hours |
+| SLI Name         | Description               | Target | Unit                |
+| ---------------- | ------------------------- | ------ | ------------------- |
+| `availability`   | Service uptime percentage | 99.9%  | percentage          |
+| `error_rate`     | Error rate percentage     | <0.1%  | percentage          |
+| `latency_p95`    | 95th percentile latency   | <1s    | seconds             |
+| `latency_p99`    | 99th percentile latency   | <2s    | seconds             |
+| `throughput`     | Requests per second       | >100   | requests_per_second |
+| `data_freshness` | Cost data age             | <24h   | hours               |
 
 ## Best Practices
 

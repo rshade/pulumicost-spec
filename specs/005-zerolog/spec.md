@@ -15,7 +15,7 @@
 - Q: Should SDK handle log rotation for file output? → A: Delegate to external
   tools (logrotate, systemd, etc.)
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Plugin Developer Creates Standardized Logger (Priority: P1)
 
@@ -128,7 +128,7 @@ statements and verifying the resulting JSON uses those exact field names.
 - How are malformed metadata keys handled?
   (gRPC metadata is case-insensitive, interceptor handles normalization)
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -166,7 +166,7 @@ statements and verifying the resulting JSON uses those exact field names.
 - **Context Keys**: Context key types for storing/retrieving trace_id in request
   context
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

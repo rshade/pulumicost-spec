@@ -109,7 +109,7 @@ cd sdk/go && go test -v -run TestValidatePricingSpec_ComplexValidExamples
 **Cost Center Numbering Pattern**:
 
 - CC-1001: Engineering general compute
-- CC-2002: IT infrastructure services  
+- CC-2002: IT infrastructure services
 - CC-4004: Platform serverless functions
 - CC-5005: ML engineering batch processing
 - CC-6006: Platform production workloads
@@ -137,7 +137,7 @@ cd sdk/go && go test -v -run TestValidatePricingSpec_ComplexValidExamples
 
 **Kubernetes/Kubecost Pattern**:
 
-- `cluster_name` - Kubernetes cluster identifier  
+- `cluster_name` - Kubernetes cluster identifier
 - `kubecost_version` - Cost analysis tool version
 - `cost_allocation_method` - Allocation strategy (proportional)
 - `namespace_labels` - Label selectors for resource grouping
@@ -153,7 +153,7 @@ cd sdk/go && go test -v -run TestValidatePricingSpec_ComplexValidExamples
 **Usage-Based Resources** (Lambda, Functions):
 
 - `invocations` - Event count with `sum` aggregation
-- `duration_ms` - Execution time with `sum` aggregation  
+- `duration_ms` - Execution time with `sum` aggregation
 - `memory_mb` - Memory allocation with `avg` aggregation
 
 **Storage Resources** (S3, Cloud Storage):

@@ -18,7 +18,7 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 
 - **pulumicost-spec**: Contains `proto/pulumicost/costsource.proto` and `schemas/pricing_spec.schema.json`
 - **pulumicost-core**: Contains `cmd/pulumicost/` and `internal/{pluginhost,engine,ingest,spec,cli}/`
-- **pulumicost-plugin-***: Contains `cmd/pulumicost-<name>/` and `plugin.manifest.json`
+- **pulumicost-plugin-\***: Contains `cmd/pulumicost-<name>/` and `plugin.manifest.json`
 
 ### Three Specialized Agents
 
@@ -144,7 +144,7 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 **Sequential Collaboration:**
 
 1. **Product Manager** creates backlog items and defines requirements
-2. **Senior Engineer** implements features with architectural considerations  
+2. **Senior Engineer** implements features with architectural considerations
 3. **Technical Writer** documents implementation and creates user guides
 
 **Cross-Repository Coordination:**
@@ -218,7 +218,7 @@ I need to create issues for implementing the actual cost pipeline in pulumicost-
 - Integration tests span multiple repositories
 - Plugin host changes affect all plugin implementations
 
-### When Working with pulumicost-plugin-*
+### When Working with pulumicost-plugin-\*
 
 - Plugin manifest validation against spec requirements
 - Conformance testing requirements (Basic/Standard/Advanced)
@@ -232,7 +232,7 @@ All agents are aware of the standard build commands:
 ```bash
 # Core development workflow
 make generate    # Generate Go SDK from protobuf
-make test        # Run comprehensive test suite  
+make test        # Run comprehensive test suite
 make validate    # Tests + linting + schema validation
 make lint        # All linting (Go, buf, markdown, YAML)
 make clean       # Clean generated files

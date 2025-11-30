@@ -185,7 +185,6 @@ You **MUST** consider the user input before proceeding (if not empty).
    **Traceability Requirements**:
 
    MINIMUM: ≥80% of items MUST include at least one traceability reference
-
    - Each item should reference: spec section `[Spec §X.Y]`, or use markers: `[Gap]`, `[Ambiguity]`,
      `[Conflict]`, `[Assumption]`
    - If no ID system exists: "Is a requirement & acceptance criteria ID scheme established? [Traceability]"
@@ -193,7 +192,6 @@ You **MUST** consider the user input before proceeding (if not empty).
    **Surface & Resolve Issues** (Requirements Quality Problems):
 
    Ask questions about the requirements themselves:
-
    - Ambiguities: "Is the term 'fast' quantified with specific metrics? [Ambiguity, Spec §NFR-1]"
    - Conflicts: "Do navigation requirements conflict between §FR-10 and §FR-10a? [Conflict]"
    - Assumptions: "Is the assumption of 'always available podcast API' validated? [Assumption]"
@@ -201,14 +199,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Missing definitions: "Is 'visual hierarchy' defined with measurable criteria? [Gap]"
 
    **Content Consolidation**:
-
    - Soft cap: If raw candidate items > 40, prioritize by risk/impact
    - Merge near-duplicates checking the same requirement aspect
    - If >5 low-impact edge cases, create one item: "Are edge cases X, Y, Z addressed in
      requirements? [Coverage]"
 
    **🚫 ABSOLUTELY PROHIBITED** - These make it an implementation test, not a requirements test:
-
    - ❌ Any item starting with "Verify", "Test", "Confirm", "Check" + implementation behavior
    - ❌ References to code execution, user actions, system behavior
    - ❌ "Displays correctly", "works properly", "functions as expected"
@@ -217,7 +213,6 @@ You **MUST** consider the user input before proceeding (if not empty).
    - ❌ Implementation details (frameworks, APIs, algorithms)
 
    **✅ REQUIRED PATTERNS** - These test requirements quality:
-
    - ✅ "Are [requirement type] defined/specified/documented for [scenario]?"
    - ✅ "Is [vague term] quantified/clarified with specific criteria?"
    - ✅ "Are requirements consistent between [section A] and [section B]?"

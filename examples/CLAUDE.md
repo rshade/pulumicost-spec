@@ -19,7 +19,7 @@ test data for the PulumiCost ecosystem.
 - **Real pricing data**: Current, realistic pricing from actual cloud providers
 - **Schema validation targets**: All examples validate against `../schemas/pricing_spec.schema.json`
 
-**`requests/` Directory - gRPC Request Samples**  
+**`requests/` Directory - gRPC Request Samples**
 
 - **Sample request payloads** for `GetActualCost` and `GetProjectedCost` RPCs
 - **Integration testing data** for plugin development
@@ -36,7 +36,7 @@ npm run validate:examples
 # Validate single example
 go run validate_examples.go examples/specs/aws-ec2-t3-micro.json
 
-# Validate all examples with detailed output  
+# Validate all examples with detailed output
 for file in specs/*.json; do go run ../validate_examples.go "$file"; done
 ```
 
@@ -69,7 +69,7 @@ cd .. && npm run validate
 **Time-Based Examples**:
 
 - `aws-ec2-t3-micro.json` - `per_hour` with basic hourly billing
-- `azure-vm-per-second.json` - `per_second` with granular billing precision  
+- `azure-vm-per-second.json` - `per_second` with granular billing precision
 - `kubernetes-namespace-cpu.json` - `per_cpu_hour` with resource-based pricing
 
 **Usage-Based Examples**:
@@ -102,7 +102,7 @@ cd .. && npm run validate
 **Standardized Resource Tags**:
 
 - `billing_center` - Cost allocation team (e.g., "engineering", "marketing")
-- `cost_center` - Accounting code (e.g., "CC-1001", "CC-2002")  
+- `cost_center` - Accounting code (e.g., "CC-1001", "CC-2002")
 - `environment` - Deployment stage ("production", "development", "staging")
 - Domain-specific tags vary by use case and provider
 
@@ -158,7 +158,7 @@ cd .. && npm run validate
 
 **With CI/CD Pipeline**:
 
-- `make validate-examples` runs validation on all examples  
+- `make validate-examples` runs validation on all examples
 - Breaking changes in schema detected via example validation failures
 - Continuous validation ensures example-schema synchronization
 
@@ -182,7 +182,7 @@ cd .. && npm run validate
 **Go SDK Integration Validation**:
 
 - Runtime validation via `pricing.ValidatePricingSpec()` function
-- Cross-language validation consistency verification  
+- Cross-language validation consistency verification
 - Integration test coverage across all example scenarios
 
 ### Example Quality Standards

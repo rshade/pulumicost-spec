@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: GitHub Issue #83 - Add structured logging example for EstimateCost (T040)
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Plugin Developer Learns Logging Patterns (Priority: P1)
 
@@ -92,7 +92,7 @@ naming conventions and can be parsed by standard JSON tools.
 - How should sensitive attribute values be handled?
   (Do not log attribute values; only log count and keys if needed)
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -123,7 +123,7 @@ naming conventions and can be parsed by standard JSON tools.
 - **Operation**: EstimateCost RPC being logged
 - **CostResult**: The estimated cost value and currency to be logged on success
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

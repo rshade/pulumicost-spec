@@ -31,7 +31,7 @@
   → A: FOCUS 1.2 Compliance (validate against FOCUS 1.2 business rules beyond
   just structural checks).
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Create Standardized Cost Records (Priority: P1)
 
@@ -116,7 +116,7 @@ build and run.
 - **Precision Loss**: Financial values MUST use Protobuf `double` to balance precision
   with performance and ecosystem compatibility.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -155,7 +155,7 @@ build and run.
 - **FocusBuilder**: The opaque interface used by developers to construct records
   without coupling to the raw data layout.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

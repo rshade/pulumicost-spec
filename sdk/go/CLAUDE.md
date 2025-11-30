@@ -163,7 +163,7 @@ func TestMyPlugin(t *testing.T) {
     harness := testing.NewTestHarness(plugin)
     harness.Start(t)
     defer harness.Stop()
-    
+
     // Run conformance tests
     result := testing.RunBasicConformanceTests(t, plugin)
     if result.FailedTests > 0 {
@@ -215,7 +215,7 @@ harness := testing.NewTestHarness(mock)
 ## Performance Requirements
 
 - **Response Times**: Name() < 100ms, others vary by complexity
-- **Concurrency**: Must handle 10+ concurrent requests (Standard conformance)  
+- **Concurrency**: Must handle 10+ concurrent requests (Standard conformance)
 - **Memory**: Efficient memory usage tracked via benchmarks
 - **Consistency**: Consistent responses across multiple calls
 

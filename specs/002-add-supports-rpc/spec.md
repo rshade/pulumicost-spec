@@ -8,7 +8,7 @@
 **Note**: Analysis revealed Supports() RPC was fully implemented in v0.1.0. This spec
 documents requirements for verification purposes. Actual work needed is in pulumicost-core.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Query Plugin Capabilities (Priority: P1)
 
@@ -66,7 +66,7 @@ verifying it responds correctly via gRPC test harness.
 - What happens when a plugin returns an invalid response (missing fields)?
 - How does the system behave when Supports() takes too long to respond?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -96,7 +96,7 @@ verifying it responds correctly via gRPC test harness.
 - **CostSourceService**: The gRPC service definition that will include the new Supports RPC
   method
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

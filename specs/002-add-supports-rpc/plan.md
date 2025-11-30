@@ -35,6 +35,7 @@ The testing framework includes:
 The issue **is NOT in pulumicost-spec**. The Supports RPC was included in the v0.1.0 release.
 
 Per the issue's "Related Issues" section:
+
 > "After this is implemented, pulumicost-core#TBD needs to be completed to actually register
 > and implement the handler in `pluginsdk`."
 
@@ -61,17 +62,17 @@ should be created in pulumicost-core to update the pluginsdk to expose the Suppo
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. gRPC Proto Specification-First | ✅ Pass | Proto already defines Supports RPC |
-| II. Multi-Provider Consistency | ✅ Pass | ResourceDescriptor is provider-agnostic |
-| III. Test-First Protocol | ⚠️ N/A | No changes needed - already implemented |
-| IV. Protobuf Backward Compatibility | ✅ Pass | No breaking changes |
-| V. Comprehensive Documentation | ✅ Pass | Proto comments exist for all messages |
-| VI. Performance as Requirement | ✅ Pass | Standard RPC method |
-| VII. Validation at Multiple Levels | ✅ Pass | buf lint passes |
+| Principle                           | Status  | Notes                                   |
+| ----------------------------------- | ------- | --------------------------------------- |
+| I. gRPC Proto Specification-First   | ✅ Pass | Proto already defines Supports RPC      |
+| II. Multi-Provider Consistency      | ✅ Pass | ResourceDescriptor is provider-agnostic |
+| III. Test-First Protocol            | ⚠️ N/A  | No changes needed - already implemented |
+| IV. Protobuf Backward Compatibility | ✅ Pass | No breaking changes                     |
+| V. Comprehensive Documentation      | ✅ Pass | Proto comments exist for all messages   |
+| VI. Performance as Requirement      | ✅ Pass | Standard RPC method                     |
+| VII. Validation at Multiple Levels  | ✅ Pass | buf lint passes                         |
 
 ## Project Structure
 

@@ -16,12 +16,12 @@ zerolog integration for the EstimateCost RPC in the PulumiCost SDK testing packa
 
 **Key Functions Required**:
 
-| Function | Purpose | Signature Pattern |
-|----------|---------|-------------------|
-| `NewPluginLogger` | Create configured zerolog.Logger | `(name, version string, level zerolog.Level, w io.Writer) zerolog.Logger` |
-| `TraceIDFromContext` | Extract trace_id from context | `(ctx context.Context) string` |
-| `ContextWithTraceID` | Add trace_id to context | `(ctx context.Context, traceID string) context.Context` |
-| `LogOperation` | Timing helper for operations | `(logger zerolog.Logger, operation string) func()` |
+| Function             | Purpose                          | Signature Pattern                                                         |
+| -------------------- | -------------------------------- | ------------------------------------------------------------------------- |
+| `NewPluginLogger`    | Create configured zerolog.Logger | `(name, version string, level zerolog.Level, w io.Writer) zerolog.Logger` |
+| `TraceIDFromContext` | Extract trace_id from context    | `(ctx context.Context) string`                                            |
+| `ContextWithTraceID` | Add trace_id to context          | `(ctx context.Context, traceID string) context.Context`                   |
+| `LogOperation`       | Timing helper for operations     | `(logger zerolog.Logger, operation string) func()`                        |
 
 **Field Constants** (from FR-006 of 005-zerolog):
 
@@ -219,19 +219,19 @@ json.Unmarshal(buf.Bytes(), &logEntry)
 
 ## Resolved Questions
 
-| Topic | Resolution |
-|-------|------------|
-| Which test file? | `sdk/go/testing/integration_test.go` per FR-008 |
-| Which mock to use? | `ConfigurableErrorMockPlugin` for error scenarios |
-| How to capture logs? | `bytes.Buffer` as zerolog output writer |
-| How to verify output? | JSON parsing with standard library |
-| Field naming? | Use constants from 005-zerolog (FieldTraceID, etc.) |
-| Sensitive data? | Log attribute count, never attribute values |
+| Topic                 | Resolution                                          |
+| --------------------- | --------------------------------------------------- |
+| Which test file?      | `sdk/go/testing/integration_test.go` per FR-008     |
+| Which mock to use?    | `ConfigurableErrorMockPlugin` for error scenarios   |
+| How to capture logs?  | `bytes.Buffer` as zerolog output writer             |
+| How to verify output? | JSON parsing with standard library                  |
+| Field naming?         | Use constants from 005-zerolog (FieldTraceID, etc.) |
+| Sensitive data?       | Log attribute count, never attribute values         |
 
 ## Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
+| Risk                            | Impact   | Mitigation                                                      |
+| ------------------------------- | -------- | --------------------------------------------------------------- |
 | 005-zerolog not yet implemented | Blocking | Document expected API; example can be written against interface |
-| Mock plugin behavior changes | Low | Test against stable public API only |
-| Log format changes | Low | Use field constants for forward compatibility |
+| Mock plugin behavior changes    | Low      | Test against stable public API only                             |
+| Log format changes              | Low      | Use field constants for forward compatibility                   |

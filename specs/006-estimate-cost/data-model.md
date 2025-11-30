@@ -11,10 +11,10 @@
 
 **Fields**:
 
-| Field | Type | Number | Required | Description | Validation |
-|-------|------|--------|----------|-------------|------------|
-| resource_type | string | 1 | Yes | Pulumi resource type identifier | Must match pattern: `provider:module/resource:Type` |
-| attributes | google.protobuf.Struct | 2 | No | Resource input properties | Treated as empty struct if null/missing |
+| Field         | Type                   | Number | Required | Description                     | Validation                                          |
+| ------------- | ---------------------- | ------ | -------- | ------------------------------- | --------------------------------------------------- |
+| resource_type | string                 | 1      | Yes      | Pulumi resource type identifier | Must match pattern: `provider:module/resource:Type` |
+| attributes    | google.protobuf.Struct | 2      | No       | Resource input properties       | Treated as empty struct if null/missing             |
 
 **Validation Rules**:
 
@@ -51,10 +51,10 @@ EstimateCostRequest {
 
 **Fields**:
 
-| Field | Type | Number | Required | Description | Constraints |
-|-------|------|--------|----------|-------------|-------------|
-| currency | string | 1 | Yes | ISO 4217 currency code | Typically "USD", must be uppercase |
-| cost_monthly | [decimal type TBD] | 2 | Yes | Estimated monthly cost | Non-negative, precision per existing cost RPCs |
+| Field        | Type               | Number | Required | Description            | Constraints                                    |
+| ------------ | ------------------ | ------ | -------- | ---------------------- | ---------------------------------------------- |
+| currency     | string             | 1      | Yes      | ISO 4217 currency code | Typically "USD", must be uppercase             |
+| cost_monthly | [decimal type TBD] | 2      | Yes      | Estimated monthly cost | Non-negative, precision per existing cost RPCs |
 
 **Validation Rules**:
 
@@ -101,15 +101,15 @@ rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
 
 **Error Responses**:
 
-| Scenario | gRPC Status | Error Message Pattern |
-|----------|-------------|----------------------|
-| Empty resource_type | InvalidArgument | "resource_type is required" |
-| Invalid format | InvalidArgument | "resource_type must follow provider:module/resource:Type format, got: {input}" |
-| Unsupported resource | NotFound | "resource type {type} is not supported by this plugin" |
-| Missing required attributes | InvalidArgument | "missing required attributes for {resource_type}: [{attribute_names}]" |
-| Ambiguous attributes | InvalidArgument | "ambiguous or invalid attributes for {resource_type}: {details}" |
-| Pricing source unavailable | Unavailable | "pricing source unavailable: {reason}" |
-| Internal error | Internal | "internal error during cost estimation: {details}" |
+| Scenario                    | gRPC Status     | Error Message Pattern                                                          |
+| --------------------------- | --------------- | ------------------------------------------------------------------------------ |
+| Empty resource_type         | InvalidArgument | "resource_type is required"                                                    |
+| Invalid format              | InvalidArgument | "resource_type must follow provider:module/resource:Type format, got: {input}" |
+| Unsupported resource        | NotFound        | "resource type {type} is not supported by this plugin"                         |
+| Missing required attributes | InvalidArgument | "missing required attributes for {resource_type}: [{attribute_names}]"         |
+| Ambiguous attributes        | InvalidArgument | "ambiguous or invalid attributes for {resource_type}: {details}"               |
+| Pricing source unavailable  | Unavailable     | "pricing source unavailable: {reason}"                                         |
+| Internal error              | Internal        | "internal error during cost estimation: {details}"                             |
 
 ## Data Relationships
 
@@ -156,15 +156,15 @@ aws:ec2/instance:Instance
 
 **Examples by Provider**:
 
-| Provider | Resource Type | Description |
-|----------|---------------|-------------|
-| AWS | `aws:ec2/instance:Instance` | EC2 compute instance |
-| AWS | `aws:s3/bucket:Bucket` | S3 storage bucket |
-| Azure | `azure:compute/virtualMachine:VirtualMachine` | Azure VM |
-| Azure | `azure:storage/account:Account` | Azure storage account |
-| GCP | `gcp:compute/instance:Instance` | GCE compute instance |
-| GCP | `gcp:storage/bucket:Bucket` | Cloud Storage bucket |
-| Kubernetes | `kubernetes:core/v1/pod:Pod` | Kubernetes pod |
+| Provider   | Resource Type                                 | Description           |
+| ---------- | --------------------------------------------- | --------------------- |
+| AWS        | `aws:ec2/instance:Instance`                   | EC2 compute instance  |
+| AWS        | `aws:s3/bucket:Bucket`                        | S3 storage bucket     |
+| Azure      | `azure:compute/virtualMachine:VirtualMachine` | Azure VM              |
+| Azure      | `azure:storage/account:Account`               | Azure storage account |
+| GCP        | `gcp:compute/instance:Instance`               | GCE compute instance  |
+| GCP        | `gcp:storage/bucket:Bucket`                   | Cloud Storage bucket  |
+| Kubernetes | `kubernetes:core/v1/pod:Pod`                  | Kubernetes pod        |
 
 ## Attribute Structure
 
@@ -176,9 +176,9 @@ aws:ec2/instance:Instance
 
 ```json
 {
-  "instanceType": "t3.micro",      // AWS
-  "machineType": "e2-micro",       // GCP
-  "vmSize": "Standard_B1s",        // Azure
+  "instanceType": "t3.micro", // AWS
+  "machineType": "e2-micro", // GCP
+  "vmSize": "Standard_B1s", // Azure
   "region": "us-east-1",
   "zone": "us-central1-a",
   "osType": "Linux"

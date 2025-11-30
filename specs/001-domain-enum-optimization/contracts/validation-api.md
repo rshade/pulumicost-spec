@@ -351,16 +351,16 @@ IsValidAuthMethod("invalid")          // false
 
 All validation functions (`IsValidXxx`) MUST meet these performance targets:
 
-| Enum Type | Max Values | Target Time | Max Allocation |
-|-----------|-----------|-------------|---------------|
-| Provider | 5 | < 10 ns/op | 0 allocs/op |
-| DiscoverySource | 4 | < 10 ns/op | 0 allocs/op |
-| PluginStatus | 6 | < 15 ns/op | 0 allocs/op |
-| SecurityLevel | 4 | < 10 ns/op | 0 allocs/op |
-| InstallationMethod | 4 | < 10 ns/op | 0 allocs/op |
-| PluginCapability | 14 | < 30 ns/op | 0 allocs/op |
-| SystemPermission | 9 | < 20 ns/op | 0 allocs/op |
-| AuthMethod | 6 | < 15 ns/op | 0 allocs/op |
+| Enum Type          | Max Values | Target Time | Max Allocation |
+| ------------------ | ---------- | ----------- | -------------- |
+| Provider           | 5          | < 10 ns/op  | 0 allocs/op    |
+| DiscoverySource    | 4          | < 10 ns/op  | 0 allocs/op    |
+| PluginStatus       | 6          | < 15 ns/op  | 0 allocs/op    |
+| SecurityLevel      | 4          | < 10 ns/op  | 0 allocs/op    |
+| InstallationMethod | 4          | < 10 ns/op  | 0 allocs/op    |
+| PluginCapability   | 14         | < 30 ns/op  | 0 allocs/op    |
+| SystemPermission   | 9          | < 20 ns/op  | 0 allocs/op    |
+| AuthMethod         | 6          | < 15 ns/op  | 0 allocs/op    |
 
 **Overall target**: < 100 nanoseconds per operation for all enum types (as specified in success criteria SC-003)
 

@@ -84,22 +84,22 @@ ctx := metadata.NewOutgoingContext(ctx, md)
 
 The following trace ID formats are accepted:
 
-| Format | Example | Status |
-|--------|---------|--------|
+| Format             | Example                            | Status   |
+| ------------------ | ---------------------------------- | -------- |
 | Valid 32 hex chars | `abcdef1234567890abcdef1234567890` | Accepted |
 | Valid with numbers | `12345678901234567890123456789012` | Accepted |
 
 The following formats are rejected (replacement generated):
 
-| Format | Example | Reason |
-|--------|---------|--------|
-| Empty | `""` | Missing trace ID |
-| Too short | `abcdef` | Less than 32 characters |
-| Too long | `abcdef...01` (33+ chars) | More than 32 characters |
-| Non-hex | `ghijklmnop...` | Invalid characters (g-z) |
-| All zeros | `00000000000000000000000000000000` | Reserved invalid value |
-| Control chars | `abc\ndef...` | Security risk |
-| Unicode | `ąbcdef...` | Invalid encoding |
+| Format        | Example                            | Reason                   |
+| ------------- | ---------------------------------- | ------------------------ |
+| Empty         | `""`                               | Missing trace ID         |
+| Too short     | `abcdef`                           | Less than 32 characters  |
+| Too long      | `abcdef...01` (33+ chars)          | More than 32 characters  |
+| Non-hex       | `ghijklmnop...`                    | Invalid characters (g-z) |
+| All zeros     | `00000000000000000000000000000000` | Reserved invalid value   |
+| Control chars | `abc\ndef...`                      | Security risk            |
+| Unicode       | `ąbcdef...`                        | Invalid encoding         |
 
 ## Security Benefits
 
@@ -134,12 +134,12 @@ memory exhaustion or buffer issues in downstream systems.
 
 ## Backward Compatibility
 
-| Scenario | Behavior |
-|----------|----------|
-| Valid trace IDs | Preserved unchanged |
-| Existing plugins | Continue working without code changes |
-| Missing trace IDs | Now automatically generated |
-| Invalid trace IDs | Now replaced (was passed through) |
+| Scenario          | Behavior                              |
+| ----------------- | ------------------------------------- |
+| Valid trace IDs   | Preserved unchanged                   |
+| Existing plugins  | Continue working without code changes |
+| Missing trace IDs | Now automatically generated           |
+| Invalid trace IDs | Now replaced (was passed through)     |
 
 The only observable change is that invalid trace IDs are no longer
 propagated to handlers. This is a security improvement that does not
@@ -147,10 +147,10 @@ affect correct usage.
 
 ## Performance
 
-| Operation | Time | Memory |
-|-----------|------|--------|
-| Validation (valid input) | ~50 ns | 0 B |
-| Validation (invalid input) + generation | ~200 ns | 48 B |
+| Operation                               | Time    | Memory |
+| --------------------------------------- | ------- | ------ |
+| Validation (valid input)                | ~50 ns  | 0 B    |
+| Validation (invalid input) + generation | ~200 ns | 48 B   |
 
 Both scenarios are well under the 1ms latency budget.
 

@@ -12,11 +12,11 @@ This guide explains how to update existing plugins to support the FinOps FOCUS 1
 
 The following proto field renames align with FOCUS 1.2 naming conventions:
 
-| Old Field Name | New Field Name | Proto Field # | Notes |
-|----------------|----------------|---------------|-------|
-| `currency` | `billing_currency` | 18 | Aligns with FOCUS BillingCurrency |
-| `usage_quantity` | `consumed_quantity` | 20 | Aligns with FOCUS ConsumedQuantity |
-| `usage_unit` | `consumed_unit` | 21 | Aligns with FOCUS ConsumedUnit |
+| Old Field Name   | New Field Name      | Proto Field # | Notes                              |
+| ---------------- | ------------------- | ------------- | ---------------------------------- |
+| `currency`       | `billing_currency`  | 18            | Aligns with FOCUS BillingCurrency  |
+| `usage_quantity` | `consumed_quantity` | 20            | Aligns with FOCUS ConsumedQuantity |
+| `usage_unit`     | `consumed_unit`     | 21            | Aligns with FOCUS ConsumedUnit     |
 
 ### Wire Format Impact
 

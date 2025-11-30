@@ -27,61 +27,61 @@ After implementation, `FocusCostRecord` will contain all 57 FOCUS 1.2 columns:
 
 ### Financial Fields (Mandatory + Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| contracted_cost | double | Decimal | Mandatory | Cost = ContractedUnitPrice × PricingQuantity |
-| contracted_unit_price | double | Decimal | Conditional | Agreed-upon unit price per pricing unit |
+| Field                 | Proto Type | FOCUS Type | Level       | Description                                  |
+| --------------------- | ---------- | ---------- | ----------- | -------------------------------------------- |
+| contracted_cost       | double     | Decimal    | Mandatory   | Cost = ContractedUnitPrice × PricingQuantity |
+| contracted_unit_price | double     | Decimal    | Conditional | Agreed-upon unit price per pricing unit      |
 
 ### Account Fields (Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| billing_account_type | string | String | Conditional | Type of billing account |
-| sub_account_type | string | String | Conditional | Type of sub-account |
+| Field                | Proto Type | FOCUS Type | Level       | Description             |
+| -------------------- | ---------- | ---------- | ----------- | ----------------------- |
+| billing_account_type | string     | String     | Conditional | Type of billing account |
+| sub_account_type     | string     | String     | Conditional | Type of sub-account     |
 
 ### Capacity Reservation Fields (Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| capacity_reservation_id | string | String | Conditional | Capacity reservation identifier |
-| capacity_reservation_status | FocusCapacityReservationStatus | String | Conditional | Used/Unused |
+| Field                       | Proto Type                     | FOCUS Type | Level       | Description                     |
+| --------------------------- | ------------------------------ | ---------- | ----------- | ------------------------------- |
+| capacity_reservation_id     | string                         | String     | Conditional | Capacity reservation identifier |
+| capacity_reservation_status | FocusCapacityReservationStatus | String     | Conditional | Used/Unused                     |
 
 ### Commitment Discount Fields (Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| commitment_discount_quantity | double | Decimal | Conditional | Amount of discount |
-| commitment_discount_status | FocusCommitmentDiscountStatus | String | Conditional | Used/Unused |
-| commitment_discount_type | string | String | Conditional | Type of commitment discount |
-| commitment_discount_unit | string | String | Conditional | Unit of measurement |
+| Field                        | Proto Type                    | FOCUS Type | Level       | Description                 |
+| ---------------------------- | ----------------------------- | ---------- | ----------- | --------------------------- |
+| commitment_discount_quantity | double                        | Decimal    | Conditional | Amount of discount          |
+| commitment_discount_status   | FocusCommitmentDiscountStatus | String     | Conditional | Used/Unused                 |
+| commitment_discount_type     | string                        | String     | Conditional | Type of commitment discount |
+| commitment_discount_unit     | string                        | String     | Conditional | Unit of measurement         |
 
 ### Pricing Currency Fields (Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| pricing_currency | string | String | Conditional | ISO 4217 currency code |
-| pricing_currency_contracted_unit_price | double | Decimal | Conditional | Price in pricing currency |
-| pricing_currency_effective_cost | double | Decimal | Conditional | Cost in pricing currency |
-| pricing_currency_list_unit_price | double | Decimal | Conditional | List price in pricing currency |
+| Field                                  | Proto Type | FOCUS Type | Level       | Description                    |
+| -------------------------------------- | ---------- | ---------- | ----------- | ------------------------------ |
+| pricing_currency                       | string     | String     | Conditional | ISO 4217 currency code         |
+| pricing_currency_contracted_unit_price | double     | Decimal    | Conditional | Price in pricing currency      |
+| pricing_currency_effective_cost        | double     | Decimal    | Conditional | Cost in pricing currency       |
+| pricing_currency_list_unit_price       | double     | Decimal    | Conditional | List price in pricing currency |
 
 ### Origination Fields (Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| publisher | string | String | Conditional | Entity that published the service |
+| Field     | Proto Type | FOCUS Type | Level       | Description                       |
+| --------- | ---------- | ---------- | ----------- | --------------------------------- |
+| publisher | string     | String     | Conditional | Entity that published the service |
 
 ### Service Fields (Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| service_subcategory | string | String | Conditional | Granular service classification |
+| Field               | Proto Type | FOCUS Type | Level       | Description                     |
+| ------------------- | ---------- | ---------- | ----------- | ------------------------------- |
+| service_subcategory | string     | String     | Conditional | Granular service classification |
 
 ### SKU Fields (Conditional)
 
-| Field | Proto Type | FOCUS Type | Level | Description |
-|-------|------------|------------|-------|-------------|
-| sku_meter | string | String | Conditional | Meter identifier |
-| sku_price_details | string | String | Conditional | Additional pricing details |
+| Field             | Proto Type | FOCUS Type | Level       | Description                |
+| ----------------- | ---------- | ---------- | ----------- | -------------------------- |
+| sku_meter         | string     | String     | Conditional | Meter identifier           |
+| sku_price_details | string     | String     | Conditional | Additional pricing details |
 
 ## New Enum Types
 
@@ -156,43 +156,43 @@ cost record. There are no state transitions.
 
 ### Field-Level Validation
 
-| Field | Rule |
-|-------|------|
-| contracted_cost | Must be >= 0 when present |
-| pricing_currency | Must be valid ISO 4217 code when present |
+| Field                       | Rule                                                       |
+| --------------------------- | ---------------------------------------------------------- |
+| contracted_cost             | Must be >= 0 when present                                  |
+| pricing_currency            | Must be valid ISO 4217 code when present                   |
 | capacity_reservation_status | Must not be UNSPECIFIED when CapacityReservationId present |
-| commitment_discount_status | Must not be UNSPECIFIED when CommitmentDiscountId present |
+| commitment_discount_status  | Must not be UNSPECIFIED when CommitmentDiscountId present  |
 
 ### Cross-Field Validation
 
-| Rule | Fields Involved |
-|------|-----------------|
-| ContractedCost calculation | contracted_cost, contracted_unit_price, pricing_quantity |
-| Commitment discount completeness | commitment_discount_* fields |
-| Capacity reservation completeness | capacity_reservation_* fields |
-| Pricing currency consistency | pricing_currency, pricing_currency_* fields |
+| Rule                              | Fields Involved                                          |
+| --------------------------------- | -------------------------------------------------------- |
+| ContractedCost calculation        | contracted_cost, contracted_unit_price, pricing_quantity |
+| Commitment discount completeness  | commitment*discount*\* fields                            |
+| Capacity reservation completeness | capacity*reservation*\* fields                           |
+| Pricing currency consistency      | pricing*currency, pricing_currency*\* fields             |
 
 ## Builder Method Mapping
 
 Each new field requires a corresponding builder method:
 
-| Field | Builder Method |
-|-------|---------------|
-| contracted_cost | WithContractedCost(cost float64) |
-| billing_account_type | WithBillingAccountType(accountType string) |
-| sub_account_type | WithSubAccountType(accountType string) |
-| capacity_reservation_id | WithCapacityReservation(id string, status) |
-| capacity_reservation_status | (included in WithCapacityReservation) |
-| commitment_discount_quantity | WithCommitmentDiscountDetails(qty, status, discountType, unit) |
-| commitment_discount_status | (included in WithCommitmentDiscountDetails) |
-| commitment_discount_type | (included in WithCommitmentDiscountDetails) |
-| commitment_discount_unit | (included in WithCommitmentDiscountDetails) |
-| contracted_unit_price | WithContractedUnitPrice(price float64) |
-| pricing_currency | WithPricingCurrency(currency string) |
-| pricing_currency_contracted_unit_price | WithPricingCurrencyPrices(contracted, effective, list) |
-| pricing_currency_effective_cost | (included in WithPricingCurrencyPrices) |
-| pricing_currency_list_unit_price | (included in WithPricingCurrencyPrices) |
-| publisher | WithPublisher(publisher string) |
-| service_subcategory | WithServiceSubcategory(subcategory string) |
-| sku_meter | WithSkuDetails(meter, priceDetails string) |
-| sku_price_details | (included in WithSkuDetails) |
+| Field                                  | Builder Method                                                 |
+| -------------------------------------- | -------------------------------------------------------------- |
+| contracted_cost                        | WithContractedCost(cost float64)                               |
+| billing_account_type                   | WithBillingAccountType(accountType string)                     |
+| sub_account_type                       | WithSubAccountType(accountType string)                         |
+| capacity_reservation_id                | WithCapacityReservation(id string, status)                     |
+| capacity_reservation_status            | (included in WithCapacityReservation)                          |
+| commitment_discount_quantity           | WithCommitmentDiscountDetails(qty, status, discountType, unit) |
+| commitment_discount_status             | (included in WithCommitmentDiscountDetails)                    |
+| commitment_discount_type               | (included in WithCommitmentDiscountDetails)                    |
+| commitment_discount_unit               | (included in WithCommitmentDiscountDetails)                    |
+| contracted_unit_price                  | WithContractedUnitPrice(price float64)                         |
+| pricing_currency                       | WithPricingCurrency(currency string)                           |
+| pricing_currency_contracted_unit_price | WithPricingCurrencyPrices(contracted, effective, list)         |
+| pricing_currency_effective_cost        | (included in WithPricingCurrencyPrices)                        |
+| pricing_currency_list_unit_price       | (included in WithPricingCurrencyPrices)                        |
+| publisher                              | WithPublisher(publisher string)                                |
+| service_subcategory                    | WithServiceSubcategory(subcategory string)                     |
+| sku_meter                              | WithSkuDetails(meter, priceDetails string)                     |
+| sku_price_details                      | (included in WithSkuDetails)                                   |

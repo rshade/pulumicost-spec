@@ -45,11 +45,11 @@ func main() {
 
 The `.Build()` method will return an error if any of the following are missing:
 
-* BillingAccountId
-* ChargePeriodStart / End
-* ServiceCategory
-* ChargeCategory
-* BilledCost (and Currency)
+- BillingAccountId
+- ChargePeriodStart / End
+- ServiceCategory
+- ChargeCategory
+- BilledCost (and Currency)
 
 ## Extension ("Backpack")
 

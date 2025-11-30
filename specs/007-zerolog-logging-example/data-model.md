@@ -14,24 +14,24 @@ This feature is a documentation/example feature. The data model consists of:
 
 ### From 005-zerolog
 
-| Entity | Purpose | Key Fields |
-|--------|---------|------------|
-| `Logger` | Configured zerolog instance | plugin_name, plugin_version, level |
-| `TraceID` | Correlation identifier | string value from context |
+| Entity    | Purpose                     | Key Fields                         |
+| --------- | --------------------------- | ---------------------------------- |
+| `Logger`  | Configured zerolog instance | plugin_name, plugin_version, level |
+| `TraceID` | Correlation identifier      | string value from context          |
 
 ### From 006-estimate-cost
 
-| Entity | Purpose | Key Fields |
-|--------|---------|------------|
-| `EstimateCostRequest` | RPC input | resource_type (string), attributes (Struct) |
-| `EstimateCostResponse` | RPC output | currency (string), cost_monthly (double) |
+| Entity                 | Purpose    | Key Fields                                  |
+| ---------------------- | ---------- | ------------------------------------------- |
+| `EstimateCostRequest`  | RPC input  | resource_type (string), attributes (Struct) |
+| `EstimateCostResponse` | RPC output | currency (string), cost_monthly (double)    |
 
 ### From sdk/go/testing
 
-| Entity | Purpose | Key Fields |
-|--------|---------|------------|
-| `MockPlugin` | Test plugin implementation | ShouldErrorOnEstimateCost, EstimateCostDelay |
-| `TestHarness` | In-memory gRPC harness | client, server |
+| Entity        | Purpose                    | Key Fields                                   |
+| ------------- | -------------------------- | -------------------------------------------- |
+| `MockPlugin`  | Test plugin implementation | ShouldErrorOnEstimateCost, EstimateCostDelay |
+| `TestHarness` | In-memory gRPC harness     | client, server                               |
 
 ## Log Entry Structure
 
@@ -85,16 +85,16 @@ The example demonstrates structured JSON log entries with these field patterns:
 
 ## Field Constants Mapping
 
-| Constant | JSON Field | Type | Description |
-|----------|------------|------|-------------|
-| `FieldTraceID` | `trace_id` | string | Correlation ID for distributed tracing |
-| `FieldOperation` | `operation` | string | RPC method name ("EstimateCost") |
-| `FieldResourceType` | `resource_type` | string | Pulumi resource type |
-| `FieldCostMonthly` | `cost_monthly` | float64 | Estimated monthly cost |
-| `FieldDurationMs` | `duration_ms` | int64 | Operation duration in milliseconds |
-| `FieldErrorCode` | `error_code` | string | gRPC/custom error code |
-| `FieldPluginName` | `plugin_name` | string | Plugin identifier |
-| `FieldPluginVersion` | `plugin_version` | string | Plugin version |
+| Constant             | JSON Field       | Type    | Description                            |
+| -------------------- | ---------------- | ------- | -------------------------------------- |
+| `FieldTraceID`       | `trace_id`       | string  | Correlation ID for distributed tracing |
+| `FieldOperation`     | `operation`      | string  | RPC method name ("EstimateCost")       |
+| `FieldResourceType`  | `resource_type`  | string  | Pulumi resource type                   |
+| `FieldCostMonthly`   | `cost_monthly`   | float64 | Estimated monthly cost                 |
+| `FieldDurationMs`    | `duration_ms`    | int64   | Operation duration in milliseconds     |
+| `FieldErrorCode`     | `error_code`     | string  | gRPC/custom error code                 |
+| `FieldPluginName`    | `plugin_name`    | string  | Plugin identifier                      |
+| `FieldPluginVersion` | `plugin_version` | string  | Plugin version                         |
 
 ## Relationships
 
@@ -116,12 +116,12 @@ Not applicable - this is a stateless example demonstrating logging patterns.
 
 ## Validation Rules
 
-| Field | Rule | Enforced By |
-|-------|------|-------------|
-| trace_id | May be empty (graceful degradation) | Application logic |
-| resource_type | Must be non-empty for logging | Proto validation |
-| cost_monthly | Must be non-negative | Proto field semantics |
-| duration_ms | Auto-calculated by LogOperation | LogOperation helper |
+| Field         | Rule                                | Enforced By           |
+| ------------- | ----------------------------------- | --------------------- |
+| trace_id      | May be empty (graceful degradation) | Application logic     |
+| resource_type | Must be non-empty for logging       | Proto validation      |
+| cost_monthly  | Must be non-negative                | Proto field semantics |
+| duration_ms   | Auto-calculated by LogOperation     | LogOperation helper   |
 
 ## Data Volume Considerations
 

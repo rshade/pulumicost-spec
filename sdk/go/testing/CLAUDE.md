@@ -15,7 +15,7 @@ testing for CostSource plugins.
 **In-Memory gRPC Testing**:
 
 - **TestHarness**: Main testing framework using `bufconn.Listener` for isolated tests
-- **1MB buffer size** for high-throughput testing scenarios  
+- **1MB buffer size** for high-throughput testing scenarios
 - **Automatic server lifecycle management**: Start(), Stop(), Client() methods
 - **Validation constants**: Plugin name limits (100 chars), currency codes (3 chars), response times
 
@@ -48,7 +48,7 @@ testing for CostSource plugins.
 **Comprehensive RPC Testing**:
 
 - **Basic functionality tests**: All 5 RPC methods with validation
-- **Error condition testing**: Network errors, invalid inputs, edge cases  
+- **Error condition testing**: Network errors, invalid inputs, edge cases
 - **Input validation**: Nil resources, invalid time ranges, missing parameters
 - **Multi-provider testing**: Cross-provider consistency validation
 - **Concurrency testing**: 10 concurrent requests with race condition detection
@@ -105,44 +105,59 @@ go test -v -run TestStructuredLoggingExample/RequestLogging
 go test -v -run TestStructuredLoggingExample/ErrorLogging
 ```
 
-### Conformance Testing (`conformance_test.go`)
+### Conformance Suite System
 
-**Three-Tier Validation System**:
+**Four Test Categories**:
 
-- **Basic Conformance**: Core functionality required for all plugins (4 tests)
-- **Standard Conformance**: Production-readiness validation (extends Basic + 3 tests)  
-- **Advanced Conformance**: High-performance requirements (extends Standard + 3 tests)
+| Category            | File                 | Description                                     |
+| ------------------- | -------------------- | ----------------------------------------------- |
+| **Spec Validation** | `spec_validation.go` | JSON schema compliance, billing mode validation |
+| **RPC Correctness** | `rpc_correctness.go` | Protocol behavior, response validation          |
+| **Performance**     | `performance.go`     | Latency baselines, variance testing             |
+| **Concurrency**     | `concurrency.go`     | Parallel requests, thread safety                |
 
 **Conformance Levels**:
 
-**Basic** (Required for all plugins):
+| Level        | Description              | Tests Included                          |
+| ------------ | ------------------------ | --------------------------------------- |
+| **Basic**    | Required for all plugins | Spec Validation, Core RPC               |
+| **Standard** | Production-ready         | Basic + Full RPC + Performance          |
+| **Advanced** | High-performance         | Standard + Concurrency + Strict Latency |
 
-- Name validation and response format
-- Supports handling for valid/invalid resources
-- ProjectedCost basic functionality
+**Key Components**:
 
-**Standard** (Production deployment):
-
-- ActualCost time range validation  
-- Error handling with proper gRPC codes
-- PricingSpec consistency across calls
-- 24-hour data handling capability
-
-**Advanced** (High-performance environments):
-
-- Performance baseline (Name < 100ms)
-- Concurrent request handling (10+ requests)
-- Large dataset support (30-day queries < 10s)
+- `ConformanceSuite` - Main test orchestrator (`conformance.go`)
+- `ConformanceSuiteTest` - Individual test definition
+- `ConformanceResult` - Detailed test execution results
+- `TestResult` - Individual test outcome
 
 **Usage Patterns**:
 
 ```go
-// Run conformance tests
-result := RunBasicConformanceTests(t, plugin)
-PrintConformanceReport(t, result)
+// Create and run conformance suite
+suite := NewConformanceSuite()
+RegisterSpecValidationTests(suite)
+RegisterRPCCorrectnessTests(suite)
+RegisterPerformanceTests(suite)
+RegisterConcurrencyTests(suite)
 
-// Command-line conformance testing
-ConformanceTestMain(plugin, ConformanceStandard)
+result := suite.Run(plugin, ConformanceLevelStandard)
+PrintReportTo(result, os.Stdout)
+
+// Or use convenience functions
+result := RunBasicConformance(plugin)
+result := RunStandardConformance(plugin)
+result := RunAdvancedConformance(plugin)
+```
+
+**Report Generation**:
+
+```go
+// Print detailed report
+PrintReportTo(result, os.Stdout)
+
+// Get JSON output
+jsonData := result.ToJSON()
 ```
 
 ### Performance Testing (`benchmark_test.go`)
@@ -150,7 +165,7 @@ ConformanceTestMain(plugin, ConformanceStandard)
 **Comprehensive Benchmark Suite**:
 
 - **Individual method benchmarks**: All 5 RPC methods with memory profiling
-- **Combined workload benchmarks**: `BenchmarkAllMethods` for realistic usage patterns  
+- **Combined workload benchmarks**: `BenchmarkAllMethods` for realistic usage patterns
 - **Concurrency benchmarks**: `BenchmarkConcurrentRequests` with parallel execution
 - **Data size benchmarks**: 1 hour to 30 days with varying dataset sizes
 - **Provider-specific benchmarks**: Cross-provider performance comparison
@@ -242,7 +257,7 @@ The framework uses **bufconn-based in-memory gRPC** for isolated, fast testing:
 **Progressive Validation Approach**:
 
 - **Hierarchical Requirements**: Each level builds on previous requirements
-- **Failure Fast**: Higher levels fail immediately if lower levels don't pass  
+- **Failure Fast**: Higher levels fail immediately if lower levels don't pass
 - **Detailed Reporting**: Comprehensive test result analysis and failure diagnostics
 - **Extensible Framework**: Easy addition of new conformance tests
 
@@ -252,7 +267,7 @@ The framework uses **bufconn-based in-memory gRPC** for isolated, fast testing:
 
 - **Method-Level**: Individual RPC performance characteristics
 - **Workload-Level**: Realistic usage pattern simulation
-- **Concurrency-Level**: Thread safety and scalability validation  
+- **Concurrency-Level**: Thread safety and scalability validation
 - **Data-Level**: Performance scaling with dataset size
 
 ## Common Development Patterns
@@ -264,12 +279,12 @@ The framework uses **bufconn-based in-memory gRPC** for isolated, fast testing:
 ```go
 func TestMyPlugin(t *testing.T) {
     plugin := &MyPluginImpl{}
-    
+
     // Basic integration testing
     harness := plugintesting.NewTestHarness(plugin)
     harness.Start(t)
     defer harness.Stop()
-    
+
     // Individual method testing
     client := harness.Client()
     resp, err := client.Name(ctx, &pbc.NameRequest{})
@@ -282,11 +297,11 @@ func TestMyPlugin(t *testing.T) {
 ```go
 func TestPluginConformance(t *testing.T) {
     plugin := &MyPluginImpl{}
-    
+
     // Run standard conformance tests
     result := plugintesting.RunStandardConformanceTests(t, plugin)
     plugintesting.PrintConformanceReport(t, result)
-    
+
     if result.FailedTests > 0 {
         t.Errorf("Plugin failed conformance: %s", result.Summary)
     }
@@ -300,14 +315,14 @@ func TestPluginConformance(t *testing.T) {
 ```go
 func TestErrorHandling(t *testing.T) {
     plugin := plugintesting.ConfigurableErrorMockPlugin()
-    
+
     // Configure specific error behavior
     plugin.ShouldErrorOnName = true
-    
+
     harness := plugintesting.NewTestHarness(plugin)
     harness.Start(t)
     defer harness.Stop()
-    
+
     // Test error conditions
     _, err := client.Name(ctx, &pbc.NameRequest{})
     // ... verify error handling
@@ -343,7 +358,7 @@ func addCustomConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 ### Response Time Baselines
 
 - **Name()**: < 100ms (Advanced conformance)
-- **Supports()**: < 50ms (Standard), < 25ms (Advanced)  
+- **Supports()**: < 50ms (Standard), < 25ms (Advanced)
 - **GetProjectedCost()**: < 200ms (Standard), < 100ms (Advanced)
 - **GetPricingSpec()**: < 200ms (Standard), < 100ms (Advanced)
 - **GetActualCost()**: < 2s for 24h data, < 10s for 30d data
@@ -363,7 +378,7 @@ func addCustomConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 
 ### Bufconn vs Network Testing
 
-- **In-memory advantages**: Speed, isolation, determinism  
+- **In-memory advantages**: Speed, isolation, determinism
 - **Trade-offs**: No real network conditions, simplified error scenarios
 - **Best practice**: Use bufconn for unit/integration, real network for system tests
 
@@ -382,7 +397,7 @@ func addCustomConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 ### Performance Test Comprehensiveness
 
 - **Multi-dimensional coverage**: Methods, workloads, concurrency, data sizes
-- **Realistic scenarios**: Cross-provider testing with authentic resource configurations  
+- **Realistic scenarios**: Cross-provider testing with authentic resource configurations
 - **Actionable metrics**: Min/avg/max measurements with memory profiling
 
 ## Test Execution Examples
@@ -415,7 +430,7 @@ go test -bench=BenchmarkActualCostDataSizes
 ```bash
 # Conformance validation for CI
 go test -v -run TestConformance
-# Performance regression testing  
+# Performance regression testing
 go test -bench=. -benchtime=10s
 # Coverage analysis
 go test -cover -coverprofile=coverage.out

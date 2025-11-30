@@ -18,12 +18,12 @@ are REQUIRED per the TDD approach.
 
 **Purpose**: Project initialization and verify existing structure
 
-- [X] T001 Verify Go 1.24+ toolchain and Protocol Buffers v3 installation
-- [X] T002 Verify buf v1.32.1 is installed in bin/ (run `make generate` if needed)
-- [X] T003 [P] Verify zerolog v1.34.0+ dependency in go.mod
-- [X] T004 [P] Review existing proto/pulumicost/v1/costsource.proto to identify cost field type
-  pattern (examine GetActualCost and GetProjectedCost response messages - likely double, string,
-  or custom decimal type - document findings in comment for T013)
+- [x] T001 Verify Go 1.24+ toolchain and Protocol Buffers v3 installation
+- [x] T002 Verify buf v1.32.1 is installed in bin/ (run `make generate` if needed)
+- [x] T003 [P] Verify zerolog v1.34.0+ dependency in go.mod
+- [x] T004 [P] Review existing proto/pulumicost/v1/costsource.proto to identify cost field type
+      pattern (examine GetActualCost and GetProjectedCost response messages - likely double, string,
+      or custom decimal type - document findings in comment for T013)
 
 ---
 
@@ -34,19 +34,19 @@ are REQUIRED per the TDD approach.
 **CRITICAL**: Tests must be written and FAILING before proto changes. This follows Constitution
 Principle III (Test-First Protocol).
 
-- [X] T005 [P] Create test helper for EstimateCost in sdk/go/testing/harness.go
-  (add method to TestHarness struct)
-- [X] T006 [P] Add EstimateCost mock implementation in sdk/go/testing/mock_plugin.go
-  (ConfigurableEstimateCost field and handler)
-- [X] T007 Create Basic conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
-  (TestEstimateCostBasicConformance function)
-- [X] T008 [P] Create Standard conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
-  (TestEstimateCostStandardConformance function)
-- [X] T009 [P] Create Advanced conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
-  (TestEstimateCostAdvancedConformance function)
-- [X] T010 Add EstimateCost benchmarks in sdk/go/testing/benchmark_test.go
-  (BenchmarkEstimateCost function with multiple scenarios)
-- [X] T011 Run `go test -v ./sdk/go/testing/` and verify ALL EstimateCost tests FAIL (RED phase complete)
+- [x] T005 [P] Create test helper for EstimateCost in sdk/go/testing/harness.go
+      (add method to TestHarness struct)
+- [x] T006 [P] Add EstimateCost mock implementation in sdk/go/testing/mock_plugin.go
+      (ConfigurableEstimateCost field and handler)
+- [x] T007 Create Basic conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
+      (TestEstimateCostBasicConformance function)
+- [x] T008 [P] Create Standard conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
+      (TestEstimateCostStandardConformance function)
+- [x] T009 [P] Create Advanced conformance tests for EstimateCost in sdk/go/testing/conformance_test.go
+      (TestEstimateCostAdvancedConformance function)
+- [x] T010 Add EstimateCost benchmarks in sdk/go/testing/benchmark_test.go
+      (BenchmarkEstimateCost function with multiple scenarios)
+- [x] T011 Run `go test -v ./sdk/go/testing/` and verify ALL EstimateCost tests FAIL (RED phase complete)
 
 **Checkpoint**: All tests written and failing - ready for protocol implementation (GREEN phase)
 
@@ -62,31 +62,31 @@ cost estimate is returned. Tests: TestEstimateCostBasicConformance must pass.
 
 ### Protocol Definition for User Story 1
 
-- [X] T012 [US1] Add EstimateCostRequest message to proto/pulumicost/v1/costsource.proto
-  (fields: resource_type string=1, attributes google.protobuf.Struct=2)
-- [X] T013 [US1] Add EstimateCostResponse message to proto/pulumicost/v1/costsource.proto
-  (fields: currency string=1, cost_monthly [USE TYPE FROM T004 - double/string/custom decimal]=2)
-- [X] T014 [US1] Add EstimateCost RPC method to CostSource service in
-  proto/pulumicost/v1/costsource.proto (method signature with inline documentation)
-- [X] T015 [US1] Add comprehensive proto comments for EstimateCost RPC, request, and response
-  messages per Constitution Principle V
-- [X] T016 [US1] Run `make generate` to regenerate Go SDK from proto definitions in sdk/go/proto/
+- [x] T012 [US1] Add EstimateCostRequest message to proto/pulumicost/v1/costsource.proto
+      (fields: resource_type string=1, attributes google.protobuf.Struct=2)
+- [x] T013 [US1] Add EstimateCostResponse message to proto/pulumicost/v1/costsource.proto
+      (fields: currency string=1, cost_monthly [USE TYPE FROM T004 - double/string/custom decimal]=2)
+- [x] T014 [US1] Add EstimateCost RPC method to CostSource service in
+      proto/pulumicost/v1/costsource.proto (method signature with inline documentation)
+- [x] T015 [US1] Add comprehensive proto comments for EstimateCost RPC, request, and response
+      messages per Constitution Principle V
+- [x] T016 [US1] Run `make generate` to regenerate Go SDK from proto definitions in sdk/go/proto/
 
 ### Validation Implementation for User Story 1
 
-- [X] T017 [US1] Implement resource type format validation function in sdk/go/pricing/validate.go
-  (ValidateResourceType with regex pattern provider:module/resource:Type)
-- [X] T018 [US1] Implement null/missing attributes normalization in sdk/go/pricing/validate.go
-  (NormalizeAttributes function)
-- [X] T019 [US1] Add unit tests for validation functions in sdk/go/pricing/validate_test.go
+- [x] T017 [US1] Implement resource type format validation function in sdk/go/pricing/validate.go
+      (ValidateResourceType with regex pattern provider:module/resource:Type)
+- [x] T018 [US1] Implement null/missing attributes normalization in sdk/go/pricing/validate.go
+      (NormalizeAttributes function)
+- [x] T019 [US1] Add unit tests for validation functions in sdk/go/pricing/validate_test.go
 
 ### Testing Framework Integration for User Story 1
 
-- [X] T020 [US1] Update mock plugin EstimateCost handler to use generated proto messages in
-  sdk/go/testing/mock_plugin.go
-- [X] T021 [US1] Update TestHarness EstimateCost helper to use generated proto messages in
-  sdk/go/testing/harness.go
-- [X] T022 [US1] Run `go test -v ./sdk/go/testing/` and verify Basic conformance tests PASS (GREEN phase for US1)
+- [x] T020 [US1] Update mock plugin EstimateCost handler to use generated proto messages in
+      sdk/go/testing/mock_plugin.go
+- [x] T021 [US1] Update TestHarness EstimateCost helper to use generated proto messages in
+      sdk/go/testing/harness.go
+- [x] T022 [US1] Run `go test -v ./sdk/go/testing/` and verify Basic conformance tests PASS (GREEN phase for US1)
 
 **Checkpoint**: Basic EstimateCost RPC functional - can estimate cost for supported resource types
 
@@ -102,24 +102,24 @@ resource type, verify different costs. Tests: TestEstimateCostStandardConformanc
 
 ### Deterministic Behavior for User Story 2
 
-- [X] T023 [P] [US2] Add determinism tests to sdk/go/testing/conformance_test.go
-  (verify identical inputs produce identical outputs per FR-011)
-- [X] T024 [P] [US2] Add concurrent request tests to sdk/go/testing/conformance_test.go
-  (test 10+ concurrent EstimateCost calls per Standard conformance)
-- [X] T025 [US2] Update mock plugin to support multiple resource types in
-  sdk/go/testing/mock_plugin.go (add ResourceTypes map[string]EstimateCostConfig)
-- [X] T026 [US2] Run `go test -v ./sdk/go/testing/` and verify Standard conformance tests PASS
+- [x] T023 [P] [US2] Add determinism tests to sdk/go/testing/conformance_test.go
+      (verify identical inputs produce identical outputs per FR-011)
+- [x] T024 [P] [US2] Add concurrent request tests to sdk/go/testing/conformance_test.go
+      (test 10+ concurrent EstimateCost calls per Standard conformance)
+- [x] T025 [US2] Update mock plugin to support multiple resource types in
+      sdk/go/testing/mock_plugin.go (add ResourceTypes map[string]EstimateCostConfig)
+- [x] T026 [US2] Run `go test -v ./sdk/go/testing/` and verify Standard conformance tests PASS
 
 ### Cross-Provider Examples for User Story 2
 
-- [X] T027 [P] [US2] Create examples/requests/ directory
-- [X] T028 [P] [US2] Create AWS example in examples/requests/estimate_cost_aws.json
-  (aws:ec2/instance:Instance with t3.micro attributes)
-- [X] T029 [P] [US2] Create Azure example in examples/requests/estimate_cost_azure.json
-  (azure:compute/virtualMachine:VirtualMachine with Standard_B1s)
-- [X] T030 [P] [US2] Create GCP example in examples/requests/estimate_cost_gcp.json
-  (gcp:compute/instance:Instance with e2-micro)
-- [X] T031 [US2] Verify all example JSON files match protobuf Struct format
+- [x] T027 [P] [US2] Create examples/requests/ directory
+- [x] T028 [P] [US2] Create AWS example in examples/requests/estimate_cost_aws.json
+      (aws:ec2/instance:Instance with t3.micro attributes)
+- [x] T029 [P] [US2] Create Azure example in examples/requests/estimate_cost_azure.json
+      (azure:compute/virtualMachine:VirtualMachine with Standard_B1s)
+- [x] T030 [P] [US2] Create GCP example in examples/requests/estimate_cost_gcp.json
+      (gcp:compute/instance:Instance with e2-micro)
+- [x] T031 [US2] Verify all example JSON files match protobuf Struct format
 
 **Checkpoint**: Configuration comparison working - can compare costs across different configs and providers
 
@@ -135,33 +135,33 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 ### Error Handling for User Story 3
 
-- [X] T032 [P] [US3] Add invalid format error test to sdk/go/testing/conformance_test.go
-  (test gRPC InvalidArgument for "invalid-format" per FR-003)
-- [X] T033 [P] [US3] Add unsupported resource error test to sdk/go/testing/conformance_test.go
-  (test gRPC NotFound for unsupported resource per FR-008)
-- [X] T034 [P] [US3] Add missing attributes error test to sdk/go/testing/conformance_test.go
-  (test gRPC InvalidArgument for empty attributes per FR-009)
-- [X] T035 [P] [US3] Add ambiguous attributes error test to sdk/go/testing/conformance_test.go
-  (test descriptive error messages per FR-010)
-- [X] T036 [P] [US3] Add pricing source unavailable error test to sdk/go/testing/conformance_test.go
-  (test gRPC Unavailable per FR-014)
-- [X] T037 [P] [US3] Add zero cost handling test to sdk/go/testing/conformance_test.go
-  (test valid response with cost=0 per FR-013)
-- [X] T038 [US3] Update mock plugin with error scenario support in sdk/go/testing/mock_plugin.go
-  (add ForceError field and error injection)
-- [X] T039 [US3] Run `go test -v ./sdk/go/testing/` and verify Advanced conformance tests PASS
+- [x] T032 [P] [US3] Add invalid format error test to sdk/go/testing/conformance_test.go
+      (test gRPC InvalidArgument for "invalid-format" per FR-003)
+- [x] T033 [P] [US3] Add unsupported resource error test to sdk/go/testing/conformance_test.go
+      (test gRPC NotFound for unsupported resource per FR-008)
+- [x] T034 [P] [US3] Add missing attributes error test to sdk/go/testing/conformance_test.go
+      (test gRPC InvalidArgument for empty attributes per FR-009)
+- [x] T035 [P] [US3] Add ambiguous attributes error test to sdk/go/testing/conformance_test.go
+      (test descriptive error messages per FR-010)
+- [x] T036 [P] [US3] Add pricing source unavailable error test to sdk/go/testing/conformance_test.go
+      (test gRPC Unavailable per FR-014)
+- [x] T037 [P] [US3] Add zero cost handling test to sdk/go/testing/conformance_test.go
+      (test valid response with cost=0 per FR-013)
+- [x] T038 [US3] Update mock plugin with error scenario support in sdk/go/testing/mock_plugin.go
+      (add ForceError field and error injection)
+- [x] T039 [US3] Run `go test -v ./sdk/go/testing/` and verify Advanced conformance tests PASS
 
 ### Observability Integration for User Story 3
 
 - [ ] T040 [P] [US3] Add structured logging example in sdk/go/testing/integration_test.go
-  (demonstrate zerolog integration per NFR-001) -
-  [Issue #83](https://github.com/rshade/pulumicost-spec/issues/83)
+      (demonstrate zerolog integration per NFR-001) -
+      [Issue #83](https://github.com/rshade/pulumicost-spec/issues/83)
 - [ ] T041 [P] [US3] Add metrics tracking example in sdk/go/testing/integration_test.go
-  (demonstrate latency/success rate tracking per NFR-002) -
-  [Issue #84](https://github.com/rshade/pulumicost-spec/issues/84)
+      (demonstrate latency/success rate tracking per NFR-002) -
+      [Issue #84](https://github.com/rshade/pulumicost-spec/issues/84)
 - [ ] T042 [P] [US3] Add tracing support example in sdk/go/testing/integration_test.go
-  (demonstrate correlation ID handling per NFR-003) -
-  [Issue #85](https://github.com/rshade/pulumicost-spec/issues/85)
+      (demonstrate correlation ID handling per NFR-003) -
+      [Issue #85](https://github.com/rshade/pulumicost-spec/issues/85)
 
 **Checkpoint**: Error handling complete - all error scenarios return appropriate gRPC status codes and messages
 
@@ -172,13 +172,13 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 **Purpose**: Verify performance requirements and optimize as needed
 
 - [ ] T043 [P] Run benchmarks with `go test -bench=BenchmarkEstimateCost -benchmem ./sdk/go/testing/`
-  and verify <500ms response time (SC-002)
-  [Issue #86](https://github.com/rshade/pulumicost-spec/issues/86)
+      and verify <500ms response time (SC-002)
+      [Issue #86](https://github.com/rshade/pulumicost-spec/issues/86)
 - [ ] T044 [P] Run concurrent benchmark with 50+ requests per Advanced conformance and verify
-  <500ms under load
-  [Issue #87](https://github.com/rshade/pulumicost-spec/issues/87)
+      <500ms under load
+      [Issue #87](https://github.com/rshade/pulumicost-spec/issues/87)
 - [ ] T045 Add performance regression tests to CI in .github/workflows/ (benchmark comparison between commits)
-  [Issue #88](https://github.com/rshade/pulumicost-spec/issues/88)
+      [Issue #88](https://github.com/rshade/pulumicost-spec/issues/88)
 
 ---
 
@@ -195,7 +195,7 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 - [ ] T052 Run `make validate` to verify complete validation pipeline (tests + linting + npm validations)
 - [ ] T053 Verify buf breaking check passes in CI (non-breaking change per Constitution Principle IV)
 - [ ] T054 Update data-model.md line 56 to replace "[decimal type TBD]" with actual type determined in T004
-  [Issue #89](https://github.com/rshade/pulumicost-spec/issues/89)
+      [Issue #89](https://github.com/rshade/pulumicost-spec/issues/89)
 
 ---
 

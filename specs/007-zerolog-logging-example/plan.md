@@ -24,17 +24,17 @@ propagation and timing measurement.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. gRPC Proto Specification-First | PASS | No proto changes required; uses existing EstimateCost RPC |
-| II. Multi-Provider gRPC Consistency | PASS | Example uses mock plugin supporting all providers |
-| III. Test-First Protocol | PASS | Example IS a test function demonstrating logging |
-| IV. Protobuf Backward Compatibility | PASS | No proto changes; documentation only |
-| V. Comprehensive Documentation | PASS | Example serves as documentation with code comments |
-| VI. Performance as gRPC Requirement | PASS | Not applicable; documentation example |
-| VII. Validation at Multiple Levels | PASS | Example validates logging output structure |
+| Principle                           | Status | Notes                                                     |
+| ----------------------------------- | ------ | --------------------------------------------------------- |
+| I. gRPC Proto Specification-First   | PASS   | No proto changes required; uses existing EstimateCost RPC |
+| II. Multi-Provider gRPC Consistency | PASS   | Example uses mock plugin supporting all providers         |
+| III. Test-First Protocol            | PASS   | Example IS a test function demonstrating logging          |
+| IV. Protobuf Backward Compatibility | PASS   | No proto changes; documentation only                      |
+| V. Comprehensive Documentation      | PASS   | Example serves as documentation with code comments        |
+| VI. Performance as gRPC Requirement | PASS   | Not applicable; documentation example                     |
+| VII. Validation at Multiple Levels  | PASS   | Example validates logging output structure                |
 
 **Gate Status**: ALL PASS - No violations requiring justification.
 

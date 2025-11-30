@@ -24,17 +24,17 @@ with a new PricingTier message type.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Proto Specification-First | ✅ PASS | Adding fields to existing proto messages |
-| II. Multi-Provider Consistency | ✅ PASS | No provider-specific fields added |
-| III. Test-First Protocol | ⏳ PENDING | Conformance tests to be written in Phase 1 |
-| IV. Backward Compatibility | ✅ PASS | Adding new optional fields only; no removals |
-| V. Comprehensive Documentation | ⏳ PENDING | Proto comments to be added |
-| VI. Performance Requirements | ✅ PASS | Zero-allocation validation pattern exists |
-| VII. Multi-layer Validation | ✅ PASS | buf lint, JSON schema, conformance tests |
+| Principle                      | Status     | Notes                                        |
+| ------------------------------ | ---------- | -------------------------------------------- |
+| I. Proto Specification-First   | ✅ PASS    | Adding fields to existing proto messages     |
+| II. Multi-Provider Consistency | ✅ PASS    | No provider-specific fields added            |
+| III. Test-First Protocol       | ⏳ PENDING | Conformance tests to be written in Phase 1   |
+| IV. Backward Compatibility     | ✅ PASS    | Adding new optional fields only; no removals |
+| V. Comprehensive Documentation | ⏳ PENDING | Proto comments to be added                   |
+| VI. Performance Requirements   | ✅ PASS    | Zero-allocation validation pattern exists    |
+| VII. Multi-layer Validation    | ✅ PASS    | buf lint, JSON schema, conformance tests     |
 
 ## Project Structure
 

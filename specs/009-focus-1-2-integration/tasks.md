@@ -10,7 +10,7 @@
 - [x] T001 Create `proto/pulumicost/v1/enums.proto` with Focus Service, Charge, and Pricing enums `specs/009-focus-1-2-integration/contracts/enums.proto`
 - [x] T002 Create `proto/pulumicost/v1/focus.proto` with `FocusCostRecord` message definition `specs/009-focus-1-2-integration/contracts/focus.proto`
 - [x] T003 Update `proto/pulumicost/v1/costsource.proto` to import `enums.proto`
-  and `focus.proto` `proto/pulumicost/v1/costsource.proto`
+      and `focus.proto` `proto/pulumicost/v1/costsource.proto`
 - [x] T004 Run `buf generate` to generate Go SDK code for new protos `Makefile`
 
 ## Phase 2: Foundational
@@ -32,7 +32,7 @@
 - [x] T011 [US1] Implement `WithChargeDetails` and `WithPricingCategory` setters `sdk/go/pluginsdk/focus_builder.go`
 - [x] T012 [US1] Implement `WithFinancials` and `WithIdentity` setters `sdk/go/pluginsdk/focus_builder.go`
 - [x] T013 [US1] Implement `Build()` method with mandatory field validation
-  (AccountID, Dates, Service/Charge/Pricing, BilledCost) `sdk/go/pluginsdk/focus_builder.go`
+      (AccountID, Dates, Service/Charge/Pricing, BilledCost) `sdk/go/pluginsdk/focus_builder.go`
 
 ## Phase 4: User Story 2 - Future-Proof Extension ("Backpack")
 

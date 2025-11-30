@@ -255,11 +255,11 @@ If upgrading from a previous version:
 
 The following fields were renamed for FOCUS 1.2 compliance:
 
-| Old Name | New Name | Migration |
-|----------|----------|-----------|
-| `Currency` | `BillingCurrency` | Use `WithFinancials()` or set directly |
-| `UsageQuantity` | `ConsumedQuantity` | Use `WithUsage()` or set directly |
-| `UsageUnit` | `ConsumedUnit` | Use `WithUsage()` or set directly |
+| Old Name        | New Name           | Migration                              |
+| --------------- | ------------------ | -------------------------------------- |
+| `Currency`      | `BillingCurrency`  | Use `WithFinancials()` or set directly |
+| `UsageQuantity` | `ConsumedQuantity` | Use `WithUsage()` or set directly      |
+| `UsageUnit`     | `ConsumedUnit`     | Use `WithUsage()` or set directly      |
 
 **Before (v0.1.x):**
 

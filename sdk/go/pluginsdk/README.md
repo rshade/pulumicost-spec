@@ -180,21 +180,21 @@ logger.Info().
 
 ### Available Field Constants
 
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `FieldTraceID` | `trace_id` | Request trace identifier |
-| `FieldComponent` | `component` | System component |
-| `FieldOperation` | `operation` | RPC operation name |
-| `FieldDurationMs` | `duration_ms` | Operation duration |
-| `FieldResourceURN` | `resource_urn` | Pulumi resource URN |
-| `FieldResourceType` | `resource_type` | Resource type |
-| `FieldProvider` | `provider` | Cloud provider |
-| `FieldRegion` | `region` | Cloud region |
-| `FieldPluginName` | `plugin_name` | Plugin identifier |
-| `FieldPluginVersion` | `plugin_version` | Plugin version |
-| `FieldCostMonthly` | `cost_monthly` | Monthly cost value |
-| `FieldAdapter` | `adapter` | Adapter name |
-| `FieldErrorCode` | `error_code` | Error code |
+| Constant             | Value            | Description              |
+| -------------------- | ---------------- | ------------------------ |
+| `FieldTraceID`       | `trace_id`       | Request trace identifier |
+| `FieldComponent`     | `component`      | System component         |
+| `FieldOperation`     | `operation`      | RPC operation name       |
+| `FieldDurationMs`    | `duration_ms`    | Operation duration       |
+| `FieldResourceURN`   | `resource_urn`   | Pulumi resource URN      |
+| `FieldResourceType`  | `resource_type`  | Resource type            |
+| `FieldProvider`      | `provider`       | Cloud provider           |
+| `FieldRegion`        | `region`         | Cloud region             |
+| `FieldPluginName`    | `plugin_name`    | Plugin identifier        |
+| `FieldPluginVersion` | `plugin_version` | Plugin version           |
+| `FieldCostMonthly`   | `cost_monthly`   | Monthly cost value       |
+| `FieldAdapter`       | `adapter`        | Adapter name             |
+| `FieldErrorCode`     | `error_code`     | Error code               |
 
 ### Trace ID Propagation
 
@@ -357,69 +357,69 @@ record, err := builder.Build()
 
 The `FocusCostRecord` proto message implements all 57 columns defined in FOCUS 1.2:
 
-| Category | Mandatory | Recommended | Conditional |
-|----------|-----------|-------------|-------------|
-| Identity & Hierarchy | 3 | 0 | 4 |
-| Billing Period | 3 | 0 | 0 |
-| Charge Period | 2 | 0 | 0 |
-| Charge Details | 3 | 1 | 0 |
-| Pricing | 0 | 0 | 10 |
-| Service & Product | 1 | 0 | 3 |
-| Resource Details | 0 | 0 | 3 |
-| SKU Details | 0 | 0 | 4 |
-| Location | 0 | 0 | 3 |
-| Financial Amounts | 2 | 0 | 3 |
-| Consumption/Usage | 0 | 0 | 2 |
-| Commitment Discounts | 0 | 0 | 7 |
-| Capacity Reservation | 0 | 0 | 2 |
-| Invoice | 0 | 0 | 2 |
-| Metadata | 0 | 0 | 1 |
-| **Total** | **14** | **1** | **42** |
+| Category             | Mandatory | Recommended | Conditional |
+| -------------------- | --------- | ----------- | ----------- |
+| Identity & Hierarchy | 3         | 0           | 4           |
+| Billing Period       | 3         | 0           | 0           |
+| Charge Period        | 2         | 0           | 0           |
+| Charge Details       | 3         | 1           | 0           |
+| Pricing              | 0         | 0           | 10          |
+| Service & Product    | 1         | 0           | 3           |
+| Resource Details     | 0         | 0           | 3           |
+| SKU Details          | 0         | 0           | 4           |
+| Location             | 0         | 0           | 3           |
+| Financial Amounts    | 2         | 0           | 3           |
+| Consumption/Usage    | 0         | 0           | 2           |
+| Commitment Discounts | 0         | 0           | 7           |
+| Capacity Reservation | 0         | 0           | 2           |
+| Invoice              | 0         | 0           | 2           |
+| Metadata             | 0         | 0           | 1           |
+| **Total**            | **14**    | **1**       | **42**      |
 
 ### Builder Methods by Category
 
 **Mandatory Fields (14 columns)**:
 
-| Method | Fields Set | FOCUS Section |
-|--------|------------|---------------|
-| `WithIdentity(provider, accountID, accountName)` | ProviderName, BillingAccountId, BillingAccountName | 2.1 |
-| `WithBillingPeriod(start, end, currency)` | BillingPeriodStart, BillingPeriodEnd, BillingCurrency | 2.2 |
-| `WithChargePeriod(start, end)` | ChargePeriodStart, ChargePeriodEnd | 2.3 |
-| `WithChargeDetails(chargeCat, pricingCat)` | ChargeCategory, PricingCategory | 2.4 |
-| `WithChargeClassification(class, desc, freq)` | ChargeClass, ChargeDescription | 2.4 |
-| `WithService(category, name)` | ServiceCategory, ServiceName | 2.6 |
-| `WithFinancials(billed, list, effective, currency, invoiceID)` | BilledCost, ListCost, EffectiveCost | 2.10 |
-| `WithContractedCost(cost)` | ContractedCost | 3.20 |
+| Method                                                         | Fields Set                                            | FOCUS Section |
+| -------------------------------------------------------------- | ----------------------------------------------------- | ------------- |
+| `WithIdentity(provider, accountID, accountName)`               | ProviderName, BillingAccountId, BillingAccountName    | 2.1           |
+| `WithBillingPeriod(start, end, currency)`                      | BillingPeriodStart, BillingPeriodEnd, BillingCurrency | 2.2           |
+| `WithChargePeriod(start, end)`                                 | ChargePeriodStart, ChargePeriodEnd                    | 2.3           |
+| `WithChargeDetails(chargeCat, pricingCat)`                     | ChargeCategory, PricingCategory                       | 2.4           |
+| `WithChargeClassification(class, desc, freq)`                  | ChargeClass, ChargeDescription                        | 2.4           |
+| `WithService(category, name)`                                  | ServiceCategory, ServiceName                          | 2.6           |
+| `WithFinancials(billed, list, effective, currency, invoiceID)` | BilledCost, ListCost, EffectiveCost                   | 2.10          |
+| `WithContractedCost(cost)`                                     | ContractedCost                                        | 3.20          |
 
 **Conditional Fields - New in FOCUS 1.2**:
 
-| Method | Fields Set | FOCUS Section |
-|--------|------------|---------------|
-| `WithBillingAccountType(type)` | BillingAccountType | 3.3 |
-| `WithSubAccountType(type)` | SubAccountType | 3.45 |
-| `WithCapacityReservation(id, status)` | CapacityReservationId, CapacityReservationStatus | 3.6, 3.7 |
-| `WithCommitmentDiscountDetails(qty, status, type, unit)` | CommitmentDiscountQuantity, Status, Type, Unit | 3.14-3.19 |
-| `WithContractedUnitPrice(price)` | ContractedUnitPrice | 3.21 |
-| `WithPricingCurrency(currency)` | PricingCurrency | 3.34 |
-| `WithPricingCurrencyPrices(contracted, effective, list)` | PricingCurrency*Prices | 3.35-3.37 |
-| `WithPublisher(publisher)` | Publisher | 3.39 |
-| `WithServiceSubcategory(subcategory)` | ServiceSubcategory | 3.43 |
-| `WithSkuDetails(meter, priceDetails)` | SkuMeter, SkuPriceDetails | 3.46, 3.48 |
+| Method                                                   | Fields Set                                       | FOCUS Section |
+| -------------------------------------------------------- | ------------------------------------------------ | ------------- |
+| `WithBillingAccountType(type)`                           | BillingAccountType                               | 3.3           |
+| `WithSubAccountType(type)`                               | SubAccountType                                   | 3.45          |
+| `WithCapacityReservation(id, status)`                    | CapacityReservationId, CapacityReservationStatus | 3.6, 3.7      |
+| `WithCommitmentDiscountDetails(qty, status, type, unit)` | CommitmentDiscountQuantity, Status, Type, Unit   | 3.14-3.19     |
+| `WithContractedUnitPrice(price)`                         | ContractedUnitPrice                              | 3.21          |
+| `WithPricingCurrency(currency)`                          | PricingCurrency                                  | 3.34          |
+| `WithPricingCurrencyPrices(contracted, effective, list)` | PricingCurrency\*Prices                          | 3.35-3.37     |
+| `WithPublisher(publisher)`                               | Publisher                                        | 3.39          |
+| `WithServiceSubcategory(subcategory)`                    | ServiceSubcategory                               | 3.43          |
+| `WithSkuDetails(meter, priceDetails)`                    | SkuMeter, SkuPriceDetails                        | 3.46, 3.48    |
 
 **Other Conditional Fields**:
 
-| Method | Fields Set | FOCUS Section |
-|--------|------------|---------------|
-| `WithSubAccount(id, name)` | SubAccountId, SubAccountName | 2.1 |
-| `WithLocation(regionID, regionName, az)` | RegionId, RegionName, AvailabilityZone | 2.9 |
-| `WithResource(id, name, type)` | ResourceId, ResourceName, ResourceType | 2.7 |
-| `WithSKU(skuID, skuPriceID)` | SkuId, SkuPriceId | 2.8 |
-| `WithPricing(quantity, unit, listUnitPrice)` | PricingQuantity, PricingUnit, ListUnitPrice | 2.5 |
-| `WithUsage(quantity, unit)` | ConsumedQuantity, ConsumedUnit | 2.11 |
-| `WithCommitmentDiscount(category, id, name)` | CommitmentDiscount* | 2.12 |
-| `WithInvoice(id, issuer)` | InvoiceId, InvoiceIssuer | 2.13 |
-| `WithTag(key, value)` / `WithTags(map)` | Tags | 2.14 |
-| `WithExtension(key, value)` | ExtendedColumns | 2.14 |
+| Method                                       | Fields Set                                  | FOCUS Section |
+| -------------------------------------------- | ------------------------------------------- | ------------- |
+| `WithSubAccount(id, name)`                   | SubAccountId, SubAccountName                | 2.1           |
+| `WithLocation(regionID, regionName, az)`     | RegionId, RegionName, AvailabilityZone      | 2.9           |
+| `WithResource(id, name, type)`               | ResourceId, ResourceName, ResourceType      | 2.7           |
+| `WithSKU(skuID, skuPriceID)`                 | SkuId, SkuPriceId                           | 2.8           |
+| `WithPricing(quantity, unit, listUnitPrice)` | PricingQuantity, PricingUnit, ListUnitPrice | 2.5           |
+| `WithUsage(quantity, unit)`                  | ConsumedQuantity, ConsumedUnit              | 2.11          |
+| `WithCommitmentDiscount(category, id, name)` | CommitmentDiscount\*                        | 2.12          |
+| `WithInvoice(id, issuer)`                    | InvoiceId, InvoiceIssuer                    | 2.13          |
+| `WithTag(key, value)` / `WithTags(map)`      | Tags                                        | 2.14          |
+| `WithExtension(key, value)`                  | ExtendedColumns                             | 2.14          |
 
 ### Validation
 
@@ -470,14 +470,14 @@ builder.WithContractedCost(65.0)
 
 **Common Validation Errors**:
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `billing_account_id is required` | Missing identity | Call `WithIdentity()` |
-| `charge_period (start/end) is required` | Missing charge period | Call `WithChargePeriod()` |
-| `service_category is required` | Unspecified category | Call `WithService()` or `WithServiceCategory()` |
-| `charge_category is required` | Unspecified category | Call `WithChargeDetails()` |
-| `billing_currency is required` | Missing currency | Call `WithBillingPeriod()` or `WithFinancials()` |
-| `consumed_quantity must be positive for usage` | Zero or negative usage for Usage category | Set positive usage via `WithUsage()` |
+| Error                                          | Cause                                     | Solution                                         |
+| ---------------------------------------------- | ----------------------------------------- | ------------------------------------------------ |
+| `billing_account_id is required`               | Missing identity                          | Call `WithIdentity()`                            |
+| `charge_period (start/end) is required`        | Missing charge period                     | Call `WithChargePeriod()`                        |
+| `service_category is required`                 | Unspecified category                      | Call `WithService()` or `WithServiceCategory()`  |
+| `charge_category is required`                  | Unspecified category                      | Call `WithChargeDetails()`                       |
+| `billing_currency is required`                 | Missing currency                          | Call `WithBillingPeriod()` or `WithFinancials()` |
+| `consumed_quantity must be positive for usage` | Zero or negative usage for Usage category | Set positive usage via `WithUsage()`             |
 
 ### Complete Example
 
@@ -519,37 +519,37 @@ Key changes:
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `Plugin` | Core interface for plugin implementations |
+| Type               | Description                                  |
+| ------------------ | -------------------------------------------- |
+| `Plugin`           | Core interface for plugin implementations    |
 | `SupportsProvider` | Optional interface for Supports() capability |
-| `BasePlugin` | Scaffold with default implementations |
-| `ResourceMatcher` | Resource filtering by provider/type |
-| `CostCalculator` | Cost calculation utilities |
-| `Server` | gRPC server wrapper |
-| `ServeConfig` | Configuration for Serve() |
-| `TestServer` | Testing server with cleanup |
-| `TestPlugin` | High-level testing utilities |
-| `ValidationErrors` | Multiple validation errors |
+| `BasePlugin`       | Scaffold with default implementations        |
+| `ResourceMatcher`  | Resource filtering by provider/type          |
+| `CostCalculator`   | Cost calculation utilities                   |
+| `Server`           | gRPC server wrapper                          |
+| `ServeConfig`      | Configuration for Serve()                    |
+| `TestServer`       | Testing server with cleanup                  |
+| `TestPlugin`       | High-level testing utilities                 |
+| `ValidationErrors` | Multiple validation errors                   |
 
 ### Functions
 
-| Function | Description |
-|----------|-------------|
-| `NewServer(plugin)` | Create server with default registry |
-| `NewServerWithRegistry(plugin, registry)` | Create server with custom registry |
-| `NewServerWithOptions(plugin, registry, logger)` | Create server with all options |
-| `Serve(ctx, config)` | Start gRPC server |
-| `NewPluginLogger(name, version, level, writer)` | Create configured logger |
-| `TracingUnaryServerInterceptor()` | gRPC interceptor for trace IDs |
-| `TraceIDFromContext(ctx)` | Extract trace ID from context |
-| `ContextWithTraceID(ctx, traceID)` | Inject trace ID into context |
-| `GenerateTraceID()` | Generate new trace ID |
-| `LogOperation(logger, operation)` | Log operation with timing |
-| `NotSupportedError(resource)` | Create not-supported error |
-| `NoDataError(resourceID)` | Create no-data error |
-| `LoadManifest(path)` | Load manifest from file |
-| `SaveManifest(path, manifest)` | Save manifest to file |
-| `NewTestServer(t, plugin)` | Create test server |
-| `NewTestPlugin(t, plugin)` | Create test plugin helper |
-| `CreateTestResource(provider, type, props)` | Create test resource |
+| Function                                         | Description                         |
+| ------------------------------------------------ | ----------------------------------- |
+| `NewServer(plugin)`                              | Create server with default registry |
+| `NewServerWithRegistry(plugin, registry)`        | Create server with custom registry  |
+| `NewServerWithOptions(plugin, registry, logger)` | Create server with all options      |
+| `Serve(ctx, config)`                             | Start gRPC server                   |
+| `NewPluginLogger(name, version, level, writer)`  | Create configured logger            |
+| `TracingUnaryServerInterceptor()`                | gRPC interceptor for trace IDs      |
+| `TraceIDFromContext(ctx)`                        | Extract trace ID from context       |
+| `ContextWithTraceID(ctx, traceID)`               | Inject trace ID into context        |
+| `GenerateTraceID()`                              | Generate new trace ID               |
+| `LogOperation(logger, operation)`                | Log operation with timing           |
+| `NotSupportedError(resource)`                    | Create not-supported error          |
+| `NoDataError(resourceID)`                        | Create no-data error                |
+| `LoadManifest(path)`                             | Load manifest from file             |
+| `SaveManifest(path, manifest)`                   | Save manifest to file               |
+| `NewTestServer(t, plugin)`                       | Create test server                  |
+| `NewTestPlugin(t, plugin)`                       | Create test plugin helper           |
+| `CreateTestResource(provider, type, props)`      | Create test resource                |

@@ -89,7 +89,7 @@ across cloud providers and billing models.
 ```json
 "time_aggregation": {
   "window": "hour|day|month",
-  "method": "sum|avg|prorated", 
+  "method": "sum|avg|prorated",
   "alignment": "calendar|billing|continuous"
 }
 ```
@@ -120,7 +120,7 @@ across cloud providers and billing models.
 "metric_hints": [
   {
     "metric": "vcpu_hours",
-    "unit": "hour", 
+    "unit": "hour",
     "aggregation_method": "sum|avg|max|min|p95|p99"
   }
 ]
@@ -136,7 +136,7 @@ across cloud providers and billing models.
 "resource_tags": {
   "billing_center": "engineering",
   "cost_center": "CC-1001",
-  "environment": "production" 
+  "environment": "production"
 }
 ```
 
@@ -171,7 +171,7 @@ npm run validate:examples
 npx ajv validate --strict=false -s schemas/pricing_spec.schema.json -d examples/specs/*.json
 ```
 
-### Development Workflow  
+### Development Workflow
 
 ```bash
 # Test schema changes with existing examples

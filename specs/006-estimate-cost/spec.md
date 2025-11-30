@@ -25,7 +25,7 @@
 - Q: How should the system handle missing or null values in the attributes field of EstimateCost
   requests? → A: Treat null/missing attributes as empty struct and let plugin decide if valid
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Basic Cost Estimation (Priority: P1)
 
@@ -119,7 +119,7 @@ types and verifying appropriate error responses.
 - How does system handle currency conversion if the pricing source uses a different currency?
 - What happens when estimated cost is zero (e.g., free tier resources)?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -162,7 +162,7 @@ types and verifying appropriate error responses.
 - **Resource Type**: String identifier for Pulumi resources in format "provider:module/resource:Type"
 - **Attributes**: Structured key-value data representing resource input properties (mirrors Pulumi resource declaration)
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

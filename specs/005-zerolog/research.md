@@ -211,9 +211,9 @@ No indirect dependencies beyond existing gRPC packages.
 
 ## Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| zerolog API breaking changes | Low | Medium | Pin to v1.34.x, monitor releases |
-| Performance regression | Low | High | Benchmarks in CI, compare to baseline |
-| Field name collisions | Low | Low | Use constants, document reserved names |
-| Context key collisions | Low | Low | Use custom unexported type |
+| Risk                         | Likelihood | Impact | Mitigation                             |
+| ---------------------------- | ---------- | ------ | -------------------------------------- |
+| zerolog API breaking changes | Low        | Medium | Pin to v1.34.x, monitor releases       |
+| Performance regression       | Low        | High   | Benchmarks in CI, compare to baseline  |
+| Field name collisions        | Low        | Low    | Use constants, document reserved names |
+| Context key collisions       | Low        | Low    | Use custom unexported type             |

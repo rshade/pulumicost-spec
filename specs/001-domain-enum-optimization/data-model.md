@@ -276,12 +276,12 @@ IsValidProvider("aws") // true - exact match with ProviderAWS
 
 **Registry package enum distribution:**
 
-| Size Category | Enum Count | Enum Types | Validation Complexity |
-|--------------|------------|------------|---------------------|
-| Small (4 values) | 3 | DiscoverySource, SecurityLevel, InstallationMethod | O(4) - 4 comparisons max |
-| Small (5-6 values) | 3 | Provider, PluginStatus, AuthMethod | O(5-6) - 5-6 comparisons max |
-| Medium (9 values) | 1 | SystemPermission | O(9) - 9 comparisons max |
-| Medium (14 values) | 1 | PluginCapability | O(14) - 14 comparisons max |
+| Size Category      | Enum Count | Enum Types                                         | Validation Complexity        |
+| ------------------ | ---------- | -------------------------------------------------- | ---------------------------- |
+| Small (4 values)   | 3          | DiscoverySource, SecurityLevel, InstallationMethod | O(4) - 4 comparisons max     |
+| Small (5-6 values) | 3          | Provider, PluginStatus, AuthMethod                 | O(5-6) - 5-6 comparisons max |
+| Medium (9 values)  | 1          | SystemPermission                                   | O(9) - 9 comparisons max     |
+| Medium (14 values) | 1          | PluginCapability                                   | O(14) - 14 comparisons max   |
 
 **Validation performance characteristics:**
 
@@ -295,17 +295,17 @@ All within < 100 ns target for enums up to 50 values.
 
 **Total registry package validation memory:**
 
-| Enum Type | Elements | Memory (bytes) |
-|-----------|----------|---------------|
-| Provider | 5 | 64 (5×8 + 24) |
-| DiscoverySource | 4 | 56 (4×8 + 24) |
-| PluginStatus | 6 | 72 (6×8 + 24) |
-| SecurityLevel | 4 | 56 (4×8 + 24) |
-| InstallationMethod | 4 | 56 (4×8 + 24) |
-| PluginCapability | 14 | 136 (14×8 + 24) |
-| SystemPermission | 9 | 96 (9×8 + 24) |
-| AuthMethod | 6 | 72 (6×8 + 24) |
-| **Total** | **52** | **608 bytes** |
+| Enum Type          | Elements | Memory (bytes)  |
+| ------------------ | -------- | --------------- |
+| Provider           | 5        | 64 (5×8 + 24)   |
+| DiscoverySource    | 4        | 56 (4×8 + 24)   |
+| PluginStatus       | 6        | 72 (6×8 + 24)   |
+| SecurityLevel      | 4        | 56 (4×8 + 24)   |
+| InstallationMethod | 4        | 56 (4×8 + 24)   |
+| PluginCapability   | 14       | 136 (14×8 + 24) |
+| SystemPermission   | 9        | 96 (9×8 + 24)   |
+| AuthMethod         | 6        | 72 (6×8 + 24)   |
+| **Total**          | **52**   | **608 bytes**   |
 
 **Comparison with map-based approach:**
 

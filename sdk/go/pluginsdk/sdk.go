@@ -199,6 +199,12 @@ type ServeConfig struct {
 	Port     int             // If 0, will use PORT env var or random port
 	Registry RegistryLookup  // Optional; if nil, DefaultRegistryLookup is used
 	Logger   *zerolog.Logger // Optional; if nil, a default logger is used
+	// UnaryInterceptors is an optional list of gRPC unary server interceptors
+	// to chain after the built-in TracingUnaryServerInterceptor.
+	// Interceptors execute in order: tracing first, then each interceptor
+	// in the order provided. If nil or empty, only the tracing interceptor runs.
+	// Note: Passing nil elements in the slice will cause a panic (standard gRPC behavior).
+	UnaryInterceptors []grpc.UnaryServerInterceptor
 }
 
 func resolvePort(requested int) (int, error) {
@@ -284,9 +290,14 @@ func Serve(ctx context.Context, config ServeConfig) error {
 		return announceErr
 	}
 
-	// Create and register server with tracing interceptor
+	// Build interceptor chain: tracing first, then user interceptors
+	interceptors := make([]grpc.UnaryServerInterceptor, 0, 1+len(config.UnaryInterceptors))
+	interceptors = append(interceptors, TracingUnaryServerInterceptor())
+	interceptors = append(interceptors, config.UnaryInterceptors...)
+
+	// Create and register server with interceptor chain
 	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(TracingUnaryServerInterceptor()),
+		grpc.ChainUnaryInterceptor(interceptors...),
 	)
 	server := NewServerWithOptions(config.Plugin, config.Registry, config.Logger)
 	pbc.RegisterCostSourceServiceServer(grpcServer, server)

@@ -148,9 +148,9 @@ approaches across different enum sizes
 
 - [ ] T045 [P] [US2] Add map-based comparison benchmark for Provider in sdk/go/registry/domain_test.go
 - [ ] T046 [P] [US2] Add map-based comparison benchmark for PluginCapability (14 values) in
-  sdk/go/registry/domain_test.go
+      sdk/go/registry/domain_test.go
 - [ ] T047 [P] [US2] Add scalability benchmark with varying enum sizes (4, 6, 9, 14 values) in
-  sdk/go/registry/domain_test.go
+      sdk/go/registry/domain_test.go
 - [ ] T048 [US2] Run benchmark comparison with `go test -bench=. -benchmem ./sdk/go/registry/` and collect results
 
 ### Documentation for User Story 2

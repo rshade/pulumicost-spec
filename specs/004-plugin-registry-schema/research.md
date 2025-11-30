@@ -35,10 +35,10 @@ JSON Schema. Proto enum values are SCREAMING_SNAKE_CASE but JSON convention is s
 
 **Mappings**:
 
-| Proto Enum | Proto Values | JSON Schema Values |
-|------------|--------------|-------------------|
+| Proto Enum    | Proto Values                   | JSON Schema Values                               |
+| ------------- | ------------------------------ | ------------------------------------------------ |
 | SecurityLevel | SECURITY_LEVEL_UNTRUSTED, etc. | `untrusted`, `community`, `verified`, `official` |
-| Capabilities | (string array in proto) | `cost_retrieval`, `cost_projection`, etc. |
+| Capabilities  | (string array in proto)        | `cost_retrieval`, `cost_projection`, etc.        |
 
 **Note**: PluginInfo.capabilities is already `repeated string` in proto, so the schema
 uses lowercase snake_case values matching the proto field values.

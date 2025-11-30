@@ -191,19 +191,19 @@ func main() {
 
 Use these constants for consistent field naming across all plugins:
 
-| Constant | Field Name | Usage |
-|----------|------------|-------|
-| `FieldTraceID` | trace_id | Request correlation |
-| `FieldOperation` | operation | RPC method name |
-| `FieldDurationMs` | duration_ms | Operation timing |
-| `FieldResourceType` | resource_type | Cloud resource type |
-| `FieldResourceURN` | resource_urn | Pulumi resource ID |
-| `FieldPluginName` | plugin_name | Auto-added by logger |
+| Constant             | Field Name     | Usage                |
+| -------------------- | -------------- | -------------------- |
+| `FieldTraceID`       | trace_id       | Request correlation  |
+| `FieldOperation`     | operation      | RPC method name      |
+| `FieldDurationMs`    | duration_ms    | Operation timing     |
+| `FieldResourceType`  | resource_type  | Cloud resource type  |
+| `FieldResourceURN`   | resource_urn   | Pulumi resource ID   |
+| `FieldPluginName`    | plugin_name    | Auto-added by logger |
 | `FieldPluginVersion` | plugin_version | Auto-added by logger |
-| `FieldCostMonthly` | cost_monthly | Monthly cost value |
-| `FieldAdapter` | adapter | Data source adapter |
-| `FieldErrorCode` | error_code | Error classification |
-| `FieldComponent` | component | System component |
+| `FieldCostMonthly`   | cost_monthly   | Monthly cost value   |
+| `FieldAdapter`       | adapter        | Data source adapter  |
+| `FieldErrorCode`     | error_code     | Error classification |
+| `FieldComponent`     | component      | System component     |
 
 ## File-Based Logging
 

@@ -25,17 +25,17 @@ cryptographically secure random generation.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. gRPC Proto Specification-First | PASS | No proto changes needed - interceptor is SDK helper code |
-| II. Multi-Provider Consistency | PASS | Validation applies uniformly to all providers |
-| III. Test-First Protocol | GATE | Tests MUST be written before implementation |
-| IV. Protobuf Backward Compatibility | PASS | No proto changes - SDK-only modification |
-| V. Comprehensive Documentation | GATE | Inline comments and README updates required |
-| VI. Performance as Requirement | GATE | Benchmark validation overhead against 1ms target |
-| VII. Validation at Multiple Levels | PASS | Enhances service-layer validation |
+| Principle                           | Status | Notes                                                    |
+| ----------------------------------- | ------ | -------------------------------------------------------- |
+| I. gRPC Proto Specification-First   | PASS   | No proto changes needed - interceptor is SDK helper code |
+| II. Multi-Provider Consistency      | PASS   | Validation applies uniformly to all providers            |
+| III. Test-First Protocol            | GATE   | Tests MUST be written before implementation              |
+| IV. Protobuf Backward Compatibility | PASS   | No proto changes - SDK-only modification                 |
+| V. Comprehensive Documentation      | GATE   | Inline comments and README updates required              |
+| VI. Performance as Requirement      | GATE   | Benchmark validation overhead against 1ms target         |
+| VII. Validation at Multiple Levels  | PASS   | Enhances service-layer validation                        |
 
 **Gate Requirements**:
 
@@ -79,11 +79,11 @@ sdk/go/
 
 > No constitution violations requiring justification.
 
-| Aspect | Decision | Rationale |
-|--------|----------|-----------|
+| Aspect              | Decision                              | Rationale                                       |
+| ------------------- | ------------------------------------- | ----------------------------------------------- |
 | Validation Location | Interceptor (not separate middleware) | Keeps single responsibility, minimal API change |
-| ID Generation | crypto/rand + hex encoding | Standard library only, no external deps |
-| API Compatibility | Same function signature | Backward compatible - validation is internal |
+| ID Generation       | crypto/rand + hex encoding            | Standard library only, no external deps         |
+| API Compatibility   | Same function signature               | Backward compatible - validation is internal    |
 
 ## Design Decisions
 
@@ -166,9 +166,9 @@ while ensuring observability.
 
 ## Risk Assessment
 
-| Risk | Mitigation |
-|------|------------|
-| Breaking existing plugins | API signature unchanged; only behavior improved |
-| Performance regression | Benchmark before/after; optimize regex if needed |
-| Import cycle | pricing → pluginsdk import direction verified safe |
-| Test flakiness | Use deterministic test inputs; mock random for ID generation tests |
+| Risk                      | Mitigation                                                         |
+| ------------------------- | ------------------------------------------------------------------ |
+| Breaking existing plugins | API signature unchanged; only behavior improved                    |
+| Performance regression    | Benchmark before/after; optimize regex if needed                   |
+| Import cycle              | pricing → pluginsdk import direction verified safe                 |
+| Test flakiness            | Use deterministic test inputs; mock random for ID generation tests |

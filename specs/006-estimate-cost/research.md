@@ -28,7 +28,7 @@
 **Implementation Notes**:
 
 - EstimateCostRequest will have fields: `string resource_type` (field 1), `google.protobuf.Struct
-  attributes` (field 2)
+attributes` (field 2)
 - EstimateCostResponse will have fields: `string currency` (field 1), protobuf decimal type for
   `cost_monthly` (field 2)
 - Field numbering follows best practice: most frequently accessed fields use numbers 1-15 for
@@ -90,14 +90,14 @@ existing cost response messages
 
 **Mapping**:
 
-| Scenario | Requirement | gRPC Status Code | Error Message Pattern |
-|----------|-------------|------------------|----------------------|
-| Invalid format | FR-003 | InvalidArgument | "resource type must follow provider:module/resource:Type format" |
-| Unsupported resource | FR-008 | NotFound | "resource type {type} is not supported by this plugin" |
-| Missing attributes | FR-009 | InvalidArgument | "missing required attributes: [{list}]" |
-| Ambiguous attributes | FR-010 | InvalidArgument | "ambiguous or invalid attributes: {details}" |
-| Pricing source unavailable | FR-014 | Unavailable | "pricing source unavailable: {reason}" |
-| Zero cost (valid) | FR-013 | OK | Return successful response with cost=0 |
+| Scenario                   | Requirement | gRPC Status Code | Error Message Pattern                                            |
+| -------------------------- | ----------- | ---------------- | ---------------------------------------------------------------- |
+| Invalid format             | FR-003      | InvalidArgument  | "resource type must follow provider:module/resource:Type format" |
+| Unsupported resource       | FR-008      | NotFound         | "resource type {type} is not supported by this plugin"           |
+| Missing attributes         | FR-009      | InvalidArgument  | "missing required attributes: [{list}]"                          |
+| Ambiguous attributes       | FR-010      | InvalidArgument  | "ambiguous or invalid attributes: {details}"                     |
+| Pricing source unavailable | FR-014      | Unavailable      | "pricing source unavailable: {reason}"                           |
+| Zero cost (valid)          | FR-013      | OK               | Return successful response with cost=0                           |
 
 **Rationale**:
 
