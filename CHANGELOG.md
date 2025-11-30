@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **ci:** add performance regression tests with benchmark comparison
+- **docs:** add EstimateCost cross-provider coverage matrix to examples/README.md
 - **sdk:** add trace ID validation to TracingUnaryServerInterceptor for security ([#94](https://github.com/rshade/pulumicost-spec/issues/94))
 
 ### Security

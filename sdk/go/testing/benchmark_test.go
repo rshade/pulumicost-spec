@@ -2,7 +2,9 @@ package testing_test
 
 import (
 	"context"
+	"sync"
 	"testing"
+	"time"
 
 	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 
@@ -221,6 +223,126 @@ func BenchmarkConcurrentRequests(b *testing.B) {
 			}
 		}
 	})
+}
+
+// BenchmarkConcurrentEstimateCost benchmarks concurrent EstimateCost requests.
+// This is a key benchmark for T044 - validates 50+ concurrent requests under load.
+func BenchmarkConcurrentEstimateCost(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+				ResourceType: "aws:ec2/instance:Instance",
+				Attributes:   nil,
+			})
+			if err != nil {
+				b.Fatalf("EstimateCost() failed: %v", err)
+			}
+		}
+	})
+}
+
+// BenchmarkConcurrentEstimateCost50 benchmarks exactly 50 concurrent EstimateCost requests.
+// This benchmark validates Advanced conformance requirements per T044.
+func BenchmarkConcurrentEstimateCost50(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for range b.N {
+		var wg sync.WaitGroup
+		errChan := make(chan error, plugintesting.AdvancedParallelRequests)
+
+		for range plugintesting.AdvancedParallelRequests {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+					ResourceType: "aws:ec2/instance:Instance",
+					Attributes:   nil,
+				})
+				if err != nil {
+					errChan <- err
+				}
+			}()
+		}
+
+		wg.Wait()
+		close(errChan)
+
+		for err := range errChan {
+			b.Fatalf("EstimateCost() failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkConcurrentEstimateCostLatency measures per-request latency under concurrent load.
+// Validates <500ms response time requirement under 50+ concurrent requests.
+func BenchmarkConcurrentEstimateCostLatency(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for range b.N {
+		var wg sync.WaitGroup
+		latencies := make(chan time.Duration, plugintesting.AdvancedParallelRequests)
+		errChan := make(chan error, plugintesting.AdvancedParallelRequests)
+
+		for range plugintesting.AdvancedParallelRequests {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				start := time.Now()
+				_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+					ResourceType: "aws:ec2/instance:Instance",
+					Attributes:   nil,
+				})
+				latencies <- time.Since(start)
+				if err != nil {
+					errChan <- err
+				}
+			}()
+		}
+
+		wg.Wait()
+		close(latencies)
+		close(errChan)
+
+		// Check for errors
+		for err := range errChan {
+			b.Fatalf("EstimateCost() failed: %v", err)
+		}
+
+		// Verify all latencies are under 500ms
+		for latency := range latencies {
+			if latency > 500*time.Millisecond {
+				b.Fatalf("Latency %v exceeds 500ms threshold", latency)
+			}
+		}
+	}
 }
 
 // BenchmarkActualCostDataSizes benchmarks GetActualCost with different data sizes.

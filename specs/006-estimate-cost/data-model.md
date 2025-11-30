@@ -54,7 +54,7 @@ EstimateCostRequest {
 | Field        | Type               | Number | Required | Description            | Constraints                                    |
 | ------------ | ------------------ | ------ | -------- | ---------------------- | ---------------------------------------------- |
 | currency     | string             | 1      | Yes      | ISO 4217 currency code | Typically "USD", must be uppercase             |
-| cost_monthly | [decimal type TBD] | 2      | Yes      | Estimated monthly cost | Non-negative, precision per existing cost RPCs |
+| cost_monthly | double             | 2      | Yes      | Estimated monthly cost | Non-negative, precision per existing cost RPCs |
 
 **Validation Rules**:
 
