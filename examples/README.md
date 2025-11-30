@@ -219,6 +219,14 @@ demonstrate cross-provider cost estimation:
   - Resource: `gcp:compute/instance:Instance`
   - Attributes: Machine type (e2-micro), zone, boot disk, scheduling, labels
 
+#### EstimateCost Coverage Matrix
+
+| Provider | Resource Type | Attributes Supported | Example File |
+|----------|---------------|----------------------|--------------|
+| AWS | `aws:ec2/instance:Instance` | instanceType, region, ebs, monitoring, tags | `requests/estimate_cost_aws.json` |
+| Azure | `azure:compute/virtualMachine:VirtualMachine` | vmSize, location, osDisk, osProfile, tags | `requests/estimate_cost_azure.json` |
+| GCP | `gcp:compute/instance:Instance` | machineType, zone, bootDisk, scheduling, labels | `requests/estimate_cost_gcp.json` |
+
 #### EstimateCost Request Format
 
 ```json

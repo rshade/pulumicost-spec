@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -1873,4 +1874,508 @@ func testTracingBestPractices(t *testing.T) {
 	}
 
 	t.Log("Best practices validation completed")
+}
+
+// =============================================================================
+// CONCURRENT ESTIMATE COST TESTING (T044)
+// =============================================================================
+//
+// TestConcurrentEstimateCost tests EstimateCost under concurrent load
+// per Advanced conformance requirements (T044).
+//
+// Key patterns tested:
+//   - 50+ simultaneous requests
+//   - <500ms response time under load
+//   - Thread safety and race condition detection
+//   - Throughput under concurrent load
+//   - Resource contention handling
+//
+// Best Practices:
+//   - Run with -race flag to detect race conditions
+//   - Verify all responses complete successfully
+//   - Track individual request latencies
+//   - Ensure bounded memory growth
+
+// TestConcurrentEstimateCost50 tests EstimateCost with exactly 50 concurrent requests.
+// This validates Advanced conformance requirement for handling 50+ concurrent requests.
+func TestConcurrentEstimateCost50(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	const numRequests = plugintesting.AdvancedParallelRequests // 50 requests
+
+	// Track results from all concurrent requests
+	type result struct {
+		index    int
+		duration time.Duration
+		err      error
+	}
+
+	results := make(chan result, numRequests)
+	var wg sync.WaitGroup
+
+	// Launch 50 concurrent requests
+	startTime := time.Now()
+	for i := range numRequests {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+
+			start := time.Now()
+			attrs, _ := structpb.NewStruct(map[string]interface{}{
+				"instanceType": "t3.micro",
+				"region":       "us-east-1",
+			})
+			_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+				ResourceType: "aws:ec2/instance:Instance",
+				Attributes:   attrs,
+			})
+			duration := time.Since(start)
+
+			results <- result{
+				index:    idx,
+				duration: duration,
+				err:      err,
+			}
+		}(i)
+	}
+
+	// Wait for all requests to complete
+	wg.Wait()
+	close(results)
+	totalDuration := time.Since(startTime)
+
+	// Collect and analyze results
+	var latencies []time.Duration
+	var errors []error
+	var maxLatency time.Duration
+	var minLatency = time.Hour
+
+	for r := range results {
+		if r.err != nil {
+			errors = append(errors, r.err)
+		}
+		latencies = append(latencies, r.duration)
+		if r.duration > maxLatency {
+			maxLatency = r.duration
+		}
+		if r.duration < minLatency {
+			minLatency = r.duration
+		}
+	}
+
+	// Verify no errors occurred
+	if len(errors) > 0 {
+		t.Errorf("Expected 0 errors, got %d: %v", len(errors), errors)
+	}
+
+	// Verify all requests completed
+	if len(latencies) != numRequests {
+		t.Errorf("Expected %d completed requests, got %d", numRequests, len(latencies))
+	}
+
+	// Verify <500ms response time requirement
+	const maxAllowedLatency = 500 * time.Millisecond
+	for i, latency := range latencies {
+		if latency > maxAllowedLatency {
+			t.Errorf("Request %d exceeded 500ms: %v", i, latency)
+		}
+	}
+
+	// Calculate average latency
+	var totalLatency time.Duration
+	for _, l := range latencies {
+		totalLatency += l
+	}
+	avgLatency := totalLatency / time.Duration(len(latencies))
+
+	// Log performance summary
+	t.Logf("Concurrent EstimateCost (n=%d) results:", numRequests)
+	t.Logf("  Total duration: %v", totalDuration)
+	t.Logf("  Min latency: %v", minLatency)
+	t.Logf("  Max latency: %v", maxLatency)
+	t.Logf("  Avg latency: %v", avgLatency)
+	t.Logf("  Throughput: %.2f requests/sec", float64(numRequests)/totalDuration.Seconds())
+	t.Logf("  Errors: %d/%d", len(errors), numRequests)
+}
+
+// TestConcurrentEstimateCost100 tests EstimateCost with 100 concurrent requests.
+// This exceeds the Advanced conformance requirement to verify scalability headroom.
+func TestConcurrentEstimateCost100(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	const numRequests = 100 // 2x Advanced requirement
+
+	results := make(chan time.Duration, numRequests)
+	errors := make(chan error, numRequests)
+	var wg sync.WaitGroup
+
+	// Launch 100 concurrent requests
+	startTime := time.Now()
+	for range numRequests {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			start := time.Now()
+			attrs, _ := structpb.NewStruct(map[string]interface{}{
+				"instanceType": "t3.large",
+				"region":       "eu-west-1",
+			})
+			_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+				ResourceType: "aws:ec2/instance:Instance",
+				Attributes:   attrs,
+			})
+			duration := time.Since(start)
+
+			if err != nil {
+				errors <- err
+			}
+			results <- duration
+		}()
+	}
+
+	// Wait for all requests to complete
+	wg.Wait()
+	close(results)
+	close(errors)
+	totalDuration := time.Since(startTime)
+
+	// Count errors
+	var errorCount int
+	for err := range errors {
+		t.Logf("Error: %v", err)
+		errorCount++
+	}
+
+	// Collect latencies
+	var latencies []time.Duration
+	for d := range results {
+		latencies = append(latencies, d)
+	}
+
+	// All 100 requests should complete successfully
+	if errorCount > 0 {
+		t.Errorf("Expected 0 errors for 100 concurrent requests, got %d", errorCount)
+	}
+
+	// Calculate statistics
+	var totalLatency, maxLatency time.Duration
+	minLatency := time.Hour
+	for _, l := range latencies {
+		totalLatency += l
+		if l > maxLatency {
+			maxLatency = l
+		}
+		if l < minLatency {
+			minLatency = l
+		}
+	}
+
+	t.Logf("Concurrent EstimateCost (n=%d) results:", numRequests)
+	t.Logf("  Total duration: %v", totalDuration)
+	t.Logf("  Min/Max/Avg latency: %v / %v / %v",
+		minLatency, maxLatency, totalLatency/time.Duration(len(latencies)))
+	t.Logf("  Throughput: %.2f requests/sec", float64(numRequests)/totalDuration.Seconds())
+}
+
+// TestConcurrentEstimateCostLatencyVerification validates <500ms per-request
+// latency under concurrent load per SC-002 requirements.
+func TestConcurrentEstimateCostLatencyVerification(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	const numRequests = plugintesting.AdvancedParallelRequests
+	const maxLatency = 500 * time.Millisecond
+
+	latencies := make(chan time.Duration, numRequests)
+	var wg sync.WaitGroup
+
+	for range numRequests {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			start := time.Now()
+			attrs, _ := structpb.NewStruct(map[string]interface{}{
+				"instanceType": "m5.xlarge",
+			})
+			_, _ = client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+				ResourceType: "aws:ec2/instance:Instance",
+				Attributes:   attrs,
+			})
+			latencies <- time.Since(start)
+		}()
+	}
+
+	wg.Wait()
+	close(latencies)
+
+	// Verify EVERY request completes under 500ms
+	var violationCount int
+	var completedCount int
+	for l := range latencies {
+		completedCount++
+		if l > maxLatency {
+			violationCount++
+			t.Logf("Latency violation: %v > %v", l, maxLatency)
+		}
+	}
+
+	// Verify all requests completed
+	if completedCount != numRequests {
+		t.Errorf("Expected %d completed requests, got %d", numRequests, completedCount)
+	}
+
+	// SC-002: Cost estimates are returned within 500ms
+	if violationCount > 0 {
+		t.Errorf("SC-002 violation: %d/%d requests exceeded %v",
+			violationCount, numRequests, maxLatency)
+	}
+
+	t.Logf("Latency verification: %d/%d requests under %v",
+		completedCount-violationCount, completedCount, maxLatency)
+}
+
+// TestConcurrentEstimateCostMultipleResourceTypes tests concurrent requests
+// with different resource types to verify thread safety across resource handling.
+func TestConcurrentEstimateCostMultipleResourceTypes(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	resourceTypes := []string{
+		"aws:ec2/instance:Instance",
+		"aws:s3/bucket:Bucket",
+		"aws:lambda/function:Function",
+		"azure:compute/virtualMachine:VirtualMachine",
+		"gcp:compute/instance:Instance",
+	}
+
+	const requestsPerType = 10
+	totalRequests := len(resourceTypes) * requestsPerType
+
+	type result struct {
+		resourceType string
+		duration     time.Duration
+		err          error
+	}
+	results := make(chan result, totalRequests)
+	var wg sync.WaitGroup
+
+	// Launch concurrent requests for each resource type
+	for _, resType := range resourceTypes {
+		for range requestsPerType {
+			wg.Add(1)
+			go func(rt string) {
+				defer wg.Done()
+
+				start := time.Now()
+				attrs, _ := structpb.NewStruct(map[string]interface{}{
+					"type": "standard",
+				})
+				_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+					ResourceType: rt,
+					Attributes:   attrs,
+				})
+				results <- result{
+					resourceType: rt,
+					duration:     time.Since(start),
+					err:          err,
+				}
+			}(resType)
+		}
+	}
+
+	wg.Wait()
+	close(results)
+
+	// Analyze results by resource type
+	latenciesByType := make(map[string][]time.Duration)
+	errorsByType := make(map[string]int)
+
+	for r := range results {
+		latenciesByType[r.resourceType] = append(latenciesByType[r.resourceType], r.duration)
+		if r.err != nil {
+			errorsByType[r.resourceType]++
+		}
+	}
+
+	// Verify no errors for any resource type
+	for rt, errCount := range errorsByType {
+		if errCount > 0 {
+			t.Errorf("Resource type %s had %d errors", rt, errCount)
+		}
+	}
+
+	// Log per-type statistics
+	t.Log("Per-resource-type concurrent statistics:")
+	for rt, latencies := range latenciesByType {
+		var total time.Duration
+		for _, l := range latencies {
+			total += l
+		}
+		avg := total / time.Duration(len(latencies))
+		t.Logf("  %s: count=%d, avg=%v, errors=%d",
+			rt, len(latencies), avg, errorsByType[rt])
+	}
+
+	// Verify total request count
+	totalProcessed := 0
+	for _, latencies := range latenciesByType {
+		totalProcessed += len(latencies)
+	}
+	if totalProcessed != totalRequests {
+		t.Errorf("Expected %d total requests, got %d", totalRequests, totalProcessed)
+	}
+}
+
+// TestConcurrentEstimateCostResponseConsistency verifies that concurrent
+// EstimateCost requests for the same resource return consistent results.
+func TestConcurrentEstimateCostResponseConsistency(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	const numRequests = 20
+
+	type responseData struct {
+		costMonthly float64
+		currency    string
+	}
+	responses := make(chan responseData, numRequests)
+	var wg sync.WaitGroup
+
+	// All requests use identical input
+	resourceType := "aws:ec2/instance:Instance"
+	attrs, _ := structpb.NewStruct(map[string]interface{}{
+		"instanceType": "t3.micro",
+		"region":       "us-east-1",
+	})
+
+	for range numRequests {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			resp, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+				ResourceType: resourceType,
+				Attributes:   attrs,
+			})
+			if err == nil {
+				responses <- responseData{
+					costMonthly: resp.GetCostMonthly(),
+					currency:    resp.GetCurrency(),
+				}
+			}
+		}()
+	}
+
+	wg.Wait()
+	close(responses)
+
+	// Collect all responses
+	var allResponses []responseData
+	for r := range responses {
+		allResponses = append(allResponses, r)
+	}
+
+	if len(allResponses) == 0 {
+		t.Fatal("No successful responses received")
+	}
+
+	// Verify all responses are identical (thread-safe consistent responses)
+	first := allResponses[0]
+	for i, resp := range allResponses {
+		if resp.costMonthly != first.costMonthly {
+			t.Errorf("Response %d has inconsistent cost: expected %.2f, got %.2f",
+				i, first.costMonthly, resp.costMonthly)
+		}
+		if resp.currency != first.currency {
+			t.Errorf("Response %d has inconsistent currency: expected %s, got %s",
+				i, first.currency, resp.currency)
+		}
+	}
+
+	t.Logf("Consistency verification: %d/%d responses identical (cost=%.2f %s)",
+		len(allResponses), numRequests, first.costMonthly, first.currency)
+}
+
+// TestConcurrentEstimateCostWithTimeout tests concurrent requests with context timeouts
+// to verify proper timeout handling under load.
+func TestConcurrentEstimateCostWithTimeout(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+
+	const numRequests = plugintesting.AdvancedParallelRequests
+	const timeout = 5 * time.Second // Generous timeout to avoid false positives
+
+	successCount := make(chan struct{}, numRequests)
+	var wg sync.WaitGroup
+
+	for range numRequests {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			defer cancel()
+
+			attrs, _ := structpb.NewStruct(map[string]interface{}{
+				"instanceType": "t3.micro",
+			})
+			_, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+				ResourceType: "aws:ec2/instance:Instance",
+				Attributes:   attrs,
+			})
+			if err == nil {
+				successCount <- struct{}{}
+			}
+		}()
+	}
+
+	wg.Wait()
+	close(successCount)
+
+	// Count successes
+	success := 0
+	for range successCount {
+		success++
+	}
+
+	// All requests should complete within timeout
+	if success != numRequests {
+		t.Errorf("Expected %d requests to complete within %v, got %d",
+			numRequests, timeout, success)
+	}
+
+	t.Logf("Timeout test: %d/%d requests completed within %v", success, numRequests, timeout)
 }

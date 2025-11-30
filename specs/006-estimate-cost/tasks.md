@@ -153,13 +153,13 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 ### Observability Integration for User Story 3
 
-- [ ] T040 [P] [US3] Add structured logging example in sdk/go/testing/integration_test.go
+- [x] T040 [P] [US3] Add structured logging example in sdk/go/testing/integration_test.go
       (demonstrate zerolog integration per NFR-001) -
       [Issue #83](https://github.com/rshade/pulumicost-spec/issues/83)
-- [ ] T041 [P] [US3] Add metrics tracking example in sdk/go/testing/integration_test.go
+- [x] T041 [P] [US3] Add metrics tracking example in sdk/go/testing/integration_test.go
       (demonstrate latency/success rate tracking per NFR-002) -
       [Issue #84](https://github.com/rshade/pulumicost-spec/issues/84)
-- [ ] T042 [P] [US3] Add tracing support example in sdk/go/testing/integration_test.go
+- [x] T042 [P] [US3] Add tracing support example in sdk/go/testing/integration_test.go
       (demonstrate correlation ID handling per NFR-003) -
       [Issue #85](https://github.com/rshade/pulumicost-spec/issues/85)
 
@@ -171,13 +171,15 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 **Purpose**: Verify performance requirements and optimize as needed
 
-- [ ] T043 [P] Run benchmarks with `go test -bench=BenchmarkEstimateCost -benchmem ./sdk/go/testing/`
-      and verify <500ms response time (SC-002)
+- [x] T043 [P] Run benchmarks with `go test -bench=BenchmarkEstimateCost -benchmem ./sdk/go/testing/`
+      and verify <500ms response time (SC-002) - PASS: ~95µs average (4,400x under target)
       [Issue #86](https://github.com/rshade/pulumicost-spec/issues/86)
-- [ ] T044 [P] Run concurrent benchmark with 50+ requests per Advanced conformance and verify
-      <500ms under load
+      See [performance-baseline.md](./performance-baseline.md) for full analysis
+- [x] T044 [P] Run concurrent benchmark with 50+ requests per Advanced conformance and verify
+      <500ms under load - PASS: 50+ concurrent requests, max ~8ms per request, all <500ms verified
       [Issue #87](https://github.com/rshade/pulumicost-spec/issues/87)
-- [ ] T045 Add performance regression tests to CI in .github/workflows/ (benchmark comparison between commits)
+      See [performance-baseline.md](./performance-baseline.md#concurrent-benchmark-results-t044) for details
+- [x] T045 Add performance regression tests to CI in .github/workflows/ (benchmark comparison between commits)
       [Issue #88](https://github.com/rshade/pulumicost-spec/issues/88)
 
 ---
@@ -186,15 +188,15 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 **Purpose**: Complete documentation and cross-cutting concerns
 
-- [ ] T046 [P] Update README.md with EstimateCost RPC usage and examples per Constitution Principle V
-- [ ] T047 [P] Update examples/README.md with EstimateCost cross-provider coverage matrix
-- [ ] T048 [P] Create migration guide in docs/ if cost field type differs from existing RPCs
-- [ ] T049 [P] Update CHANGELOG.md with EstimateCost feature entry (version 0.3.0 or next)
-- [ ] T050 Run `make lint` to verify all linting passes (buf lint, golangci-lint, markdownlint)
-- [ ] T051 Run `make test` to verify all tests pass
-- [ ] T052 Run `make validate` to verify complete validation pipeline (tests + linting + npm validations)
-- [ ] T053 Verify buf breaking check passes in CI (non-breaking change per Constitution Principle IV)
-- [ ] T054 Update data-model.md line 56 to replace "[decimal type TBD]" with actual type determined in T004
+- [x] T046 [P] Update README.md with EstimateCost RPC usage and examples per Constitution Principle V
+- [x] T047 [P] Update examples/README.md with EstimateCost cross-provider coverage matrix
+- [x] T048 [P] Create migration guide in docs/ if cost field type differs from existing RPCs
+- [x] T049 [P] Update CHANGELOG.md with EstimateCost feature entry (version 0.3.0 or next)
+- [x] T050 Run `make lint` to verify all linting passes (buf lint, golangci-lint, markdownlint)
+- [x] T051 Run `make test` to verify all tests pass
+- [x] T052 Run `make validate` to verify complete validation pipeline (tests + linting + npm validations)
+- [x] T053 Verify buf breaking check passes in CI (non-breaking change per Constitution Principle IV)
+- [x] T054 Update data-model.md line 56 to replace "[decimal type TBD]" with actual type determined in T004
       [Issue #89](https://github.com/rshade/pulumicost-spec/issues/89)
 
 ---
@@ -215,7 +217,7 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 - **User Story 1 (P1)**: Can start after Foundational tests written - No dependencies on other stories
 - **User Story 2 (P2)**: Can start after US1 basic functionality works (T012-T022) - Extends with comparison capability
-- **User Story 3 (P3)**: Can start after US1 basic functionality works (T012-T022) - Independent error testing
+- **User Story 3 (P3)**: Can start after US1 basic functionality works (T012-T022) - Independent error handling tests
 
 ### Within Each User Story
 
