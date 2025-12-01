@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2](https://github.com/rshade/pulumicost-spec/compare/v0.4.1...v0.4.2) (2025-11-30)
+
+
+### Added
+
+* **ci:** add performance regression testing workflow ([8944316](https://github.com/rshade/pulumicost-spec/commit/8944316a5337a12652efaa700999b7fd400517de))
+* run concurrent benchmark for EstimateCost ([#113](https://github.com/rshade/pulumicost-spec/issues/113)) ([0ffcdc4](https://github.com/rshade/pulumicost-spec/commit/0ffcdc48e132b1eece31a1c51280cd250c608c23))
+* **testing:** add distributed tracing example for EstimateCost (T042) ([#112](https://github.com/rshade/pulumicost-spec/issues/112)) ([b14dd3c](https://github.com/rshade/pulumicost-spec/commit/b14dd3c2eface44181d13d5add225eff57f53198)), closes [#85](https://github.com/rshade/pulumicost-spec/issues/85)
+* **testing:** add metrics tracking example for EstimateCost (T041) ([#111](https://github.com/rshade/pulumicost-spec/issues/111)) ([944e078](https://github.com/rshade/pulumicost-spec/commit/944e0789a67be8e204d92d0d7a35ba181f9dd854)), closes [#84](https://github.com/rshade/pulumicost-spec/issues/84)
+* **testing:** implement Plugin Conformance Test Suite ([#109](https://github.com/rshade/pulumicost-spec/issues/109)) ([03116ce](https://github.com/rshade/pulumicost-spec/commit/03116cef17567bdea85ba59e87aca322d2c42efb))
+
+
+### Documentation
+
+* **006-estimate-cost:** update data-model.md with actual decimal type (T054) ([#114](https://github.com/rshade/pulumicost-spec/issues/114)) ([45f4b2e](https://github.com/rshade/pulumicost-spec/commit/45f4b2e7c2a37c9414aada68343731a2f0e7913c)), closes [#89](https://github.com/rshade/pulumicost-spec/issues/89)
+
 ## [0.4.1](https://github.com/rshade/pulumicost-spec/compare/v0.4.0...v0.4.1) (2025-11-29)
 
 ### Added
