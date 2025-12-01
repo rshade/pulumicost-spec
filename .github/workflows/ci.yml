@@ -98,8 +98,8 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.4.0
-          args: --timeout=5m
+          version: v2.6.2
+          args: --timeout=9m
 
       - name: Run buf lint
         run: make buf-lint

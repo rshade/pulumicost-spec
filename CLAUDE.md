@@ -522,6 +522,11 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.4 (toolchain as specified in go.mod) + None (stdlib only - no external dependencies required) (013-iso4217-currency)
+- N/A (static in-memory data structures) (013-iso4217-currency)
+
+- Go 1.25.4 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package) (012-pluginsdk-conformance)
+- N/A (testing utilities only) (012-pluginsdk-conformance)
 - Go 1.24.10 (toolchain go1.25.4)
 - Protocol Buffers v3 + google.golang.org/protobuf
 - google.golang.org/grpc
@@ -531,3 +536,7 @@ cd schemas && /init            # JSON Schema validation
 - sdk/go/testing harness (007-zerolog-logging-example)
 - N/A (example code, no data persistence) (007-zerolog-logging-example)
 - JSON Schema draft 2020-12 + AJV (validation)(004-plugin-registry-schema)
+
+## Recent Changes
+
+- 012-pluginsdk-conformance: Added Go 1.25.4 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package)

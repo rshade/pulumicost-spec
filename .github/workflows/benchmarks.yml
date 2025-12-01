@@ -44,7 +44,7 @@ jobs:
           gh-pages-branch: 'benchmark-data'
           auto-push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '110%' # 10% tolerance
+          alert-threshold: '110%'  # 10% tolerance
           comment-on-alert: true
           fail-on-alert: true
           summary-always: true
