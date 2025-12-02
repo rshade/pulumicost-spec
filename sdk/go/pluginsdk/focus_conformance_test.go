@@ -442,7 +442,7 @@ func TestValidateFocusRecord_ISO4217Currency(t *testing.T) {
 		{"valid CNY", "CNY", "", false, ""},
 		{"valid CAD", "CAD", "", false, ""},
 		{"valid AUD", "AUD", "", false, ""},
-		{"invalid billing currency", "XXX", "", true, "billing_currency must be a valid ISO 4217"},
+		{"invalid billing currency", "ABC", "", true, "billing_currency must be a valid ISO 4217"},
 		{"invalid lowercase", "usd", "", true, "billing_currency must be a valid ISO 4217"},
 		{"empty pricing currency ok", "USD", "", false, ""},
 		{"valid pricing currency", "USD", "EUR", false, ""},

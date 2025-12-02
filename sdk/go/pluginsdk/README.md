@@ -298,17 +298,99 @@ resource := pluginsdk.CreateTestResource(
 )
 ```
 
-### Comprehensive Testing
+### Conformance Testing
 
-For more comprehensive testing including conformance tests, mock plugins with error injection,
-and performance benchmarks, use the `sdk/go/testing` package:
+The pluginsdk package provides adapter functions for running conformance tests directly on your
+`Plugin` implementation without manual conversion to the gRPC server interface:
+
+```go
+func TestPluginConformance(t *testing.T) {
+    plugin := NewMyPlugin()
+
+    // Run basic conformance (core functionality)
+    result, err := pluginsdk.RunBasicConformance(plugin)
+    if err != nil {
+        t.Fatalf("Conformance test error: %v", err)
+    }
+
+    // Print formatted report
+    pluginsdk.PrintConformanceReport(t, result)
+
+    if !result.Passed() {
+        t.Errorf("Basic conformance failed: %d/%d tests passed",
+            result.Summary.Passed, result.Summary.Total)
+    }
+}
+```
+
+**Conformance Levels**:
+
+| Level                           | Description                                 | Use Case                       |
+| ------------------------------- | ------------------------------------------- | ------------------------------ |
+| `RunBasicConformance(plugin)`   | Core functionality, required for all        | Minimum validation             |
+| `RunStandardConformance(plugin)` | Production-ready (includes error handling) | Production deployments         |
+| `RunAdvancedConformance(plugin)` | High performance (strict latency limits)   | Performance-critical scenarios |
+
+**Type Aliases**:
+
+The package re-exports key types from `sdk/go/testing` for convenience:
+
+```go
+// Use directly from pluginsdk
+var level pluginsdk.ConformanceLevel = pluginsdk.ConformanceLevelStandard
+var result *pluginsdk.ConformanceResult
+var summary pluginsdk.ResultSummary
+```
+
+**Complete Example**:
+
+```go
+func TestConformance(t *testing.T) {
+    plugin := NewMyPlugin()
+
+    t.Run("Basic", func(t *testing.T) {
+        result, err := pluginsdk.RunBasicConformance(plugin)
+        if err != nil {
+            t.Fatalf("Error: %v", err)
+        }
+        if result.Summary.Failed > 0 {
+            pluginsdk.PrintConformanceReport(t, result)
+            t.Fail()
+        }
+    })
+
+    t.Run("Standard", func(t *testing.T) {
+        result, err := pluginsdk.RunStandardConformance(plugin)
+        if err != nil {
+            t.Fatalf("Error: %v", err)
+        }
+        pluginsdk.PrintConformanceReport(t, result)
+        if result.LevelAchieved < pluginsdk.ConformanceLevelStandard {
+            t.Errorf("Expected Standard conformance, achieved: %s",
+                result.LevelAchievedStr)
+        }
+    })
+}
+```
+
+### Advanced Testing with sdk/go/testing
+
+For more advanced testing scenarios including mock plugins with error injection,
+custom configurations, and performance benchmarks, use the `sdk/go/testing` package directly:
 
 ```go
 import plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 
-// Run conformance tests
-result := plugintesting.RunStandardConformanceTests(t, plugin)
-plugintesting.PrintConformanceReport(t, result)
+// Create configurable mock
+mock := plugintesting.NewMockPlugin()
+mock.ShouldErrorOnName = true  // Inject errors
+
+// Convert plugin to server and use test harness for in-memory gRPC
+plugin := NewMyPlugin()
+server := pluginsdk.NewServer(plugin)
+harness := plugintesting.NewTestHarness(server)
+harness.Start(t)
+defer harness.Stop()
 ```
 
 ## Error Helpers
@@ -519,18 +601,21 @@ Key changes:
 
 ### Types
 
-| Type               | Description                                  |
-| ------------------ | -------------------------------------------- |
-| `Plugin`           | Core interface for plugin implementations    |
-| `SupportsProvider` | Optional interface for Supports() capability |
-| `BasePlugin`       | Scaffold with default implementations        |
-| `ResourceMatcher`  | Resource filtering by provider/type          |
-| `CostCalculator`   | Cost calculation utilities                   |
-| `Server`           | gRPC server wrapper                          |
-| `ServeConfig`      | Configuration for Serve()                    |
-| `TestServer`       | Testing server with cleanup                  |
-| `TestPlugin`       | High-level testing utilities                 |
-| `ValidationErrors` | Multiple validation errors                   |
+| Type                | Description                                  |
+| ------------------- | -------------------------------------------- |
+| `Plugin`            | Core interface for plugin implementations    |
+| `SupportsProvider`  | Optional interface for Supports() capability |
+| `BasePlugin`        | Scaffold with default implementations        |
+| `ResourceMatcher`   | Resource filtering by provider/type          |
+| `CostCalculator`    | Cost calculation utilities                   |
+| `Server`            | gRPC server wrapper                          |
+| `ServeConfig`       | Configuration for Serve()                    |
+| `TestServer`        | Testing server with cleanup                  |
+| `TestPlugin`        | High-level testing utilities                 |
+| `ValidationErrors`  | Multiple validation errors                   |
+| `ConformanceResult` | Result of conformance suite execution        |
+| `ConformanceLevel`  | Conformance certification level              |
+| `ResultSummary`     | Aggregate test counts                        |
 
 ### Functions
 
@@ -553,3 +638,8 @@ Key changes:
 | `NewTestServer(t, plugin)`                       | Create test server                  |
 | `NewTestPlugin(t, plugin)`                       | Create test plugin helper           |
 | `CreateTestResource(provider, type, props)`      | Create test resource                |
+| `RunBasicConformance(plugin)`                    | Run basic conformance tests         |
+| `RunStandardConformance(plugin)`                 | Run standard conformance tests      |
+| `RunAdvancedConformance(plugin)`                 | Run advanced conformance tests      |
+| `PrintConformanceReport(t, result)`              | Print formatted report to test log  |
+| `PrintConformanceReportTo(result, writer)`       | Print formatted report to io.Writer |
