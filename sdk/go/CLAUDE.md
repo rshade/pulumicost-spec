@@ -5,8 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 This is the **Go SDK** for the PulumiCost specification, providing a complete runtime library for implementing and testing
-cost source plugins. The SDK consists of four main packages:
+cost source plugins. The SDK consists of five main packages:
 
+- **`currency/`** - ISO 4217 currency validation and metadata with zero-allocation validation
 - **`registry/`** - Plugin registry domain types with optimized zero-allocation validation
 - **`pricing/`** - Domain types, validation, and billing mode enumerations
 - **`proto/`** - Generated gRPC code from protobuf definitions (do not edit manually)
@@ -47,6 +48,16 @@ cd ../../ && make test && make lint
 ## Architecture
 
 ### Package Structure
+
+**`currency/` Package - ISO 4217 Currency Validation**
+
+- `currency.go` - Currency struct, complete ISO 4217 data (180+ currencies), and metadata functions
+- `validate.go` - Zero-allocation IsValid() function for currency code validation
+- `doc.go` - Comprehensive package documentation with usage examples
+- `currency_test.go` - Table-driven tests covering all validation scenarios
+- `benchmark_test.go` - Performance benchmarks targeting <15 ns/op, 0 allocs/op
+- Performance: <15 ns/op, 0 B/op, 0 allocs/op for validation
+- Pattern: Package-level slice variables for zero-allocation validation (follows registry pattern)
 
 **`registry/` Package - Plugin Registry Domain Types**
 
@@ -137,7 +148,7 @@ func IsValidProvider(p string) bool {
 
 **Documentation**: See `../specs/001-domain-enum-optimization/validation-pattern.md` for complete pattern guide.
 
-**Status**: Registry package fully optimized ✅, pricing package pending future optimization
+**Status**: Registry package fully optimized ✅, currency package fully optimized ✅, pricing package pending future optimization
 
 ### Plugin Implementation Flow
 
@@ -180,6 +191,29 @@ import "github.com/rshade/pulumicost-spec/sdk/go/pricing"
 // Validate JSON document
 if err := pricing.ValidatePricingSpec(jsonData); err != nil {
     return fmt.Errorf("invalid pricing spec: %w", err)
+}
+```
+
+### Currency Validation
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/currency"
+
+// Validate currency codes
+if !currency.IsValid("USD") {
+    return errors.New("invalid currency")
+}
+
+// Get currency metadata
+usd, err := currency.GetCurrency("USD")
+if err != nil {
+    return err
+}
+fmt.Printf("%s uses %d decimal places\n", usd.Name, usd.MinorUnits)
+
+// List all currencies
+for _, c := range currency.AllCurrencies() {
+    fmt.Printf("%s: %s\n", c.Code, c.Name)
 }
 ```
 

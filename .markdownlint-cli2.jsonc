@@ -8,6 +8,7 @@
     ".opencode/node_modules",
     ".git",
     "bin",
+    ".gocache",
     "CHANGELOG.md",
     "CodeRabbitPrompt.md",
     "Github_Development_Prompt.md",

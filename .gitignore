@@ -29,6 +29,7 @@ go.work.sum
 
 # Local binary directory for project tools
 bin/
+.gocache/
 
 # Editor/IDE
 # .idea/
