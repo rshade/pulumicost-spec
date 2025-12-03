@@ -60,7 +60,7 @@ validate-npm:
 
 validate: test lint validate-npm
 
-depend:
+depend: install-lefthook
 	@echo "Installing Go development tools..."
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.4.0
 	@go install golang.org/x/tools/cmd/goimports@latest
@@ -72,3 +72,29 @@ depend:
 	@go install github.com/AlekSi/gocov-xml@latest
 	@go install github.com/tebeka/go2xunit@latest
 	@echo "Go development tools installed successfully!"
+
+# Lefthook git hooks management
+.PHONY: install-lefthook uninstall-lefthook commitlint validate-commit
+
+install-lefthook:
+	@echo "Installing Lefthook..."
+	@go install github.com/evilmartians/lefthook@latest
+	@lefthook install
+	@echo "Git hooks installed successfully!"
+
+uninstall-lefthook:
+	@echo "Uninstalling Lefthook git hooks..."
+	@lefthook uninstall
+	@echo "Git hooks uninstalled."
+
+commitlint:
+	@npx commitlint --from HEAD~1
+
+validate-commit:
+	@if [ -f PR_MESSAGE.md ]; then \
+		echo "Validating PR commit message..."; \
+		npx commitlint --edit PR_MESSAGE.md; \
+	else \
+		echo "Validating last commit message..."; \
+		git log -1 --pretty=%B | npx commitlint; \
+	fi
