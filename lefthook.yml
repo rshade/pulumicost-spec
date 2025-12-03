@@ -1,0 +1,65 @@
+# Lefthook configuration for pulumicost-spec
+# https://github.com/evilmartians/lefthook
+#
+# Install hooks: make install-lefthook
+# Skip hooks temporarily: git commit --no-verify
+
+# Parallel execution for performance
+parallel: true
+
+# Skip on merge/rebase commits
+skip_merge: true
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1}
+      fail_text: |
+        ❌ Commit message validation failed
+
+        Your commit message must follow Conventional Commits format:
+        <type>[optional scope]: <description>
+
+        Valid types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert
+
+        Valid scopes: proto, schema, sdk, testing, pricing, registry, currency, pluginsdk,
+                      examples, ci, deps, docs
+
+        Examples:
+          feat: add support for hourly billing mode
+          fix(schema): correct currency enum validation
+          docs: update plugin registry examples
+
+        See: https://www.conventionalcommits.org
+
+pre-commit:
+  parallel: true
+  commands:
+    golangci-lint:
+      glob: "*.go"
+      run: PATH=~/go/bin:$PATH golangci-lint run --new-from-rev=HEAD~1
+      skip:
+        - merge
+        - rebase
+
+    markdown-lint:
+      glob: "*.md"
+      run: npm run lint:markdown
+      skip:
+        - merge
+        - rebase
+
+    yaml-lint:
+      glob: "*.{yml,yaml}"
+      run: yamllint .github/
+      skip:
+        - merge
+        - rebase
+
+pre-push:
+  commands:
+    tests:
+      run: make test
+      skip:
+        - merge
+        - rebase

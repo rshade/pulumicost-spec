@@ -225,6 +225,18 @@ npm run lint:markdown
 
 - Project board: <https://github.com/users/rshade/projects/3>
 
+## Commit Message Validation
+
+This project uses **Lefthook** with **commitlint** to enforce Conventional Commits.
+
+```bash
+make install-lefthook    # Install git hooks
+make commitlint          # Validate last commit
+make validate-commit     # Validate PR_MESSAGE.md or last commit
+```
+
+Configuration: `lefthook.yml`, `commitlint.config.js`
+
 ## Common Issues & Solutions
 
 ### YAML Linting Configuration

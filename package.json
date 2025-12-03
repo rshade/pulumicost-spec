@@ -49,7 +49,9 @@
     "lint:changelog": "npx keep-a-changelog lint CHANGELOG.md",
     "lint": "npm run lint:markdown && npm run lint:yaml && npm run lint:changelog",
     "test": "npm run validate && npm run lint",
-    "format": "npm run lint:markdown:fix"
+    "format": "npm run lint:markdown:fix",
+    "commitlint": "commitlint --edit",
+    "commitlint:last": "commitlint --from HEAD~1"
   },
   "dependencies": {
     "ajv": "^8.17.1",
