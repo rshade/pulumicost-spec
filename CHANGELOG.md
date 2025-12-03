@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3](https://github.com/rshade/pulumicost-spec/compare/v0.4.2...v0.4.3) (2025-12-03)
+
+
+### Added
+
+* **ci:** Add Lefthook git hooks with commitlint validation ([#120](https://github.com/rshade/pulumicost-spec/issues/120)) ([afdf8f7](https://github.com/rshade/pulumicost-spec/commit/afdf8f78afb2cac5dfdad95359acb2871c727be7)), closes [#55](https://github.com/rshade/pulumicost-spec/issues/55)
+* **pluginsdk:** Add conformance testing support for Plugin interface ([#118](https://github.com/rshade/pulumicost-spec/issues/118)) ([8df49c0](https://github.com/rshade/pulumicost-spec/commit/8df49c041adc671843aa0fa6bda987c50a5bcc7a)), closes [#98](https://github.com/rshade/pulumicost-spec/issues/98)
+* **pluginsdk:** add Prometheus metrics instrumentation for plugins ([#119](https://github.com/rshade/pulumicost-spec/issues/119)) ([9365aef](https://github.com/rshade/pulumicost-spec/commit/9365aef0636144f1bcf0695db68681823a889fe0)), closes [#80](https://github.com/rshade/pulumicost-spec/issues/80)
+* **sdk/go/currency:** extract ISO 4217 validation as reusable package (T101) ([#116](https://github.com/rshade/pulumicost-spec/issues/116)) ([97e34f5](https://github.com/rshade/pulumicost-spec/commit/97e34f5fba0f1a635ab9651ed2bc80510898b962)), closes [#101](https://github.com/rshade/pulumicost-spec/issues/101)
+
 ## [0.4.2](https://github.com/rshade/pulumicost-spec/compare/v0.4.1...v0.4.2) (2025-11-30)
 
 
