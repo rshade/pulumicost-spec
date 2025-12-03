@@ -221,6 +221,104 @@ done := pluginsdk.LogOperation(logger, "GetProjectedCost")
 defer done()  // Logs operation completion with duration
 ```
 
+## Prometheus Metrics
+
+The SDK provides optional Prometheus metrics instrumentation for monitoring plugin performance.
+
+### Quick Start
+
+Add the metrics interceptor to your plugin:
+
+```go
+config := pluginsdk.ServeConfig{
+    Plugin: plugin,
+    UnaryInterceptors: []grpc.UnaryServerInterceptor{
+        pluginsdk.MetricsUnaryServerInterceptor("my-plugin"),
+    },
+}
+```
+
+### Exposing Metrics
+
+#### Option A: Built-in HTTP Server (Simple)
+
+```go
+server, err := pluginsdk.StartMetricsServer(pluginsdk.MetricsServerConfig{
+    Port: 9090,  // Default: 9090
+})
+if err != nil {
+    log.Fatal(err)
+}
+defer server.Shutdown(context.Background())
+```
+
+Then scrape `http://localhost:9090/metrics`.
+
+#### Option B: Custom Registry (Production)
+
+```go
+metrics := pluginsdk.NewPluginMetrics("my-plugin")
+interceptor := pluginsdk.MetricsInterceptorWithRegistry(metrics)
+
+// Add to your existing HTTP server
+http.Handle("/metrics", promhttp.HandlerFor(
+    metrics.Registry,
+    promhttp.HandlerOpts{},
+))
+```
+
+### Available Metrics
+
+| Metric | Type | Labels | Description |
+| ------ | ---- | ------ | ----------- |
+| `pulumicost_plugin_requests_total` | Counter | `grpc_method`, `grpc_code`, `plugin_name` | Total gRPC requests |
+| `pulumicost_plugin_request_duration_seconds` | Histogram | `grpc_method`, `plugin_name` | Request latency distribution |
+
+**Histogram Buckets**: 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s
+
+### Example PromQL Queries
+
+```promql
+# Request rate by method
+sum(rate(pulumicost_plugin_requests_total[5m])) by (grpc_method)
+
+# Error rate
+sum(rate(pulumicost_plugin_requests_total{grpc_code!="OK"}[5m]))
+/ sum(rate(pulumicost_plugin_requests_total[5m]))
+
+# P99 latency by method
+histogram_quantile(0.99, sum(rate(pulumicost_plugin_request_duration_seconds_bucket[5m])) by (le, grpc_method))
+```
+
+### Performance
+
+Benchmark results show <1% overhead for realistic handler workloads:
+
+```text
+BenchmarkMetricsInterceptor_Overhead    1000000    1391 ns/op    0 B/op    0 allocs/op
+BenchmarkMetricsInterceptor_NoMetrics   830516698  1.82 ns/op    0 B/op    0 allocs/op
+```
+
+For handlers with typical work (1ms+), the metrics overhead is under 1% of total request time.
+
+### Metrics Functions
+
+| Function | Description |
+| -------- | ----------- |
+| `NewPluginMetrics(pluginName)` | Create metrics with custom registry |
+| `MetricsUnaryServerInterceptor(pluginName)` | Create interceptor with default registry |
+| `MetricsInterceptorWithRegistry(metrics)` | Create interceptor with custom registry |
+| `StartMetricsServer(config)` | Start optional HTTP metrics server |
+
+### Metrics Constants
+
+| Constant | Value | Description |
+| -------- | ----- | ----------- |
+| `MetricNamespace` | `pulumicost` | Prometheus namespace |
+| `MetricSubsystem` | `plugin` | Prometheus subsystem |
+| `DefaultMetricsPort` | `9090` | Default HTTP port |
+| `DefaultMetricsPath` | `/metrics` | Default URL path |
+
 ## Server Configuration
 
 ### ServeConfig Options

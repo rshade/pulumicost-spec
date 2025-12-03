@@ -522,6 +522,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.4 (as per go.mod) + google.golang.org/grpc, prometheus/client_golang (new) (014-plugin-metrics)
+- N/A (in-memory metrics only) (014-plugin-metrics)
+
 - Go 1.25.4 (toolchain as specified in go.mod) + None (stdlib only - no external dependencies required) (013-iso4217-currency)
 - N/A (static in-memory data structures) (013-iso4217-currency)
 
