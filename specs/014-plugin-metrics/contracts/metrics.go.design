@@ -1,0 +1,143 @@
+// Package pluginsdk metrics.go design contract
+//
+// This file defines the public API contract for the metrics feature.
+// Implementation must match these signatures exactly.
+
+package pluginsdk
+
+import (
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"google.golang.org/grpc"
+)
+
+// ============================================================================
+// Core Interceptor API
+// ============================================================================
+
+// MetricsUnaryServerInterceptor returns a gRPC server interceptor that records
+// Prometheus metrics for each unary RPC call.
+//
+// The interceptor records:
+//   - pulumicost_plugin_requests_total: Counter with labels grpc_method, grpc_code, plugin_name
+//   - pulumicost_plugin_request_duration_seconds: Histogram with labels grpc_method, plugin_name
+//
+// Parameters:
+//   - pluginName: Identifier for the plugin, used as the plugin_name label value
+//
+// Returns a gRPC unary server interceptor suitable for use with grpc.ChainUnaryInterceptor
+// or ServeConfig.UnaryInterceptors.
+//
+// Example:
+//
+//	config := pluginsdk.ServeConfig{
+//	    UnaryInterceptors: []grpc.UnaryServerInterceptor{
+//	        pluginsdk.MetricsUnaryServerInterceptor("my-plugin"),
+//	    },
+//	}
+func MetricsUnaryServerInterceptor(pluginName string) grpc.UnaryServerInterceptor
+
+// ============================================================================
+// Metrics Registry Access
+// ============================================================================
+
+// PluginMetrics holds the Prometheus metrics collectors for a plugin.
+// Use NewPluginMetrics to create an instance, or access via MetricsRegistry()
+// if using the default interceptor.
+type PluginMetrics struct {
+	// RequestsTotal is the counter for total requests.
+	// Labels: grpc_method, grpc_code, plugin_name
+	RequestsTotal *prometheus.CounterVec
+
+	// RequestDuration is the histogram for request latency.
+	// Labels: grpc_method, plugin_name
+	RequestDuration *prometheus.HistogramVec
+
+	// Registry is the Prometheus registry containing these metrics.
+	Registry *prometheus.Registry
+}
+
+// NewPluginMetrics creates a new PluginMetrics instance with metrics registered
+// to a new prometheus.Registry.
+//
+// Parameters:
+//   - pluginName: Identifier for the plugin (used in metric help text)
+//
+// The returned PluginMetrics can be used to:
+//   - Access the Registry for custom HTTP handler setup
+//   - Create a MetricsUnaryServerInterceptor with MetricsInterceptorWithRegistry
+func NewPluginMetrics(pluginName string) *PluginMetrics
+
+// MetricsInterceptorWithRegistry returns an interceptor that uses the provided
+// PluginMetrics for recording. Use this when you need access to the underlying
+// registry for custom metrics exposure.
+//
+// Example:
+//
+//	metrics := pluginsdk.NewPluginMetrics("my-plugin")
+//	interceptor := pluginsdk.MetricsInterceptorWithRegistry(metrics)
+//	// Use metrics.Registry with promhttp.HandlerFor()
+func MetricsInterceptorWithRegistry(metrics *PluginMetrics) grpc.UnaryServerInterceptor
+
+// ============================================================================
+// Optional HTTP Server Helper
+// ============================================================================
+
+// MetricsServerConfig configures the optional metrics HTTP server.
+type MetricsServerConfig struct {
+	// Port is the HTTP port to listen on. Default: 9090
+	Port int
+
+	// Path is the URL path for the metrics endpoint. Default: "/metrics"
+	Path string
+
+	// Registry is the Prometheus registry to expose. If nil, a new registry
+	// with default Go collectors is used.
+	Registry *prometheus.Registry
+}
+
+// StartMetricsServer starts a lightweight HTTP server that exposes Prometheus
+// metrics at the configured endpoint.
+//
+// This is provided as a convenience for plugin authors who don't have an
+// existing HTTP server. For production deployments, consider integrating
+// with your existing HTTP infrastructure instead.
+//
+// The returned *http.Server can be used to gracefully shutdown the server:
+//
+//	server, err := pluginsdk.StartMetricsServer(config)
+//	if err != nil { ... }
+//	defer server.Shutdown(context.Background())
+//
+// Parameters:
+//   - config: Server configuration (port, path, registry)
+//
+// Returns:
+//   - *http.Server: The running HTTP server (for shutdown control)
+//   - error: If the server fails to start
+func StartMetricsServer(config MetricsServerConfig) (*http.Server, error)
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const (
+	// MetricNamespace is the Prometheus namespace for all plugin metrics.
+	MetricNamespace = "pulumicost"
+
+	// MetricSubsystem is the Prometheus subsystem for plugin metrics.
+	MetricSubsystem = "plugin"
+
+	// DefaultMetricsPort is the default port for the metrics HTTP server.
+	DefaultMetricsPort = 9090
+
+	// DefaultMetricsPath is the default URL path for metrics.
+	DefaultMetricsPath = "/metrics"
+)
+
+// DefaultHistogramBuckets are the histogram buckets for request duration.
+// Values in seconds: 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s
+var DefaultHistogramBuckets = []float64{
+	0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0,
+}
