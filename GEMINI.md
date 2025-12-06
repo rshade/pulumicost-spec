@@ -48,3 +48,13 @@ tools to create a robust ecosystem of cost-estimation plugins.
   zero-allocation validation.
 - **Changes Require Design Docs:** Significant changes or new features must be proposed and
   documented in a design specification under the `specs/` directory before implementation.
+
+## Active Technologies
+
+- Go 1.21+ (SDK), Protobuf 3 + `google.golang.org/grpc`, `google.golang.org/protobuf` (001-fallback-hint)
+- N/A (API Specification) (001-fallback-hint)
+
+## Recent Changes
+
+- 001-fallback-hint: Added Go 1.21+ (SDK), Protobuf 3 + `google.golang.org/grpc`,
+  `google.golang.org/protobuf`
