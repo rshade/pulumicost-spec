@@ -1,9 +1,11 @@
 <!--
-Sync Impact Report - Constitution v1.0.0
+Sync Impact Report - Constitution v1.1.0
 ========================================
-Version Change: [INITIAL] → 1.0.0
-Modified Principles: Initial constitution creation
-Added Sections: All sections (initial creation)
+Version Change: 1.0.0 → 1.1.0
+Modified Principles:
+  - Section V (Comprehensive Documentation): Added documentation currency requirement
+  - Example Contribution Requirements: Added quality standards for non-AI-slop examples
+Added Sections: Example Quality Standards subsection
 Removed Sections: None
 Templates Requiring Updates:
   ✅ .specify/templates/plan-template.md - Constitution Check section aligned
@@ -85,8 +87,16 @@ Every gRPC specification element MUST be documented:
 - Billing modes require cross-provider coverage matrix
 - API reference auto-generated from proto comments via protoc-gen-doc or buf
 
+**Documentation Currency (NON-NEGOTIABLE)**:
+
+- Documentation MUST be updated in the same PR as feature implementation
+- SDK README files MUST reflect current RPC method capabilities
+- Example files MUST be added for new RPC methods before merge
+- Stale or outdated documentation is a blocking issue for PR approval
+- CLAUDE.md files MUST be updated when new patterns are established
+
 **Rationale**: gRPC specifications are only useful if understood. Plugin developers need clear proto field
-semantics and RPC method contracts.
+semantics and RPC method contracts. Outdated documentation leads to implementation errors and ecosystem fragmentation.
 
 ### VI. Performance as a gRPC Requirement
 
@@ -173,6 +183,42 @@ behavior, and code generation levels. Each layer catches different proto error c
 - JSON schema validation passing for all examples
 - Cross-reference to related billing modes and RPC methods
 
+### Example Quality Standards (NON-NEGOTIABLE)
+
+Examples MUST be thorough, realistic, and production-quality:
+
+**Realism Requirements**:
+
+- Use actual cloud provider pricing data (within reasonable staleness)
+- Include realistic resource identifiers and metadata patterns
+- Demonstrate provider-specific nuances (AWS vs Azure vs GCP patterns)
+- Cover edge cases and complex scenarios, not just happy paths
+
+**Completeness Requirements**:
+
+- Multi-provider examples for each RPC method (AWS, Azure, GCP, Kubernetes minimum)
+- Mixed action type examples showing realistic portfolio analysis
+- Summary calculations MUST be mathematically correct and verifiable
+- All optional fields demonstrated in at least one example
+
+**Anti-Slop Standards**:
+
+- No placeholder or template-like values ("TODO", "example-value", "xxx")
+- No unrealistic pricing (e.g., $0.0001 or $999999.99)
+- No copy-paste duplicated content between examples
+- Each example MUST have distinct, meaningful data demonstrating specific use cases
+- Provider-specific metadata MUST reflect actual provider patterns (account IDs, regions, SKUs)
+
+**Verification Requirements**:
+
+- Numerical values MUST be mathematically consistent (totals = sum of components)
+- Date/time values MUST be logically valid (end > start, reasonable ranges)
+- Enum values MUST match proto definitions exactly
+- All JSON examples MUST pass schema validation
+
+**Rationale**: Low-quality or AI-generated "slop" examples mislead plugin developers and degrade
+ecosystem quality. Examples are documentation - they must be as rigorous as code.
+
 ## Governance
 
 ### Amendment Process
@@ -217,4 +263,4 @@ For day-to-day gRPC development guidance not covered by this constitution, refer
 root. The constitution defines non-negotiable protobuf and gRPC principles; CLAUDE.md provides practical buf
 commands, proto generation patterns, and workflow tips.
 
-**Version**: 1.0.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2025-11-17
+**Version**: 1.1.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2025-12-06

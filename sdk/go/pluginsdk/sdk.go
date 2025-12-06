@@ -42,6 +42,15 @@ type SupportsProvider interface {
 	Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.SupportsResponse, error)
 }
 
+// RecommendationsProvider is an optional interface that plugins can implement
+// to provide cost optimization recommendations. Plugins that do not implement
+// this interface will return an empty list when GetRecommendations is called.
+type RecommendationsProvider interface {
+	// GetRecommendations retrieves cost optimization recommendations.
+	GetRecommendations(ctx context.Context, req *pbc.GetRecommendationsRequest) (
+		*pbc.GetRecommendationsResponse, error)
+}
+
 // RegistryLookup defines the interface for looking up plugins by provider and region.
 // This is used to validate incoming Supports requests against registered plugins.
 type RegistryLookup interface {
@@ -188,6 +197,38 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 			Msg("Supports handler error")
 		// Return generic message to client (internal error details not exposed)
 		return nil, status.Error(codes.Internal, "plugin failed to execute")
+	}
+
+	return resp, nil
+}
+
+// GetRecommendations implements the gRPC GetRecommendations method.
+// If the plugin implements RecommendationsProvider, delegates to it.
+// Otherwise returns an empty list (not an error) per FR-012.
+func (s *Server) GetRecommendations(
+	ctx context.Context,
+	req *pbc.GetRecommendationsRequest,
+) (*pbc.GetRecommendationsResponse, error) {
+	// Check if plugin implements RecommendationsProvider
+	recProvider, ok := s.plugin.(RecommendationsProvider)
+	if !ok {
+		// Plugin does not implement recommendations - return empty list per FR-012
+		return &pbc.GetRecommendationsResponse{
+			Recommendations: []*pbc.Recommendation{},
+			Summary: &pbc.RecommendationSummary{
+				TotalRecommendations: 0,
+			},
+			NextPageToken: "",
+		}, nil
+	}
+
+	// Delegate to plugin's GetRecommendations method
+	resp, err := recProvider.GetRecommendations(ctx, req)
+	if err != nil {
+		s.logger.Error().
+			Err(err).
+			Msg("GetRecommendations handler error")
+		return nil, status.Error(codes.Internal, "plugin failed to execute GetRecommendations")
 	}
 
 	return resp, nil

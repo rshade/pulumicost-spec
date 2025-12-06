@@ -1,0 +1,94 @@
+{
+  "recommendations": [
+    {
+      "id": "rec-k8s-sizing-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS",
+      "resource": {
+        "id": "arn:aws:eks:us-west-2:123456789012:cluster/production-cluster",
+        "name": "api-gateway",
+        "provider": "kubernetes",
+        "resource_type": "deployment",
+        "region": "us-west-2",
+        "tags": {
+          "app": "api-gateway",
+          "team": "backend",
+          "env": "production"
+        },
+        "utilization": {
+          "cpu_percent": 15.0,
+          "memory_percent": 22.5,
+          "custom_metrics": {
+            "pod_count": 3.0,
+            "avg_replicas": 3.0
+          }
+        }
+      },
+      "kubernetes": {
+        "cluster_id": "production-cluster",
+        "namespace": "api-services",
+        "controller_kind": "Deployment",
+        "controller_name": "api-gateway",
+        "container_name": "api-gateway",
+        "current_requests": {
+          "cpu": "1000m",
+          "memory": "2Gi"
+        },
+        "recommended_requests": {
+          "cpu": "250m",
+          "memory": "512Mi"
+        },
+        "current_limits": {
+          "cpu": "2000m",
+          "memory": "4Gi"
+        },
+        "recommended_limits": {
+          "cpu": "500m",
+          "memory": "1Gi"
+        },
+        "algorithm": "kubecost-moving-average"
+      },
+      "impact": {
+        "estimated_savings": 156.30,
+        "currency": "USD",
+        "projection_period": "30"
+      },
+      "priority": "RECOMMENDATION_PRIORITY_MEDIUM",
+      "confidence_score": 0.87,
+      "description": "Reduce over-provisioned CPU and memory requests for api-gateway deployment",
+      "reasoning": [
+        "Current CPU requests are 4x higher than 95th percentile usage",
+        "Memory requests are 3.5x higher than peak observed usage",
+        "14-day observation period shows consistent low utilization",
+        "Recommended values include 25% headroom for traffic spikes"
+      ],
+      "source": "kubecost",
+      "created_at": "2025-12-03T08:15:30Z",
+      "metadata": {
+        "cluster_type": "EKS",
+        "node_pool": "general-purpose",
+        "observation_window": "14d",
+        "cpu_p95": "180m",
+        "memory_p95": "380Mi"
+      }
+    }
+  ],
+  "summary": {
+    "total_recommendations": 1,
+    "projection_period": "30",
+    "count_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 1
+    },
+    "savings_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 156.30
+    },
+    "count_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS": 1
+    },
+    "savings_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS": 156.30
+    },
+    "total_estimated_savings": 156.30,
+    "currency": "USD"
+  }
+}
