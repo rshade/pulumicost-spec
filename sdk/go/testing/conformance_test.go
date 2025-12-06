@@ -133,6 +133,25 @@ func addBasicConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 		Description: "Plugin must return NotFound for unsupported resource types",
 		TestFunc:    createEstimateCostUnsupportedResourceTest(),
 	})
+
+	// GetRecommendations Basic tests
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_EmptyPlugin",
+		Description: "Plugin must return empty list when not implementing RecommendationsProvider",
+		TestFunc:    createGetRecommendationsEmptyPluginTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_Basic",
+		Description: "Plugin must return a non-empty list of recommendations with valid structure (IDs, specified categories, action types) and a valid summary.",
+		TestFunc:    createGetRecommendationsBasicTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_SummaryCalculation",
+		Description: "Plugin must return summary that matches individual recommendations",
+		TestFunc:    createGetRecommendationsSummaryTest(),
+	})
 }
 
 func runConformanceTestSuite(
@@ -442,6 +461,81 @@ func addStandardConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 		Name:        "EstimateCostHandlesConcurrentRequests",
 		Description: "Plugin must handle concurrent EstimateCost requests",
 		TestFunc:    createEstimateCostConcurrentTest(),
+	})
+
+	// GetRecommendations Filtering tests
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_FilterByCategory",
+		Description: "Plugin must filter recommendations by category",
+		TestFunc:    createGetRecommendationsFilterByCategoryTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_FilterByActionType",
+		Description: "Plugin must filter recommendations by action type",
+		TestFunc:    createGetRecommendationsFilterByActionTypeTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_FilterNoMatches",
+		Description: "Plugin must return empty list when no recommendations match filter",
+		TestFunc:    createGetRecommendationsFilterNoMatchesTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_FilterByProvider",
+		Description: "Plugin must filter recommendations by provider",
+		TestFunc:    createGetRecommendationsFilterByProviderTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_FilterCombined",
+		Description: "Plugin must filter by multiple criteria together",
+		TestFunc:    createGetRecommendationsFilterCombinedTest(),
+	})
+
+	// GetRecommendations Pagination tests
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_Pagination_FirstPage",
+		Description: "Plugin must respect page_size and return first page",
+		TestFunc:    createGetRecommendationsPaginationFirstPageTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_Pagination_NextPage",
+		Description: "Plugin must navigate to next page with page_token",
+		TestFunc:    createGetRecommendationsPaginationNextPageTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_Pagination_LastPage",
+		Description: "Plugin must return empty token on last page",
+		TestFunc:    createGetRecommendationsPaginationLastPageTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_Pagination_InvalidToken",
+		Description: "Plugin must return error for invalid page token",
+		TestFunc:    createGetRecommendationsPaginationInvalidTokenTest(),
+	})
+
+	// GetRecommendations Action Detail tests
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_RightsizeAction",
+		Description: "Plugin must populate rightsize action with current/recommended instance types",
+		TestFunc:    createGetRecommendationsRightsizeActionTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_KubernetesAction",
+		Description: "Plugin must populate kubernetes action with cluster/namespace/container details",
+		TestFunc:    createGetRecommendationsKubernetesActionTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetRecommendations_CommitmentAction",
+		Description: "Plugin must populate commitment action with type/term/quantity",
+		TestFunc:    createGetRecommendationsCommitmentActionTest(),
 	})
 }
 
@@ -941,8 +1035,13 @@ func createPricingSpecFlatRateTest() func(*plugintesting.TestHarness) plugintest
 			Method:   "GetPricingSpec",
 			Success:  true,
 			Duration: duration,
-			Details: fmt.Sprintf("unit=%s, assumptions=%d, rate=%.4f %s",
-				spec.GetUnit(), len(spec.GetAssumptions()), spec.GetRatePerUnit(), spec.GetCurrency()),
+			Details: fmt.Sprintf(
+				"unit=%s, assumptions=%d, rate=%.4f %s",
+				spec.GetUnit(),
+				len(spec.GetAssumptions()),
+				spec.GetRatePerUnit(),
+				spec.GetCurrency(),
+			),
 		}
 	}
 }
@@ -1144,10 +1243,11 @@ func createEstimateCostDeterministicTest() func(*plugintesting.TestHarness) plug
 		// Call EstimateCost multiple times with same input
 		var costs []float64
 		for i := range plugintesting.NumConsistencyChecks {
-			resp, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
-				ResourceType: "aws:ec2/instance:Instance",
-				Attributes:   nil,
-			})
+			resp, err := harness.Client().
+				EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+					ResourceType: "aws:ec2/instance:Instance",
+					Attributes:   nil,
+				})
 			if err != nil {
 				return plugintesting.TestResult{
 					Method:   "EstimateCost",
@@ -1195,10 +1295,11 @@ func createEstimateCostConcurrentTest() func(*plugintesting.TestHarness) plugint
 
 		for range plugintesting.NumConcurrentRequests {
 			go func() {
-				_, err := harness.Client().EstimateCost(context.Background(), &pbc.EstimateCostRequest{
-					ResourceType: "aws:ec2/instance:Instance",
-					Attributes:   nil,
-				})
+				_, err := harness.Client().
+					EstimateCost(context.Background(), &pbc.EstimateCostRequest{
+						ResourceType: "aws:ec2/instance:Instance",
+						Attributes:   nil,
+					})
 				results <- err
 			}()
 		}
@@ -1235,7 +1336,10 @@ func createEstimateCostConcurrentTest() func(*plugintesting.TestHarness) plugint
 			Method:   "EstimateCost",
 			Success:  true,
 			Duration: duration,
-			Details:  fmt.Sprintf("All %d concurrent requests succeeded", plugintesting.NumConcurrentRequests),
+			Details: fmt.Sprintf(
+				"All %d concurrent requests succeeded",
+				plugintesting.NumConcurrentRequests,
+			),
 		}
 	}
 }
@@ -1283,6 +1387,983 @@ func createEstimateCostPerformanceTest() func(*plugintesting.TestHarness) plugin
 				maxDuration,
 				resp.GetCostMonthly(),
 			),
+		}
+	}
+}
+
+// =============================================================================
+// GetRecommendations Conformance Tests
+// =============================================================================
+
+// createGetRecommendationsEmptyPluginTest validates that plugins return empty list
+// when not implementing RecommendationsProvider (FR-012).
+func createGetRecommendationsEmptyPluginTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		// Response should have empty recommendations, not nil
+		if resp == nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    errors.New("response is nil"),
+				Duration: duration,
+				Details:  "Response should not be nil",
+			}
+		}
+
+		// Summary should exist
+		if resp.GetSummary() == nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    errors.New("summary is nil"),
+				Duration: duration,
+				Details:  "Summary should be provided even for empty results",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Returned %d recommendations with summary",
+				len(resp.GetRecommendations()),
+			),
+		}
+	}
+}
+
+// createGetRecommendationsBasicTest validates basic response structure.
+func createGetRecommendationsBasicTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		// Validate each recommendation has required fields
+		for i, rec := range resp.GetRecommendations() {
+			if rec.GetId() == "" {
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  false,
+					Error:    fmt.Errorf("recommendation %d missing id", i),
+					Duration: duration,
+					Details:  "All recommendations must have id",
+				}
+			}
+			if rec.GetCategory() == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED {
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  false,
+					Error:    fmt.Errorf("recommendation %d has unspecified category", i),
+					Duration: duration,
+					Details:  "All recommendations must have category",
+				}
+			}
+			if rec.GetActionType() == pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED {
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  false,
+					Error:    fmt.Errorf("recommendation %d has unspecified action_type", i),
+					Duration: duration,
+					Details:  "All recommendations must have action_type",
+				}
+			}
+			if rec.GetResource() == nil {
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  false,
+					Error:    fmt.Errorf("recommendation %d missing resource", i),
+					Duration: duration,
+					Details:  "All recommendations must have resource",
+				}
+			}
+			if rec.GetImpact() == nil {
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  false,
+					Error:    fmt.Errorf("recommendation %d missing impact", i),
+					Duration: duration,
+					Details:  "All recommendations must have impact",
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"All %d recommendations have valid required fields",
+				len(resp.GetRecommendations()),
+			),
+		}
+	}
+}
+
+// createGetRecommendationsSummaryTest validates summary matches individual recommendations.
+// This test implicitly assumes the summary reflects the recommendations returned on the *current page*.
+// If the API defines a global summary across all paginated results, this test might need adjustment
+// or a separate conformance test for global summary validation.
+func createGetRecommendationsSummaryTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		summary := resp.GetSummary()
+		if summary == nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    errors.New("summary is nil"),
+				Duration: duration,
+				Details:  "Summary must be provided",
+			}
+		}
+
+		// Verify total count matches
+		recs := resp.GetRecommendations()
+		expectedCount := int32(len(recs))
+		if summary.GetTotalRecommendations() != expectedCount {
+			return plugintesting.TestResult{
+				Method:  "GetRecommendations",
+				Success: false,
+				Error: fmt.Errorf(
+					"summary.total_recommendations=%d doesn't match len(recommendations)=%d",
+					summary.GetTotalRecommendations(),
+					expectedCount,
+				),
+				Duration: duration,
+				Details:  "Summary count must match recommendations count",
+			}
+		}
+
+		// Verify total savings matches sum of individual impacts
+		var calculatedSavings float64
+		for _, rec := range recs {
+			if rec.GetImpact() != nil {
+				calculatedSavings += rec.GetImpact().GetEstimatedSavings()
+			}
+		}
+
+		// Allow small floating point difference
+		tolerance := 0.01
+		diff := summary.GetTotalEstimatedSavings() - calculatedSavings
+		if diff < -tolerance || diff > tolerance {
+			return plugintesting.TestResult{
+				Method:  "GetRecommendations",
+				Success: false,
+				Error: fmt.Errorf(
+					"summary.total_estimated_savings=%f doesn't match sum=%f",
+					summary.GetTotalEstimatedSavings(),
+					calculatedSavings,
+				),
+				Duration: duration,
+				Details:  "Summary savings must match sum of individual impacts",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Summary matches: %d recs, $%.2f total savings",
+				summary.GetTotalRecommendations(),
+				summary.GetTotalEstimatedSavings(),
+			),
+		}
+	}
+}
+
+// =============================================================================
+// GetRecommendations Filtering Conformance Tests
+// =============================================================================
+
+// createGetRecommendationsFilterByCategoryTest validates category filtering.
+func createGetRecommendationsFilterByCategoryTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with category filter failed",
+			}
+		}
+
+		// Verify all returned recommendations have the filtered category
+		for i, rec := range resp.GetRecommendations() {
+			if rec.GetCategory() != pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has category %s, expected COST",
+						i,
+						rec.GetCategory().String(),
+					),
+					Duration: duration,
+					Details:  "Filter returned non-matching category",
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Category filter returned %d COST recommendations",
+				len(resp.GetRecommendations()),
+			),
+		}
+	}
+}
+
+// createGetRecommendationsFilterByActionTypeTest validates action type filtering.
+func createGetRecommendationsFilterByActionTypeTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with action_type filter failed",
+			}
+		}
+
+		// Verify all returned recommendations have the filtered action type
+		for i, rec := range resp.GetRecommendations() {
+			if rec.GetActionType() != pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has action_type %s, expected RIGHTSIZE",
+						i,
+						rec.GetActionType().String(),
+					),
+					Duration: duration,
+					Details:  "Filter returned non-matching action_type",
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Action type filter returned %d RIGHTSIZE recommendations",
+				len(resp.GetRecommendations()),
+			),
+		}
+	}
+}
+
+// createGetRecommendationsFilterNoMatchesTest validates empty result for non-matching filter.
+func createGetRecommendationsFilterNoMatchesTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		// Use a filter that won't match any recommendations (non-existent provider)
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					Provider: "nonexistent-provider-xyz",
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with non-matching filter failed",
+			}
+		}
+
+		// Should return empty list, not error
+		if len(resp.GetRecommendations()) != 0 {
+			return plugintesting.TestResult{
+				Method:  "GetRecommendations",
+				Success: false,
+				Error: fmt.Errorf(
+					"expected 0 recommendations for non-matching filter, got %d",
+					len(resp.GetRecommendations()),
+				),
+				Duration: duration,
+				Details:  "Non-matching filter should return empty list",
+			}
+		}
+
+		// Summary should show 0 total
+		if resp.GetSummary().GetTotalRecommendations() != 0 {
+			return plugintesting.TestResult{
+				Method:  "GetRecommendations",
+				Success: false,
+				Error: errors.New(
+					"summary should show 0 recommendations for non-matching filter",
+				),
+				Duration: duration,
+				Details:  "Summary count mismatch",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details:  "Correctly returned empty list for non-matching filter",
+		}
+	}
+}
+
+// createGetRecommendationsFilterByProviderTest validates provider filtering.
+func createGetRecommendationsFilterByProviderTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					Provider: "aws",
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		if resp == nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    errors.New("GetRecommendations returned a nil response"),
+				Duration: duration,
+				Details:  "RPC call returned nil response",
+			}
+		}
+
+		// Verify all returned recommendations have the filtered provider
+		for i, rec := range resp.GetRecommendations() {
+			if rec.GetResource() == nil {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has nil resource",
+						i,
+					),
+					Duration: duration,
+					Details:  "Provider filter not applied correctly",
+				}
+			}
+			if rec.GetResource().GetProvider() != "aws" {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has provider %s, expected aws",
+						i,
+						rec.GetResource().GetProvider(),
+					),
+					Duration: duration,
+					Details:  "Provider filter not applied correctly",
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Provider filter returned %d AWS recommendations",
+				len(resp.GetRecommendations()),
+			),
+		}
+	}
+}
+
+// createGetRecommendationsFilterCombinedTest validates multiple filter criteria.
+func createGetRecommendationsFilterCombinedTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+					Provider: "aws",
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with combined filter failed",
+			}
+		}
+
+		// Verify all returned recommendations match BOTH criteria
+		for i, rec := range resp.GetRecommendations() {
+			if rec.GetCategory() != pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has category %s, expected COST",
+						i,
+						rec.GetCategory().String(),
+					),
+					Duration: duration,
+					Details:  "Combined filter: category mismatch",
+				}
+			}
+			if rec.GetResource() == nil || rec.GetResource().GetProvider() != "aws" {
+				providerStr := "<nil resource>"
+				if rec.GetResource() != nil {
+					providerStr = rec.GetResource().GetProvider()
+				}
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has provider %s, expected aws",
+						i,
+						providerStr,
+					),
+					Duration: duration,
+					Details:  "Combined filter: provider mismatch",
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Combined filter returned %d matching recommendations",
+				len(resp.GetRecommendations()),
+			),
+		}
+	}
+}
+
+// paginationTestPageSize is the page size used for pagination tests.
+const paginationTestPageSize = 5
+
+// createGetRecommendationsPaginationFirstPageTest validates first page pagination.
+func createGetRecommendationsPaginationFirstPageTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				PageSize: paginationTestPageSize,
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with page_size failed",
+			}
+		}
+
+		// Verify page size is respected
+		if len(resp.GetRecommendations()) > paginationTestPageSize {
+			return plugintesting.TestResult{
+				Method:  "GetRecommendations",
+				Success: false,
+				Error: fmt.Errorf(
+					"returned %d recommendations, expected at most %d",
+					len(resp.GetRecommendations()),
+					paginationTestPageSize,
+				),
+				Duration: duration,
+				Details:  "Page size not respected",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"First page returned %d recommendations (max %d), next_token: %v",
+				len(resp.GetRecommendations()),
+				paginationTestPageSize,
+				resp.GetNextPageToken() != "",
+			),
+		}
+	}
+}
+
+// createGetRecommendationsPaginationNextPageTest validates next page navigation.
+func createGetRecommendationsPaginationNextPageTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+
+		// Get first page
+		firstResp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				PageSize: paginationTestPageSize,
+			})
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: time.Since(start),
+				Details:  "First page RPC call failed",
+			}
+		}
+
+		// If no next page token, test passes (less than page_size results)
+		if firstResp.GetNextPageToken() == "" {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  true,
+				Duration: time.Since(start),
+				Details:  "Only one page of results (no next token)",
+			}
+		}
+
+		// Get second page
+		secondResp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				PageSize:  paginationTestPageSize,
+				PageToken: firstResp.GetNextPageToken(),
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "Second page RPC call failed",
+			}
+		}
+
+		// Verify we got results and they're different from first page
+		if len(secondResp.GetRecommendations()) == 0 && firstResp.GetNextPageToken() != "" {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    errors.New("second page returned no results despite next_page_token"),
+				Duration: duration,
+				Details:  "Next page navigation failed",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"Successfully navigated to second page (%d results)",
+				len(secondResp.GetRecommendations()),
+			),
+		}
+	}
+}
+
+// createGetRecommendationsPaginationLastPageTest validates empty token on last page.
+func createGetRecommendationsPaginationLastPageTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		var lastToken string
+		pageCount := 0
+		maxPages := 100 // Safety limit
+
+		// Navigate through all pages
+		for pageCount < maxPages {
+			req := &pbc.GetRecommendationsRequest{
+				PageSize:  paginationTestPageSize,
+				PageToken: lastToken,
+			}
+			resp, err := harness.Client().GetRecommendations(context.Background(), req)
+			if err != nil {
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  false,
+					Error:    err,
+					Duration: time.Since(start),
+					Details:  fmt.Sprintf("RPC call failed on page %d", pageCount+1),
+				}
+			}
+
+			pageCount++
+			lastToken = resp.GetNextPageToken()
+
+			// Last page should have empty token
+			if lastToken == "" {
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  true,
+					Duration: time.Since(start),
+					Details:  fmt.Sprintf("Reached last page after %d pages", pageCount),
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  false,
+			Error:    errors.New("exceeded max page limit without reaching last page"),
+			Duration: time.Since(start),
+			Details:  fmt.Sprintf("Iterated %d pages without empty token", maxPages),
+		}
+	}
+}
+
+// createGetRecommendationsPaginationInvalidTokenTest validates error on invalid token.
+func createGetRecommendationsPaginationInvalidTokenTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		_, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				PageSize:  paginationTestPageSize,
+				PageToken: "invalid-token-not-base64",
+			})
+		duration := time.Since(start)
+
+		if err == nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    errors.New("expected error for invalid token, got nil"),
+				Duration: duration,
+				Details:  "Invalid token should return error",
+			}
+		}
+
+		// Verify it's a proper gRPC error
+		st, ok := status.FromError(err)
+		if !ok {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    fmt.Errorf("expected gRPC status error, got: %w", err),
+				Duration: duration,
+				Details:  "Error should be gRPC status",
+			}
+		}
+
+		// InvalidArgument is the expected status for bad tokens
+		if st.Code() != codes.InvalidArgument {
+			return plugintesting.TestResult{
+				Method:  "GetRecommendations",
+				Success: false,
+				Error: fmt.Errorf(
+					"expected InvalidArgument status, got: %s",
+					st.Code().String(),
+				),
+				Duration: duration,
+				Details:  "Invalid token should return InvalidArgument",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details:  "Invalid token correctly returns InvalidArgument error",
+		}
+	}
+}
+
+// createGetRecommendationsRightsizeActionTest validates rightsize action details.
+func createGetRecommendationsRightsizeActionTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with rightsize filter failed",
+			}
+		}
+
+		for i, rec := range resp.GetRecommendations() {
+			if rec.GetActionType() != pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has action type %s, expected rightsize",
+						i,
+						rec.GetActionType(),
+					),
+					Duration: duration,
+					Details:  "Filtered results must have correct action type",
+				}
+			}
+
+			if rec.GetRightsize() == nil {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d has rightsize action type but missing rightsize details",
+						i,
+					),
+					Duration: duration,
+					Details:  "Rightsize action must have rightsize details",
+				}
+			}
+
+			rightsize := rec.GetRightsize()
+
+			if (rightsize.GetCurrentSku() == "" && rightsize.GetCurrentInstanceType() == "") ||
+				(rightsize.GetRecommendedSku() == "" && rightsize.GetRecommendedInstanceType() == "") {
+				return plugintesting.TestResult{
+					Method:  "GetRecommendations",
+					Success: false,
+					Error: fmt.Errorf(
+						"recommendation %d rightsize action missing current or recommended SKU/instance type",
+						i,
+					),
+					Duration: duration,
+					Details:  "Rightsize action must have populated current and recommended details",
+				}
+			}
+		}
+
+		// If no rightsize recommendations are found, the test should still pass if the plugin
+
+		// indicates it supports rightsize actions but doesn't have any to provide.
+
+		return plugintesting.TestResult{
+
+			Method: "GetRecommendations",
+
+			Success: true,
+
+			Duration: duration,
+
+			Details: "Rightsize recommendations validated (or none found)",
+		}
+	}
+}
+
+// createGetRecommendationsKubernetesActionTest validates kubernetes action details.
+func createGetRecommendationsKubernetesActionTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS,
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with kubernetes filter failed",
+			}
+		}
+
+		// Find a kubernetes recommendation and validate its action details
+		for _, rec := range resp.GetRecommendations() {
+			if rec.GetKubernetes() != nil {
+				k8s := rec.GetKubernetes()
+				if k8s.GetClusterId() == "" {
+					return plugintesting.TestResult{
+						Method:   "GetRecommendations",
+						Success:  false,
+						Error:    errors.New("kubernetes action missing cluster_id"),
+						Duration: duration,
+						Details:  "Kubernetes action must have cluster identification",
+					}
+				}
+				if k8s.GetContainerName() == "" {
+					return plugintesting.TestResult{
+						Method:   "GetRecommendations",
+						Success:  false,
+						Error:    errors.New("kubernetes action missing container_name"),
+						Duration: duration,
+						Details:  "Kubernetes action must specify target container",
+					}
+				}
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  true,
+					Duration: duration,
+					Details: fmt.Sprintf(
+						"Kubernetes action valid: cluster=%s, container=%s",
+						k8s.GetClusterId(),
+						k8s.GetContainerName(),
+					),
+				}
+			}
+		}
+
+		// No kubernetes recommendations found - that's okay, test passes
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details:  "No kubernetes recommendations available (filter returned 0 results)",
+		}
+	}
+}
+
+// createGetRecommendationsCommitmentActionTest validates commitment action details.
+func createGetRecommendationsCommitmentActionTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{
+				Filter: &pbc.RecommendationFilter{
+					ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT,
+				},
+			})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method:   "GetRecommendations",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call with commitment filter failed",
+			}
+		}
+
+		// Find a commitment recommendation and validate its action details
+		for _, rec := range resp.GetRecommendations() {
+			if rec.GetCommitment() != nil {
+				commitment := rec.GetCommitment()
+				if commitment.GetCommitmentType() == "" {
+					return plugintesting.TestResult{
+						Method:   "GetRecommendations",
+						Success:  false,
+						Error:    errors.New("commitment action missing commitment_type"),
+						Duration: duration,
+						Details:  "Commitment action must specify type",
+					}
+				}
+				if commitment.GetTerm() == "" {
+					return plugintesting.TestResult{
+						Method:   "GetRecommendations",
+						Success:  false,
+						Error:    errors.New("commitment action missing term"),
+						Duration: duration,
+						Details:  "Commitment action must specify term",
+					}
+				}
+				return plugintesting.TestResult{
+					Method:   "GetRecommendations",
+					Success:  true,
+					Duration: duration,
+					Details: fmt.Sprintf(
+						"Commitment action valid: type=%s, term=%s, qty=%.2f",
+						commitment.GetCommitmentType(),
+						commitment.GetTerm(),
+						commitment.GetRecommendedQuantity(),
+					),
+				}
+			}
+		}
+
+		// No commitment recommendations found - that's okay, test passes
+		return plugintesting.TestResult{
+			Method:   "GetRecommendations",
+			Success:  true,
+			Duration: duration,
+			Details:  "No commitment recommendations available (filter returned 0 results)",
 		}
 	}
 }

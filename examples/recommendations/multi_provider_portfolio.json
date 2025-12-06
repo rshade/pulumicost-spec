@@ -1,0 +1,361 @@
+{
+  "description": "Multi-provider portfolio analysis showing mixed recommendation types across AWS, GCP, and Kubernetes. This example demonstrates the full range of action types, categories, and priorities in a realistic enterprise scenario.",
+  "recommendations": [
+    {
+      "id": "rec-aws-terminate-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_TERMINATE",
+      "resource": {
+        "id": "i-0dead123beef4567",
+        "name": "legacy-batch-processor",
+        "provider": "aws",
+        "resource_type": "ec2",
+        "region": "us-east-1",
+        "sku": "m5.xlarge",
+        "tags": {
+          "environment": "production",
+          "team": "data-engineering",
+          "cost-center": "analytics",
+          "last-accessed": "2025-09-15"
+        },
+        "utilization": {
+          "cpu_percent": 0.2,
+          "memory_percent": 1.5,
+          "network_in_mbps": 0.0,
+          "network_out_mbps": 0.0
+        }
+      },
+      "terminate": {
+        "termination_reason": "Instance has been idle for 82 days with no network activity",
+        "idle_days": 82
+      },
+      "impact": {
+        "estimated_savings": 140.16,
+        "currency": "USD",
+        "projection_period": "30",
+        "current_cost": 140.16,
+        "projected_cost": 0.0,
+        "savings_percentage": 100.0
+      },
+      "priority": "RECOMMENDATION_PRIORITY_HIGH",
+      "confidence_score": 0.98,
+      "description": "Terminate idle EC2 instance with no activity for 82 days",
+      "reasoning": [
+        "Instance has shown zero network activity for 82 consecutive days",
+        "CPU utilization has averaged 0.2% indicating no active workloads",
+        "No CloudWatch alarms or Auto Scaling dependencies detected",
+        "Instance was last accessed on 2025-09-15 per SSM session logs"
+      ],
+      "source": "aws-trusted-advisor",
+      "created_at": "2025-12-03T09:00:00Z",
+      "metadata": {
+        "account_id": "123456789012",
+        "launch_time": "2024-06-01T10:00:00Z",
+        "ami_id": "ami-0abc123def456789",
+        "ebs_volumes": "2",
+        "total_ebs_cost": "12.50"
+      }
+    },
+    {
+      "id": "rec-gcp-rightsize-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE",
+      "resource": {
+        "id": "projects/prod-analytics/zones/us-central1-a/instances/ml-training-node-03",
+        "name": "ml-training-node-03",
+        "provider": "gcp",
+        "resource_type": "compute_engine",
+        "region": "us-central1",
+        "sku": "n2-standard-32",
+        "tags": {
+          "environment": "production",
+          "team": "ml-platform",
+          "workload": "training"
+        },
+        "utilization": {
+          "cpu_percent": 16.0,
+          "memory_percent": 25.0,
+          "custom_metrics": {
+            "gpu_utilization_percent": 0.0,
+            "disk_read_iops": 45.0,
+            "disk_write_iops": 12.0
+          }
+        }
+      },
+      "rightsize": {
+        "current_sku": "n2-standard-32",
+        "recommended_sku": "n2-standard-8",
+        "current_instance_type": "n2-standard-32",
+        "recommended_instance_type": "n2-standard-8",
+        "projected_utilization": {
+          "cpu_percent": 64.0,
+          "memory_percent": 100.0
+        }
+      },
+      "impact": {
+        "estimated_savings": 892.8,
+        "currency": "USD",
+        "projection_period": "30",
+        "current_cost": 1190.4,
+        "projected_cost": 297.6,
+        "savings_percentage": 75.0
+      },
+      "priority": "RECOMMENDATION_PRIORITY_HIGH",
+      "confidence_score": 0.91,
+      "description": "Rightsize oversized Compute Engine instance from n2-standard-32 to n2-standard-8",
+      "reasoning": [
+        "CPU utilization averages 16% indicating 75% over-provisioning",
+        "No GPU workloads detected despite ML training label",
+        "Memory usage at 25% of 128GB allocation",
+        "Workload patterns suggest batch processing, not real-time training"
+      ],
+      "source": "gcp-recommender",
+      "created_at": "2025-12-03T10:15:00Z",
+      "metadata": {
+        "project_id": "prod-analytics",
+        "zone": "us-central1-a",
+        "observation_period": "30d",
+        "machine_family": "n2",
+        "preemptible": "false"
+      }
+    },
+    {
+      "id": "rec-k8s-adjust-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS",
+      "resource": {
+        "id": "arn:aws:eks:us-west-2:123456789012:cluster/production/deployments/order-service",
+        "name": "order-service",
+        "provider": "kubernetes",
+        "resource_type": "deployment",
+        "region": "us-west-2",
+        "tags": {
+          "app": "order-service",
+          "team": "commerce",
+          "tier": "backend",
+          "env": "production"
+        },
+        "utilization": {
+          "cpu_percent": 8.5,
+          "memory_percent": 12.0,
+          "custom_metrics": {
+            "pod_count": 5.0,
+            "avg_replicas": 5.0,
+            "requests_per_second": 150.0
+          }
+        }
+      },
+      "kubernetes": {
+        "cluster_id": "production",
+        "namespace": "commerce",
+        "controller_kind": "Deployment",
+        "controller_name": "order-service",
+        "container_name": "order-service",
+        "current_requests": {
+          "cpu": "2000m",
+          "memory": "4Gi"
+        },
+        "recommended_requests": {
+          "cpu": "500m",
+          "memory": "1Gi"
+        },
+        "current_limits": {
+          "cpu": "4000m",
+          "memory": "8Gi"
+        },
+        "recommended_limits": {
+          "cpu": "1000m",
+          "memory": "2Gi"
+        },
+        "algorithm": "kubecost-vpa-percentile"
+      },
+      "impact": {
+        "estimated_savings": 312.5,
+        "currency": "USD",
+        "projection_period": "30",
+        "current_cost": 416.67,
+        "projected_cost": 104.17,
+        "savings_percentage": 75.0
+      },
+      "priority": "RECOMMENDATION_PRIORITY_MEDIUM",
+      "confidence_score": 0.89,
+      "description": "Reduce over-provisioned requests for order-service deployment across 5 replicas",
+      "reasoning": [
+        "CPU requests at 2000m but P99 usage is only 450m",
+        "Memory requests at 4Gi but peak usage observed at 900Mi",
+        "Consistent low utilization across all 5 replicas for 21 days",
+        "Recommended values include 20% headroom above P99 usage"
+      ],
+      "source": "kubecost",
+      "created_at": "2025-12-03T11:30:00Z",
+      "metadata": {
+        "cluster_type": "EKS",
+        "node_instance_type": "m5.2xlarge",
+        "observation_window": "21d",
+        "cpu_p99": "450m",
+        "memory_p99": "900Mi",
+        "hpa_enabled": "false"
+      }
+    },
+    {
+      "id": "rec-aws-commitment-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT",
+      "resource": {
+        "id": "aws-account/123456789012/ec2-fleet",
+        "name": "Production EC2 Fleet - us-west-2",
+        "provider": "aws",
+        "resource_type": "ec2_fleet",
+        "region": "us-west-2",
+        "tags": {
+          "scope": "regional",
+          "commitment_analysis": "q4-2025"
+        },
+        "utilization": {
+          "custom_metrics": {
+            "on_demand_spend": 8500.0,
+            "current_coverage_percent": 35.0,
+            "total_running_hours": 15000.0
+          }
+        }
+      },
+      "commitment": {
+        "commitment_type": "savings_plan",
+        "term": "1_year",
+        "payment_option": "no_upfront",
+        "recommended_quantity": 5.5,
+        "scope": "region"
+      },
+      "impact": {
+        "estimated_savings": 1870.0,
+        "currency": "USD",
+        "projection_period": "30",
+        "current_cost": 8500.0,
+        "projected_cost": 6630.0,
+        "savings_percentage": 22.0,
+        "implementation_cost": 0.0
+      },
+      "priority": "RECOMMENDATION_PRIORITY_MEDIUM",
+      "confidence_score": 0.86,
+      "description": "Purchase 1-year Compute Savings Plan at $5.50/hr to increase coverage from 35% to 75%",
+      "reasoning": [
+        "Current on-demand spend of $8,500/month in us-west-2 region",
+        "Only 35% of eligible compute covered by existing commitments",
+        "Usage baseline has been stable for past 90 days with <10% variance",
+        "1-year no-upfront plan provides flexibility with 22% savings"
+      ],
+      "source": "aws-cost-explorer",
+      "created_at": "2025-12-03T12:45:00Z",
+      "metadata": {
+        "account_id": "123456789012",
+        "payer_account_id": "123456789012",
+        "lookback_period": "90d",
+        "hourly_commitment_usd": "5.50",
+        "coverage_after": "75.0",
+        "break_even_months": "0"
+      }
+    },
+    {
+      "id": "rec-aws-perf-001",
+      "category": "RECOMMENDATION_CATEGORY_PERFORMANCE",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_MODIFY",
+      "resource": {
+        "id": "arn:aws:rds:us-east-1:123456789012:db:analytics-primary",
+        "name": "analytics-primary",
+        "provider": "aws",
+        "resource_type": "rds",
+        "region": "us-east-1",
+        "sku": "db.r5.xlarge",
+        "tags": {
+          "environment": "production",
+          "team": "analytics",
+          "database": "postgresql"
+        },
+        "utilization": {
+          "cpu_percent": 85.0,
+          "memory_percent": 92.0,
+          "custom_metrics": {
+            "read_iops": 4500.0,
+            "write_iops": 1200.0,
+            "connections": 180.0,
+            "read_latency_ms": 12.5
+          }
+        }
+      },
+      "modify": {
+        "modification_type": "instance_class_upgrade",
+        "current_config": {
+          "instance_class": "db.r5.xlarge",
+          "vcpu": "4",
+          "memory_gb": "32",
+          "storage_type": "gp2",
+          "storage_gb": "500"
+        },
+        "recommended_config": {
+          "instance_class": "db.r5.2xlarge",
+          "vcpu": "8",
+          "memory_gb": "64",
+          "storage_type": "gp3",
+          "storage_gb": "500",
+          "provisioned_iops": "6000"
+        }
+      },
+      "impact": {
+        "estimated_savings": -285.0,
+        "currency": "USD",
+        "projection_period": "30",
+        "current_cost": 570.0,
+        "projected_cost": 855.0,
+        "savings_percentage": -50.0,
+        "migration_effort_hours": 2.0
+      },
+      "priority": "RECOMMENDATION_PRIORITY_HIGH",
+      "confidence_score": 0.94,
+      "description": "Upgrade RDS instance to resolve performance bottleneck and reduce query latency",
+      "reasoning": [
+        "CPU consistently at 85%+ during business hours causing query queuing",
+        "Memory pressure at 92% forcing excessive buffer cache evictions",
+        "Read latency averaging 12.5ms is 3x above target SLA of 4ms",
+        "Upgrade to r5.2xlarge with gp3 storage projected to reduce latency to <3ms"
+      ],
+      "source": "aws-performance-insights",
+      "created_at": "2025-12-03T14:00:00Z",
+      "metadata": {
+        "engine": "postgresql",
+        "engine_version": "14.9",
+        "multi_az": "true",
+        "peak_cpu_percent": "98",
+        "peak_connections": "220",
+        "maintenance_window": "sun:03:00-sun:04:00"
+      }
+    }
+  ],
+  "summary": {
+    "total_recommendations": 5,
+    "total_estimated_savings": 2930.46,
+    "currency": "USD",
+    "projection_period": "30",
+    "count_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 4,
+      "RECOMMENDATION_CATEGORY_PERFORMANCE": 1
+    },
+    "savings_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 3215.46,
+      "RECOMMENDATION_CATEGORY_PERFORMANCE": -285.0
+    },
+    "count_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_TERMINATE": 1,
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 1,
+      "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS": 1,
+      "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT": 1,
+      "RECOMMENDATION_ACTION_TYPE_MODIFY": 1
+    },
+    "savings_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_TERMINATE": 140.16,
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 892.8,
+      "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS": 312.5,
+      "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT": 1870.0,
+      "RECOMMENDATION_ACTION_TYPE_MODIFY": -285.0
+    }
+  }
+}

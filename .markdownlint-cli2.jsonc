@@ -12,7 +12,10 @@
     "CHANGELOG.md",
     "CodeRabbitPrompt.md",
     "Github_Development_Prompt.md",
+    "CodeRabbitPromptGrok.md",
     ".claude/commands/",
-    ".specify/templates/"
+    ".claude/agents/",
+    ".specify/templates/",
+    ".opencode"
   ]
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
@@ -61,6 +62,14 @@ type PluginMetrics struct {
 	// RequestDuration is the histogram for request latency.
 	// Labels: grpc_method, plugin_name
 	RequestDuration *prometheus.HistogramVec
+
+	// RecommendationsTotal is the counter for total recommendations returned.
+	// Labels: plugin_name, category, action_type
+	RecommendationsTotal *prometheus.CounterVec
+
+	// RecommendationsPerResponse is the histogram for recommendations per response.
+	// Labels: plugin_name
+	RecommendationsPerResponse *prometheus.HistogramVec
 
 	// Registry is the Prometheus registry containing these metrics.
 	Registry *prometheus.Registry
@@ -121,14 +130,39 @@ func NewPluginMetrics(pluginName string) *PluginMetrics {
 		[]string{"grpc_method", "plugin_name"},
 	)
 
+	recommendationsTotal := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: MetricNamespace,
+			Subsystem: MetricSubsystem,
+			Name:      "recommendations_returned_total",
+			Help:      "Total recommendations returned by GetRecommendations",
+		},
+		[]string{"plugin_name", "category", "action_type"},
+	)
+
+	recommendationsPerResponse := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: MetricNamespace,
+			Subsystem: MetricSubsystem,
+			Name:      "recommendations_per_response",
+			Help:      "Number of recommendations per GetRecommendations response",
+			Buckets:   []float64{1, 5, 10, 25, 50, 100, 250, 500, 1000},
+		},
+		[]string{"plugin_name"},
+	)
+
 	reg.MustRegister(requestsTotal)
 	reg.MustRegister(requestDuration)
+	reg.MustRegister(recommendationsTotal)
+	reg.MustRegister(recommendationsPerResponse)
 
 	return &PluginMetrics{
-		RequestsTotal:   requestsTotal,
-		RequestDuration: requestDuration,
-		Registry:        reg,
-		pluginName:      pluginName,
+		RequestsTotal:              requestsTotal,
+		RequestDuration:            requestDuration,
+		RecommendationsTotal:       recommendationsTotal,
+		RecommendationsPerResponse: recommendationsPerResponse,
+		Registry:                   reg,
+		pluginName:                 pluginName,
 	}
 }
 
@@ -192,7 +226,37 @@ func MetricsInterceptorWithRegistry(metrics *PluginMetrics) grpc.UnaryServerInte
 		metrics.RequestsTotal.WithLabelValues(method, code.String(), metrics.pluginName).Inc()
 		metrics.RequestDuration.WithLabelValues(method, metrics.pluginName).Observe(duration.Seconds())
 
+		// Record recommendation-specific metrics for GetRecommendations
+		if method == "pulumicost.v1.CostSource/GetRecommendations" && err == nil {
+			if recResp, ok := resp.(*pbc.GetRecommendationsResponse); ok {
+				recordRecommendationMetrics(metrics, recResp)
+			}
+		}
+
 		return resp, err
+	}
+}
+
+// recordRecommendationMetrics records recommendation-specific Prometheus metrics.
+func recordRecommendationMetrics(metrics *PluginMetrics, resp *pbc.GetRecommendationsResponse) {
+	recs := resp.GetRecommendations()
+
+	// Record total recommendations per response
+	metrics.RecommendationsPerResponse.WithLabelValues(metrics.pluginName).
+		Observe(float64(len(recs)))
+
+	// Record each recommendation by category and action type
+	for _, rec := range recs {
+		if rec == nil {
+			continue // avoid panics from malformed responses
+		}
+		category := rec.GetCategory().String()
+		actionType := rec.GetActionType().String()
+		metrics.RecommendationsTotal.WithLabelValues(
+			metrics.pluginName,
+			category,
+			actionType,
+		).Inc()
 	}
 }
 

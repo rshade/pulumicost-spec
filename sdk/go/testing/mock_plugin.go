@@ -5,8 +5,11 @@ package testing
 
 import (
 	"context"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -48,6 +51,13 @@ const (
 	serverlessRateMultiplier = 0.001 // Serverless (Lambda, Cloud Functions)
 	namespaceRateMultiplier  = 1.5   // Kubernetes namespace
 	databaseRateMultiplier   = 3.0   // Database resources (SQL Database)
+
+	// Recommendation generation constants.
+	confidenceVariations = 4     // Number of confidence score variations (0.70, 0.775, 0.85, 0.925)
+	confidenceBase       = 0.7   // Base confidence score
+	confidenceStep       = 0.075 // Confidence increment per variation
+	savingsBase          = 50.0  // Base savings amount
+	savingsIncrement     = 25.0  // Savings increment per recommendation
 )
 
 // MockPlugin provides a configurable mock implementation of CostSourceServiceServer.
@@ -79,6 +89,9 @@ type MockPlugin struct {
 	ActualCostDataPoints int
 	BaseHourlyRate       float64
 	Currency             string
+
+	// Recommendations configuration
+	RecommendationsConfig RecommendationsConfig
 }
 
 // NewMockPlugin creates a new mock plugin with default configuration.
@@ -95,8 +108,14 @@ func NewMockPlugin() *MockPlugin {
 		ActualCostDataPoints: defaultDataPoints,
 		BaseHourlyRate:       defaultBaseRate,
 		Currency:             "USD",
+		// Pre-populate with sample recommendations for filtering tests
+		RecommendationsConfig: RecommendationsConfig{
+			Recommendations: GenerateSampleRecommendations(defaultRecommendationCount),
+		},
 	}
 }
+
+const defaultRecommendationCount = 12 // 12 samples to cover all categories and action types
 
 // ConfigurableErrorMockPlugin creates a mock plugin that can be configured to return errors.
 func ConfigurableErrorMockPlugin() *MockPlugin {
@@ -491,6 +510,305 @@ func parseResourceType(resourceType string) (string, string, string, string, err
 	resource := moduleResourceParts[1]
 
 	return provider, module, resource, typeName, nil
+}
+
+// =============================================================================
+// GetRecommendations Support
+// =============================================================================
+
+// RecommendationsConfig holds configuration for mock recommendations.
+type RecommendationsConfig struct {
+	Recommendations []*pbc.Recommendation
+	ShouldError     bool
+	ErrorMessage    string
+	Delay           time.Duration
+}
+
+// SetRecommendationsConfig configures the recommendations response.
+func (m *MockPlugin) SetRecommendationsConfig(config RecommendationsConfig) {
+	m.RecommendationsConfig = config
+}
+
+// GenerateSampleRecommendations creates realistic test recommendation data.
+func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
+	categories := []pbc.RecommendationCategory{
+		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE,
+		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_SECURITY,
+		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_RELIABILITY,
+	}
+
+	actionTypes := []pbc.RecommendationActionType{
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY,
+	}
+
+	priorities := []pbc.RecommendationPriority{
+		pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_HIGH,
+		pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_MEDIUM,
+		pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_LOW,
+	}
+
+	providers := []string{"aws", "azure", "gcp", "kubernetes"}
+	regions := []string{"us-east-1", "us-west-2", "eu-west-1", "asia-pacific-1"}
+
+	recs := make([]*pbc.Recommendation, count)
+	for i := range count {
+		confidence := confidenceBase + float64(i%confidenceVariations)*confidenceStep
+		savings := savingsBase + float64(i)*savingsIncrement
+
+		recs[i] = &pbc.Recommendation{
+			Id:          fmt.Sprintf("rec-%d", i+1),
+			Category:    categories[i%len(categories)],
+			ActionType:  actionTypes[i%len(actionTypes)],
+			Priority:    priorities[i%len(priorities)],
+			Description: fmt.Sprintf("Recommendation %d: Optimize resource with cost savings", i+1),
+			Resource: &pbc.ResourceRecommendationInfo{
+				Id:           fmt.Sprintf("resource-%d", i+1),
+				Provider:     providers[i%len(providers)],
+				ResourceType: fmt.Sprintf("%s:compute/instance:Instance", providers[i%len(providers)]),
+				Region:       regions[i%len(regions)],
+				Name:         fmt.Sprintf("instance-%d", i+1),
+			},
+			Impact: &pbc.RecommendationImpact{
+				EstimatedSavings: savings,
+				Currency:         "USD",
+				ProjectionPeriod: "12_months",
+			},
+			ConfidenceScore: &confidence,
+		}
+	}
+	return recs
+}
+
+// GetRecommendations returns mock cost optimization recommendations.
+func (m *MockPlugin) GetRecommendations(
+	_ context.Context,
+	req *pbc.GetRecommendationsRequest,
+) (*pbc.GetRecommendationsResponse, error) {
+	if m.RecommendationsConfig.Delay > 0 {
+		time.Sleep(m.RecommendationsConfig.Delay)
+	}
+
+	if m.RecommendationsConfig.ShouldError {
+		msg := m.RecommendationsConfig.ErrorMessage
+		if msg == "" {
+			msg = "mock error: recommendations unavailable"
+		}
+		return nil, status.Error(codes.Unavailable, msg)
+	}
+
+	// Return configured recommendations or empty list
+	recs := m.RecommendationsConfig.Recommendations
+	if recs == nil {
+		recs = []*pbc.Recommendation{}
+	}
+
+	// Apply filter if provided.
+	// NOTE: This uses a local implementation rather than pluginsdk.ApplyRecommendationFilter
+	// to avoid circular imports (pluginsdk imports testing for conformance functions).
+	if req.GetFilter() != nil {
+		recs = applyMockFilter(recs, req.GetFilter())
+	}
+
+	// Apply pagination if page_size is specified
+	var nextToken string
+	if req.GetPageSize() > 0 || req.GetPageToken() != "" {
+		var paginationErr error
+		recs, nextToken, paginationErr = paginateMockRecommendations(
+			recs,
+			req.GetPageSize(),
+			req.GetPageToken(),
+		)
+		if paginationErr != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid page token: %v", paginationErr)
+		}
+	}
+
+	// NOTE: This mock intentionally calculates summary from the paginated (current page)
+	// results, not the total filtered set. This is by design for testing pagination
+	// scenarios where clients need to verify per-page behavior. Production implementations
+	// may calculate summary from the full filtered dataset before pagination.
+	summary := CalculateMockSummary(recs, req.GetProjectionPeriod())
+
+	return &pbc.GetRecommendationsResponse{
+		Recommendations: recs,
+		Summary:         summary,
+		NextPageToken:   nextToken,
+	}, nil
+}
+
+// CalculateMockSummary builds a RecommendationSummary from the given recommendations.
+// NOTE: This duplicates pluginsdk.CalculateRecommendationSummary logic to avoid circular
+// imports (pluginsdk imports testing for conformance functions).
+func CalculateMockSummary(recs []*pbc.Recommendation, projectionPeriod string) *pbc.RecommendationSummary {
+	summary := &pbc.RecommendationSummary{
+		TotalRecommendations: int32(len(recs)), //nolint:gosec // length will not exceed int32 max
+		CountByCategory:      make(map[string]int32),
+		SavingsByCategory:    make(map[string]float64),
+		CountByActionType:    make(map[string]int32),
+		SavingsByActionType:  make(map[string]float64),
+		ProjectionPeriod:     projectionPeriod,
+	}
+
+	var totalSavings float64
+	var detectedCurrency string
+	var currencyMismatch bool
+	for _, rec := range recs {
+		catName := rec.GetCategory().String()
+		actionName := rec.GetActionType().String()
+
+		summary.CountByCategory[catName]++
+		summary.CountByActionType[actionName]++
+
+		if impact := rec.GetImpact(); impact != nil {
+			savings := impact.GetEstimatedSavings()
+			totalSavings += savings
+			summary.SavingsByCategory[catName] += savings
+			summary.SavingsByActionType[actionName] += savings
+			if c := impact.GetCurrency(); c != "" {
+				if detectedCurrency == "" {
+					detectedCurrency = c
+				} else if detectedCurrency != c {
+					currencyMismatch = true
+				}
+			}
+		}
+	}
+	// Clear currency if recommendations have mixed currencies (sum is ambiguous)
+	if currencyMismatch {
+		detectedCurrency = ""
+	}
+	summary.TotalEstimatedSavings = totalSavings
+	summary.Currency = detectedCurrency
+
+	return summary
+}
+
+// applyMockFilter filters recommendations based on the filter criteria.
+// NOTE: This duplicates pluginsdk.ApplyRecommendationFilter logic to avoid circular
+// imports (pluginsdk imports testing for conformance functions).
+func applyMockFilter(recs []*pbc.Recommendation, filter *pbc.RecommendationFilter) []*pbc.Recommendation {
+	result := make([]*pbc.Recommendation, 0, len(recs))
+	for _, rec := range recs {
+		if matchesMockFilter(rec, filter) {
+			result = append(result, rec)
+		}
+	}
+	return result
+}
+
+// matchesMockFilter checks if a recommendation matches the filter criteria.
+func matchesMockFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	// Check provider filter
+	if filter.GetProvider() != "" {
+		if rec.GetResource() == nil || rec.GetResource().GetProvider() != filter.GetProvider() {
+			return false
+		}
+	}
+
+	// Check region filter
+	if filter.GetRegion() != "" {
+		if rec.GetResource() == nil || rec.GetResource().GetRegion() != filter.GetRegion() {
+			return false
+		}
+	}
+
+	// Check resource_type filter
+	if filter.GetResourceType() != "" {
+		if rec.GetResource() == nil || rec.GetResource().GetResourceType() != filter.GetResourceType() {
+			return false
+		}
+	}
+
+	// Check category filter
+	if filter.GetCategory() != pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED {
+		if rec.GetCategory() != filter.GetCategory() {
+			return false
+		}
+	}
+
+	// Check action_type filter
+	if filter.GetActionType() != pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED {
+		if rec.GetActionType() != filter.GetActionType() {
+			return false
+		}
+	}
+
+	return true
+}
+
+// mockDefaultPageSize is the default page size for mock pagination.
+// NOTE: This intentionally mirrors pluginsdk.DefaultPageSize (50) for consistency.
+// We maintain a local constant to avoid circular imports (pluginsdk imports testing).
+const mockDefaultPageSize int32 = 50
+
+// paginateMockRecommendations applies pagination to recommendations.
+// Returns the page of recommendations, next page token, and any error.
+func paginateMockRecommendations(
+	recs []*pbc.Recommendation,
+	pageSize int32,
+	pageToken string,
+) ([]*pbc.Recommendation, string, error) {
+	// Use default page size if not specified
+	if pageSize <= 0 {
+		pageSize = mockDefaultPageSize
+	}
+
+	// Decode offset from page token
+	var offset int
+	if pageToken != "" {
+		decoded, err := decodeMockPageToken(pageToken)
+		if err != nil {
+			return nil, "", err
+		}
+		offset = decoded
+	}
+
+	// Handle offset beyond range - return empty
+	if offset >= len(recs) {
+		return []*pbc.Recommendation{}, "", nil
+	}
+
+	// Calculate end index
+	end := offset + int(pageSize)
+	if end > len(recs) {
+		end = len(recs)
+	}
+
+	// Get page slice
+	page := recs[offset:end]
+
+	// Generate next token if more results exist
+	var nextToken string
+	if end < len(recs) {
+		nextToken = encodeMockPageToken(end)
+	}
+
+	return page, nextToken, nil
+}
+
+// encodeMockPageToken encodes an offset as a base64 page token.
+func encodeMockPageToken(offset int) string {
+	return base64.StdEncoding.EncodeToString([]byte(strconv.Itoa(offset)))
+}
+
+// decodeMockPageToken decodes a base64 page token to an offset.
+func decodeMockPageToken(token string) (int, error) {
+	decoded, err := base64.StdEncoding.DecodeString(token)
+	if err != nil {
+		return 0, fmt.Errorf("invalid page token encoding: %w", err)
+	}
+	offset, err := strconv.Atoi(string(decoded))
+	if err != nil {
+		return 0, fmt.Errorf("invalid page token value: %w", err)
+	}
+	if offset < 0 {
+		return 0, errors.New("invalid page token: negative offset")
+	}
+	return offset, nil
 }
 
 // EstimateCost returns mock cost estimate for a resource before deployment.
