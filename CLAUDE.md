@@ -534,6 +534,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (toolchain as specified in go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1 (013-recommendations-rpc)
+- N/A (stateless RPC, recommendations fetched from backend services) (013-recommendations-rpc)
+
 - Go 1.25.5 (as per go.mod) + google.golang.org/grpc, prometheus/client_golang (new) (014-plugin-metrics)
 - N/A (in-memory metrics only) (014-plugin-metrics)
 

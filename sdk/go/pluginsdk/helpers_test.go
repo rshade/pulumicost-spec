@@ -309,3 +309,452 @@ func TestHoursPerMonthExported(t *testing.T) {
 		t.Errorf("Expected HoursPerMonth to be 730.0, got %f", pluginsdk.HoursPerMonth)
 	}
 }
+
+// =============================================================================
+// Recommendation Validation Tests
+// =============================================================================
+
+func TestValidateRecommendation(t *testing.T) {
+	validRec := &pbc.Recommendation{
+		Id:         "rec-001",
+		Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+		ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+		Resource: &pbc.ResourceRecommendationInfo{
+			Id:       "i-12345",
+			Provider: "aws",
+		},
+		Impact: &pbc.RecommendationImpact{
+			EstimatedSavings: 100.0,
+			Currency:         "USD",
+		},
+	}
+
+	testCases := []struct {
+		name        string
+		rec         *pbc.Recommendation
+		expectError bool
+	}{
+		{
+			name:        "valid recommendation",
+			rec:         validRec,
+			expectError: false,
+		},
+		{
+			name:        "nil recommendation",
+			rec:         nil,
+			expectError: true,
+		},
+		{
+			name: "missing id",
+			rec: &pbc.Recommendation{
+				Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+				Resource:   &pbc.ResourceRecommendationInfo{Id: "i-123", Provider: "aws"},
+				Impact:     &pbc.RecommendationImpact{Currency: "USD"},
+			},
+			expectError: true,
+		},
+		{
+			name: "unspecified category",
+			rec: &pbc.Recommendation{
+				Id:         "rec-001",
+				Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED,
+				ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+				Resource:   &pbc.ResourceRecommendationInfo{Id: "i-123", Provider: "aws"},
+				Impact:     &pbc.RecommendationImpact{Currency: "USD"},
+			},
+			expectError: true,
+		},
+		{
+			name: "missing resource",
+			rec: &pbc.Recommendation{
+				Id:         "rec-001",
+				Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+				Impact:     &pbc.RecommendationImpact{Currency: "USD"},
+			},
+			expectError: true,
+		},
+		{
+			name: "missing impact",
+			rec: &pbc.Recommendation{
+				Id:         "rec-001",
+				Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+				Resource:   &pbc.ResourceRecommendationInfo{Id: "i-123", Provider: "aws"},
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := pluginsdk.ValidateRecommendation(tc.rec)
+			if tc.expectError && err == nil {
+				t.Error("expected error but got nil")
+			}
+			if !tc.expectError && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateConfidenceScore(t *testing.T) {
+	testCases := []struct {
+		name        string
+		score       *float64
+		expectError bool
+	}{
+		{"nil score", nil, false},
+		{"zero score", ptr(0.0), false},
+		{"mid score", ptr(0.5), false},
+		{"max score", ptr(1.0), false},
+		{"negative score", ptr(-0.1), true},
+		{"over 1.0", ptr(1.1), true},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := pluginsdk.ValidateConfidenceScore(tc.score)
+			if tc.expectError && err == nil {
+				t.Error("expected error but got nil")
+			}
+			if !tc.expectError && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateRecommendationImpact(t *testing.T) {
+	testCases := []struct {
+		name        string
+		impact      *pbc.RecommendationImpact
+		expectError bool
+	}{
+		{
+			name:        "nil impact",
+			impact:      nil,
+			expectError: true,
+		},
+		{
+			name:        "valid USD",
+			impact:      &pbc.RecommendationImpact{Currency: "USD", EstimatedSavings: 100.0},
+			expectError: false,
+		},
+		{
+			name:        "valid EUR",
+			impact:      &pbc.RecommendationImpact{Currency: "EUR", EstimatedSavings: 50.0},
+			expectError: false,
+		},
+		{
+			name:        "empty currency",
+			impact:      &pbc.RecommendationImpact{Currency: "", EstimatedSavings: 100.0},
+			expectError: true,
+		},
+		{
+			name:        "invalid currency",
+			impact:      &pbc.RecommendationImpact{Currency: "INVALID", EstimatedSavings: 100.0},
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := pluginsdk.ValidateRecommendationImpact(tc.impact)
+			if tc.expectError && err == nil {
+				t.Error("expected error but got nil")
+			}
+			if !tc.expectError && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+// =============================================================================
+// Recommendation Filter Tests
+// =============================================================================
+
+func TestApplyRecommendationFilter(t *testing.T) {
+	recommendations := []*pbc.Recommendation{
+		{
+			Id:         "rec-1",
+			Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+			ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+			Resource:   &pbc.ResourceRecommendationInfo{Id: "i-1", Provider: "aws", Region: "us-east-1"},
+		},
+		{
+			Id:         "rec-2",
+			Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE,
+			ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+			Resource:   &pbc.ResourceRecommendationInfo{Id: "i-2", Provider: "aws", Region: "us-west-2"},
+		},
+		{
+			Id:         "rec-3",
+			Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+			ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE,
+			Resource:   &pbc.ResourceRecommendationInfo{Id: "v-1", Provider: "azure", Region: "eastus"},
+		},
+	}
+
+	testCases := []struct {
+		name          string
+		filter        *pbc.RecommendationFilter
+		expectedCount int
+		expectedIDs   []string
+	}{
+		{
+			name:          "nil filter returns all",
+			filter:        nil,
+			expectedCount: 3,
+			expectedIDs:   []string{"rec-1", "rec-2", "rec-3"},
+		},
+		{
+			name:          "empty filter returns all",
+			filter:        &pbc.RecommendationFilter{},
+			expectedCount: 3,
+			expectedIDs:   []string{"rec-1", "rec-2", "rec-3"},
+		},
+		{
+			name:          "filter by category COST",
+			filter:        &pbc.RecommendationFilter{Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST},
+			expectedCount: 2,
+			expectedIDs:   []string{"rec-1", "rec-3"},
+		},
+		{
+			name:          "filter by provider aws",
+			filter:        &pbc.RecommendationFilter{Provider: "aws"},
+			expectedCount: 2,
+			expectedIDs:   []string{"rec-1", "rec-2"},
+		},
+		{
+			name:          "filter by region us-east-1",
+			filter:        &pbc.RecommendationFilter{Region: "us-east-1"},
+			expectedCount: 1,
+			expectedIDs:   []string{"rec-1"},
+		},
+		{
+			name: "filter by action type TERMINATE",
+			filter: &pbc.RecommendationFilter{
+				ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE,
+			},
+			expectedCount: 1,
+			expectedIDs:   []string{"rec-3"},
+		},
+		{
+			name: "combined filter",
+			filter: &pbc.RecommendationFilter{
+				Provider: "aws",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+			},
+			expectedCount: 1,
+			expectedIDs:   []string{"rec-1"},
+		},
+		{
+			name:          "filter with no matches",
+			filter:        &pbc.RecommendationFilter{Provider: "gcp"},
+			expectedCount: 0,
+			expectedIDs:   []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := pluginsdk.ApplyRecommendationFilter(recommendations, tc.filter)
+			if len(result) != tc.expectedCount {
+				t.Errorf("expected %d results, got %d", tc.expectedCount, len(result))
+			}
+			for i, rec := range result {
+				if i < len(tc.expectedIDs) && rec.GetId() != tc.expectedIDs[i] {
+					t.Errorf("expected ID %s at position %d, got %s", tc.expectedIDs[i], i, rec.GetId())
+				}
+			}
+		})
+	}
+}
+
+// =============================================================================
+// Pagination Tests
+// =============================================================================
+
+// testRecommendations25 creates 25 test recommendations with sequential IDs for pagination tests.
+func testRecommendations25() []*pbc.Recommendation {
+	recs := make([]*pbc.Recommendation, 25)
+	for i := range 25 {
+		recs[i] = &pbc.Recommendation{Id: string(rune('A' + i))}
+	}
+	return recs
+}
+
+func TestPaginateRecommendations_FirstPageDefaultSize(t *testing.T) {
+	recommendations := testRecommendations25()
+	result, nextToken, err := pluginsdk.PaginateRecommendations(recommendations, 0, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 25 {
+		t.Errorf("expected 25 results, got %d", len(result))
+	}
+	if nextToken != "" {
+		t.Errorf("expected no next token but got %s", nextToken)
+	}
+}
+
+func TestPaginateRecommendations_FirstPageSize10(t *testing.T) {
+	recommendations := testRecommendations25()
+	result, nextToken, err := pluginsdk.PaginateRecommendations(recommendations, 10, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 10 {
+		t.Errorf("expected 10 results, got %d", len(result))
+	}
+	if nextToken == "" {
+		t.Error("expected next token but got empty")
+	}
+}
+
+func TestPaginateRecommendations_SecondPageSize10(t *testing.T) {
+	recommendations := testRecommendations25()
+	result, nextToken, err := pluginsdk.PaginateRecommendations(recommendations, 10, pluginsdk.EncodePageToken(10))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 10 {
+		t.Errorf("expected 10 results, got %d", len(result))
+	}
+	if nextToken == "" {
+		t.Error("expected next token but got empty")
+	}
+}
+
+func TestPaginateRecommendations_LastPageSize10(t *testing.T) {
+	recommendations := testRecommendations25()
+	result, nextToken, err := pluginsdk.PaginateRecommendations(recommendations, 10, pluginsdk.EncodePageToken(20))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 5 {
+		t.Errorf("expected 5 results, got %d", len(result))
+	}
+	if nextToken != "" {
+		t.Errorf("expected no next token but got %s", nextToken)
+	}
+}
+
+func TestPaginateRecommendations_InvalidToken(t *testing.T) {
+	recommendations := testRecommendations25()
+	_, _, err := pluginsdk.PaginateRecommendations(recommendations, 10, "invalid-token")
+	if err == nil {
+		t.Error("expected error but got nil")
+	}
+}
+
+func TestPaginateRecommendations_OffsetBeyondRange(t *testing.T) {
+	recommendations := testRecommendations25()
+	result, nextToken, err := pluginsdk.PaginateRecommendations(recommendations, 10, pluginsdk.EncodePageToken(100))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 0 {
+		t.Errorf("expected 0 results, got %d", len(result))
+	}
+	if nextToken != "" {
+		t.Errorf("expected no next token but got %s", nextToken)
+	}
+}
+
+func TestEncodeDecodePageToken(t *testing.T) {
+	testCases := []struct {
+		offset int
+	}{
+		{0},
+		{10},
+		{100},
+		{1000},
+	}
+
+	for _, tc := range testCases {
+		token := pluginsdk.EncodePageToken(tc.offset)
+		decoded, err := pluginsdk.DecodePageToken(token)
+		if err != nil {
+			t.Errorf("failed to decode token for offset %d: %v", tc.offset, err)
+		}
+		if decoded != tc.offset {
+			t.Errorf("expected offset %d, got %d", tc.offset, decoded)
+		}
+	}
+}
+
+// =============================================================================
+// Summary Calculation Tests
+// =============================================================================
+
+func TestCalculateRecommendationSummary(t *testing.T) {
+	recommendations := []*pbc.Recommendation{
+		{
+			Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+			ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+			Impact:     &pbc.RecommendationImpact{EstimatedSavings: 100.0, Currency: "USD"},
+		},
+		{
+			Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+			ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE,
+			Impact:     &pbc.RecommendationImpact{EstimatedSavings: 50.0, Currency: "USD"},
+		},
+		{
+			Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE,
+			ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+			Impact:     &pbc.RecommendationImpact{EstimatedSavings: 25.0, Currency: "USD"},
+		},
+	}
+
+	summary := pluginsdk.CalculateRecommendationSummary(recommendations, "monthly")
+
+	if summary.GetTotalRecommendations() != 3 {
+		t.Errorf("expected 3 total, got %d", summary.GetTotalRecommendations())
+	}
+
+	if summary.GetTotalEstimatedSavings() != 175.0 {
+		t.Errorf("expected 175.0 savings, got %f", summary.GetTotalEstimatedSavings())
+	}
+
+	if summary.GetCurrency() != "USD" {
+		t.Errorf("expected USD, got %s", summary.GetCurrency())
+	}
+
+	if summary.GetProjectionPeriod() != "monthly" {
+		t.Errorf("expected monthly, got %s", summary.GetProjectionPeriod())
+	}
+
+	// Check category counts
+	costCatName := pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST.String()
+	if summary.GetCountByCategory()[costCatName] != 2 {
+		t.Errorf("expected 2 COST, got %d", summary.GetCountByCategory()[costCatName])
+	}
+
+	// Check action type counts
+	rightsizeActionName := pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE.String()
+	if summary.GetCountByActionType()[rightsizeActionName] != 2 {
+		t.Errorf("expected 2 RIGHTSIZE, got %d", summary.GetCountByActionType()[rightsizeActionName])
+	}
+}
+
+func TestCalculateRecommendationSummaryEmpty(t *testing.T) {
+	summary := pluginsdk.CalculateRecommendationSummary([]*pbc.Recommendation{}, "monthly")
+
+	if summary.GetTotalRecommendations() != 0 {
+		t.Errorf("expected 0 total, got %d", summary.GetTotalRecommendations())
+	}
+
+	if summary.GetTotalEstimatedSavings() != 0.0 {
+		t.Errorf("expected 0.0 savings, got %f", summary.GetTotalEstimatedSavings())
+	}
+}
+
+// Helper function to create pointer to float64.
+func ptr(v float64) *float64 {
+	return &v
+}

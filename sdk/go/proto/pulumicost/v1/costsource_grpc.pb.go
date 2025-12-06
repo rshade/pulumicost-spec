@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CostSourceService_Name_FullMethodName             = "/pulumicost.v1.CostSourceService/Name"
-	CostSourceService_Supports_FullMethodName         = "/pulumicost.v1.CostSourceService/Supports"
-	CostSourceService_GetActualCost_FullMethodName    = "/pulumicost.v1.CostSourceService/GetActualCost"
-	CostSourceService_GetProjectedCost_FullMethodName = "/pulumicost.v1.CostSourceService/GetProjectedCost"
-	CostSourceService_GetPricingSpec_FullMethodName   = "/pulumicost.v1.CostSourceService/GetPricingSpec"
-	CostSourceService_EstimateCost_FullMethodName     = "/pulumicost.v1.CostSourceService/EstimateCost"
+	CostSourceService_Name_FullMethodName               = "/pulumicost.v1.CostSourceService/Name"
+	CostSourceService_Supports_FullMethodName           = "/pulumicost.v1.CostSourceService/Supports"
+	CostSourceService_GetActualCost_FullMethodName      = "/pulumicost.v1.CostSourceService/GetActualCost"
+	CostSourceService_GetProjectedCost_FullMethodName   = "/pulumicost.v1.CostSourceService/GetProjectedCost"
+	CostSourceService_GetPricingSpec_FullMethodName     = "/pulumicost.v1.CostSourceService/GetPricingSpec"
+	CostSourceService_EstimateCost_FullMethodName       = "/pulumicost.v1.CostSourceService/EstimateCost"
+	CostSourceService_GetRecommendations_FullMethodName = "/pulumicost.v1.CostSourceService/GetRecommendations"
 )
 
 // CostSourceServiceClient is the client API for CostSourceService service.
@@ -58,6 +59,17 @@ type CostSourceServiceClient interface {
 	//   - NotFound: Unsupported resource_type for this plugin
 	//   - Unavailable: Pricing source temporarily unavailable
 	EstimateCost(ctx context.Context, in *EstimateCostRequest, opts ...grpc.CallOption) (*EstimateCostResponse, error)
+	// GetRecommendations retrieves cost optimization recommendations.
+	// Returns recommendations from the underlying cost management service
+	// (AWS Cost Explorer, Kubecost, Azure Advisor, GCP Recommender, etc.).
+	//
+	// Plugins that do not support recommendations return an empty list.
+	// This RPC is optional - plugins implement RecommendationsProvider interface.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid filter criteria or pagination token
+	//   - Unavailable: Backend recommendation service unavailable
+	GetRecommendations(ctx context.Context, in *GetRecommendationsRequest, opts ...grpc.CallOption) (*GetRecommendationsResponse, error)
 }
 
 type costSourceServiceClient struct {
@@ -128,6 +140,16 @@ func (c *costSourceServiceClient) EstimateCost(ctx context.Context, in *Estimate
 	return out, nil
 }
 
+func (c *costSourceServiceClient) GetRecommendations(ctx context.Context, in *GetRecommendationsRequest, opts ...grpc.CallOption) (*GetRecommendationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRecommendationsResponse)
+	err := c.cc.Invoke(ctx, CostSourceService_GetRecommendations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CostSourceServiceServer is the server API for CostSourceService service.
 // All implementations must embed UnimplementedCostSourceServiceServer
 // for forward compatibility.
@@ -159,6 +181,17 @@ type CostSourceServiceServer interface {
 	//   - NotFound: Unsupported resource_type for this plugin
 	//   - Unavailable: Pricing source temporarily unavailable
 	EstimateCost(context.Context, *EstimateCostRequest) (*EstimateCostResponse, error)
+	// GetRecommendations retrieves cost optimization recommendations.
+	// Returns recommendations from the underlying cost management service
+	// (AWS Cost Explorer, Kubecost, Azure Advisor, GCP Recommender, etc.).
+	//
+	// Plugins that do not support recommendations return an empty list.
+	// This RPC is optional - plugins implement RecommendationsProvider interface.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid filter criteria or pagination token
+	//   - Unavailable: Backend recommendation service unavailable
+	GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error)
 	mustEmbedUnimplementedCostSourceServiceServer()
 }
 
@@ -186,6 +219,9 @@ func (UnimplementedCostSourceServiceServer) GetPricingSpec(context.Context, *Get
 }
 func (UnimplementedCostSourceServiceServer) EstimateCost(context.Context, *EstimateCostRequest) (*EstimateCostResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method EstimateCost not implemented")
+}
+func (UnimplementedCostSourceServiceServer) GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRecommendations not implemented")
 }
 func (UnimplementedCostSourceServiceServer) mustEmbedUnimplementedCostSourceServiceServer() {}
 func (UnimplementedCostSourceServiceServer) testEmbeddedByValue()                           {}
@@ -316,6 +352,24 @@ func _CostSourceService_EstimateCost_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CostSourceService_GetRecommendations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRecommendationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CostSourceServiceServer).GetRecommendations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CostSourceService_GetRecommendations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CostSourceServiceServer).GetRecommendations(ctx, req.(*GetRecommendationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CostSourceService_ServiceDesc is the grpc.ServiceDesc for CostSourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -346,6 +400,10 @@ var CostSourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EstimateCost",
 			Handler:    _CostSourceService_EstimateCost_Handler,
+		},
+		{
+			MethodName: "GetRecommendations",
+			Handler:    _CostSourceService_GetRecommendations_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

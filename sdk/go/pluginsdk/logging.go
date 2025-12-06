@@ -35,6 +35,13 @@ const (
 	FieldCostMonthly   = "cost_monthly"
 	FieldAdapter       = "adapter"
 	FieldErrorCode     = "error_code"
+
+	// GetRecommendations-specific fields.
+	FieldRecommendationCount = "recommendation_count"
+	FieldFilterCategory      = "filter_category"
+	FieldFilterActionType    = "filter_action_type"
+	FieldPageSize            = "page_size"
+	FieldTotalSavings        = "total_savings"
 )
 
 // newDefaultLogger creates a basic zerolog logger for internal SDK use.

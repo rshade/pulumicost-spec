@@ -1,0 +1,80 @@
+{
+  "recommendations": [
+    {
+      "id": "rec-azure-rightsize-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE",
+      "resource": {
+        "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/production-rg/providers/Microsoft.Compute/virtualMachines/app-server-01",
+        "name": "app-server-01",
+        "provider": "azure",
+        "resource_type": "virtualMachine",
+        "region": "eastus2",
+        "sku": "Standard_D4s_v3",
+        "tags": {
+          "environment": "production",
+          "application": "ecommerce",
+          "cost-center": "retail"
+        },
+        "utilization": {
+          "cpu_percent": 8.2,
+          "memory_percent": 18.5,
+          "storage_percent": 35.0,
+          "network_in_mbps": 0.3,
+          "network_out_mbps": 1.2
+        }
+      },
+      "rightsize": {
+        "current_sku": "Standard_D4s_v3",
+        "recommended_sku": "Standard_D2s_v3",
+        "current_instance_type": "D4s_v3",
+        "recommended_instance_type": "D2s_v3",
+        "projected_utilization": {
+          "cpu_percent": 32.8,
+          "memory_percent": 37.0
+        }
+      },
+      "impact": {
+        "estimated_savings": 189.50,
+        "currency": "USD",
+        "projection_period": "30"
+      },
+      "priority": "RECOMMENDATION_PRIORITY_HIGH",
+      "confidence_score": 0.95,
+      "description": "Resize underutilized VM from D4s_v3 to D2s_v3 based on 7-day usage analysis",
+      "reasoning": [
+        "Average CPU utilization is 8.2% over the analysis period",
+        "Average memory utilization is 18.5% over the analysis period",
+        "The recommended size provides adequate capacity for peak workloads",
+        "Recommendation from Azure Advisor Cost category"
+      ],
+      "source": "azure-advisor",
+      "created_at": "2025-12-03T09:45:00Z",
+      "metadata": {
+        "subscription_id": "00000000-0000-0000-0000-000000000000",
+        "resource_group": "production-rg",
+        "advisor_category": "Cost",
+        "observation_period_days": "7",
+        "impact_level": "High"
+      }
+    }
+  ],
+  "summary": {
+    "total_recommendations": 1,
+    "projection_period": "30",
+    "count_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 1
+    },
+    "savings_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 189.50
+    },
+    "count_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 1
+    },
+    "savings_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 189.50
+    },
+    "total_estimated_savings": 189.50,
+    "currency": "USD"
+  }
+}
