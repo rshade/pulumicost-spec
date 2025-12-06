@@ -534,15 +534,15 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
-- Go 1.25.4 (as per go.mod) + google.golang.org/grpc, prometheus/client_golang (new) (014-plugin-metrics)
+- Go 1.25.5 (as per go.mod) + google.golang.org/grpc, prometheus/client_golang (new) (014-plugin-metrics)
 - N/A (in-memory metrics only) (014-plugin-metrics)
 
-- Go 1.25.4 (toolchain as specified in go.mod) + None (stdlib only - no external dependencies required) (013-iso4217-currency)
+- Go 1.25.5 (toolchain as specified in go.mod) + None (stdlib only - no external dependencies required) (013-iso4217-currency)
 - N/A (static in-memory data structures) (013-iso4217-currency)
 
-- Go 1.25.4 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package) (012-pluginsdk-conformance)
+- Go 1.25.5 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package) (012-pluginsdk-conformance)
 - N/A (testing utilities only) (012-pluginsdk-conformance)
-- Go 1.24.10 (toolchain go1.25.4)
+- Go 1.24.10 (toolchain go1.25.5)
 - Protocol Buffers v3 + google.golang.org/protobuf
 - google.golang.org/grpc
 - buf v1.32.1 (010-focus-column-audit)
