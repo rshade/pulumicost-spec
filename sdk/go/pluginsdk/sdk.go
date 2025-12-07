@@ -196,7 +196,7 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 // ServeConfig holds configuration for serving a plugin.
 type ServeConfig struct {
 	Plugin   Plugin
-	Port     int             // If 0, will use PORT env var or random port
+	Port     int             // If 0, will use PULUMICOST_PLUGIN_PORT env var or random port
 	Registry RegistryLookup  // Optional; if nil, DefaultRegistryLookup is used
 	Logger   *zerolog.Logger // Optional; if nil, a default logger is used
 	// UnaryInterceptors is an optional list of gRPC unary server interceptors
@@ -207,27 +207,12 @@ type ServeConfig struct {
 	UnaryInterceptors []grpc.UnaryServerInterceptor
 }
 
-func resolvePort(requested int) (int, error) {
+func resolvePort(requested int) int {
 	if requested > 0 {
-		return requested, nil
+		return requested
 	}
-	portEnv := os.Getenv("PORT")
-	if portEnv == "" {
-		return 0, nil
-	}
-	value, err := strconv.Atoi(portEnv)
-	if err != nil {
-		if _, writeErr := fmt.Fprintf(
-			os.Stderr,
-			"Ignoring invalid PORT %q: %v; falling back to ephemeral port\n",
-			portEnv,
-			err,
-		); writeErr != nil {
-			return 0, fmt.Errorf("writing invalid port warning: %w", writeErr)
-		}
-		return 0, nil
-	}
-	return value, nil
+	// Use centralized GetPort() which reads PULUMICOST_PLUGIN_PORT only (no fallback)
+	return GetPort()
 }
 
 func listenOnLoopback(ctx context.Context, port int) (net.Listener, *net.TCPAddr, error) {
@@ -271,16 +256,13 @@ func announcePort(listener net.Listener, addr *net.TCPAddr) error {
 
 // Serve starts the gRPC server for the provided plugin and prints the chosen port as PORT=<port> to stdout.
 //
-// It uses config.Port when > 0; if config.Port is 0 it attempts to parse the PORT environment variable and
-// falls back to an ephemeral port when none is provided. The function registers the plugin's service, begins
+// It uses config.Port when > 0; if config.Port is 0 it reads the PULUMICOST_PLUGIN_PORT environment variable
+// and falls back to an ephemeral port when none is provided. The function registers the plugin's service, begins
 // serving on the selected port, and performs a graceful stop when the context is cancelled.
 //
-// Returns an error if PORT cannot be parsed, if the listener cannot be created, or if the gRPC server fails to serve.
+// Returns an error if the listener cannot be created or if the gRPC server fails to serve.
 func Serve(ctx context.Context, config ServeConfig) error {
-	port, err := resolvePort(config.Port)
-	if err != nil {
-		return err
-	}
+	port := resolvePort(config.Port)
 
 	listener, tcpAddr, err := listenOnLoopback(ctx, port)
 	if err != nil {

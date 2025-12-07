@@ -5,12 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 This is the **Go SDK** for the PulumiCost specification, providing a complete runtime library for implementing and testing
-cost source plugins. The SDK consists of five main packages:
+cost source plugins. The SDK consists of six main packages:
 
 - **`currency/`** - ISO 4217 currency validation and metadata with zero-allocation validation
-- **`registry/`** - Plugin registry domain types with optimized zero-allocation validation
+- **`pluginsdk/`** - Plugin development SDK with environment variable handling and gRPC server utilities
 - **`pricing/`** - Domain types, validation, and billing mode enumerations
 - **`proto/`** - Generated gRPC code from protobuf definitions (do not edit manually)
+- **`registry/`** - Plugin registry domain types with optimized zero-allocation validation
 - **`testing/`** - Comprehensive testing framework with harness, mocks, and conformance tests
 
 ## Build Commands
@@ -67,6 +68,37 @@ cd ../../ && make test && make lint
   SystemPermission, AuthMethod
 - Performance: 5-12 ns/op, 0 allocs/op across all validation functions
 - Pattern: Package-level slice variables for zero-allocation validation
+
+**`pluginsdk/` Package - Plugin Development SDK**
+
+- `sdk.go` - gRPC server setup with `Serve()` function and `ServeConfig` options
+- `env.go` - Centralized environment variable handling for all PulumiCost plugins
+- `env_test.go` - Comprehensive tests for environment variable functions
+- `tracing.go` - Distributed tracing utilities with `TracingUnaryServerInterceptor()`
+- `logging.go` - Structured logging helpers with zerolog integration
+- `metrics.go` - Prometheus metrics instrumentation for plugins
+
+**Environment Variables (env.go)**:
+
+| Constant | Variable Name | Purpose |
+|----------|---------------|---------|
+| `EnvPort` | `PULUMICOST_PLUGIN_PORT` | gRPC server port (no fallback) |
+| `EnvLogLevel` | `PULUMICOST_LOG_LEVEL` | Log verbosity (debug, info, warn, error) |
+| `EnvLogLevelFallback` | `LOG_LEVEL` | Legacy fallback for log level |
+| `EnvLogFormat` | `PULUMICOST_LOG_FORMAT` | Log output format (json, text) |
+| `EnvLogFile` | `PULUMICOST_LOG_FILE` | Log file path (empty = stdout) |
+| `EnvTraceID` | `PULUMICOST_TRACE_ID` | Distributed tracing correlation ID |
+| `EnvTestMode` | `PULUMICOST_TEST_MODE` | Enable test mode (only "true" enables) |
+
+**Environment Functions**:
+
+- `GetPort() int` - Returns port from `PULUMICOST_PLUGIN_PORT` or 0 if not set/invalid
+- `GetLogLevel() string` - Returns log level (canonical first, then fallback)
+- `GetLogFormat() string` - Returns log format or empty string
+- `GetLogFile() string` - Returns log file path or empty string
+- `GetTraceID() string` - Returns trace ID or empty string
+- `GetTestMode() bool` - Returns true only if value is "true" (logs warning for invalid values)
+- `IsTestMode() bool` - Same as GetTestMode but without warning logging (for repeated checks)
 
 **`pricing/` Package - Domain Logic**
 
@@ -214,6 +246,34 @@ fmt.Printf("%s uses %d decimal places\n", usd.Name, usd.MinorUnits)
 // List all currencies
 for _, c := range currency.AllCurrencies() {
     fmt.Printf("%s: %s\n", c.Code, c.Name)
+}
+```
+
+### Using Environment Variables
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+// Get plugin port (returns 0 if not set)
+port := pluginsdk.GetPort()
+if port == 0 {
+    port = 8080 // use default
+}
+
+// Get log configuration with fallback support
+logLevel := pluginsdk.GetLogLevel()  // checks PULUMICOST_LOG_LEVEL, then LOG_LEVEL
+logFormat := pluginsdk.GetLogFormat() // empty string if not set
+logFile := pluginsdk.GetLogFile()     // empty string means stdout
+
+// Get trace ID for distributed tracing
+traceID := pluginsdk.GetTraceID()
+if traceID != "" {
+    // Include in logs and responses
+}
+
+// Check test mode (use IsTestMode for repeated checks to avoid log spam)
+if pluginsdk.IsTestMode() {
+    // Enable test-specific behavior
 }
 ```
 

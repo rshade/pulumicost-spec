@@ -534,6 +534,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod toolchain) + Go stdlib only (`os`, `strconv`, `strings`) (013-pluginsdk-env)
+- N/A (reads environment variables at runtime) (013-pluginsdk-env)
+
 - Go 1.25.5 (as per go.mod) + google.golang.org/grpc, prometheus/client_golang (new) (014-plugin-metrics)
 - N/A (in-memory metrics only) (014-plugin-metrics)
 
