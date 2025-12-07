@@ -269,10 +269,10 @@ http.Handle("/metrics", promhttp.HandlerFor(
 
 ### Available Metrics
 
-| Metric | Type | Labels | Description |
-| ------ | ---- | ------ | ----------- |
-| `pulumicost_plugin_requests_total` | Counter | `grpc_method`, `grpc_code`, `plugin_name` | Total gRPC requests |
-| `pulumicost_plugin_request_duration_seconds` | Histogram | `grpc_method`, `plugin_name` | Request latency distribution |
+| Metric                                       | Type      | Labels                                    | Description                  |
+| -------------------------------------------- | --------- | ----------------------------------------- | ---------------------------- |
+| `pulumicost_plugin_requests_total`           | Counter   | `grpc_method`, `grpc_code`, `plugin_name` | Total gRPC requests          |
+| `pulumicost_plugin_request_duration_seconds` | Histogram | `grpc_method`, `plugin_name`              | Request latency distribution |
 
 **Histogram Buckets**: 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s
 
@@ -303,21 +303,21 @@ For handlers with typical work (1ms+), the metrics overhead is under 1% of total
 
 ### Metrics Functions
 
-| Function | Description |
-| -------- | ----------- |
-| `NewPluginMetrics(pluginName)` | Create metrics with custom registry |
+| Function                                    | Description                              |
+| ------------------------------------------- | ---------------------------------------- |
+| `NewPluginMetrics(pluginName)`              | Create metrics with custom registry      |
 | `MetricsUnaryServerInterceptor(pluginName)` | Create interceptor with default registry |
-| `MetricsInterceptorWithRegistry(metrics)` | Create interceptor with custom registry |
-| `StartMetricsServer(config)` | Start optional HTTP metrics server |
+| `MetricsInterceptorWithRegistry(metrics)`   | Create interceptor with custom registry  |
+| `StartMetricsServer(config)`                | Start optional HTTP metrics server       |
 
 ### Metrics Constants
 
-| Constant | Value | Description |
-| -------- | ----- | ----------- |
-| `MetricNamespace` | `pulumicost` | Prometheus namespace |
-| `MetricSubsystem` | `plugin` | Prometheus subsystem |
-| `DefaultMetricsPort` | `9090` | Default HTTP port |
-| `DefaultMetricsPath` | `/metrics` | Default URL path |
+| Constant             | Value        | Description          |
+| -------------------- | ------------ | -------------------- |
+| `MetricNamespace`    | `pulumicost` | Prometheus namespace |
+| `MetricSubsystem`    | `plugin`     | Prometheus subsystem |
+| `DefaultMetricsPort` | `9090`       | Default HTTP port    |
+| `DefaultMetricsPath` | `/metrics`   | Default URL path     |
 
 ## Server Configuration
 
@@ -335,7 +335,7 @@ pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
 ### Port Resolution
 
 1. If `Port > 0`, uses that port
-2. If `PORT` environment variable is set, uses that
+2. If `PULUMICOST_PLUGIN_PORT` environment variable is set, uses that
 3. Otherwise, uses an ephemeral port
 
 The selected port is printed to stdout as `PORT=<port>`.
@@ -423,9 +423,9 @@ func TestPluginConformance(t *testing.T) {
 
 **Conformance Levels**:
 
-| Level                           | Description                                 | Use Case                       |
-| ------------------------------- | ------------------------------------------- | ------------------------------ |
-| `RunBasicConformance(plugin)`   | Core functionality, required for all        | Minimum validation             |
+| Level                            | Description                                | Use Case                       |
+| -------------------------------- | ------------------------------------------ | ------------------------------ |
+| `RunBasicConformance(plugin)`    | Core functionality, required for all       | Minimum validation             |
 | `RunStandardConformance(plugin)` | Production-ready (includes error handling) | Production deployments         |
 | `RunAdvancedConformance(plugin)` | High performance (strict latency limits)   | Performance-critical scenarios |
 
