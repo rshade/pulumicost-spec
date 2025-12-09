@@ -959,6 +959,159 @@ manifest, err := pluginsdk.LoadManifest("plugin-manifest.yaml")
 err := pluginsdk.SaveManifest("plugin-manifest.json", manifest)
 ```
 
+## Property Mapping (mapping subpackage)
+
+The `mapping` subpackage provides helper functions for extracting SKU, region, and other
+pricing-relevant fields from Pulumi resource properties. This package enables plugin developers
+to decouple cloud-specific property extraction from their plugin logic.
+
+### Installation
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
+```
+
+### Provider-Specific Extraction
+
+Each cloud provider has dedicated extraction functions:
+
+**AWS**:
+
+```go
+// EC2, RDS, EBS property extraction
+props := map[string]string{
+    "instanceType":     "t3.medium",
+    "availabilityZone": "us-east-1a",
+}
+sku := mapping.ExtractAWSSKU(props)       // "t3.medium"
+region := mapping.ExtractAWSRegion(props) // "us-east-1"
+
+// Direct AZ to region conversion
+region := mapping.ExtractAWSRegionFromAZ("us-west-2b") // "us-west-2"
+```
+
+**Azure**:
+
+```go
+// VM and service property extraction
+props := map[string]string{
+    "vmSize":   "Standard_D2s_v3",
+    "location": "eastus",
+}
+sku := mapping.ExtractAzureSKU(props)       // "Standard_D2s_v3"
+region := mapping.ExtractAzureRegion(props) // "eastus"
+```
+
+**GCP**:
+
+```go
+// Compute Engine property extraction with region validation
+props := map[string]string{
+    "machineType": "n1-standard-4",
+    "zone":        "us-central1-a",
+}
+sku := mapping.ExtractGCPSKU(props)       // "n1-standard-4"
+region := mapping.ExtractGCPRegion(props) // "us-central1"
+
+// Direct zone to region conversion with validation
+region := mapping.ExtractGCPRegionFromZone("europe-west1-b") // "europe-west1"
+
+// Check if a region is valid
+if mapping.IsValidGCPRegion("us-central1") {
+    // Valid GCP region
+}
+```
+
+### Generic Extraction
+
+For custom resources or FinOps tools, use generic extractors with custom key lists:
+
+```go
+// With default keys (sku, type, tier for SKU; region, location, zone for region)
+props := map[string]string{"sku": "custom-sku", "region": "custom-region"}
+sku := mapping.ExtractSKU(props)       // "custom-sku"
+region := mapping.ExtractRegion(props) // "custom-region"
+
+// With custom keys (checked in order)
+props := map[string]string{"customField": "value"}
+sku := mapping.ExtractSKU(props, "customField", "fallbackField")
+```
+
+### Plugin Integration Example
+
+```go
+// convertProperties is a plugin-specific helper that converts Pulumi resource
+// properties to map[string]string. Implementation varies by plugin - typically
+// iterates resource.Properties and extracts string values.
+func convertProperties(props map[string]interface{}) map[string]string {
+    result := make(map[string]string)
+    for k, v := range props {
+        if s, ok := v.(string); ok {
+            result[k] = s
+        }
+    }
+    return result
+}
+
+func (p *MyPlugin) GetProjectedCost(ctx context.Context, req *pbc.GetProjectedCostRequest) (
+    *pbc.GetProjectedCostResponse, error,
+) {
+    for _, resource := range req.Resources {
+        props := convertProperties(resource.Properties)
+
+        var sku, region string
+        switch resource.Provider {
+        case "aws":
+            sku = mapping.ExtractAWSSKU(props)
+            region = mapping.ExtractAWSRegion(props)
+        case "azure":
+            sku = mapping.ExtractAzureSKU(props)
+            region = mapping.ExtractAzureRegion(props)
+        case "gcp":
+            sku = mapping.ExtractGCPSKU(props)
+            region = mapping.ExtractGCPRegion(props)
+        default:
+            sku = mapping.ExtractSKU(props)
+            region = mapping.ExtractRegion(props)
+        }
+
+        // Use sku and region for pricing lookup...
+    }
+    // ...
+}
+```
+
+### Error Handling
+
+All mapping functions are designed to never panic:
+
+- Returns empty string for `nil` or empty input maps
+- Returns empty string when no matching keys are found
+- GCP functions validate against known regions list
+
+```go
+mapping.ExtractAWSSKU(nil)                  // ""
+mapping.ExtractGCPRegionFromZone("invalid") // "" (invalid region)
+```
+
+### Migration from pulumicost-core
+
+If you have cloud-specific extraction logic in your plugin or core adapter,
+you can replace it with the mapping package functions:
+
+```go
+// Before: inline extraction logic
+var sku string
+if v, ok := props["instanceType"]; ok {
+    sku = v
+} else if v, ok := props["instanceClass"]; ok {
+    sku = v
+}
+
+// After: use mapping package
+sku := mapping.ExtractAWSSKU(props)
+```
+
 ## Migration from pulumicost-core
 
 If you're migrating from `pulumicost-core`, update your imports:
