@@ -146,6 +146,58 @@ The `pricing` package defines 44+ billing modes organized by category:
 - **Conformance Testing**: Three-tier validation (Basic/Standard/Advanced) with performance requirements
 - **Performance Benchmarks**: Memory-profiled benchmarks for all RPC methods
 
+### FallbackHint for Plugin Orchestration
+
+The `FallbackHint` enum in `GetActualCostResponse` enables plugin orchestration by signaling whether
+the core system should query other plugins for cost data.
+
+**Enum Values**:
+
+| Value | Int | Description |
+|-------|-----|-------------|
+| `FALLBACK_HINT_UNSPECIFIED` | 0 | Default. Treated as "no fallback needed" (backwards compatible) |
+| `FALLBACK_HINT_NONE` | 1 | Plugin has data; do not attempt fallback |
+| `FALLBACK_HINT_RECOMMENDED` | 2 | Plugin has no data; core SHOULD try other plugins |
+| `FALLBACK_HINT_REQUIRED` | 3 | Plugin cannot handle request; core MUST try fallback |
+
+**Usage Examples**:
+
+```go
+import (
+    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+)
+
+// Plugin found cost data - signal no fallback needed
+resp := pluginsdk.NewActualCostResponse(
+    pluginsdk.WithResults(results),
+    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_NONE),
+)
+
+// Plugin has no data for this resource - recommend fallback
+resp := pluginsdk.NewActualCostResponse(
+    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED),
+)
+
+// Plugin cannot handle this resource type at all - require fallback
+resp := pluginsdk.NewActualCostResponse(
+    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_REQUIRED),
+)
+
+// Validate response before returning
+if err := pluginsdk.ValidateActualCostResponse(resp); err != nil {
+    return nil, status.Errorf(codes.Internal, "invalid response: %v", err)
+}
+```
+
+**Best Practices**:
+
+- Use `FALLBACK_HINT_NONE` when returning actual cost data
+- Use `FALLBACK_HINT_RECOMMENDED` when no billing data exists for the resource
+- Use `FALLBACK_HINT_REQUIRED` when the plugin fundamentally cannot handle the resource type
+- Return gRPC errors (not hints) for system failures (API errors, network timeouts)
+- Zero-cost results with `FALLBACK_HINT_NONE` indicate "free tier", not "no data"
+
 ### Enum Validation Pattern (Registry Package)
 
 The registry package implements **optimized zero-allocation validation** for all enum types:

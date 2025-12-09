@@ -92,6 +92,12 @@ type MockPlugin struct {
 
 	// Recommendations configuration
 	RecommendationsConfig RecommendationsConfig
+
+	// FallbackHint configuration for GetActualCost responses.
+	// Thread Safety: This field must be set before the plugin begins serving
+	// requests. Use SetFallbackHint() for configuration, which documents the
+	// thread safety constraints.
+	FallbackHint pbc.FallbackHint
 }
 
 // NewMockPlugin creates a new mock plugin with default configuration.
@@ -135,6 +141,16 @@ func SlowMockPlugin() *MockPlugin {
 	plugin.PricingSpecDelay = pricingSpecDelayMs * time.Millisecond
 	plugin.EstimateCostDelay = estimateCostDelayMs * time.Millisecond
 	return plugin
+}
+
+// SetFallbackHint sets the fallback hint to be returned in GetActualCost responses.
+//
+// Thread Safety: This method is NOT safe for concurrent use. All calls to
+// SetFallbackHint must complete before the plugin begins serving requests.
+// Typical usage is to configure the mock during test setup, before calling
+// harness.Start() or benchmark.ResetTimer().
+func (m *MockPlugin) SetFallbackHint(hint pbc.FallbackHint) {
+	m.FallbackHint = hint
 }
 
 // Name returns the plugin name.
@@ -268,7 +284,8 @@ func (m *MockPlugin) GetActualCost(
 	}
 
 	return &pbc.GetActualCostResponse{
-		Results: results,
+		Results:      results,
+		FallbackHint: m.FallbackHint,
 	}, nil
 }
 
@@ -897,3 +914,23 @@ func (m *MockPlugin) EstimateCost(
 		CostMonthly: monthlyCost,
 	}, nil
 }
+
+// =============================================================================
+// FallbackHint Helper Functions for Benchmarks
+// =============================================================================
+
+// NewActualCostResponseWithHint creates a GetActualCostResponse with results and a fallback hint.
+// This is a convenience function for benchmark tests.
+func NewActualCostResponseWithHint(
+	results []*pbc.ActualCostResult,
+	hint pbc.FallbackHint,
+) *pbc.GetActualCostResponse {
+	return &pbc.GetActualCostResponse{
+		Results:      results,
+		FallbackHint: hint,
+	}
+}
+
+// NOTE: ValidateActualCostResponseHelper was removed. Use pluginsdk.ValidateActualCostResponse
+// instead, which is the canonical implementation for validating GetActualCostResponse messages.
+// Import: "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"

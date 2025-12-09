@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
-
+	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 )
 
 // BenchmarkName benchmarks the Name RPC method.
@@ -631,4 +631,141 @@ func TestGetRecommendations_LargeResultSetLatency(t *testing.T) {
 		t.Errorf("GetRecommendations latency %v exceeds %v requirement", duration, maxLatency)
 	}
 	t.Logf("GetRecommendations latency for 10k recommendations: %v", duration)
+}
+
+// =============================================================================
+// FallbackHint Performance Benchmarks
+// =============================================================================
+
+// BenchmarkFallbackHintResponseCreation benchmarks creating responses with different FallbackHint values.
+// Measures overhead of the functional options pattern for response construction.
+func BenchmarkFallbackHintResponseCreation(b *testing.B) {
+	b.Run("WithoutHint", func(b *testing.B) {
+		results := []*pbc.ActualCostResult{
+			{Cost: 10.0, Source: "aws-ce"},
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			resp := &pbc.GetActualCostResponse{Results: results}
+			_ = resp.GetResults() // Use the result to avoid unused write warning
+		}
+	})
+
+	b.Run("WithFallbackHintNone", func(b *testing.B) {
+		results := []*pbc.ActualCostResult{
+			{Cost: 10.0, Source: "aws-ce"},
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			_ = plugintesting.NewActualCostResponseWithHint(
+				results,
+				pbc.FallbackHint_FALLBACK_HINT_NONE,
+			)
+		}
+	})
+
+	b.Run("WithFallbackHintRecommended", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			_ = plugintesting.NewActualCostResponseWithHint(
+				nil,
+				pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED,
+			)
+		}
+	})
+
+	b.Run("WithFallbackHintRequired", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			_ = plugintesting.NewActualCostResponseWithHint(
+				nil,
+				pbc.FallbackHint_FALLBACK_HINT_REQUIRED,
+			)
+		}
+	})
+}
+
+// BenchmarkGetActualCostWithFallbackHint benchmarks GetActualCost RPC with different FallbackHint values.
+// Validates that FallbackHint adds minimal overhead to RPC performance.
+func BenchmarkGetActualCostWithFallbackHint(b *testing.B) {
+	testCases := []struct {
+		name string
+		hint pbc.FallbackHint
+	}{
+		{"Unspecified", pbc.FallbackHint_FALLBACK_HINT_UNSPECIFIED},
+		{"None", pbc.FallbackHint_FALLBACK_HINT_NONE},
+		{"Recommended", pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED},
+		{"Required", pbc.FallbackHint_FALLBACK_HINT_REQUIRED},
+	}
+
+	for _, tc := range testCases {
+		b.Run(tc.name, func(b *testing.B) {
+			plugin := plugintesting.NewMockPlugin()
+			plugin.SetFallbackHint(tc.hint)
+
+			harness := plugintesting.NewTestHarness(plugin)
+			harness.Start(&testing.T{})
+			defer harness.Stop()
+
+			client := harness.Client()
+			ctx := context.Background()
+			start, end := plugintesting.CreateTimeRange(plugintesting.HoursPerDay)
+
+			b.ReportAllocs()
+			b.ResetTimer()
+			for range b.N {
+				resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+					ResourceId: "test-resource",
+					Start:      start,
+					End:        end,
+				})
+				if err != nil {
+					b.Fatalf("GetActualCost() failed: %v", err)
+				}
+				if resp.GetFallbackHint() != tc.hint {
+					b.Fatalf("Expected hint %v, got %v", tc.hint, resp.GetFallbackHint())
+				}
+			}
+		})
+	}
+}
+
+// BenchmarkValidateActualCostResponse benchmarks response validation with various data sizes.
+func BenchmarkValidateActualCostResponse(b *testing.B) {
+	testCases := []struct {
+		name        string
+		resultCount int
+	}{
+		{"Empty", 0},
+		{"1Result", 1},
+		{"10Results", 10},
+		{"100Results", 100},
+		{"1000Results", 1000},
+	}
+
+	for _, tc := range testCases {
+		b.Run(tc.name, func(b *testing.B) {
+			results := make([]*pbc.ActualCostResult, tc.resultCount)
+			for i := range tc.resultCount {
+				results[i] = &pbc.ActualCostResult{
+					Cost:   float64(i) * 1.5,
+					Source: "aws-ce",
+				}
+			}
+			resp := &pbc.GetActualCostResponse{
+				Results:      results,
+				FallbackHint: pbc.FallbackHint_FALLBACK_HINT_NONE,
+			}
+
+			b.ReportAllocs()
+			b.ResetTimer()
+			for range b.N {
+				_ = pluginsdk.ValidateActualCostResponse(resp)
+			}
+		})
+	}
 }
