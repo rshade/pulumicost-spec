@@ -37,6 +37,7 @@ func TestBasicPluginFunctionality(t *testing.T) {
 	testGetPricingSpecRPC(ctx, t, client)
 }
 
+// testNameRPC tests the Name RPC functionality.
 func testNameRPC(
 	ctx context.Context,
 	t *testing.T,
@@ -59,6 +60,7 @@ func testNameRPC(
 	})
 }
 
+// testSupportsRPC tests the Supports RPC functionality.
 func testSupportsRPC(ctx context.Context, t *testing.T, client pbc.CostSourceServiceClient) {
 	t.Run("Supports", func(t *testing.T) {
 		// Test supported resource
@@ -2378,4 +2380,241 @@ func TestConcurrentEstimateCostWithTimeout(t *testing.T) {
 	}
 
 	t.Logf("Timeout test: %d/%d requests completed within %v", success, numRequests, timeout)
+}
+
+// =============================================================================
+// GetRecommendations Integration Tests
+// =============================================================================
+
+// createRecommendationsTestHarness creates a test harness with recommendations configured.
+func createRecommendationsTestHarness(t *testing.T) (*plugintesting.TestHarness, pbc.CostSourceServiceClient) {
+	plugin := plugintesting.NewMockPlugin()
+	sampleRecs := plugintesting.GenerateSampleRecommendations(10)
+	plugin.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+		Recommendations: sampleRecs,
+	})
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	return harness, harness.Client()
+}
+
+// TestGetRecommendations_BasicRequest tests basic GetRecommendations functionality.
+func TestGetRecommendations_BasicRequest(t *testing.T) {
+	harness, client := createRecommendationsTestHarness(t)
+	defer harness.Stop()
+
+	resp, err := client.GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+	if err != nil {
+		t.Fatalf("GetRecommendations() failed: %v", err)
+	}
+
+	if resp == nil {
+		t.Fatal("Response is nil")
+	}
+
+	recs := resp.GetRecommendations()
+	if len(recs) != 10 {
+		t.Errorf("Expected 10 recommendations, got %d", len(recs))
+	}
+
+	validateRecommendationFields(t, recs)
+}
+
+// validateRecommendationFields validates required fields on recommendations.
+func validateRecommendationFields(t *testing.T, recs []*pbc.Recommendation) {
+	for i, rec := range recs {
+		if rec.GetId() == "" {
+			t.Errorf("Recommendation %d missing id", i)
+		}
+		if rec.GetCategory() == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED {
+			t.Errorf("Recommendation %d has unspecified category", i)
+		}
+		if rec.GetActionType() == pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED {
+			t.Errorf("Recommendation %d has unspecified action_type", i)
+		}
+		if rec.GetPriority() == pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_UNSPECIFIED {
+			t.Errorf("Recommendation %d has unspecified priority", i)
+		}
+		if rec.GetResource() == nil {
+			t.Errorf("Recommendation %d missing resource", i)
+		}
+		if rec.GetImpact() == nil {
+			t.Errorf("Recommendation %d missing impact", i)
+		}
+	}
+}
+
+// TestGetRecommendations_SummaryValidation tests summary calculation.
+func TestGetRecommendations_SummaryValidation(t *testing.T) {
+	harness, client := createRecommendationsTestHarness(t)
+	defer harness.Stop()
+
+	t.Run("projection_period_wiring", func(t *testing.T) {
+		req := &pbc.GetRecommendationsRequest{
+			ProjectionPeriod: "30d",
+		}
+		resp, err := client.GetRecommendations(context.Background(), req)
+		if err != nil {
+			t.Fatalf("GetRecommendations() failed: %v", err)
+		}
+		if resp.GetSummary() == nil {
+			t.Fatal("GetRecommendations() returned a nil summary")
+		}
+		if resp.GetSummary().GetProjectionPeriod() != "30d" {
+			t.Errorf("Expected summary projection period '30d', got '%s'", resp.GetSummary().GetProjectionPeriod())
+		}
+	})
+
+	resp, err := client.GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+	if err != nil {
+		t.Fatalf("GetRecommendations() failed: %v", err)
+	}
+
+	summary := resp.GetSummary()
+	if summary == nil {
+		t.Fatal("Summary is nil")
+	}
+
+	recs := resp.GetRecommendations()
+	if summary.GetTotalRecommendations() != int32(len(recs)) {
+		t.Errorf("Summary count %d doesn't match recommendations count %d",
+			summary.GetTotalRecommendations(), len(recs))
+	}
+
+	var expectedSavings float64
+	for _, rec := range recs {
+		if rec.GetImpact() != nil {
+			expectedSavings += rec.GetImpact().GetEstimatedSavings()
+		}
+	}
+
+	if diff := summary.GetTotalEstimatedSavings() - expectedSavings; diff < -0.01 || diff > 0.01 {
+		t.Errorf("Summary savings %f doesn't match calculated %f",
+			summary.GetTotalEstimatedSavings(), expectedSavings)
+	}
+
+	t.Logf("Summary: %d recommendations, $%.2f total savings",
+		summary.GetTotalRecommendations(), summary.GetTotalEstimatedSavings())
+}
+
+// TestGetRecommendations_EmptyPlugin tests empty response when no recommendations configured.
+func TestGetRecommendations_EmptyPlugin(t *testing.T) {
+	emptyPlugin := plugintesting.NewMockPlugin()
+	// Explicitly clear recommendations to test empty response behavior
+	emptyPlugin.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{}, // Empty slice
+	})
+	harness := plugintesting.NewTestHarness(emptyPlugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+	if err != nil {
+		t.Fatalf("GetRecommendations() failed: %v", err)
+	}
+
+	if len(resp.GetRecommendations()) != 0 {
+		t.Errorf("Expected empty recommendations, got %d", len(resp.GetRecommendations()))
+	}
+
+	if resp.GetSummary() == nil {
+		t.Error("Summary should be provided even for empty results")
+	}
+
+	if resp.GetSummary().GetTotalRecommendations() != 0 {
+		t.Errorf("Expected 0 total recommendations, got %d", resp.GetSummary().GetTotalRecommendations())
+	}
+}
+
+// TestGetRecommendations_ErrorHandling tests error responses.
+func TestGetRecommendations_ErrorHandling(t *testing.T) {
+	errorPlugin := plugintesting.NewMockPlugin()
+	errorPlugin.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+		ShouldError:  true,
+		ErrorMessage: "simulated recommendations error",
+	})
+
+	harness := plugintesting.NewTestHarness(errorPlugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	_, err := harness.Client().GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+	if err == nil {
+		t.Error("Expected error but got nil")
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		t.Errorf("Expected gRPC status error, got: %v", err)
+	} else if st.Code() != codes.Unavailable {
+		t.Errorf("Expected Unavailable status code, got: %v", st.Code())
+	}
+}
+
+// TestGetRecommendations_Concurrent tests concurrent request handling.
+func TestGetRecommendations_Concurrent(t *testing.T) {
+	harness, client := createRecommendationsTestHarness(t)
+	defer harness.Stop()
+
+	const numRequests = 10
+	var wg sync.WaitGroup
+	errCh := make(chan error, numRequests)
+
+	for range numRequests {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := client.GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+			if err != nil {
+				errCh <- err
+			}
+		}()
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	var errs []error
+	for err := range errCh {
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		t.Errorf("Concurrent requests failed: %v", errs)
+	}
+
+	t.Logf("Successfully handled %d concurrent GetRecommendations requests", numRequests)
+}
+
+// TestGetRecommendations_CategoryDistribution tests category counts in summary.
+func TestGetRecommendations_CategoryDistribution(t *testing.T) {
+	harness, client := createRecommendationsTestHarness(t)
+	defer harness.Stop()
+
+	resp, err := client.GetRecommendations(context.Background(), &pbc.GetRecommendationsRequest{})
+	if err != nil {
+		t.Fatalf("GetRecommendations() failed: %v", err)
+	}
+	if resp == nil {
+		t.Fatal("GetRecommendations() returned nil response")
+	}
+	if resp.GetSummary() == nil {
+		t.Fatal("GetRecommendations() returned a nil summary")
+	}
+
+	catCount := make(map[string]int)
+	for _, rec := range resp.GetRecommendations() {
+		catCount[rec.GetCategory().String()]++
+	}
+
+	t.Logf("Category distribution: %v", catCount)
+
+	summary := resp.GetSummary()
+	for cat, count := range catCount {
+		summaryCount := summary.GetCountByCategory()[cat]
+		if summaryCount != int32(count) {
+			t.Errorf("Summary category count for %s: expected %d, got %d", cat, count, summaryCount)
+		}
+	}
 }

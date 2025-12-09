@@ -1,0 +1,78 @@
+{
+  "recommendations": [
+    {
+      "id": "rec-aws-rightsize-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE",
+      "resource": {
+        "id": "i-0abc123def456789",
+        "name": "web-server-prod-01",
+        "provider": "aws",
+        "resource_type": "ec2",
+        "region": "us-east-1",
+        "availability_zone": "us-east-1a",
+        "sku": "m5.2xlarge",
+        "tags": {
+          "environment": "production",
+          "team": "platform",
+          "cost-center": "engineering"
+        },
+        "utilization": {
+          "cpu_percent": 12.5,
+          "memory_percent": 28.3,
+          "network_in_mbps": 0.5,
+          "network_out_mbps": 2.1
+        }
+      },
+      "rightsize": {
+        "current_sku": "m5.2xlarge",
+        "recommended_sku": "m5.large",
+        "current_instance_type": "m5.2xlarge",
+        "recommended_instance_type": "m5.large",
+        "projected_utilization": {
+          "cpu_percent": 50.0,
+          "memory_percent": 56.6
+        }
+      },
+      "impact": {
+        "estimated_savings": 234.72,
+        "currency": "USD",
+        "projection_period": "30"
+      },
+      "priority": "RECOMMENDATION_PRIORITY_HIGH",
+      "confidence_score": 0.92,
+      "description": "Rightsize underutilized EC2 instance from m5.2xlarge to m5.large",
+      "reasoning": [
+        "CPU utilization has averaged 12.5% over the past 14 days",
+        "Memory utilization has averaged 28.3% over the past 14 days",
+        "Recommended instance type provides adequate headroom for peak usage"
+      ],
+      "source": "aws-compute-optimizer",
+      "created_at": "2025-12-03T08:00:00Z",
+      "metadata": {
+        "observation_period_days": 14,
+        "peak_cpu_percent": 35.2,
+        "peak_memory_percent": 52.1,
+        "account_id": "123456789012"
+      }
+    }
+  ],
+  "summary": {
+    "total_recommendations": 1,
+    "projection_period": "30",
+    "count_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 1
+    },
+    "savings_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 234.72
+    },
+    "count_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 1
+    },
+    "savings_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 234.72
+    },
+    "total_estimated_savings": 234.72,
+    "currency": "USD"
+  }
+}

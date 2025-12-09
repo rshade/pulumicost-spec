@@ -316,6 +316,8 @@ func BenchmarkSupports(b *testing.B)
 func BenchmarkGetActualCost(b *testing.B)
 func BenchmarkGetProjectedCost(b *testing.B)
 func BenchmarkGetPricingSpec(b *testing.B)
+func BenchmarkGetRecommendations_LargeResultSet(b *testing.B)
+func BenchmarkGetRecommendations_LargeResultSetPagination(b *testing.B)
 func BenchmarkAllMethods(b *testing.B)
 func BenchmarkConcurrentRequests(b *testing.B)
 ```
@@ -345,6 +347,9 @@ The conformance suite provides multi-level validation across four test categorie
 - `RPCCorrectness_ErrorHandling` - Proper gRPC error codes
 - `RPCCorrectness_TimeRangeValidation` - Time range validation
 - `RPCCorrectness_ConsistentResponses` - Response consistency
+- `RPCCorrectness_GetRecommendations_Pagination` - Pagination token handling
+- `RPCCorrectness_GetRecommendations_Filtering` - Filter criteria validation
+- `RPCCorrectness_GetRecommendations_ActionDetails` - Action type details
 
 **Performance Tests:**
 
@@ -352,6 +357,8 @@ The conformance suite provides multi-level validation across four test categorie
 - `Performance_SupportsLatency` - Supports RPC latency threshold
 - `Performance_GetProjectedCostLatency` - GetProjectedCost latency
 - `Performance_GetPricingSpecLatency` - GetPricingSpec latency
+- `Performance_GetRecommendationsLatency` - GetRecommendations latency
+- `Performance_GetRecommendations_LargeResultSet` - Large result set performance
 - `Performance_BaselineVariance` - Variance within 10% (SC-003)
 
 **Concurrency Tests:**
@@ -495,6 +502,247 @@ func ValidateNameResponse(response *pbc.NameResponse) error
 - SHOULD be consistent across calls
 - SHOULD provide meaningful descriptions
 
+### GetRecommendations()
+
+**Basic Requirements:**
+
+- MUST return empty list (not error) if plugin doesn't support recommendations
+- Recommendations MUST include valid category, action_type, and resource info
+- Impact MUST include estimated_savings and currency
+- Summary MUST accurately reflect aggregated statistics
+
+**Standard Requirements:**
+
+- SHOULD support pagination with page_size and page_token
+- SHOULD support filtering by provider, category, and action_type
+- MUST respond within 500ms for typical result sets (< 100 recommendations)
+
+**Advanced Requirements:**
+
+- MUST handle large result sets efficiently (1000+ recommendations)
+- Pagination MUST be stable and consistent across pages
+- SHOULD respond within 100ms for paginated requests
+
+**Usage Examples:**
+
+```go
+// Basic GetRecommendations call
+func TestGetRecommendations(t *testing.T) {
+    plugin := &MyPluginImpl{}
+    harness := plugintesting.NewTestHarness(plugin)
+    harness.Start(t)
+    defer harness.Stop()
+
+    client := harness.Client()
+    ctx := context.Background()
+
+    // Get all recommendations
+    resp, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{})
+    if err != nil {
+        t.Fatalf("GetRecommendations() failed: %v", err)
+    }
+    if resp == nil {
+        t.Fatal("GetRecommendations() returned nil response")
+    }
+
+    // Validate response structure
+    if resp.GetSummary() == nil {
+        t.Error("Summary should not be nil")
+    }
+    if resp.GetSummary().GetTotalRecommendations() != int32(len(resp.GetRecommendations())) {
+        t.Error("Summary count mismatch")
+    }
+}
+
+// Test with filtering
+func TestGetRecommendationsFiltered(t *testing.T) {
+    plugin := plugintesting.NewMockPlugin()
+    harness := plugintesting.NewTestHarness(plugin)
+    harness.Start(t)
+    defer harness.Stop()
+
+    client := harness.Client()
+    ctx := context.Background()
+
+    // Filter by provider and category
+    resp, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        Filter: &pbc.RecommendationFilter{
+            Provider: "aws",
+            Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+        },
+    })
+    if err != nil {
+        t.Fatalf("GetRecommendations() failed: %v", err)
+    }
+    if resp == nil {
+        t.Fatal("GetRecommendations() returned nil response")
+    }
+
+    // Verify all recommendations match filter
+    for _, rec := range resp.GetRecommendations() {
+        if rec == nil {
+            t.Error("Recommendation should not be nil")
+            continue
+        }
+        if rec.GetResource() == nil {
+            t.Error("Resource should not be nil")
+            continue
+        }
+        if rec.GetResource().GetProvider() != "aws" {
+            t.Errorf("Expected aws provider, got %s", rec.GetResource().GetProvider())
+        }
+        if rec.GetCategory() != pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST {
+            t.Errorf("Expected COST category, got %s", rec.GetCategory())
+        }
+    }
+}
+
+// Test pagination
+func TestGetRecommendationsPagination(t *testing.T) {
+    client := harness.Client()
+    ctx := context.Background()
+
+    // First page
+    page1, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        PageSize: 5,
+    })
+    if err != nil {
+        t.Fatalf("GetRecommendations() page 1 failed: %v", err)
+    }
+
+    if len(page1.GetRecommendations()) > 5 {
+        t.Errorf("Expected max 5 recommendations, got %d", len(page1.GetRecommendations()))
+    }
+
+    // Get next page if available
+    if page1.GetNextPageToken() != "" {
+        page2, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+            PageSize:  5,
+            PageToken: page1.GetNextPageToken(),
+        })
+        if err != nil {
+            t.Fatalf("GetRecommendations() page 2 failed: %v", err)
+        }
+
+        // Verify no duplicate IDs between pages
+        page1IDs := make(map[string]bool)
+        for _, rec := range page1.GetRecommendations() {
+            page1IDs[rec.GetId()] = true
+        }
+        for _, rec := range page2.GetRecommendations() {
+            if page1IDs[rec.GetId()] {
+                t.Errorf("Duplicate recommendation ID across pages: %s", rec.GetId())
+            }
+        }
+    }
+}
+```
+
+**Mock Plugin Configuration for Recommendations:**
+
+```go
+// Configure mock with recommendations
+mock := plugintesting.NewMockPlugin()
+
+// Default mock includes 12 sample recommendations
+// Clear them for empty plugin test
+mock.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+    Recommendations: []*pbc.Recommendation{}, // Empty
+})
+
+// Or configure custom recommendations
+mock.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+    Recommendations: []*pbc.Recommendation{
+        {
+            Id:         "rec-001",
+            Category:   pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+            ActionType: pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+            Resource: &pbc.ResourceRecommendationInfo{
+                Id:       "i-abc123",
+                Provider: "aws",
+            },
+            Impact: &pbc.RecommendationImpact{
+                EstimatedSavings: 100.0,
+                Currency:         "USD",
+            },
+        },
+    },
+})
+
+// Configure error behavior
+mock.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+    ShouldError:  true,
+    ErrorMessage: "mock recommendations error",
+})
+```
+
+**Validating Recommendation Responses:**
+
+```go
+// Validate individual recommendations
+if resp == nil {
+    t.Fatal("Response cannot be nil")
+}
+if resp.GetSummary() == nil {
+    t.Error("Summary cannot be nil in a valid response")
+}
+for _, rec := range resp.GetRecommendations() {
+    if rec == nil {
+        t.Error("Recommendation cannot be nil")
+        continue
+    }
+    // Required fields
+    if rec.GetId() == "" {
+        t.Error("Recommendation ID is required")
+    }
+    if rec.GetCategory() == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED {
+        t.Error("Category must be specified")
+    }
+    if rec.GetResource() == nil {
+        t.Error("Resource info is required")
+    }
+
+    // Validate impact
+    if rec.GetImpact() != nil {
+        if rec.GetImpact().GetCurrency() == "" {
+            t.Error("Currency is required when impact provided")
+        }
+        if len(rec.GetImpact().GetCurrency()) != 3 {
+            t.Error("Currency must be 3-character ISO code")
+        }
+    }
+
+    // Validate action details based on type
+    switch rec.GetActionType() {
+    case pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE:
+        if rec.GetRightsize() == nil {
+            t.Error("Rightsize action must have rightsize details")
+        }
+    case pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS:
+        if rec.GetKubernetes() == nil {
+            t.Error("Adjust requests must have kubernetes details")
+        }
+    }
+}
+
+// Validate summary calculations
+var calcSavings float64
+for _, rec := range resp.GetRecommendations() {
+    if rec == nil {
+        continue
+    }
+    if rec.GetImpact() != nil {
+        calcSavings += rec.GetImpact().GetEstimatedSavings()
+    }
+}
+if resp.GetSummary() == nil {
+    t.Error("Cannot validate summary calculations without summary")
+} else if math.Abs(calcSavings-resp.GetSummary().GetTotalEstimatedSavings()) > 0.01 {
+    t.Errorf("Summary savings mismatch: calculated %.2f, reported %.2f",
+        calcSavings, resp.GetSummary().GetTotalEstimatedSavings())
+}
+```
+
 ## Error Handling Requirements
 
 ### Expected Error Codes
@@ -532,14 +780,16 @@ if st.Code() != codes.Internal {
 
 The conformance suite validates against these latency thresholds:
 
-| Method              | Standard | Advanced |
-| ------------------- | -------- | -------- |
-| Name()              | 100ms    | 50ms     |
-| Supports()          | 50ms     | 25ms     |
-| GetProjectedCost()  | 200ms    | 100ms    |
-| GetPricingSpec()    | 200ms    | 100ms    |
-| GetActualCost (24h) | 2000ms   | 1000ms   |
-| GetActualCost (30d) | N/A      | 10000ms  |
+| Method                         | Standard | Advanced |
+| ------------------------------ | -------- | -------- |
+| Name()                         | 100ms    | 50ms     |
+| Supports()                     | 50ms     | 25ms     |
+| GetProjectedCost()             | 200ms    | 100ms    |
+| GetPricingSpec()               | 200ms    | 100ms    |
+| GetActualCost (24h)            | 2000ms   | 1000ms   |
+| GetActualCost (30d)            | N/A      | 10000ms  |
+| GetRecommendations (<100)      | 500ms    | 200ms    |
+| GetRecommendations (paginated) | N/A      | 100ms    |
 
 ### Variance Requirements (SC-003)
 
@@ -578,7 +828,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
+          go-version: "1.24"
 
       - name: Run Integration Tests
         run: go test -v ./...

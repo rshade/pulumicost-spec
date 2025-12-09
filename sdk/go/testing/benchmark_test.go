@@ -533,3 +533,102 @@ func (pts *PerformanceTestSuite) RunPerformanceTests(t *testing.T) {
 	t.Logf("GetPricingSpec Performance: avg=%v, min=%v, max=%v",
 		specMetrics.AvgDuration, specMetrics.MinDuration, specMetrics.MaxDuration)
 }
+
+// largeResultSetRecommendationCount is the number of recommendations for large result set testing.
+const largeResultSetRecommendationCount = 10000
+
+// BenchmarkGetRecommendations_LargeResultSet benchmarks GetRecommendations with 10,000 recommendations
+// returned in a single response. Per SC-005, this should complete in <500ms.
+func BenchmarkGetRecommendations_LargeResultSet(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	// Generate 10,000 recommendations
+	plugin.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+		Recommendations: plugintesting.GenerateSampleRecommendations(largeResultSetRecommendationCount),
+	})
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		_, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+			// Request the full configured set in a single response for SC-005.
+			PageSize: largeResultSetRecommendationCount,
+		})
+		if err != nil {
+			b.Fatalf("GetRecommendations() failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkGetRecommendations_LargeResultSetPagination benchmarks paginating through 10,000 recommendations.
+func BenchmarkGetRecommendations_LargeResultSetPagination(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+		Recommendations: plugintesting.GenerateSampleRecommendations(largeResultSetRecommendationCount),
+	})
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		var token string
+		for {
+			resp, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+				PageSize:  100,
+				PageToken: token,
+			})
+			if err != nil {
+				b.Fatalf("GetRecommendations() failed: %v", err)
+			}
+			token = resp.GetNextPageToken()
+			if token == "" {
+				break
+			}
+		}
+	}
+}
+
+// TestGetRecommendations_LargeResultSetLatency validates <500ms requirement for large result sets.
+// This tests fetching all 10k recommendations in a single response per SC-005.
+func TestGetRecommendations_LargeResultSetLatency(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.SetRecommendationsConfig(plugintesting.RecommendationsConfig{
+		Recommendations: plugintesting.GenerateSampleRecommendations(largeResultSetRecommendationCount),
+	})
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	// Measure single request latency for the full result set
+	start := time.Now()
+	_, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+		PageSize: largeResultSetRecommendationCount,
+	})
+	duration := time.Since(start)
+
+	if err != nil {
+		t.Fatalf("GetRecommendations() failed: %v", err)
+	}
+
+	maxLatency := 500 * time.Millisecond
+	if duration > maxLatency {
+		t.Errorf("GetRecommendations latency %v exceeds %v requirement", duration, maxLatency)
+	}
+	t.Logf("GetRecommendations latency for 10k recommendations: %v", duration)
+}

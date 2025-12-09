@@ -1,0 +1,83 @@
+{
+  "recommendations": [
+    {
+      "id": "rec-gcp-rightsize-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE",
+      "resource": {
+        "id": "projects/my-project/zones/us-central1-a/instances/worker-node-05",
+        "name": "worker-node-05",
+        "provider": "gcp",
+        "resource_type": "compute_instance",
+        "region": "us-central1-a",
+        "sku": "n2-standard-8",
+        "tags": {
+          "env": "production",
+          "team": "data-engineering",
+          "workload": "batch-processing"
+        },
+        "utilization": {
+          "cpu_percent": 15.8,
+          "memory_percent": 22.1,
+          "network_in_mbps": 0.8,
+          "network_out_mbps": 1.5,
+          "custom_metrics": {
+            "disk_read_iops": 120.0,
+            "disk_write_iops": 85.0
+          }
+        }
+      },
+      "rightsize": {
+        "current_sku": "n2-standard-8",
+        "recommended_sku": "n2-standard-4",
+        "current_instance_type": "n2-standard-8",
+        "recommended_instance_type": "n2-standard-4",
+        "projected_utilization": {
+          "cpu_percent": 31.6,
+          "memory_percent": 44.2
+        }
+      },
+      "impact": {
+        "estimated_savings": 167.40,
+        "currency": "USD",
+        "projection_period": "30"
+      },
+      "priority": "RECOMMENDATION_PRIORITY_MEDIUM",
+      "confidence_score": 0.89,
+      "description": "Rightsize GCE instance from n2-standard-8 to n2-standard-4",
+      "reasoning": [
+        "CPU utilization averaged 15.8% over the observation period",
+        "Memory utilization averaged 22.1% over the observation period",
+        "Workload patterns indicate batch processing with predictable peak hours",
+        "Recommended instance provides sufficient headroom for peak demand"
+      ],
+      "source": "gcp-recommender",
+      "created_at": "2025-12-03T10:30:00Z",
+      "metadata": {
+        "project_id": "my-project",
+        "zone": "us-central1-a",
+        "recommender_id": "google.compute.instance.MachineTypeRecommender",
+        "insight_type": "google.compute.instance.IdleResourceInsight",
+        "observation_period": "30d"
+      }
+    }
+  ],
+  "summary": {
+    "total_recommendations": 1,
+    "projection_period": "30",
+    "count_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 1
+    },
+    "savings_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 167.40
+    },
+    "count_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 1
+    },
+    "savings_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE": 167.40
+    },
+    "total_estimated_savings": 167.40,
+    "currency": "USD"
+  }
+}

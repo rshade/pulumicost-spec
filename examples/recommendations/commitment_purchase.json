@@ -1,0 +1,131 @@
+{
+  "recommendations": [
+    {
+      "id": "rec-commitment-001",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT",
+      "resource": {
+        "id": "aws-account/123456789012",
+        "name": "Production Account EC2 Fleet",
+        "provider": "aws",
+        "resource_type": "ec2_fleet",
+        "region": "us-east-1",
+        "tags": {
+          "environment": "production",
+          "commitment_scope": "account"
+        },
+        "utilization": {
+          "custom_metrics": {
+            "on_demand_spend": 15420.5,
+            "covered_hours_percent": 45.2,
+            "total_running_hours": 21840.0
+          }
+        }
+      },
+      "commitment": {
+        "commitment_type": "savings_plan",
+        "term": "1_year",
+        "payment_option": "partial_upfront",
+        "recommended_quantity": 10.0,
+        "scope": "account"
+      },
+      "impact": {
+        "estimated_savings": 4626.15,
+        "currency": "USD",
+        "projection_period": "365"
+      },
+      "priority": "RECOMMENDATION_PRIORITY_HIGH",
+      "confidence_score": 0.94,
+      "description": "Purchase 1-year Compute Savings Plan with partial upfront payment",
+      "reasoning": [
+        "Current on-demand spend averages $15,420/month on eligible compute",
+        "Historical usage shows 95%+ consistency in baseline compute hours",
+        "1-year partial upfront offers 30% savings vs on-demand pricing",
+        "Flexibility of Compute Savings Plan covers EC2, Fargate, and Lambda"
+      ],
+      "source": "aws-cost-explorer",
+      "created_at": "2025-12-03T14:22:10Z",
+      "metadata": {
+        "account_id": "123456789012",
+        "recommendation_type": "COMPUTE_SP",
+        "lookback_period_days": "30",
+        "hourly_commitment_usd": "10.00",
+        "upfront_cost_usd": "21600.00",
+        "break_even_months": "4",
+        "payer_account_id": "123456789012"
+      }
+    },
+    {
+      "id": "rec-commitment-002",
+      "category": "RECOMMENDATION_CATEGORY_COST",
+      "action_type": "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT",
+      "resource": {
+        "id": "projects/my-project/regions/us-central1",
+        "name": "GCP us-central1 Compute Fleet",
+        "provider": "gcp",
+        "resource_type": "compute_fleet",
+        "region": "us-central1",
+        "tags": {
+          "project": "my-project",
+          "commitment_scope": "region"
+        },
+        "utilization": {
+          "custom_metrics": {
+            "on_demand_spend": 8500.0,
+            "total_vcpu_hours": 35040.0,
+            "total_memory_gb_hours": 140160.0
+          }
+        }
+      },
+      "commitment": {
+        "commitment_type": "committed_use_discount",
+        "term": "3_year",
+        "payment_option": "monthly",
+        "recommended_quantity": 32.0,
+        "scope": "region"
+      },
+      "impact": {
+        "estimated_savings": 30600.0,
+        "currency": "USD",
+        "projection_period": "365"
+      },
+      "priority": "RECOMMENDATION_PRIORITY_MEDIUM",
+      "confidence_score": 0.88,
+      "description": "Purchase 3-year Committed Use Discount for 32 vCPUs in us-central1",
+      "reasoning": [
+        "Consistent baseline usage of 32+ vCPUs over past 90 days",
+        "3-year CUD offers 57% discount vs on-demand pricing",
+        "Regional scope provides flexibility across zones",
+        "Break-even achieved within 8 months of commitment"
+      ],
+      "source": "gcp-recommender",
+      "created_at": "2025-12-03T15:45:30Z",
+      "metadata": {
+        "project_id": "my-project",
+        "machine_family": "n2",
+        "vcpu_count": "32",
+        "memory_gb": "128",
+        "lookback_period": "90d",
+        "monthly_commitment_usd": "2800.00"
+      }
+    }
+  ],
+  "summary": {
+    "total_recommendations": 2,
+    "projection_period": "365",
+    "count_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 2
+    },
+    "savings_by_category": {
+      "RECOMMENDATION_CATEGORY_COST": 35226.15
+    },
+    "count_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT": 2
+    },
+    "savings_by_action_type": {
+      "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT": 35226.15
+    },
+    "total_estimated_savings": 35226.15,
+    "currency": "USD"
+  }
+}

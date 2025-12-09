@@ -534,13 +534,16 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
-- Go 1.25.5 (per go.mod toolchain) + Go stdlib only (`os`, `strconv`, `strings`) (013-pluginsdk-env)
+- Go 1.25.5 (as per go.mod) + Go stdlib only (`os`, `strconv`, `strings`) (013-pluginsdk-env)
 - N/A (reads environment variables at runtime) (013-pluginsdk-env)
+
+- Go 1.25.5 (as per go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1 (013-recommendations-rpc)
+- N/A (stateless RPC, recommendations fetched from backend services) (013-recommendations-rpc)
 
 - Go 1.25.5 (as per go.mod) + google.golang.org/grpc, prometheus/client_golang (new) (014-plugin-metrics)
 - N/A (in-memory metrics only) (014-plugin-metrics)
 
-- Go 1.25.5 (toolchain as specified in go.mod) + None (stdlib only - no external dependencies required) (013-iso4217-currency)
+- Go 1.25.5 (as per go.mod) + None (stdlib only - no external dependencies required) (013-iso4217-currency)
 - N/A (static in-memory data structures) (013-iso4217-currency)
 
 - Go 1.25.5 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package) (012-pluginsdk-conformance)

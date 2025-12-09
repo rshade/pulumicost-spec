@@ -280,6 +280,180 @@ func (SLIStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{3}
 }
 
+// RecommendationCategory classifies the type of optimization recommendation.
+type RecommendationCategory int32
+
+const (
+	RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED RecommendationCategory = 0
+	RecommendationCategory_RECOMMENDATION_CATEGORY_COST        RecommendationCategory = 1
+	RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE RecommendationCategory = 2
+	RecommendationCategory_RECOMMENDATION_CATEGORY_SECURITY    RecommendationCategory = 3
+	RecommendationCategory_RECOMMENDATION_CATEGORY_RELIABILITY RecommendationCategory = 4
+)
+
+// Enum value maps for RecommendationCategory.
+var (
+	RecommendationCategory_name = map[int32]string{
+		0: "RECOMMENDATION_CATEGORY_UNSPECIFIED",
+		1: "RECOMMENDATION_CATEGORY_COST",
+		2: "RECOMMENDATION_CATEGORY_PERFORMANCE",
+		3: "RECOMMENDATION_CATEGORY_SECURITY",
+		4: "RECOMMENDATION_CATEGORY_RELIABILITY",
+	}
+	RecommendationCategory_value = map[string]int32{
+		"RECOMMENDATION_CATEGORY_UNSPECIFIED": 0,
+		"RECOMMENDATION_CATEGORY_COST":        1,
+		"RECOMMENDATION_CATEGORY_PERFORMANCE": 2,
+		"RECOMMENDATION_CATEGORY_SECURITY":    3,
+		"RECOMMENDATION_CATEGORY_RELIABILITY": 4,
+	}
+)
+
+func (x RecommendationCategory) Enum() *RecommendationCategory {
+	p := new(RecommendationCategory)
+	*p = x
+	return p
+}
+
+func (x RecommendationCategory) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RecommendationCategory) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[4].Descriptor()
+}
+
+func (RecommendationCategory) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[4]
+}
+
+func (x RecommendationCategory) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RecommendationCategory.Descriptor instead.
+func (RecommendationCategory) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{4}
+}
+
+// RecommendationActionType specifies the type of action recommended.
+type RecommendationActionType int32
+
+const (
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED         RecommendationActionType = 0
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE           RecommendationActionType = 1
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE           RecommendationActionType = 2
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT RecommendationActionType = 3
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS     RecommendationActionType = 4
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY              RecommendationActionType = 5
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED       RecommendationActionType = 6
+)
+
+// Enum value maps for RecommendationActionType.
+var (
+	RecommendationActionType_name = map[int32]string{
+		0: "RECOMMENDATION_ACTION_TYPE_UNSPECIFIED",
+		1: "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE",
+		2: "RECOMMENDATION_ACTION_TYPE_TERMINATE",
+		3: "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT",
+		4: "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS",
+		5: "RECOMMENDATION_ACTION_TYPE_MODIFY",
+		6: "RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED",
+	}
+	RecommendationActionType_value = map[string]int32{
+		"RECOMMENDATION_ACTION_TYPE_UNSPECIFIED":         0,
+		"RECOMMENDATION_ACTION_TYPE_RIGHTSIZE":           1,
+		"RECOMMENDATION_ACTION_TYPE_TERMINATE":           2,
+		"RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT": 3,
+		"RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS":     4,
+		"RECOMMENDATION_ACTION_TYPE_MODIFY":              5,
+		"RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED":       6,
+	}
+)
+
+func (x RecommendationActionType) Enum() *RecommendationActionType {
+	p := new(RecommendationActionType)
+	*p = x
+	return p
+}
+
+func (x RecommendationActionType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RecommendationActionType) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[5].Descriptor()
+}
+
+func (RecommendationActionType) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[5]
+}
+
+func (x RecommendationActionType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RecommendationActionType.Descriptor instead.
+func (RecommendationActionType) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{5}
+}
+
+// RecommendationPriority indicates the urgency of a recommendation.
+type RecommendationPriority int32
+
+const (
+	RecommendationPriority_RECOMMENDATION_PRIORITY_UNSPECIFIED RecommendationPriority = 0
+	RecommendationPriority_RECOMMENDATION_PRIORITY_LOW         RecommendationPriority = 1
+	RecommendationPriority_RECOMMENDATION_PRIORITY_MEDIUM      RecommendationPriority = 2
+	RecommendationPriority_RECOMMENDATION_PRIORITY_HIGH        RecommendationPriority = 3
+	RecommendationPriority_RECOMMENDATION_PRIORITY_CRITICAL    RecommendationPriority = 4
+)
+
+// Enum value maps for RecommendationPriority.
+var (
+	RecommendationPriority_name = map[int32]string{
+		0: "RECOMMENDATION_PRIORITY_UNSPECIFIED",
+		1: "RECOMMENDATION_PRIORITY_LOW",
+		2: "RECOMMENDATION_PRIORITY_MEDIUM",
+		3: "RECOMMENDATION_PRIORITY_HIGH",
+		4: "RECOMMENDATION_PRIORITY_CRITICAL",
+	}
+	RecommendationPriority_value = map[string]int32{
+		"RECOMMENDATION_PRIORITY_UNSPECIFIED": 0,
+		"RECOMMENDATION_PRIORITY_LOW":         1,
+		"RECOMMENDATION_PRIORITY_MEDIUM":      2,
+		"RECOMMENDATION_PRIORITY_HIGH":        3,
+		"RECOMMENDATION_PRIORITY_CRITICAL":    4,
+	}
+)
+
+func (x RecommendationPriority) Enum() *RecommendationPriority {
+	p := new(RecommendationPriority)
+	*p = x
+	return p
+}
+
+func (x RecommendationPriority) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RecommendationPriority) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[6].Descriptor()
+}
+
+func (RecommendationPriority) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[6]
+}
+
+func (x RecommendationPriority) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RecommendationPriority.Descriptor instead.
+func (RecommendationPriority) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{6}
+}
+
 // Status represents the health check status
 type HealthCheckResponse_Status int32
 
@@ -317,11 +491,11 @@ func (x HealthCheckResponse_Status) String() string {
 }
 
 func (HealthCheckResponse_Status) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[4].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[7].Descriptor()
 }
 
 func (HealthCheckResponse_Status) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[4]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[7]
 }
 
 func (x HealthCheckResponse_Status) Number() protoreflect.EnumNumber {
@@ -468,7 +642,10 @@ type SupportsResponse struct {
 	// supported indicates if the resource type is supported by this cost source
 	Supported bool `protobuf:"varint,1,opt,name=supported,proto3" json:"supported,omitempty"`
 	// reason provides optional explanation if supported is false
-	Reason        string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	Reason string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	// capabilities declares optional capabilities the plugin supports
+	// Example: {"recommendations": true}
+	Capabilities  map[string]bool `protobuf:"bytes,3,rep,name=capabilities,proto3" json:"capabilities,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -515,6 +692,13 @@ func (x *SupportsResponse) GetReason() string {
 		return x.Reason
 	}
 	return ""
+}
+
+func (x *SupportsResponse) GetCapabilities() map[string]bool {
+	if x != nil {
+		return x.Capabilities
+	}
+	return nil
 }
 
 // GetActualCostRequest contains parameters for retrieving historical cost data.
@@ -2462,6 +2646,1355 @@ func (x *EstimateCostResponse) GetCostMonthly() float64 {
 	return 0
 }
 
+// GetRecommendationsRequest contains parameters for retrieving recommendations.
+type GetRecommendationsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// filter narrows the recommendations returned
+	Filter *RecommendationFilter `protobuf:"bytes,1,opt,name=filter,proto3" json:"filter,omitempty"`
+	// projection_period specifies the time period for savings projection
+	// Valid values: "daily", "monthly" (default), "annual"
+	ProjectionPeriod string `protobuf:"bytes,2,opt,name=projection_period,json=projectionPeriod,proto3" json:"projection_period,omitempty"`
+	// page_size is the maximum number of recommendations to return (default: 50, max: 1000)
+	PageSize int32 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// page_token is the continuation token from a previous response
+	PageToken     string `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRecommendationsRequest) Reset() {
+	*x = GetRecommendationsRequest{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRecommendationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRecommendationsRequest) ProtoMessage() {}
+
+func (x *GetRecommendationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRecommendationsRequest.ProtoReflect.Descriptor instead.
+func (*GetRecommendationsRequest) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetRecommendationsRequest) GetFilter() *RecommendationFilter {
+	if x != nil {
+		return x.Filter
+	}
+	return nil
+}
+
+func (x *GetRecommendationsRequest) GetProjectionPeriod() string {
+	if x != nil {
+		return x.ProjectionPeriod
+	}
+	return ""
+}
+
+func (x *GetRecommendationsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *GetRecommendationsRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+// GetRecommendationsResponse contains the recommendations and summary.
+type GetRecommendationsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// recommendations is the list of cost optimization recommendations
+	Recommendations []*Recommendation `protobuf:"bytes,1,rep,name=recommendations,proto3" json:"recommendations,omitempty"`
+	// summary provides aggregated statistics for the recommendations included
+	// in this response page (not across all pages). Clients should aggregate
+	// summaries across pages if global totals are needed.
+	Summary *RecommendationSummary `protobuf:"bytes,2,opt,name=summary,proto3" json:"summary,omitempty"`
+	// next_page_token is the token for retrieving the next page (empty if last)
+	NextPageToken string `protobuf:"bytes,3,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRecommendationsResponse) Reset() {
+	*x = GetRecommendationsResponse{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRecommendationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRecommendationsResponse) ProtoMessage() {}
+
+func (x *GetRecommendationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRecommendationsResponse.ProtoReflect.Descriptor instead.
+func (*GetRecommendationsResponse) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *GetRecommendationsResponse) GetRecommendations() []*Recommendation {
+	if x != nil {
+		return x.Recommendations
+	}
+	return nil
+}
+
+func (x *GetRecommendationsResponse) GetSummary() *RecommendationSummary {
+	if x != nil {
+		return x.Summary
+	}
+	return nil
+}
+
+func (x *GetRecommendationsResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+// RecommendationFilter specifies criteria for filtering recommendations.
+type RecommendationFilter struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// provider filters by cloud provider (e.g., "aws", "azure", "gcp", "kubernetes")
+	Provider string `protobuf:"bytes,1,opt,name=provider,proto3" json:"provider,omitempty"`
+	// region filters by deployment region
+	Region string `protobuf:"bytes,2,opt,name=region,proto3" json:"region,omitempty"`
+	// resource_type filters by resource type
+	ResourceType string `protobuf:"bytes,3,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
+	// category filters by recommendation category
+	Category RecommendationCategory `protobuf:"varint,4,opt,name=category,proto3,enum=pulumicost.v1.RecommendationCategory" json:"category,omitempty"`
+	// action_type filters by recommended action type
+	ActionType    RecommendationActionType `protobuf:"varint,5,opt,name=action_type,json=actionType,proto3,enum=pulumicost.v1.RecommendationActionType" json:"action_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecommendationFilter) Reset() {
+	*x = RecommendationFilter{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecommendationFilter) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecommendationFilter) ProtoMessage() {}
+
+func (x *RecommendationFilter) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecommendationFilter.ProtoReflect.Descriptor instead.
+func (*RecommendationFilter) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *RecommendationFilter) GetProvider() string {
+	if x != nil {
+		return x.Provider
+	}
+	return ""
+}
+
+func (x *RecommendationFilter) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *RecommendationFilter) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *RecommendationFilter) GetCategory() RecommendationCategory {
+	if x != nil {
+		return x.Category
+	}
+	return RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED
+}
+
+func (x *RecommendationFilter) GetActionType() RecommendationActionType {
+	if x != nil {
+		return x.ActionType
+	}
+	return RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED
+}
+
+// Recommendation represents a single cost optimization recommendation.
+type Recommendation struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// id is a unique identifier for this recommendation
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// category classifies the type of recommendation
+	Category RecommendationCategory `protobuf:"varint,2,opt,name=category,proto3,enum=pulumicost.v1.RecommendationCategory" json:"category,omitempty"`
+	// action_type specifies what action is recommended
+	ActionType RecommendationActionType `protobuf:"varint,3,opt,name=action_type,json=actionType,proto3,enum=pulumicost.v1.RecommendationActionType" json:"action_type,omitempty"`
+	// resource contains information about the affected resource
+	Resource *ResourceRecommendationInfo `protobuf:"bytes,4,opt,name=resource,proto3" json:"resource,omitempty"`
+	// action_detail contains provider-specific action details
+	//
+	// Types that are valid to be assigned to ActionDetail:
+	//
+	//	*Recommendation_Rightsize
+	//	*Recommendation_Terminate
+	//	*Recommendation_Commitment
+	//	*Recommendation_Kubernetes
+	//	*Recommendation_Modify
+	ActionDetail isRecommendation_ActionDetail `protobuf_oneof:"action_detail"`
+	// impact contains the financial impact assessment
+	Impact *RecommendationImpact `protobuf:"bytes,10,opt,name=impact,proto3" json:"impact,omitempty"`
+	// priority indicates the urgency of the recommendation
+	Priority RecommendationPriority `protobuf:"varint,11,opt,name=priority,proto3,enum=pulumicost.v1.RecommendationPriority" json:"priority,omitempty"`
+	// confidence_score indicates the confidence level (0.0-1.0), nil if unavailable
+	ConfidenceScore *float64 `protobuf:"fixed64,12,opt,name=confidence_score,json=confidenceScore,proto3,oneof" json:"confidence_score,omitempty"`
+	// description is a human-readable summary of the recommendation
+	Description string `protobuf:"bytes,13,opt,name=description,proto3" json:"description,omitempty"`
+	// reasoning contains the reasons why this recommendation was generated
+	Reasoning []string `protobuf:"bytes,14,rep,name=reasoning,proto3" json:"reasoning,omitempty"`
+	// source identifies the data source (e.g., "aws", "kubecost", "azure-advisor")
+	Source string `protobuf:"bytes,15,opt,name=source,proto3" json:"source,omitempty"`
+	// created_at is when the recommendation was generated (optional - may not be
+	// available from all recommendation sources)
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty"`
+	// metadata contains additional provider-specific information
+	Metadata      map[string]string `protobuf:"bytes,17,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Recommendation) Reset() {
+	*x = Recommendation{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Recommendation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Recommendation) ProtoMessage() {}
+
+func (x *Recommendation) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Recommendation.ProtoReflect.Descriptor instead.
+func (*Recommendation) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *Recommendation) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Recommendation) GetCategory() RecommendationCategory {
+	if x != nil {
+		return x.Category
+	}
+	return RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED
+}
+
+func (x *Recommendation) GetActionType() RecommendationActionType {
+	if x != nil {
+		return x.ActionType
+	}
+	return RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED
+}
+
+func (x *Recommendation) GetResource() *ResourceRecommendationInfo {
+	if x != nil {
+		return x.Resource
+	}
+	return nil
+}
+
+func (x *Recommendation) GetActionDetail() isRecommendation_ActionDetail {
+	if x != nil {
+		return x.ActionDetail
+	}
+	return nil
+}
+
+func (x *Recommendation) GetRightsize() *RightsizeAction {
+	if x != nil {
+		if x, ok := x.ActionDetail.(*Recommendation_Rightsize); ok {
+			return x.Rightsize
+		}
+	}
+	return nil
+}
+
+func (x *Recommendation) GetTerminate() *TerminateAction {
+	if x != nil {
+		if x, ok := x.ActionDetail.(*Recommendation_Terminate); ok {
+			return x.Terminate
+		}
+	}
+	return nil
+}
+
+func (x *Recommendation) GetCommitment() *CommitmentAction {
+	if x != nil {
+		if x, ok := x.ActionDetail.(*Recommendation_Commitment); ok {
+			return x.Commitment
+		}
+	}
+	return nil
+}
+
+func (x *Recommendation) GetKubernetes() *KubernetesAction {
+	if x != nil {
+		if x, ok := x.ActionDetail.(*Recommendation_Kubernetes); ok {
+			return x.Kubernetes
+		}
+	}
+	return nil
+}
+
+func (x *Recommendation) GetModify() *ModifyAction {
+	if x != nil {
+		if x, ok := x.ActionDetail.(*Recommendation_Modify); ok {
+			return x.Modify
+		}
+	}
+	return nil
+}
+
+func (x *Recommendation) GetImpact() *RecommendationImpact {
+	if x != nil {
+		return x.Impact
+	}
+	return nil
+}
+
+func (x *Recommendation) GetPriority() RecommendationPriority {
+	if x != nil {
+		return x.Priority
+	}
+	return RecommendationPriority_RECOMMENDATION_PRIORITY_UNSPECIFIED
+}
+
+func (x *Recommendation) GetConfidenceScore() float64 {
+	if x != nil && x.ConfidenceScore != nil {
+		return *x.ConfidenceScore
+	}
+	return 0
+}
+
+func (x *Recommendation) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Recommendation) GetReasoning() []string {
+	if x != nil {
+		return x.Reasoning
+	}
+	return nil
+}
+
+func (x *Recommendation) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *Recommendation) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *Recommendation) GetMetadata() map[string]string {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+type isRecommendation_ActionDetail interface {
+	isRecommendation_ActionDetail()
+}
+
+type Recommendation_Rightsize struct {
+	Rightsize *RightsizeAction `protobuf:"bytes,5,opt,name=rightsize,proto3,oneof"`
+}
+
+type Recommendation_Terminate struct {
+	Terminate *TerminateAction `protobuf:"bytes,6,opt,name=terminate,proto3,oneof"`
+}
+
+type Recommendation_Commitment struct {
+	Commitment *CommitmentAction `protobuf:"bytes,7,opt,name=commitment,proto3,oneof"`
+}
+
+type Recommendation_Kubernetes struct {
+	Kubernetes *KubernetesAction `protobuf:"bytes,8,opt,name=kubernetes,proto3,oneof"`
+}
+
+type Recommendation_Modify struct {
+	Modify *ModifyAction `protobuf:"bytes,9,opt,name=modify,proto3,oneof"`
+}
+
+func (*Recommendation_Rightsize) isRecommendation_ActionDetail() {}
+
+func (*Recommendation_Terminate) isRecommendation_ActionDetail() {}
+
+func (*Recommendation_Commitment) isRecommendation_ActionDetail() {}
+
+func (*Recommendation_Kubernetes) isRecommendation_ActionDetail() {}
+
+func (*Recommendation_Modify) isRecommendation_ActionDetail() {}
+
+// ResourceRecommendationInfo describes the resource targeted by a recommendation.
+// Named differently from existing ResourceDescriptor to avoid confusion.
+type ResourceRecommendationInfo struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// id is the unique resource identifier
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// name is the human-readable resource name
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// provider is the cloud provider
+	Provider string `protobuf:"bytes,3,opt,name=provider,proto3" json:"provider,omitempty"`
+	// resource_type is the type of resource
+	ResourceType string `protobuf:"bytes,4,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
+	// region is the deployment region
+	Region string `protobuf:"bytes,5,opt,name=region,proto3" json:"region,omitempty"`
+	// sku is the SKU or instance type
+	Sku string `protobuf:"bytes,6,opt,name=sku,proto3" json:"sku,omitempty"`
+	// tags are resource labels/tags
+	Tags map[string]string `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// utilization contains current resource utilization metrics
+	Utilization   *ResourceUtilization `protobuf:"bytes,8,opt,name=utilization,proto3" json:"utilization,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResourceRecommendationInfo) Reset() {
+	*x = ResourceRecommendationInfo{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResourceRecommendationInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResourceRecommendationInfo) ProtoMessage() {}
+
+func (x *ResourceRecommendationInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResourceRecommendationInfo.ProtoReflect.Descriptor instead.
+func (*ResourceRecommendationInfo) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *ResourceRecommendationInfo) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ResourceRecommendationInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ResourceRecommendationInfo) GetProvider() string {
+	if x != nil {
+		return x.Provider
+	}
+	return ""
+}
+
+func (x *ResourceRecommendationInfo) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *ResourceRecommendationInfo) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *ResourceRecommendationInfo) GetSku() string {
+	if x != nil {
+		return x.Sku
+	}
+	return ""
+}
+
+func (x *ResourceRecommendationInfo) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *ResourceRecommendationInfo) GetUtilization() *ResourceUtilization {
+	if x != nil {
+		return x.Utilization
+	}
+	return nil
+}
+
+// ResourceUtilization contains current utilization metrics for a resource.
+type ResourceUtilization struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// cpu_percent is CPU utilization percentage
+	CpuPercent float64 `protobuf:"fixed64,1,opt,name=cpu_percent,json=cpuPercent,proto3" json:"cpu_percent,omitempty"`
+	// memory_percent is memory utilization percentage
+	MemoryPercent float64 `protobuf:"fixed64,2,opt,name=memory_percent,json=memoryPercent,proto3" json:"memory_percent,omitempty"`
+	// storage_percent is storage utilization percentage
+	StoragePercent float64 `protobuf:"fixed64,3,opt,name=storage_percent,json=storagePercent,proto3" json:"storage_percent,omitempty"`
+	// network_in_mbps is network ingress in Mbps
+	NetworkInMbps float64 `protobuf:"fixed64,4,opt,name=network_in_mbps,json=networkInMbps,proto3" json:"network_in_mbps,omitempty"`
+	// network_out_mbps is network egress in Mbps
+	NetworkOutMbps float64 `protobuf:"fixed64,5,opt,name=network_out_mbps,json=networkOutMbps,proto3" json:"network_out_mbps,omitempty"`
+	// custom_metrics contains provider-specific utilization metrics
+	CustomMetrics map[string]float64 `protobuf:"bytes,6,rep,name=custom_metrics,json=customMetrics,proto3" json:"custom_metrics,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResourceUtilization) Reset() {
+	*x = ResourceUtilization{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResourceUtilization) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResourceUtilization) ProtoMessage() {}
+
+func (x *ResourceUtilization) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResourceUtilization.ProtoReflect.Descriptor instead.
+func (*ResourceUtilization) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *ResourceUtilization) GetCpuPercent() float64 {
+	if x != nil {
+		return x.CpuPercent
+	}
+	return 0
+}
+
+func (x *ResourceUtilization) GetMemoryPercent() float64 {
+	if x != nil {
+		return x.MemoryPercent
+	}
+	return 0
+}
+
+func (x *ResourceUtilization) GetStoragePercent() float64 {
+	if x != nil {
+		return x.StoragePercent
+	}
+	return 0
+}
+
+func (x *ResourceUtilization) GetNetworkInMbps() float64 {
+	if x != nil {
+		return x.NetworkInMbps
+	}
+	return 0
+}
+
+func (x *ResourceUtilization) GetNetworkOutMbps() float64 {
+	if x != nil {
+		return x.NetworkOutMbps
+	}
+	return 0
+}
+
+func (x *ResourceUtilization) GetCustomMetrics() map[string]float64 {
+	if x != nil {
+		return x.CustomMetrics
+	}
+	return nil
+}
+
+// RightsizeAction contains details for rightsizing recommendations.
+type RightsizeAction struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// current_sku is the current SKU/size
+	CurrentSku string `protobuf:"bytes,1,opt,name=current_sku,json=currentSku,proto3" json:"current_sku,omitempty"`
+	// recommended_sku is the recommended SKU/size
+	RecommendedSku string `protobuf:"bytes,2,opt,name=recommended_sku,json=recommendedSku,proto3" json:"recommended_sku,omitempty"`
+	// current_instance_type is the current instance type
+	CurrentInstanceType string `protobuf:"bytes,3,opt,name=current_instance_type,json=currentInstanceType,proto3" json:"current_instance_type,omitempty"`
+	// recommended_instance_type is the recommended instance type
+	RecommendedInstanceType string `protobuf:"bytes,4,opt,name=recommended_instance_type,json=recommendedInstanceType,proto3" json:"recommended_instance_type,omitempty"`
+	// projected_utilization is the expected utilization after resize
+	ProjectedUtilization *ResourceUtilization `protobuf:"bytes,5,opt,name=projected_utilization,json=projectedUtilization,proto3" json:"projected_utilization,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *RightsizeAction) Reset() {
+	*x = RightsizeAction{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RightsizeAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RightsizeAction) ProtoMessage() {}
+
+func (x *RightsizeAction) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RightsizeAction.ProtoReflect.Descriptor instead.
+func (*RightsizeAction) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *RightsizeAction) GetCurrentSku() string {
+	if x != nil {
+		return x.CurrentSku
+	}
+	return ""
+}
+
+func (x *RightsizeAction) GetRecommendedSku() string {
+	if x != nil {
+		return x.RecommendedSku
+	}
+	return ""
+}
+
+func (x *RightsizeAction) GetCurrentInstanceType() string {
+	if x != nil {
+		return x.CurrentInstanceType
+	}
+	return ""
+}
+
+func (x *RightsizeAction) GetRecommendedInstanceType() string {
+	if x != nil {
+		return x.RecommendedInstanceType
+	}
+	return ""
+}
+
+func (x *RightsizeAction) GetProjectedUtilization() *ResourceUtilization {
+	if x != nil {
+		return x.ProjectedUtilization
+	}
+	return nil
+}
+
+// TerminateAction contains details for termination recommendations.
+type TerminateAction struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// termination_reason explains why termination is recommended
+	TerminationReason string `protobuf:"bytes,1,opt,name=termination_reason,json=terminationReason,proto3" json:"termination_reason,omitempty"`
+	// idle_days is the number of days the resource has been idle
+	IdleDays      int32 `protobuf:"varint,2,opt,name=idle_days,json=idleDays,proto3" json:"idle_days,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TerminateAction) Reset() {
+	*x = TerminateAction{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TerminateAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TerminateAction) ProtoMessage() {}
+
+func (x *TerminateAction) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TerminateAction.ProtoReflect.Descriptor instead.
+func (*TerminateAction) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *TerminateAction) GetTerminationReason() string {
+	if x != nil {
+		return x.TerminationReason
+	}
+	return ""
+}
+
+func (x *TerminateAction) GetIdleDays() int32 {
+	if x != nil {
+		return x.IdleDays
+	}
+	return 0
+}
+
+// CommitmentAction contains details for commitment purchase recommendations.
+type CommitmentAction struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// commitment_type is the type of commitment (reserved_instance, savings_plan, cud)
+	CommitmentType string `protobuf:"bytes,1,opt,name=commitment_type,json=commitmentType,proto3" json:"commitment_type,omitempty"`
+	// term is the commitment term (1_year, 3_year)
+	Term string `protobuf:"bytes,2,opt,name=term,proto3" json:"term,omitempty"`
+	// payment_option is the payment option
+	PaymentOption string `protobuf:"bytes,3,opt,name=payment_option,json=paymentOption,proto3" json:"payment_option,omitempty"`
+	// recommended_quantity is the recommended purchase quantity
+	RecommendedQuantity float64 `protobuf:"fixed64,4,opt,name=recommended_quantity,json=recommendedQuantity,proto3" json:"recommended_quantity,omitempty"`
+	// scope is the commitment scope (account, region, etc.)
+	Scope         string `protobuf:"bytes,5,opt,name=scope,proto3" json:"scope,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommitmentAction) Reset() {
+	*x = CommitmentAction{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommitmentAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitmentAction) ProtoMessage() {}
+
+func (x *CommitmentAction) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitmentAction.ProtoReflect.Descriptor instead.
+func (*CommitmentAction) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *CommitmentAction) GetCommitmentType() string {
+	if x != nil {
+		return x.CommitmentType
+	}
+	return ""
+}
+
+func (x *CommitmentAction) GetTerm() string {
+	if x != nil {
+		return x.Term
+	}
+	return ""
+}
+
+func (x *CommitmentAction) GetPaymentOption() string {
+	if x != nil {
+		return x.PaymentOption
+	}
+	return ""
+}
+
+func (x *CommitmentAction) GetRecommendedQuantity() float64 {
+	if x != nil {
+		return x.RecommendedQuantity
+	}
+	return 0
+}
+
+func (x *CommitmentAction) GetScope() string {
+	if x != nil {
+		return x.Scope
+	}
+	return ""
+}
+
+// KubernetesAction contains details for Kubernetes resource adjustments.
+type KubernetesAction struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// cluster_id identifies the Kubernetes cluster
+	ClusterId string `protobuf:"bytes,1,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty"`
+	// namespace is the Kubernetes namespace
+	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	// controller_kind is the controller type (Deployment, StatefulSet, etc.)
+	ControllerKind string `protobuf:"bytes,3,opt,name=controller_kind,json=controllerKind,proto3" json:"controller_kind,omitempty"`
+	// controller_name is the name of the controller
+	ControllerName string `protobuf:"bytes,4,opt,name=controller_name,json=controllerName,proto3" json:"controller_name,omitempty"`
+	// container_name is the name of the container
+	ContainerName string `protobuf:"bytes,5,opt,name=container_name,json=containerName,proto3" json:"container_name,omitempty"`
+	// current_requests are the current resource requests
+	CurrentRequests *KubernetesResources `protobuf:"bytes,6,opt,name=current_requests,json=currentRequests,proto3" json:"current_requests,omitempty"`
+	// recommended_requests are the recommended resource requests
+	RecommendedRequests *KubernetesResources `protobuf:"bytes,7,opt,name=recommended_requests,json=recommendedRequests,proto3" json:"recommended_requests,omitempty"`
+	// current_limits are the current resource limits
+	CurrentLimits *KubernetesResources `protobuf:"bytes,8,opt,name=current_limits,json=currentLimits,proto3" json:"current_limits,omitempty"`
+	// recommended_limits are the recommended resource limits
+	RecommendedLimits *KubernetesResources `protobuf:"bytes,9,opt,name=recommended_limits,json=recommendedLimits,proto3" json:"recommended_limits,omitempty"`
+	// algorithm is the recommendation algorithm used
+	Algorithm     string `protobuf:"bytes,10,opt,name=algorithm,proto3" json:"algorithm,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KubernetesAction) Reset() {
+	*x = KubernetesAction{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KubernetesAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KubernetesAction) ProtoMessage() {}
+
+func (x *KubernetesAction) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KubernetesAction.ProtoReflect.Descriptor instead.
+func (*KubernetesAction) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *KubernetesAction) GetClusterId() string {
+	if x != nil {
+		return x.ClusterId
+	}
+	return ""
+}
+
+func (x *KubernetesAction) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *KubernetesAction) GetControllerKind() string {
+	if x != nil {
+		return x.ControllerKind
+	}
+	return ""
+}
+
+func (x *KubernetesAction) GetControllerName() string {
+	if x != nil {
+		return x.ControllerName
+	}
+	return ""
+}
+
+func (x *KubernetesAction) GetContainerName() string {
+	if x != nil {
+		return x.ContainerName
+	}
+	return ""
+}
+
+func (x *KubernetesAction) GetCurrentRequests() *KubernetesResources {
+	if x != nil {
+		return x.CurrentRequests
+	}
+	return nil
+}
+
+func (x *KubernetesAction) GetRecommendedRequests() *KubernetesResources {
+	if x != nil {
+		return x.RecommendedRequests
+	}
+	return nil
+}
+
+func (x *KubernetesAction) GetCurrentLimits() *KubernetesResources {
+	if x != nil {
+		return x.CurrentLimits
+	}
+	return nil
+}
+
+func (x *KubernetesAction) GetRecommendedLimits() *KubernetesResources {
+	if x != nil {
+		return x.RecommendedLimits
+	}
+	return nil
+}
+
+func (x *KubernetesAction) GetAlgorithm() string {
+	if x != nil {
+		return x.Algorithm
+	}
+	return ""
+}
+
+// KubernetesResources specifies CPU and memory for Kubernetes.
+type KubernetesResources struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// cpu is the CPU specification (e.g., "100m", "2")
+	Cpu string `protobuf:"bytes,1,opt,name=cpu,proto3" json:"cpu,omitempty"`
+	// memory is the memory specification (e.g., "256Mi", "2Gi")
+	Memory        string `protobuf:"bytes,2,opt,name=memory,proto3" json:"memory,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KubernetesResources) Reset() {
+	*x = KubernetesResources{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KubernetesResources) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KubernetesResources) ProtoMessage() {}
+
+func (x *KubernetesResources) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KubernetesResources.ProtoReflect.Descriptor instead.
+func (*KubernetesResources) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *KubernetesResources) GetCpu() string {
+	if x != nil {
+		return x.Cpu
+	}
+	return ""
+}
+
+func (x *KubernetesResources) GetMemory() string {
+	if x != nil {
+		return x.Memory
+	}
+	return ""
+}
+
+// ModifyAction contains details for generic modification recommendations.
+type ModifyAction struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// modification_type describes the type of modification
+	ModificationType string `protobuf:"bytes,1,opt,name=modification_type,json=modificationType,proto3" json:"modification_type,omitempty"`
+	// current_config is the current configuration
+	CurrentConfig map[string]string `protobuf:"bytes,2,rep,name=current_config,json=currentConfig,proto3" json:"current_config,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// recommended_config is the recommended configuration
+	RecommendedConfig map[string]string `protobuf:"bytes,3,rep,name=recommended_config,json=recommendedConfig,proto3" json:"recommended_config,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ModifyAction) Reset() {
+	*x = ModifyAction{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ModifyAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ModifyAction) ProtoMessage() {}
+
+func (x *ModifyAction) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ModifyAction.ProtoReflect.Descriptor instead.
+func (*ModifyAction) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *ModifyAction) GetModificationType() string {
+	if x != nil {
+		return x.ModificationType
+	}
+	return ""
+}
+
+func (x *ModifyAction) GetCurrentConfig() map[string]string {
+	if x != nil {
+		return x.CurrentConfig
+	}
+	return nil
+}
+
+func (x *ModifyAction) GetRecommendedConfig() map[string]string {
+	if x != nil {
+		return x.RecommendedConfig
+	}
+	return nil
+}
+
+// RecommendationImpact describes the financial impact of implementing a recommendation.
+type RecommendationImpact struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// estimated_savings is the estimated cost savings
+	EstimatedSavings float64 `protobuf:"fixed64,1,opt,name=estimated_savings,json=estimatedSavings,proto3" json:"estimated_savings,omitempty"`
+	// currency is the ISO 4217 currency code
+	Currency string `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
+	// projection_period is the time period for the projection
+	ProjectionPeriod string `protobuf:"bytes,3,opt,name=projection_period,json=projectionPeriod,proto3" json:"projection_period,omitempty"`
+	// current_cost is the current cost
+	CurrentCost float64 `protobuf:"fixed64,4,opt,name=current_cost,json=currentCost,proto3" json:"current_cost,omitempty"`
+	// projected_cost is the projected cost after implementing the recommendation
+	ProjectedCost float64 `protobuf:"fixed64,5,opt,name=projected_cost,json=projectedCost,proto3" json:"projected_cost,omitempty"`
+	// savings_percentage is the savings as a percentage
+	SavingsPercentage float64 `protobuf:"fixed64,6,opt,name=savings_percentage,json=savingsPercentage,proto3" json:"savings_percentage,omitempty"`
+	// implementation_cost is the one-time cost to implement (if any)
+	ImplementationCost *float64 `protobuf:"fixed64,7,opt,name=implementation_cost,json=implementationCost,proto3,oneof" json:"implementation_cost,omitempty"`
+	// migration_effort_hours is the estimated effort in hours
+	MigrationEffortHours *float64 `protobuf:"fixed64,8,opt,name=migration_effort_hours,json=migrationEffortHours,proto3,oneof" json:"migration_effort_hours,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *RecommendationImpact) Reset() {
+	*x = RecommendationImpact{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecommendationImpact) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecommendationImpact) ProtoMessage() {}
+
+func (x *RecommendationImpact) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecommendationImpact.ProtoReflect.Descriptor instead.
+func (*RecommendationImpact) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *RecommendationImpact) GetEstimatedSavings() float64 {
+	if x != nil {
+		return x.EstimatedSavings
+	}
+	return 0
+}
+
+func (x *RecommendationImpact) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *RecommendationImpact) GetProjectionPeriod() string {
+	if x != nil {
+		return x.ProjectionPeriod
+	}
+	return ""
+}
+
+func (x *RecommendationImpact) GetCurrentCost() float64 {
+	if x != nil {
+		return x.CurrentCost
+	}
+	return 0
+}
+
+func (x *RecommendationImpact) GetProjectedCost() float64 {
+	if x != nil {
+		return x.ProjectedCost
+	}
+	return 0
+}
+
+func (x *RecommendationImpact) GetSavingsPercentage() float64 {
+	if x != nil {
+		return x.SavingsPercentage
+	}
+	return 0
+}
+
+func (x *RecommendationImpact) GetImplementationCost() float64 {
+	if x != nil && x.ImplementationCost != nil {
+		return *x.ImplementationCost
+	}
+	return 0
+}
+
+func (x *RecommendationImpact) GetMigrationEffortHours() float64 {
+	if x != nil && x.MigrationEffortHours != nil {
+		return *x.MigrationEffortHours
+	}
+	return 0
+}
+
+// RecommendationSummary provides aggregated statistics for a page of recommendations.
+type RecommendationSummary struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// total_recommendations is the count of recommendations in this page
+	TotalRecommendations int32 `protobuf:"varint,1,opt,name=total_recommendations,json=totalRecommendations,proto3" json:"total_recommendations,omitempty"`
+	// total_estimated_savings is the total savings for recommendations in this page
+	TotalEstimatedSavings float64 `protobuf:"fixed64,2,opt,name=total_estimated_savings,json=totalEstimatedSavings,proto3" json:"total_estimated_savings,omitempty"`
+	// currency is the ISO 4217 currency code for savings
+	Currency string `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
+	// projection_period matches GetRecommendationsRequest.projection_period
+	// (e.g., "daily", "monthly", "annual"). Servers apply a default when omitted.
+	ProjectionPeriod string `protobuf:"bytes,4,opt,name=projection_period,json=projectionPeriod,proto3" json:"projection_period,omitempty"`
+	// count_by_category maps category name to count
+	CountByCategory map[string]int32 `protobuf:"bytes,5,rep,name=count_by_category,json=countByCategory,proto3" json:"count_by_category,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	// savings_by_category maps category name to total savings
+	SavingsByCategory map[string]float64 `protobuf:"bytes,6,rep,name=savings_by_category,json=savingsByCategory,proto3" json:"savings_by_category,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	// count_by_action_type maps action type name to count
+	CountByActionType map[string]int32 `protobuf:"bytes,7,rep,name=count_by_action_type,json=countByActionType,proto3" json:"count_by_action_type,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	// savings_by_action_type maps action type name to total savings
+	SavingsByActionType map[string]float64 `protobuf:"bytes,8,rep,name=savings_by_action_type,json=savingsByActionType,proto3" json:"savings_by_action_type,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *RecommendationSummary) Reset() {
+	*x = RecommendationSummary{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecommendationSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecommendationSummary) ProtoMessage() {}
+
+func (x *RecommendationSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecommendationSummary.ProtoReflect.Descriptor instead.
+func (*RecommendationSummary) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *RecommendationSummary) GetTotalRecommendations() int32 {
+	if x != nil {
+		return x.TotalRecommendations
+	}
+	return 0
+}
+
+func (x *RecommendationSummary) GetTotalEstimatedSavings() float64 {
+	if x != nil {
+		return x.TotalEstimatedSavings
+	}
+	return 0
+}
+
+func (x *RecommendationSummary) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *RecommendationSummary) GetProjectionPeriod() string {
+	if x != nil {
+		return x.ProjectionPeriod
+	}
+	return ""
+}
+
+func (x *RecommendationSummary) GetCountByCategory() map[string]int32 {
+	if x != nil {
+		return x.CountByCategory
+	}
+	return nil
+}
+
+func (x *RecommendationSummary) GetSavingsByCategory() map[string]float64 {
+	if x != nil {
+		return x.SavingsByCategory
+	}
+	return nil
+}
+
+func (x *RecommendationSummary) GetCountByActionType() map[string]int32 {
+	if x != nil {
+		return x.CountByActionType
+	}
+	return nil
+}
+
+func (x *RecommendationSummary) GetSavingsByActionType() map[string]float64 {
+	if x != nil {
+		return x.SavingsByActionType
+	}
+	return nil
+}
+
 var File_pulumicost_v1_costsource_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_costsource_proto_rawDesc = "" +
@@ -2471,10 +4004,14 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\fNameResponse\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"P\n" +
 	"\x0fSupportsRequest\x12=\n" +
-	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"H\n" +
+	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"\xe0\x01\n" +
 	"\x10SupportsResponse\x12\x1c\n" +
 	"\tsupported\x18\x01 \x01(\bR\tsupported\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"\x93\x02\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\x12U\n" +
+	"\fcapabilities\x18\x03 \x03(\v21.pulumicost.v1.SupportsResponse.CapabilitiesEntryR\fcapabilities\x1a?\n" +
+	"\x11CapabilitiesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\x93\x02\n" +
 	"\x14GetActualCostRequest\x12\x1f\n" +
 	"\vresource_id\x18\x01 \x01(\tR\n" +
 	"resourceId\x120\n" +
@@ -2637,7 +4174,152 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"attributes\"U\n" +
 	"\x14EstimateCostResponse\x12\x1a\n" +
 	"\bcurrency\x18\x01 \x01(\tR\bcurrency\x12!\n" +
-	"\fcost_monthly\x18\x02 \x01(\x01R\vcostMonthly*\x8d\x01\n" +
+	"\fcost_monthly\x18\x02 \x01(\x01R\vcostMonthly\"\xc1\x01\n" +
+	"\x19GetRecommendationsRequest\x12;\n" +
+	"\x06filter\x18\x01 \x01(\v2#.pulumicost.v1.RecommendationFilterR\x06filter\x12+\n" +
+	"\x11projection_period\x18\x02 \x01(\tR\x10projectionPeriod\x12\x1b\n" +
+	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x04 \x01(\tR\tpageToken\"\xcd\x01\n" +
+	"\x1aGetRecommendationsResponse\x12G\n" +
+	"\x0frecommendations\x18\x01 \x03(\v2\x1d.pulumicost.v1.RecommendationR\x0frecommendations\x12>\n" +
+	"\asummary\x18\x02 \x01(\v2$.pulumicost.v1.RecommendationSummaryR\asummary\x12&\n" +
+	"\x0fnext_page_token\x18\x03 \x01(\tR\rnextPageToken\"\xfc\x01\n" +
+	"\x14RecommendationFilter\x12\x1a\n" +
+	"\bprovider\x18\x01 \x01(\tR\bprovider\x12\x16\n" +
+	"\x06region\x18\x02 \x01(\tR\x06region\x12#\n" +
+	"\rresource_type\x18\x03 \x01(\tR\fresourceType\x12A\n" +
+	"\bcategory\x18\x04 \x01(\x0e2%.pulumicost.v1.RecommendationCategoryR\bcategory\x12H\n" +
+	"\vaction_type\x18\x05 \x01(\x0e2'.pulumicost.v1.RecommendationActionTypeR\n" +
+	"actionType\"\xb4\b\n" +
+	"\x0eRecommendation\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12A\n" +
+	"\bcategory\x18\x02 \x01(\x0e2%.pulumicost.v1.RecommendationCategoryR\bcategory\x12H\n" +
+	"\vaction_type\x18\x03 \x01(\x0e2'.pulumicost.v1.RecommendationActionTypeR\n" +
+	"actionType\x12E\n" +
+	"\bresource\x18\x04 \x01(\v2).pulumicost.v1.ResourceRecommendationInfoR\bresource\x12>\n" +
+	"\trightsize\x18\x05 \x01(\v2\x1e.pulumicost.v1.RightsizeActionH\x00R\trightsize\x12>\n" +
+	"\tterminate\x18\x06 \x01(\v2\x1e.pulumicost.v1.TerminateActionH\x00R\tterminate\x12A\n" +
+	"\n" +
+	"commitment\x18\a \x01(\v2\x1f.pulumicost.v1.CommitmentActionH\x00R\n" +
+	"commitment\x12A\n" +
+	"\n" +
+	"kubernetes\x18\b \x01(\v2\x1f.pulumicost.v1.KubernetesActionH\x00R\n" +
+	"kubernetes\x125\n" +
+	"\x06modify\x18\t \x01(\v2\x1b.pulumicost.v1.ModifyActionH\x00R\x06modify\x12;\n" +
+	"\x06impact\x18\n" +
+	" \x01(\v2#.pulumicost.v1.RecommendationImpactR\x06impact\x12A\n" +
+	"\bpriority\x18\v \x01(\x0e2%.pulumicost.v1.RecommendationPriorityR\bpriority\x12.\n" +
+	"\x10confidence_score\x18\f \x01(\x01H\x01R\x0fconfidenceScore\x88\x01\x01\x12 \n" +
+	"\vdescription\x18\r \x01(\tR\vdescription\x12\x1c\n" +
+	"\treasoning\x18\x0e \x03(\tR\treasoning\x12\x16\n" +
+	"\x06source\x18\x0f \x01(\tR\x06source\x12>\n" +
+	"\n" +
+	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampH\x02R\tcreatedAt\x88\x01\x01\x12G\n" +
+	"\bmetadata\x18\x11 \x03(\v2+.pulumicost.v1.Recommendation.MetadataEntryR\bmetadata\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x0f\n" +
+	"\raction_detailB\x13\n" +
+	"\x11_confidence_scoreB\r\n" +
+	"\v_created_at\"\xf3\x02\n" +
+	"\x1aResourceRecommendationInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
+	"\bprovider\x18\x03 \x01(\tR\bprovider\x12#\n" +
+	"\rresource_type\x18\x04 \x01(\tR\fresourceType\x12\x16\n" +
+	"\x06region\x18\x05 \x01(\tR\x06region\x12\x10\n" +
+	"\x03sku\x18\x06 \x01(\tR\x03sku\x12G\n" +
+	"\x04tags\x18\a \x03(\v23.pulumicost.v1.ResourceRecommendationInfo.TagsEntryR\x04tags\x12D\n" +
+	"\vutilization\x18\b \x01(\v2\".pulumicost.v1.ResourceUtilizationR\vutilization\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xf8\x02\n" +
+	"\x13ResourceUtilization\x12\x1f\n" +
+	"\vcpu_percent\x18\x01 \x01(\x01R\n" +
+	"cpuPercent\x12%\n" +
+	"\x0ememory_percent\x18\x02 \x01(\x01R\rmemoryPercent\x12'\n" +
+	"\x0fstorage_percent\x18\x03 \x01(\x01R\x0estoragePercent\x12&\n" +
+	"\x0fnetwork_in_mbps\x18\x04 \x01(\x01R\rnetworkInMbps\x12(\n" +
+	"\x10network_out_mbps\x18\x05 \x01(\x01R\x0enetworkOutMbps\x12\\\n" +
+	"\x0ecustom_metrics\x18\x06 \x03(\v25.pulumicost.v1.ResourceUtilization.CustomMetricsEntryR\rcustomMetrics\x1a@\n" +
+	"\x12CustomMetricsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xa4\x02\n" +
+	"\x0fRightsizeAction\x12\x1f\n" +
+	"\vcurrent_sku\x18\x01 \x01(\tR\n" +
+	"currentSku\x12'\n" +
+	"\x0frecommended_sku\x18\x02 \x01(\tR\x0erecommendedSku\x122\n" +
+	"\x15current_instance_type\x18\x03 \x01(\tR\x13currentInstanceType\x12:\n" +
+	"\x19recommended_instance_type\x18\x04 \x01(\tR\x17recommendedInstanceType\x12W\n" +
+	"\x15projected_utilization\x18\x05 \x01(\v2\".pulumicost.v1.ResourceUtilizationR\x14projectedUtilization\"]\n" +
+	"\x0fTerminateAction\x12-\n" +
+	"\x12termination_reason\x18\x01 \x01(\tR\x11terminationReason\x12\x1b\n" +
+	"\tidle_days\x18\x02 \x01(\x05R\bidleDays\"\xbf\x01\n" +
+	"\x10CommitmentAction\x12'\n" +
+	"\x0fcommitment_type\x18\x01 \x01(\tR\x0ecommitmentType\x12\x12\n" +
+	"\x04term\x18\x02 \x01(\tR\x04term\x12%\n" +
+	"\x0epayment_option\x18\x03 \x01(\tR\rpaymentOption\x121\n" +
+	"\x14recommended_quantity\x18\x04 \x01(\x01R\x13recommendedQuantity\x12\x14\n" +
+	"\x05scope\x18\x05 \x01(\tR\x05scope\"\xaa\x04\n" +
+	"\x10KubernetesAction\x12\x1d\n" +
+	"\n" +
+	"cluster_id\x18\x01 \x01(\tR\tclusterId\x12\x1c\n" +
+	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12'\n" +
+	"\x0fcontroller_kind\x18\x03 \x01(\tR\x0econtrollerKind\x12'\n" +
+	"\x0fcontroller_name\x18\x04 \x01(\tR\x0econtrollerName\x12%\n" +
+	"\x0econtainer_name\x18\x05 \x01(\tR\rcontainerName\x12M\n" +
+	"\x10current_requests\x18\x06 \x01(\v2\".pulumicost.v1.KubernetesResourcesR\x0fcurrentRequests\x12U\n" +
+	"\x14recommended_requests\x18\a \x01(\v2\".pulumicost.v1.KubernetesResourcesR\x13recommendedRequests\x12I\n" +
+	"\x0ecurrent_limits\x18\b \x01(\v2\".pulumicost.v1.KubernetesResourcesR\rcurrentLimits\x12Q\n" +
+	"\x12recommended_limits\x18\t \x01(\v2\".pulumicost.v1.KubernetesResourcesR\x11recommendedLimits\x12\x1c\n" +
+	"\talgorithm\x18\n" +
+	" \x01(\tR\talgorithm\"?\n" +
+	"\x13KubernetesResources\x12\x10\n" +
+	"\x03cpu\x18\x01 \x01(\tR\x03cpu\x12\x16\n" +
+	"\x06memory\x18\x02 \x01(\tR\x06memory\"\xfd\x02\n" +
+	"\fModifyAction\x12+\n" +
+	"\x11modification_type\x18\x01 \x01(\tR\x10modificationType\x12U\n" +
+	"\x0ecurrent_config\x18\x02 \x03(\v2..pulumicost.v1.ModifyAction.CurrentConfigEntryR\rcurrentConfig\x12a\n" +
+	"\x12recommended_config\x18\x03 \x03(\v22.pulumicost.v1.ModifyAction.RecommendedConfigEntryR\x11recommendedConfig\x1a@\n" +
+	"\x12CurrentConfigEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1aD\n" +
+	"\x16RecommendedConfigEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa9\x03\n" +
+	"\x14RecommendationImpact\x12+\n" +
+	"\x11estimated_savings\x18\x01 \x01(\x01R\x10estimatedSavings\x12\x1a\n" +
+	"\bcurrency\x18\x02 \x01(\tR\bcurrency\x12+\n" +
+	"\x11projection_period\x18\x03 \x01(\tR\x10projectionPeriod\x12!\n" +
+	"\fcurrent_cost\x18\x04 \x01(\x01R\vcurrentCost\x12%\n" +
+	"\x0eprojected_cost\x18\x05 \x01(\x01R\rprojectedCost\x12-\n" +
+	"\x12savings_percentage\x18\x06 \x01(\x01R\x11savingsPercentage\x124\n" +
+	"\x13implementation_cost\x18\a \x01(\x01H\x00R\x12implementationCost\x88\x01\x01\x129\n" +
+	"\x16migration_effort_hours\x18\b \x01(\x01H\x01R\x14migrationEffortHours\x88\x01\x01B\x16\n" +
+	"\x14_implementation_costB\x19\n" +
+	"\x17_migration_effort_hours\"\x9b\a\n" +
+	"\x15RecommendationSummary\x123\n" +
+	"\x15total_recommendations\x18\x01 \x01(\x05R\x14totalRecommendations\x126\n" +
+	"\x17total_estimated_savings\x18\x02 \x01(\x01R\x15totalEstimatedSavings\x12\x1a\n" +
+	"\bcurrency\x18\x03 \x01(\tR\bcurrency\x12+\n" +
+	"\x11projection_period\x18\x04 \x01(\tR\x10projectionPeriod\x12e\n" +
+	"\x11count_by_category\x18\x05 \x03(\v29.pulumicost.v1.RecommendationSummary.CountByCategoryEntryR\x0fcountByCategory\x12k\n" +
+	"\x13savings_by_category\x18\x06 \x03(\v2;.pulumicost.v1.RecommendationSummary.SavingsByCategoryEntryR\x11savingsByCategory\x12l\n" +
+	"\x14count_by_action_type\x18\a \x03(\v2;.pulumicost.v1.RecommendationSummary.CountByActionTypeEntryR\x11countByActionType\x12r\n" +
+	"\x16savings_by_action_type\x18\b \x03(\v2=.pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntryR\x13savingsByActionType\x1aB\n" +
+	"\x14CountByCategoryEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aD\n" +
+	"\x16SavingsByCategoryEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\x1aD\n" +
+	"\x16CountByActionTypeEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aF\n" +
+	"\x18SavingsByActionTypeEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01*\x8d\x01\n" +
 	"\rErrorCategory\x12\x1e\n" +
 	"\x1aERROR_CATEGORY_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18ERROR_CATEGORY_TRANSIENT\x10\x01\x12\x1c\n" +
@@ -2673,14 +4355,35 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x16SLI_STATUS_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19SLI_STATUS_MEETING_TARGET\x10\x01\x12\x16\n" +
 	"\x12SLI_STATUS_WARNING\x10\x02\x12\x17\n" +
-	"\x13SLI_STATUS_CRITICAL\x10\x032\x9a\x04\n" +
+	"\x13SLI_STATUS_CRITICAL\x10\x03*\xdb\x01\n" +
+	"\x16RecommendationCategory\x12'\n" +
+	"#RECOMMENDATION_CATEGORY_UNSPECIFIED\x10\x00\x12 \n" +
+	"\x1cRECOMMENDATION_CATEGORY_COST\x10\x01\x12'\n" +
+	"#RECOMMENDATION_CATEGORY_PERFORMANCE\x10\x02\x12$\n" +
+	" RECOMMENDATION_CATEGORY_SECURITY\x10\x03\x12'\n" +
+	"#RECOMMENDATION_CATEGORY_RELIABILITY\x10\x04*\xd3\x02\n" +
+	"\x18RecommendationActionType\x12*\n" +
+	"&RECOMMENDATION_ACTION_TYPE_UNSPECIFIED\x10\x00\x12(\n" +
+	"$RECOMMENDATION_ACTION_TYPE_RIGHTSIZE\x10\x01\x12(\n" +
+	"$RECOMMENDATION_ACTION_TYPE_TERMINATE\x10\x02\x122\n" +
+	".RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT\x10\x03\x12.\n" +
+	"*RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS\x10\x04\x12%\n" +
+	"!RECOMMENDATION_ACTION_TYPE_MODIFY\x10\x05\x12,\n" +
+	"(RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED\x10\x06*\xce\x01\n" +
+	"\x16RecommendationPriority\x12'\n" +
+	"#RECOMMENDATION_PRIORITY_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bRECOMMENDATION_PRIORITY_LOW\x10\x01\x12\"\n" +
+	"\x1eRECOMMENDATION_PRIORITY_MEDIUM\x10\x02\x12 \n" +
+	"\x1cRECOMMENDATION_PRIORITY_HIGH\x10\x03\x12$\n" +
+	" RECOMMENDATION_PRIORITY_CRITICAL\x10\x042\x85\x05\n" +
 	"\x11CostSourceService\x12?\n" +
 	"\x04Name\x12\x1a.pulumicost.v1.NameRequest\x1a\x1b.pulumicost.v1.NameResponse\x12K\n" +
 	"\bSupports\x12\x1e.pulumicost.v1.SupportsRequest\x1a\x1f.pulumicost.v1.SupportsResponse\x12Z\n" +
 	"\rGetActualCost\x12#.pulumicost.v1.GetActualCostRequest\x1a$.pulumicost.v1.GetActualCostResponse\x12c\n" +
 	"\x10GetProjectedCost\x12&.pulumicost.v1.GetProjectedCostRequest\x1a'.pulumicost.v1.GetProjectedCostResponse\x12]\n" +
 	"\x0eGetPricingSpec\x12$.pulumicost.v1.GetPricingSpecRequest\x1a%.pulumicost.v1.GetPricingSpecResponse\x12W\n" +
-	"\fEstimateCost\x12\".pulumicost.v1.EstimateCostRequest\x1a#.pulumicost.v1.EstimateCostResponse2\xbf\x02\n" +
+	"\fEstimateCost\x12\".pulumicost.v1.EstimateCostRequest\x1a#.pulumicost.v1.EstimateCostResponse\x12i\n" +
+	"\x12GetRecommendations\x12(.pulumicost.v1.GetRecommendationsRequest\x1a).pulumicost.v1.GetRecommendationsResponse2\xbf\x02\n" +
 	"\x14ObservabilityService\x12T\n" +
 	"\vHealthCheck\x12!.pulumicost.v1.HealthCheckRequest\x1a\".pulumicost.v1.HealthCheckResponse\x12Q\n" +
 	"\n" +
@@ -2699,115 +4402,176 @@ func file_pulumicost_v1_costsource_proto_rawDescGZIP() []byte {
 	return file_pulumicost_v1_costsource_proto_rawDescData
 }
 
-var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
+var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
+var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 61)
 var file_pulumicost_v1_costsource_proto_goTypes = []any{
 	(ErrorCategory)(0),                        // 0: pulumicost.v1.ErrorCategory
 	(ErrorCode)(0),                            // 1: pulumicost.v1.ErrorCode
 	(MetricType)(0),                           // 2: pulumicost.v1.MetricType
 	(SLIStatus)(0),                            // 3: pulumicost.v1.SLIStatus
-	(HealthCheckResponse_Status)(0),           // 4: pulumicost.v1.HealthCheckResponse.Status
-	(*NameRequest)(nil),                       // 5: pulumicost.v1.NameRequest
-	(*NameResponse)(nil),                      // 6: pulumicost.v1.NameResponse
-	(*SupportsRequest)(nil),                   // 7: pulumicost.v1.SupportsRequest
-	(*SupportsResponse)(nil),                  // 8: pulumicost.v1.SupportsResponse
-	(*GetActualCostRequest)(nil),              // 9: pulumicost.v1.GetActualCostRequest
-	(*GetActualCostResponse)(nil),             // 10: pulumicost.v1.GetActualCostResponse
-	(*GetProjectedCostRequest)(nil),           // 11: pulumicost.v1.GetProjectedCostRequest
-	(*GetProjectedCostResponse)(nil),          // 12: pulumicost.v1.GetProjectedCostResponse
-	(*GetPricingSpecRequest)(nil),             // 13: pulumicost.v1.GetPricingSpecRequest
-	(*GetPricingSpecResponse)(nil),            // 14: pulumicost.v1.GetPricingSpecResponse
-	(*ResourceDescriptor)(nil),                // 15: pulumicost.v1.ResourceDescriptor
-	(*ActualCostResult)(nil),                  // 16: pulumicost.v1.ActualCostResult
-	(*UsageMetricHint)(nil),                   // 17: pulumicost.v1.UsageMetricHint
-	(*PricingSpec)(nil),                       // 18: pulumicost.v1.PricingSpec
-	(*PricingTier)(nil),                       // 19: pulumicost.v1.PricingTier
-	(*ErrorDetail)(nil),                       // 20: pulumicost.v1.ErrorDetail
-	(*HealthCheckRequest)(nil),                // 21: pulumicost.v1.HealthCheckRequest
-	(*HealthCheckResponse)(nil),               // 22: pulumicost.v1.HealthCheckResponse
-	(*GetMetricsRequest)(nil),                 // 23: pulumicost.v1.GetMetricsRequest
-	(*GetMetricsResponse)(nil),                // 24: pulumicost.v1.GetMetricsResponse
-	(*Metric)(nil),                            // 25: pulumicost.v1.Metric
-	(*MetricSample)(nil),                      // 26: pulumicost.v1.MetricSample
-	(*GetServiceLevelIndicatorsRequest)(nil),  // 27: pulumicost.v1.GetServiceLevelIndicatorsRequest
-	(*GetServiceLevelIndicatorsResponse)(nil), // 28: pulumicost.v1.GetServiceLevelIndicatorsResponse
-	(*ServiceLevelIndicator)(nil),             // 29: pulumicost.v1.ServiceLevelIndicator
-	(*TimeRange)(nil),                         // 30: pulumicost.v1.TimeRange
-	(*TelemetryMetadata)(nil),                 // 31: pulumicost.v1.TelemetryMetadata
-	(*LogEntry)(nil),                          // 32: pulumicost.v1.LogEntry
-	(*ErrorDetails)(nil),                      // 33: pulumicost.v1.ErrorDetails
-	(*EstimateCostRequest)(nil),               // 34: pulumicost.v1.EstimateCostRequest
-	(*EstimateCostResponse)(nil),              // 35: pulumicost.v1.EstimateCostResponse
-	nil,                                       // 36: pulumicost.v1.GetActualCostRequest.TagsEntry
-	nil,                                       // 37: pulumicost.v1.ResourceDescriptor.TagsEntry
-	nil,                                       // 38: pulumicost.v1.PricingSpec.PluginMetadataEntry
-	nil,                                       // 39: pulumicost.v1.ErrorDetail.DetailsEntry
-	nil,                                       // 40: pulumicost.v1.MetricSample.LabelsEntry
-	nil,                                       // 41: pulumicost.v1.LogEntry.FieldsEntry
-	(*timestamppb.Timestamp)(nil),             // 42: google.protobuf.Timestamp
-	(*FocusCostRecord)(nil),                   // 43: pulumicost.v1.FocusCostRecord
-	(*structpb.Struct)(nil),                   // 44: google.protobuf.Struct
+	(RecommendationCategory)(0),               // 4: pulumicost.v1.RecommendationCategory
+	(RecommendationActionType)(0),             // 5: pulumicost.v1.RecommendationActionType
+	(RecommendationPriority)(0),               // 6: pulumicost.v1.RecommendationPriority
+	(HealthCheckResponse_Status)(0),           // 7: pulumicost.v1.HealthCheckResponse.Status
+	(*NameRequest)(nil),                       // 8: pulumicost.v1.NameRequest
+	(*NameResponse)(nil),                      // 9: pulumicost.v1.NameResponse
+	(*SupportsRequest)(nil),                   // 10: pulumicost.v1.SupportsRequest
+	(*SupportsResponse)(nil),                  // 11: pulumicost.v1.SupportsResponse
+	(*GetActualCostRequest)(nil),              // 12: pulumicost.v1.GetActualCostRequest
+	(*GetActualCostResponse)(nil),             // 13: pulumicost.v1.GetActualCostResponse
+	(*GetProjectedCostRequest)(nil),           // 14: pulumicost.v1.GetProjectedCostRequest
+	(*GetProjectedCostResponse)(nil),          // 15: pulumicost.v1.GetProjectedCostResponse
+	(*GetPricingSpecRequest)(nil),             // 16: pulumicost.v1.GetPricingSpecRequest
+	(*GetPricingSpecResponse)(nil),            // 17: pulumicost.v1.GetPricingSpecResponse
+	(*ResourceDescriptor)(nil),                // 18: pulumicost.v1.ResourceDescriptor
+	(*ActualCostResult)(nil),                  // 19: pulumicost.v1.ActualCostResult
+	(*UsageMetricHint)(nil),                   // 20: pulumicost.v1.UsageMetricHint
+	(*PricingSpec)(nil),                       // 21: pulumicost.v1.PricingSpec
+	(*PricingTier)(nil),                       // 22: pulumicost.v1.PricingTier
+	(*ErrorDetail)(nil),                       // 23: pulumicost.v1.ErrorDetail
+	(*HealthCheckRequest)(nil),                // 24: pulumicost.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil),               // 25: pulumicost.v1.HealthCheckResponse
+	(*GetMetricsRequest)(nil),                 // 26: pulumicost.v1.GetMetricsRequest
+	(*GetMetricsResponse)(nil),                // 27: pulumicost.v1.GetMetricsResponse
+	(*Metric)(nil),                            // 28: pulumicost.v1.Metric
+	(*MetricSample)(nil),                      // 29: pulumicost.v1.MetricSample
+	(*GetServiceLevelIndicatorsRequest)(nil),  // 30: pulumicost.v1.GetServiceLevelIndicatorsRequest
+	(*GetServiceLevelIndicatorsResponse)(nil), // 31: pulumicost.v1.GetServiceLevelIndicatorsResponse
+	(*ServiceLevelIndicator)(nil),             // 32: pulumicost.v1.ServiceLevelIndicator
+	(*TimeRange)(nil),                         // 33: pulumicost.v1.TimeRange
+	(*TelemetryMetadata)(nil),                 // 34: pulumicost.v1.TelemetryMetadata
+	(*LogEntry)(nil),                          // 35: pulumicost.v1.LogEntry
+	(*ErrorDetails)(nil),                      // 36: pulumicost.v1.ErrorDetails
+	(*EstimateCostRequest)(nil),               // 37: pulumicost.v1.EstimateCostRequest
+	(*EstimateCostResponse)(nil),              // 38: pulumicost.v1.EstimateCostResponse
+	(*GetRecommendationsRequest)(nil),         // 39: pulumicost.v1.GetRecommendationsRequest
+	(*GetRecommendationsResponse)(nil),        // 40: pulumicost.v1.GetRecommendationsResponse
+	(*RecommendationFilter)(nil),              // 41: pulumicost.v1.RecommendationFilter
+	(*Recommendation)(nil),                    // 42: pulumicost.v1.Recommendation
+	(*ResourceRecommendationInfo)(nil),        // 43: pulumicost.v1.ResourceRecommendationInfo
+	(*ResourceUtilization)(nil),               // 44: pulumicost.v1.ResourceUtilization
+	(*RightsizeAction)(nil),                   // 45: pulumicost.v1.RightsizeAction
+	(*TerminateAction)(nil),                   // 46: pulumicost.v1.TerminateAction
+	(*CommitmentAction)(nil),                  // 47: pulumicost.v1.CommitmentAction
+	(*KubernetesAction)(nil),                  // 48: pulumicost.v1.KubernetesAction
+	(*KubernetesResources)(nil),               // 49: pulumicost.v1.KubernetesResources
+	(*ModifyAction)(nil),                      // 50: pulumicost.v1.ModifyAction
+	(*RecommendationImpact)(nil),              // 51: pulumicost.v1.RecommendationImpact
+	(*RecommendationSummary)(nil),             // 52: pulumicost.v1.RecommendationSummary
+	nil,                                       // 53: pulumicost.v1.SupportsResponse.CapabilitiesEntry
+	nil,                                       // 54: pulumicost.v1.GetActualCostRequest.TagsEntry
+	nil,                                       // 55: pulumicost.v1.ResourceDescriptor.TagsEntry
+	nil,                                       // 56: pulumicost.v1.PricingSpec.PluginMetadataEntry
+	nil,                                       // 57: pulumicost.v1.ErrorDetail.DetailsEntry
+	nil,                                       // 58: pulumicost.v1.MetricSample.LabelsEntry
+	nil,                                       // 59: pulumicost.v1.LogEntry.FieldsEntry
+	nil,                                       // 60: pulumicost.v1.Recommendation.MetadataEntry
+	nil,                                       // 61: pulumicost.v1.ResourceRecommendationInfo.TagsEntry
+	nil,                                       // 62: pulumicost.v1.ResourceUtilization.CustomMetricsEntry
+	nil,                                       // 63: pulumicost.v1.ModifyAction.CurrentConfigEntry
+	nil,                                       // 64: pulumicost.v1.ModifyAction.RecommendedConfigEntry
+	nil,                                       // 65: pulumicost.v1.RecommendationSummary.CountByCategoryEntry
+	nil,                                       // 66: pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
+	nil,                                       // 67: pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
+	nil,                                       // 68: pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
+	(*timestamppb.Timestamp)(nil),             // 69: google.protobuf.Timestamp
+	(*FocusCostRecord)(nil),                   // 70: pulumicost.v1.FocusCostRecord
+	(*structpb.Struct)(nil),                   // 71: google.protobuf.Struct
 }
 var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
-	15, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	42, // 1: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
-	42, // 2: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
-	36, // 3: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
-	16, // 4: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
-	15, // 5: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	15, // 6: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	18, // 7: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
-	37, // 8: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
-	42, // 9: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
-	43, // 10: pulumicost.v1.ActualCostResult.focus_record:type_name -> pulumicost.v1.FocusCostRecord
-	17, // 11: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
-	38, // 12: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
-	19, // 13: pulumicost.v1.PricingSpec.pricing_tiers:type_name -> pulumicost.v1.PricingTier
-	1,  // 14: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
-	0,  // 15: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
-	39, // 16: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
-	42, // 17: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 18: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
-	42, // 19: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
-	25, // 20: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
-	42, // 21: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
-	2,  // 22: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
-	26, // 23: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
-	40, // 24: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
-	42, // 25: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
-	30, // 26: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
-	29, // 27: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
-	42, // 28: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
-	3,  // 29: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
-	42, // 30: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
-	42, // 31: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
-	42, // 32: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
-	41, // 33: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
-	33, // 34: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
-	44, // 35: pulumicost.v1.EstimateCostRequest.attributes:type_name -> google.protobuf.Struct
-	5,  // 36: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
-	7,  // 37: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
-	9,  // 38: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
-	11, // 39: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
-	13, // 40: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
-	34, // 41: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
-	21, // 42: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
-	23, // 43: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
-	27, // 44: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
-	6,  // 45: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
-	8,  // 46: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
-	10, // 47: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
-	12, // 48: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
-	14, // 49: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
-	35, // 50: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
-	22, // 51: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
-	24, // 52: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
-	28, // 53: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
-	45, // [45:54] is the sub-list for method output_type
-	36, // [36:45] is the sub-list for method input_type
-	36, // [36:36] is the sub-list for extension type_name
-	36, // [36:36] is the sub-list for extension extendee
-	0,  // [0:36] is the sub-list for field type_name
+	18, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	53, // 1: pulumicost.v1.SupportsResponse.capabilities:type_name -> pulumicost.v1.SupportsResponse.CapabilitiesEntry
+	69, // 2: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
+	69, // 3: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
+	54, // 4: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
+	19, // 5: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
+	18, // 6: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	18, // 7: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	21, // 8: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
+	55, // 9: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
+	69, // 10: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
+	70, // 11: pulumicost.v1.ActualCostResult.focus_record:type_name -> pulumicost.v1.FocusCostRecord
+	20, // 12: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
+	56, // 13: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
+	22, // 14: pulumicost.v1.PricingSpec.pricing_tiers:type_name -> pulumicost.v1.PricingTier
+	1,  // 15: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
+	0,  // 16: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
+	57, // 17: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
+	69, // 18: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
+	7,  // 19: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
+	69, // 20: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
+	28, // 21: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
+	69, // 22: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
+	2,  // 23: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
+	29, // 24: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
+	58, // 25: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
+	69, // 26: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
+	33, // 27: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
+	32, // 28: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
+	69, // 29: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
+	3,  // 30: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
+	69, // 31: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
+	69, // 32: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
+	69, // 33: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	59, // 34: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
+	36, // 35: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
+	71, // 36: pulumicost.v1.EstimateCostRequest.attributes:type_name -> google.protobuf.Struct
+	41, // 37: pulumicost.v1.GetRecommendationsRequest.filter:type_name -> pulumicost.v1.RecommendationFilter
+	42, // 38: pulumicost.v1.GetRecommendationsResponse.recommendations:type_name -> pulumicost.v1.Recommendation
+	52, // 39: pulumicost.v1.GetRecommendationsResponse.summary:type_name -> pulumicost.v1.RecommendationSummary
+	4,  // 40: pulumicost.v1.RecommendationFilter.category:type_name -> pulumicost.v1.RecommendationCategory
+	5,  // 41: pulumicost.v1.RecommendationFilter.action_type:type_name -> pulumicost.v1.RecommendationActionType
+	4,  // 42: pulumicost.v1.Recommendation.category:type_name -> pulumicost.v1.RecommendationCategory
+	5,  // 43: pulumicost.v1.Recommendation.action_type:type_name -> pulumicost.v1.RecommendationActionType
+	43, // 44: pulumicost.v1.Recommendation.resource:type_name -> pulumicost.v1.ResourceRecommendationInfo
+	45, // 45: pulumicost.v1.Recommendation.rightsize:type_name -> pulumicost.v1.RightsizeAction
+	46, // 46: pulumicost.v1.Recommendation.terminate:type_name -> pulumicost.v1.TerminateAction
+	47, // 47: pulumicost.v1.Recommendation.commitment:type_name -> pulumicost.v1.CommitmentAction
+	48, // 48: pulumicost.v1.Recommendation.kubernetes:type_name -> pulumicost.v1.KubernetesAction
+	50, // 49: pulumicost.v1.Recommendation.modify:type_name -> pulumicost.v1.ModifyAction
+	51, // 50: pulumicost.v1.Recommendation.impact:type_name -> pulumicost.v1.RecommendationImpact
+	6,  // 51: pulumicost.v1.Recommendation.priority:type_name -> pulumicost.v1.RecommendationPriority
+	69, // 52: pulumicost.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
+	60, // 53: pulumicost.v1.Recommendation.metadata:type_name -> pulumicost.v1.Recommendation.MetadataEntry
+	61, // 54: pulumicost.v1.ResourceRecommendationInfo.tags:type_name -> pulumicost.v1.ResourceRecommendationInfo.TagsEntry
+	44, // 55: pulumicost.v1.ResourceRecommendationInfo.utilization:type_name -> pulumicost.v1.ResourceUtilization
+	62, // 56: pulumicost.v1.ResourceUtilization.custom_metrics:type_name -> pulumicost.v1.ResourceUtilization.CustomMetricsEntry
+	44, // 57: pulumicost.v1.RightsizeAction.projected_utilization:type_name -> pulumicost.v1.ResourceUtilization
+	49, // 58: pulumicost.v1.KubernetesAction.current_requests:type_name -> pulumicost.v1.KubernetesResources
+	49, // 59: pulumicost.v1.KubernetesAction.recommended_requests:type_name -> pulumicost.v1.KubernetesResources
+	49, // 60: pulumicost.v1.KubernetesAction.current_limits:type_name -> pulumicost.v1.KubernetesResources
+	49, // 61: pulumicost.v1.KubernetesAction.recommended_limits:type_name -> pulumicost.v1.KubernetesResources
+	63, // 62: pulumicost.v1.ModifyAction.current_config:type_name -> pulumicost.v1.ModifyAction.CurrentConfigEntry
+	64, // 63: pulumicost.v1.ModifyAction.recommended_config:type_name -> pulumicost.v1.ModifyAction.RecommendedConfigEntry
+	65, // 64: pulumicost.v1.RecommendationSummary.count_by_category:type_name -> pulumicost.v1.RecommendationSummary.CountByCategoryEntry
+	66, // 65: pulumicost.v1.RecommendationSummary.savings_by_category:type_name -> pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
+	67, // 66: pulumicost.v1.RecommendationSummary.count_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
+	68, // 67: pulumicost.v1.RecommendationSummary.savings_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
+	8,  // 68: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
+	10, // 69: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
+	12, // 70: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
+	14, // 71: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
+	16, // 72: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
+	37, // 73: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
+	39, // 74: pulumicost.v1.CostSourceService.GetRecommendations:input_type -> pulumicost.v1.GetRecommendationsRequest
+	24, // 75: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
+	26, // 76: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
+	30, // 77: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
+	9,  // 78: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
+	11, // 79: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
+	13, // 80: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
+	15, // 81: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
+	17, // 82: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
+	38, // 83: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
+	40, // 84: pulumicost.v1.CostSourceService.GetRecommendations:output_type -> pulumicost.v1.GetRecommendationsResponse
+	25, // 85: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
+	27, // 86: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
+	31, // 87: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
+	78, // [78:88] is the sub-list for method output_type
+	68, // [68:78] is the sub-list for method input_type
+	68, // [68:68] is the sub-list for extension type_name
+	68, // [68:68] is the sub-list for extension extendee
+	0,  // [0:68] is the sub-list for field type_name
 }
 
 func init() { file_pulumicost_v1_costsource_proto_init() }
@@ -2817,13 +4581,21 @@ func file_pulumicost_v1_costsource_proto_init() {
 	}
 	file_pulumicost_v1_focus_proto_init()
 	file_pulumicost_v1_costsource_proto_msgTypes[15].OneofWrappers = []any{}
+	file_pulumicost_v1_costsource_proto_msgTypes[34].OneofWrappers = []any{
+		(*Recommendation_Rightsize)(nil),
+		(*Recommendation_Terminate)(nil),
+		(*Recommendation_Commitment)(nil),
+		(*Recommendation_Kubernetes)(nil),
+		(*Recommendation_Modify)(nil),
+	}
+	file_pulumicost_v1_costsource_proto_msgTypes[43].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_costsource_proto_rawDesc), len(file_pulumicost_v1_costsource_proto_rawDesc)),
-			NumEnums:      5,
-			NumMessages:   37,
+			NumEnums:      8,
+			NumMessages:   61,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

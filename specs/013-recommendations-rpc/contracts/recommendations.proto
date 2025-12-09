@@ -1,0 +1,328 @@
+// GetRecommendations RPC Contract
+// This file shows the proto additions to costsource.proto
+// NOT a standalone file - merge into existing costsource.proto
+
+syntax = "proto3";
+
+package pulumicost.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// =============================================================================
+// Enums (add to costsource.proto)
+// =============================================================================
+
+// RecommendationCategory classifies the type of optimization recommendation.
+enum RecommendationCategory {
+  RECOMMENDATION_CATEGORY_UNSPECIFIED = 0;
+  RECOMMENDATION_CATEGORY_COST = 1;
+  RECOMMENDATION_CATEGORY_PERFORMANCE = 2;
+  RECOMMENDATION_CATEGORY_SECURITY = 3;
+  RECOMMENDATION_CATEGORY_RELIABILITY = 4;
+}
+
+// RecommendationActionType specifies the type of action recommended.
+enum RecommendationActionType {
+  RECOMMENDATION_ACTION_TYPE_UNSPECIFIED = 0;
+  RECOMMENDATION_ACTION_TYPE_RIGHTSIZE = 1;
+  RECOMMENDATION_ACTION_TYPE_TERMINATE = 2;
+  RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT = 3;
+  RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS = 4;
+  RECOMMENDATION_ACTION_TYPE_MODIFY = 5;
+  RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED = 6;
+}
+
+// RecommendationPriority indicates the urgency of a recommendation.
+enum RecommendationPriority {
+  RECOMMENDATION_PRIORITY_UNSPECIFIED = 0;
+  RECOMMENDATION_PRIORITY_LOW = 1;
+  RECOMMENDATION_PRIORITY_MEDIUM = 2;
+  RECOMMENDATION_PRIORITY_HIGH = 3;
+  RECOMMENDATION_PRIORITY_CRITICAL = 4;
+}
+
+// =============================================================================
+// Service Addition (add to CostSourceService)
+// =============================================================================
+
+// Add this RPC to the existing CostSourceService:
+//
+// service CostSourceService {
+//   // ... existing RPCs ...
+//
+//   // GetRecommendations retrieves cost optimization recommendations.
+//   // Returns recommendations from the underlying cost management service
+//   // (AWS Cost Explorer, Kubecost, Azure Advisor, GCP Recommender, etc.).
+//   //
+//   // Plugins that do not support recommendations return an empty list.
+//   // This RPC is optional - plugins implement RecommendationsProvider interface.
+//   //
+//   // Error cases:
+//   //   - InvalidArgument: Invalid filter criteria or pagination token
+//   //   - Unavailable: Backend recommendation service unavailable
+//   rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+// }
+
+// =============================================================================
+// Request/Response Messages
+// =============================================================================
+
+// GetRecommendationsRequest contains parameters for retrieving recommendations.
+message GetRecommendationsRequest {
+  // filter narrows the recommendations returned
+  RecommendationFilter filter = 1;
+  // projection_period specifies the time period for savings projection
+  // Valid values: "daily", "monthly" (default), "annual"
+  string projection_period = 2;
+  // page_size is the maximum number of recommendations to return (default: 50, max: 1000)
+  int32 page_size = 3;
+  // page_token is the continuation token from a previous response
+  string page_token = 4;
+}
+
+// GetRecommendationsResponse contains the recommendations and summary.
+message GetRecommendationsResponse {
+  // recommendations is the list of cost optimization recommendations
+  repeated Recommendation recommendations = 1;
+  // summary provides aggregated statistics across all recommendations
+  RecommendationSummary summary = 2;
+  // next_page_token is the token for retrieving the next page (empty if last)
+  string next_page_token = 3;
+}
+
+// RecommendationFilter specifies criteria for filtering recommendations.
+message RecommendationFilter {
+  // provider filters by cloud provider (e.g., "aws", "azure", "gcp", "kubernetes")
+  string provider = 1;
+  // region filters by deployment region
+  string region = 2;
+  // resource_type filters by resource type
+  string resource_type = 3;
+  // category filters by recommendation category
+  RecommendationCategory category = 4;
+  // action_type filters by recommended action type
+  RecommendationActionType action_type = 5;
+}
+
+// =============================================================================
+// Core Recommendation Message
+// =============================================================================
+
+// Recommendation represents a single cost optimization recommendation.
+message Recommendation {
+  // id is a unique identifier for this recommendation
+  string id = 1;
+  // category classifies the type of recommendation
+  RecommendationCategory category = 2;
+  // action_type specifies what action is recommended
+  RecommendationActionType action_type = 3;
+  // resource contains information about the affected resource
+  ResourceRecommendationInfo resource = 4;
+
+  // action_detail contains provider-specific action details
+  oneof action_detail {
+    RightsizeAction rightsize = 5;
+    TerminateAction terminate = 6;
+    CommitmentAction commitment = 7;
+    KubernetesAction kubernetes = 8;
+    ModifyAction modify = 9;
+  }
+
+  // impact contains the financial impact assessment
+  RecommendationImpact impact = 10;
+  // priority indicates the urgency of the recommendation
+  RecommendationPriority priority = 11;
+  // confidence_score indicates the confidence level (0.0-1.0), nil if unavailable
+  optional double confidence_score = 12;
+  // description is a human-readable summary of the recommendation
+  string description = 13;
+  // reasoning contains the reasons why this recommendation was generated
+  repeated string reasoning = 14;
+  // source identifies the data source (e.g., "aws", "kubecost", "azure-advisor")
+  string source = 15;
+  // created_at is when the recommendation was generated
+  google.protobuf.Timestamp created_at = 16;
+  // metadata contains additional provider-specific information
+  map<string, string> metadata = 17;
+}
+
+// =============================================================================
+// Resource Information
+// =============================================================================
+
+// ResourceRecommendationInfo describes the resource targeted by a recommendation.
+// Named differently from existing ResourceDescriptor to avoid confusion.
+message ResourceRecommendationInfo {
+  // id is the unique resource identifier
+  string id = 1;
+  // name is the human-readable resource name
+  string name = 2;
+  // provider is the cloud provider
+  string provider = 3;
+  // resource_type is the type of resource
+  string resource_type = 4;
+  // region is the deployment region
+  string region = 5;
+  // sku is the SKU or instance type
+  string sku = 6;
+  // tags are resource labels/tags
+  map<string, string> tags = 7;
+  // utilization contains current resource utilization metrics
+  ResourceUtilization utilization = 8;
+}
+
+// ResourceUtilization contains current utilization metrics for a resource.
+message ResourceUtilization {
+  // cpu_percent is CPU utilization percentage
+  double cpu_percent = 1;
+  // memory_percent is memory utilization percentage
+  double memory_percent = 2;
+  // storage_percent is storage utilization percentage
+  double storage_percent = 3;
+  // network_in_mbps is network ingress in Mbps
+  double network_in_mbps = 4;
+  // network_out_mbps is network egress in Mbps
+  double network_out_mbps = 5;
+  // custom_metrics contains provider-specific utilization metrics
+  map<string, double> custom_metrics = 6;
+}
+
+// =============================================================================
+// Action Detail Messages
+// =============================================================================
+
+// RightsizeAction contains details for rightsizing recommendations.
+message RightsizeAction {
+  // current_sku is the current SKU/size
+  string current_sku = 1;
+  // recommended_sku is the recommended SKU/size
+  string recommended_sku = 2;
+  // current_instance_type is the current instance type
+  string current_instance_type = 3;
+  // recommended_instance_type is the recommended instance type
+  string recommended_instance_type = 4;
+  // projected_utilization is the expected utilization after resize
+  ResourceUtilization projected_utilization = 5;
+}
+
+// TerminateAction contains details for termination recommendations.
+message TerminateAction {
+  // termination_reason explains why termination is recommended
+  string termination_reason = 1;
+  // idle_days is the number of days the resource has been idle
+  int32 idle_days = 2;
+}
+
+// CommitmentAction contains details for commitment purchase recommendations.
+message CommitmentAction {
+  // commitment_type is the type of commitment (reserved_instance, savings_plan, cud)
+  string commitment_type = 1;
+  // term is the commitment term (1_year, 3_year)
+  string term = 2;
+  // payment_option is the payment option
+  string payment_option = 3;
+  // recommended_quantity is the recommended purchase quantity
+  double recommended_quantity = 4;
+  // scope is the commitment scope (account, region, etc.)
+  string scope = 5;
+}
+
+// KubernetesAction contains details for Kubernetes resource adjustments.
+message KubernetesAction {
+  // cluster_id identifies the Kubernetes cluster
+  string cluster_id = 1;
+  // namespace is the Kubernetes namespace
+  string namespace = 2;
+  // controller_kind is the controller type (Deployment, StatefulSet, etc.)
+  string controller_kind = 3;
+  // controller_name is the name of the controller
+  string controller_name = 4;
+  // container_name is the name of the container
+  string container_name = 5;
+  // current_requests are the current resource requests
+  KubernetesResources current_requests = 6;
+  // recommended_requests are the recommended resource requests
+  KubernetesResources recommended_requests = 7;
+  // current_limits are the current resource limits
+  KubernetesResources current_limits = 8;
+  // recommended_limits are the recommended resource limits
+  KubernetesResources recommended_limits = 9;
+  // algorithm is the recommendation algorithm used
+  string algorithm = 10;
+}
+
+// KubernetesResources specifies CPU and memory for Kubernetes.
+message KubernetesResources {
+  // cpu is the CPU specification (e.g., "100m", "2")
+  string cpu = 1;
+  // memory is the memory specification (e.g., "256Mi", "2Gi")
+  string memory = 2;
+}
+
+// ModifyAction contains details for generic modification recommendations.
+message ModifyAction {
+  // modification_type describes the type of modification
+  string modification_type = 1;
+  // current_config is the current configuration
+  map<string, string> current_config = 2;
+  // recommended_config is the recommended configuration
+  map<string, string> recommended_config = 3;
+}
+
+// =============================================================================
+// Impact and Summary Messages
+// =============================================================================
+
+// RecommendationImpact describes the financial impact of implementing a recommendation.
+message RecommendationImpact {
+  // estimated_savings is the estimated cost savings
+  double estimated_savings = 1;
+  // currency is the ISO 4217 currency code
+  string currency = 2;
+  // projection_period is the time period for the projection
+  string projection_period = 3;
+  // current_cost is the current cost
+  double current_cost = 4;
+  // projected_cost is the projected cost after implementing the recommendation
+  double projected_cost = 5;
+  // savings_percentage is the savings as a percentage
+  double savings_percentage = 6;
+  // implementation_cost is the one-time cost to implement (if any)
+  optional double implementation_cost = 7;
+  // migration_effort_hours is the estimated effort in hours
+  optional double migration_effort_hours = 8;
+}
+
+// RecommendationSummary provides aggregated statistics across recommendations.
+message RecommendationSummary {
+  // total_recommendations is the total count
+  int32 total_recommendations = 1;
+  // total_estimated_savings is the total savings across all recommendations
+  double total_estimated_savings = 2;
+  // currency is the ISO 4217 currency code for savings
+  string currency = 3;
+  // projection_period is the time period for projections
+  string projection_period = 4;
+  // count_by_category maps category name to count
+  map<string, int32> count_by_category = 5;
+  // savings_by_category maps category name to total savings
+  map<string, double> savings_by_category = 6;
+  // count_by_action_type maps action type name to count
+  map<string, int32> count_by_action_type = 7;
+  // savings_by_action_type maps action type name to total savings
+  map<string, double> savings_by_action_type = 8;
+}
+
+// =============================================================================
+// SupportsResponse Extension (modify existing message)
+// =============================================================================
+
+// Add this field to the existing SupportsResponse message:
+//
+// message SupportsResponse {
+//   bool supported = 1;
+//   string reason = 2;
+//   // NEW: capabilities declares optional capabilities the plugin supports
+//   // Example: {"recommendations": true}
+//   map<string, bool> capabilities = 3;
+// }

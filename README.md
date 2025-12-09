@@ -670,9 +670,32 @@ Plugins can be certified at three levels:
 
 ## Contributing
 
+### Prerequisites
+
+This project requires specific Node.js and Go versions for consistent builds:
+
+```bash
+# Install nvm (Node Version Manager) if not installed
+# See: https://github.com/nvm-sh/nvm#installing-and-updating
+
+# Use the project's Node.js version (reads from .nvmrc)
+nvm install    # First time only
+nvm use        # Each session
+
+# Verify versions
+node --version  # Should match .nvmrc (24.11.1)
+go version      # Should be 1.25.5+
+```
+
+**Why nvm?** Using `.nvmrc` ensures all developers and CI use the same Node.js
+version, preventing `package-lock.json` drift from npm version differences.
+
 ### Development Workflow
 
 ```bash
+# 0. Ensure correct Node version
+nvm use
+
 # 1. Make changes to proto or schema files
 vim proto/pulumicost/v1/costsource.proto
 vim schemas/pricing_spec.schema.json
