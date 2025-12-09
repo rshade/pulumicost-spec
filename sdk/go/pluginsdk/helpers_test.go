@@ -2,6 +2,7 @@ package pluginsdk_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
@@ -1021,4 +1022,268 @@ func TestGetActualCostReturnsErrorForAPIFailures(t *testing.T) {
 
 	// This demonstrates the pattern: errors (API failures, network issues) should
 	// return gRPC errors, not success responses with hints.
+}
+
+// =============================================================================
+// FallbackHint Edge Case Tests
+// =============================================================================
+
+// TestFallbackHintDataWithConflictingHint tests edge case where results exist but hint says fallback.
+// This documents the semantics: the hint is advisory, results take precedence for data presence.
+func TestFallbackHintDataWithConflictingHint(t *testing.T) {
+	testCases := []struct {
+		name           string
+		results        []*pbc.ActualCostResult
+		hint           pbc.FallbackHint
+		expectedValid  bool
+		expectedReason string
+	}{
+		{
+			name: "results with NONE hint - valid",
+			results: []*pbc.ActualCostResult{
+				{Cost: 10.0, Source: "aws-ce"},
+			},
+			hint:          pbc.FallbackHint_FALLBACK_HINT_NONE,
+			expectedValid: true,
+		},
+		{
+			name:          "no results with RECOMMENDED hint - valid",
+			results:       nil,
+			hint:          pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED,
+			expectedValid: true,
+		},
+		{
+			name:          "no results with REQUIRED hint - valid",
+			results:       nil,
+			hint:          pbc.FallbackHint_FALLBACK_HINT_REQUIRED,
+			expectedValid: true,
+		},
+		{
+			name: "results with RECOMMENDED hint - inconsistent but allowed",
+			results: []*pbc.ActualCostResult{
+				{Cost: 5.0, Source: "test"},
+			},
+			hint:           pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED,
+			expectedValid:  true, // Allowed but inconsistent
+			expectedReason: "data with fallback hint is semantically inconsistent",
+		},
+		{
+			name: "results with REQUIRED hint - inconsistent but allowed",
+			results: []*pbc.ActualCostResult{
+				{Cost: 15.0, Source: "kubecost"},
+			},
+			hint:           pbc.FallbackHint_FALLBACK_HINT_REQUIRED,
+			expectedValid:  true, // Allowed but inconsistent
+			expectedReason: "data with required fallback is semantically inconsistent",
+		},
+		{
+			name:          "empty results with NONE hint - valid (authoritative empty)",
+			results:       []*pbc.ActualCostResult{},
+			hint:          pbc.FallbackHint_FALLBACK_HINT_NONE,
+			expectedValid: true,
+		},
+		{
+			name: "zero-cost result with NONE hint - valid (free tier)",
+			results: []*pbc.ActualCostResult{
+				{Cost: 0.0, Source: "aws-ce"},
+			},
+			hint:          pbc.FallbackHint_FALLBACK_HINT_NONE,
+			expectedValid: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := pluginsdk.NewActualCostResponse(
+				pluginsdk.WithResults(tc.results),
+				pluginsdk.WithFallbackHint(tc.hint),
+			)
+
+			// Verify response is constructed correctly
+			if resp.GetFallbackHint() != tc.hint {
+				t.Errorf("Expected hint %v, got %v", tc.hint, resp.GetFallbackHint())
+			}
+
+			if len(resp.GetResults()) != len(tc.results) {
+				t.Errorf("Expected %d results, got %d", len(tc.results), len(resp.GetResults()))
+			}
+
+			// Validate using the helper
+			err := pluginsdk.ValidateActualCostResponse(resp)
+			if tc.expectedValid && err != nil {
+				t.Errorf("Expected valid response, got error: %v", err)
+			}
+			if !tc.expectedValid && err == nil {
+				t.Error("Expected invalid response, got nil error")
+			}
+		})
+	}
+}
+
+// TestFallbackHintAllEnumValues tests all FallbackHint enum values are handled.
+func TestFallbackHintAllEnumValues(t *testing.T) {
+	allHints := []pbc.FallbackHint{
+		pbc.FallbackHint_FALLBACK_HINT_UNSPECIFIED,
+		pbc.FallbackHint_FALLBACK_HINT_NONE,
+		pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED,
+		pbc.FallbackHint_FALLBACK_HINT_REQUIRED,
+	}
+
+	for _, hint := range allHints {
+		t.Run(hint.String(), func(t *testing.T) {
+			resp := pluginsdk.NewActualCostResponse(
+				pluginsdk.WithFallbackHint(hint),
+			)
+
+			if resp.GetFallbackHint() != hint {
+				t.Errorf("Expected hint %v, got %v", hint, resp.GetFallbackHint())
+			}
+
+			// All enum values should pass basic validation
+			err := pluginsdk.ValidateActualCostResponse(resp)
+			if err != nil {
+				t.Errorf("Unexpected validation error for %v: %v", hint, err)
+			}
+		})
+	}
+}
+
+// TestValidateActualCostResponse tests the ValidateActualCostResponse helper function.
+func TestValidateActualCostResponse(t *testing.T) {
+	testCases := []struct {
+		name        string
+		resp        *pbc.GetActualCostResponse
+		expectError bool
+	}{
+		{
+			name:        "nil response",
+			resp:        nil,
+			expectError: true,
+		},
+		{
+			name:        "empty response with default hint",
+			resp:        &pbc.GetActualCostResponse{},
+			expectError: false,
+		},
+		{
+			name: "valid response with results and NONE hint",
+			resp: &pbc.GetActualCostResponse{
+				Results: []*pbc.ActualCostResult{
+					{Cost: 10.0, Source: "test"},
+				},
+				FallbackHint: pbc.FallbackHint_FALLBACK_HINT_NONE,
+			},
+			expectError: false,
+		},
+		{
+			name: "valid response with nil results and RECOMMENDED hint",
+			resp: &pbc.GetActualCostResponse{
+				FallbackHint: pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED,
+			},
+			expectError: false,
+		},
+		{
+			name: "response with negative cost",
+			resp: &pbc.GetActualCostResponse{
+				Results: []*pbc.ActualCostResult{
+					{Cost: -5.0, Source: "test"},
+				},
+			},
+			expectError: true,
+		},
+		{
+			name: "response with empty source",
+			resp: &pbc.GetActualCostResponse{
+				Results: []*pbc.ActualCostResult{
+					{Cost: 10.0, Source: ""},
+				},
+			},
+			expectError: true,
+		},
+		{
+			name: "response with nil result in slice",
+			resp: &pbc.GetActualCostResponse{
+				Results: []*pbc.ActualCostResult{nil},
+			},
+			expectError: true,
+		},
+		{
+			name: "multiple results with second invalid (validation stops at first error)",
+			resp: &pbc.GetActualCostResponse{
+				Results: []*pbc.ActualCostResult{
+					{Cost: 10.0, Source: "valid-source"},
+					{Cost: -5.0, Source: "test"}, // negative cost - invalid
+					{Cost: 20.0, Source: ""},     // empty source - also invalid
+				},
+			},
+			expectError: true,
+		},
+		{
+			name: "multiple results with first invalid (nil)",
+			resp: &pbc.GetActualCostResponse{
+				Results: []*pbc.ActualCostResult{
+					nil, // first result is nil
+					{Cost: 10.0, Source: "valid"},
+					{Cost: 20.0, Source: "also-valid"},
+				},
+			},
+			expectError: true,
+		},
+		{
+			name: "multiple valid results all pass validation",
+			resp: &pbc.GetActualCostResponse{
+				Results: []*pbc.ActualCostResult{
+					{Cost: 10.0, Source: "source-1"},
+					{Cost: 0.0, Source: "source-2"}, // zero cost is valid (free tier)
+					{Cost: 100.0, Source: "source-3"},
+				},
+				FallbackHint: pbc.FallbackHint_FALLBACK_HINT_NONE,
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := pluginsdk.ValidateActualCostResponse(tc.resp)
+			if tc.expectError && err == nil {
+				t.Error("Expected error but got nil")
+			}
+			if !tc.expectError && err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+// TestValidateActualCostResponseStopsAtFirstError verifies that validation
+// stops at the first invalid result and reports the correct index.
+func TestValidateActualCostResponseStopsAtFirstError(t *testing.T) {
+	// Response with multiple errors: second result has negative cost,
+	// third result has empty source. Validation should stop at index 1.
+	resp := &pbc.GetActualCostResponse{
+		Results: []*pbc.ActualCostResult{
+			{Cost: 10.0, Source: "valid-source"}, // index 0 - valid
+			{Cost: -5.0, Source: "test"},         // index 1 - negative cost (first error)
+			{Cost: 20.0, Source: ""},             // index 2 - empty source (never reached)
+			{Cost: -10.0, Source: ""},            // index 3 - both errors (never reached)
+		},
+	}
+
+	err := pluginsdk.ValidateActualCostResponse(resp)
+	if err == nil {
+		t.Fatal("Expected validation error but got nil")
+	}
+
+	// Verify error mentions index 1 (second result), not index 2 or 3
+	errMsg := err.Error()
+	if !strings.Contains(errMsg, "results[1]") {
+		t.Errorf("Expected error to reference results[1], got: %s", errMsg)
+	}
+	if strings.Contains(errMsg, "results[2]") || strings.Contains(errMsg, "results[3]") {
+		t.Errorf("Error should not reference later indices (stops at first error), got: %s", errMsg)
+	}
+	if !strings.Contains(errMsg, "negative") {
+		t.Errorf("Expected error to mention negative cost, got: %s", errMsg)
+	}
 }

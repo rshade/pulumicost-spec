@@ -206,6 +206,56 @@ func NewActualCostResponse(opts ...ActualCostResponseOption) *pbc.GetActualCostR
 	return resp
 }
 
+// ValidateActualCostResponse validates a GetActualCostResponse for structural correctness.
+//
+// Validation Rules:
+//   - Response is not nil
+//   - All results have non-negative costs
+//   - All results have non-empty source identifiers
+//   - No nil results in the results slice
+//
+// Validation stops at the first error encountered. To find all validation errors
+// in a response, you would need to implement your own multi-error collection.
+//
+// Semantic Consistency (NOT validated):
+// This function performs structural validation only. The following combinations
+// are structurally valid but semantically unusual:
+//   - results present + FALLBACK_HINT_RECOMMENDED (plugin has data but suggests fallback)
+//   - results present + FALLBACK_HINT_REQUIRED (plugin has data but requires fallback)
+//
+// The core system treats data presence as authoritative, so these combinations
+// will not trigger fallback behavior. Use them only when the plugin has partial
+// data and wants to signal that other plugins should also be queried.
+//
+// Example:
+//
+//	resp := pluginsdk.NewActualCostResponse(
+//	    pluginsdk.WithResults(results),
+//	    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_NONE),
+//	)
+//	if err := pluginsdk.ValidateActualCostResponse(resp); err != nil {
+//	    return nil, status.Errorf(codes.Internal, "invalid response: %v", err)
+//	}
+func ValidateActualCostResponse(resp *pbc.GetActualCostResponse) error {
+	if resp == nil {
+		return errors.New("response cannot be nil")
+	}
+
+	for i, result := range resp.GetResults() {
+		if result == nil {
+			return fmt.Errorf("results[%d] cannot be nil", i)
+		}
+		if result.GetCost() < 0 {
+			return fmt.Errorf("results[%d].cost cannot be negative: %f", i, result.GetCost())
+		}
+		if result.GetSource() == "" {
+			return fmt.Errorf("results[%d].source cannot be empty", i)
+		}
+	}
+
+	return nil
+}
+
 // NotSupportedError returns an error indicating the specified resource type and provider are not supported.
 // The formatted message includes the resource's ResourceType and Provider.
 func NotSupportedError(resource *pbc.ResourceDescriptor) error {
