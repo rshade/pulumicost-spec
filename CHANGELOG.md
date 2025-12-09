@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4](https://github.com/rshade/pulumicost-spec/compare/v0.4.3...v0.4.4) (2025-12-09)
+
+
+### Added
+
+* **pluginsdk:** add --port flag parsing for multi-plugin orchestration ([#143](https://github.com/rshade/pulumicost-spec/issues/143)) ([c0b0528](https://github.com/rshade/pulumicost-spec/commit/c0b05288e69dc70ad0105165572a5fa3714ed27f)), closes [#129](https://github.com/rshade/pulumicost-spec/issues/129) [#137](https://github.com/rshade/pulumicost-spec/issues/137)
+* **pluginsdk:** add fallback hint enum for plugin orchestration ([#126](https://github.com/rshade/pulumicost-spec/issues/126)) ([ef7aab0](https://github.com/rshade/pulumicost-spec/commit/ef7aab0576e3b4815c4d273c33800557734ebb37)), closes [#124](https://github.com/rshade/pulumicost-spec/issues/124)
+* **pluginsdk:** centralize environment variable handling ([#139](https://github.com/rshade/pulumicost-spec/issues/139)) ([4c9e279](https://github.com/rshade/pulumicost-spec/commit/4c9e279ad38c58ee28178f61041c387c512654ca)), closes [#127](https://github.com/rshade/pulumicost-spec/issues/127)
+* **proto:** add getrecommendations rpc for finops optimization ([#125](https://github.com/rshade/pulumicost-spec/issues/125)) ([ecf92f0](https://github.com/rshade/pulumicost-spec/commit/ecf92f0af6c1dbd1d036e92a1e999a7576debaef))
+
+
+### Fixed
+
+* adding in edge case tests, and benchmark ([#142](https://github.com/rshade/pulumicost-spec/issues/142)) ([881132b](https://github.com/rshade/pulumicost-spec/commit/881132bd87d1bb69ecd9f3abff01527da16fc08f))
+
+
+### Documentation
+
+* adding in claude speckit ([#144](https://github.com/rshade/pulumicost-spec/issues/144)) ([70a6e78](https://github.com/rshade/pulumicost-spec/commit/70a6e78fffba6ac81c518a4225a4da56a34aafdf))
+
 ## [0.4.3](https://github.com/rshade/pulumicost-spec/compare/v0.4.2...v0.4.3) (2025-12-03)
 
 
