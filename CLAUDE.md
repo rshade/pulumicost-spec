@@ -534,6 +534,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod) + zerolog v1.34.0+ (already in go.mod), stdlib only for file operations (015-log-file)
+- File system (log file) - append mode with 0644 permissions (015-log-file)
+
 - Go 1.25.5 (as per go.mod) + Go stdlib only (`os`, `strconv`, `strings`) (013-pluginsdk-env)
 - N/A (reads environment variables at runtime) (013-pluginsdk-env)
 

@@ -156,7 +156,61 @@ pluginsdk.HoursPerMonth  // 730.0 - standard hours for monthly calculations
 
 ## Structured Logging
 
-The SDK uses zerolog for structured logging with standardized field names:
+The SDK uses zerolog for structured logging with standardized field names.
+
+### Log File Configuration
+
+By default, plugins log to stderr. Set `PULUMICOST_LOG_FILE` to redirect logs to a file:
+
+```bash
+# Direct all plugin logs to a file
+export PULUMICOST_LOG_FILE=/var/log/pulumicost/plugins.log
+./my-plugin
+
+# Or per-plugin for separate log files
+PULUMICOST_LOG_FILE=/var/log/pulumicost/aws.log ./aws-plugin &
+PULUMICOST_LOG_FILE=/var/log/pulumicost/azure.log ./azure-plugin &
+```
+
+When the environment variable is not set or empty, logs go to stderr (default behavior).
+
+### NewLogWriter
+
+Use `NewLogWriter()` to get an `io.Writer` that respects the log file configuration:
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+// Get writer that respects PULUMICOST_LOG_FILE
+writer := pluginsdk.NewLogWriter()
+
+// Create logger with the configured writer
+logger := pluginsdk.NewPluginLogger(
+    "my-plugin",
+    "v1.0.0",
+    zerolog.InfoLevel,
+    writer,
+)
+```
+
+**Behavior**:
+
+| Scenario | Result |
+| -------- | ------ |
+| `PULUMICOST_LOG_FILE` not set | Returns `os.Stderr` |
+| `PULUMICOST_LOG_FILE=""` (empty) | Returns `os.Stderr` |
+| `PULUMICOST_LOG_FILE=/valid/path.log` | Returns file writer (creates if needed, appends if exists) |
+| `PULUMICOST_LOG_FILE=/invalid/path` | Logs warning to stderr, returns `os.Stderr` |
+| `PULUMICOST_LOG_FILE=/some/directory/` | Logs warning to stderr, returns `os.Stderr` |
+
+**File Handling**:
+
+- Files are created with `0644` permissions
+- Existing files are appended to (not truncated)
+- Multiple plugins can safely write to the same log file (append mode)
+- Parent directories must exist (SDK does not create them)
+
+### Creating a Plugin Logger
 
 ```go
 import "github.com/rs/zerolog"
@@ -723,6 +777,7 @@ Key changes:
 | `NewServerWithRegistry(plugin, registry)`        | Create server with custom registry  |
 | `NewServerWithOptions(plugin, registry, logger)` | Create server with all options      |
 | `Serve(ctx, config)`                             | Start gRPC server                   |
+| `NewLogWriter()`                                 | Get log writer respecting env var   |
 | `NewPluginLogger(name, version, level, writer)`  | Create configured logger            |
 | `TracingUnaryServerInterceptor()`                | gRPC interceptor for trace IDs      |
 | `TraceIDFromContext(ctx)`                        | Extract trace ID from context       |

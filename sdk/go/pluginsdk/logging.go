@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 	"os"
+	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -19,6 +21,20 @@ const traceIDKey contextKey = "pulumicost-trace-id"
 
 // TraceIDMetadataKey is the gRPC metadata header for trace ID propagation.
 const TraceIDMetadataKey = "x-pulumicost-trace-id"
+
+// Log file configuration constants.
+const (
+	// LogFilePermissions is the file permission mode for created log files (rw-r--r--).
+	// Note: If log files may contain sensitive information (API keys, resource details),
+	// consider using 0640 and running plugins under a dedicated user account.
+	LogFilePermissions = 0644
+
+	// LogFileFlags are the flags used when opening log files for writing.
+	// O_APPEND ensures atomic appends when multiple processes write to the same file (POSIX).
+	// O_CREATE creates the file if it doesn't exist.
+	// O_WRONLY opens for write-only access.
+	LogFileFlags = os.O_APPEND | os.O_CREATE | os.O_WRONLY
+)
 
 // Standard field names for structured logging consistency across plugins.
 const (
@@ -44,10 +60,92 @@ const (
 	FieldTotalSavings        = "total_savings"
 )
 
+//nolint:gochecknoglobals // Intentional singleton for log file handle reuse (process lifetime)
+var (
+	logWriterOnce sync.Once
+	logWriter     io.Writer
+)
+
+// NewLogWriter returns an io.Writer configured based on the PULUMICOST_LOG_FILE
+// environment variable. The file is opened once on first call and reused for
+// subsequent calls (singleton pattern). The file remains open for the lifetime
+// of the process, which is intentional as plugins log continuously during their
+// execution. The OS cleans up the file descriptor when the process exits.
+//
+// If the environment variable is not set, empty, or invalid, returns os.Stderr.
+//
+// When the path is invalid or inaccessible, a warning is logged to stderr
+// before falling back to stderr as the output destination.
+//
+// The file is opened in append mode with 0644 permissions, allowing multiple
+// plugins to safely write to the same log file concurrently.
+//
+// Example usage:
+//
+//	writer := pluginsdk.NewLogWriter()
+//	logger := pluginsdk.NewPluginLogger("my-plugin", "v1.0.0", zerolog.InfoLevel, writer)
+//
+//	// Note: The SDK's internal default logger (used when no custom logger is
+//	// provided to ServeConfig) respects PULUMICOST_LOG_FILE automatically.
+func NewLogWriter() io.Writer {
+	logWriterOnce.Do(func() {
+		logFile := GetLogFile()
+
+		// Return stderr if env var is not set or empty
+		if logFile == "" {
+			logWriter = os.Stderr
+			return
+		}
+
+		warnLogger := zerolog.New(os.Stderr).With().Timestamp().Logger()
+
+		// Check for absolute path
+		if !filepath.IsAbs(logFile) {
+			warnLogger.Warn().Str("path", logFile).
+				Msg("PULUMICOST_LOG_FILE should be absolute path, falling back to stderr")
+			logWriter = os.Stderr
+			return
+		}
+
+		// Attempt to open/create the log file
+		file, err := os.OpenFile(logFile, LogFileFlags, LogFilePermissions)
+		if err != nil {
+			// Check if it's a directory error for better error message
+			if info, statErr := os.Stat(logFile); statErr == nil && info.IsDir() {
+				warnLogger.Warn().
+					Str("path", logFile).
+					Msg("PULUMICOST_LOG_FILE points to a directory, falling back to stderr")
+				logWriter = os.Stderr
+				return
+			}
+
+			warnLogger.Warn().
+				Str("path", logFile).
+				Err(err).
+				Msg("failed to open log file, falling back to stderr")
+			logWriter = os.Stderr
+			return
+		}
+
+		logWriter = file
+	})
+
+	return logWriter
+}
+
+// ResetLogWriter resets the singleton log writer.
+// This is primarily for testing purposes to allow re-initialization
+// when the environment configuration changes.
+func ResetLogWriter() {
+	logWriterOnce = sync.Once{}
+	logWriter = nil
+}
+
 // newDefaultLogger creates a basic zerolog logger for internal SDK use.
 // This is used when no custom logger is provided.
+// It respects the PULUMICOST_LOG_FILE environment variable via NewLogWriter().
 func newDefaultLogger() zerolog.Logger {
-	return zerolog.New(os.Stderr).
+	return zerolog.New(NewLogWriter()).
 		Level(zerolog.InfoLevel).
 		With().
 		Timestamp().

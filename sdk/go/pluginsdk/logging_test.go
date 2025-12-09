@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -648,5 +650,243 @@ func TestTracingUnaryServerInterceptor_EdgeCases(t *testing.T) {
 				)
 			}
 		})
+	}
+}
+
+// =============================================================================
+// NewLogWriter Tests (T005-T019)
+// =============================================================================
+
+// TestNewLogWriter_ValidPath verifies file writer returned when env var set to valid path.
+func TestNewLogWriter_ValidPath(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	tmpFile := filepath.Join(t.TempDir(), "test.log")
+	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+
+	writer := pluginsdk.NewLogWriter()
+
+	// Should not be stderr
+	if writer == os.Stderr {
+		t.Error("Expected file writer, got os.Stderr")
+	}
+
+	// Verify it's a file by writing to it
+	logger := zerolog.New(writer).With().Timestamp().Logger()
+	logger.Info().Msg("test message")
+
+	// Read back from file
+	content, err := os.ReadFile(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to read log file: %v", err)
+	}
+
+	if !bytes.Contains(content, []byte("test message")) {
+		t.Errorf("Expected log file to contain 'test message', got: %s", string(content))
+	}
+}
+
+// TestNewLogWriter_FileCreated verifies file is created if not exists.
+func TestNewLogWriter_FileCreated(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	tmpFile := filepath.Join(t.TempDir(), "new.log")
+	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+
+	// Verify file doesn't exist yet
+	if _, err := os.Stat(tmpFile); !os.IsNotExist(err) {
+		t.Fatal("Test file should not exist before NewLogWriter call")
+	}
+
+	writer := pluginsdk.NewLogWriter()
+
+	// Write something to trigger file creation
+	logger := zerolog.New(writer).With().Timestamp().Logger()
+	logger.Info().Msg("test")
+
+	// Verify file now exists
+	info, err := os.Stat(tmpFile)
+	if err != nil {
+		t.Fatalf("Log file should have been created: %v", err)
+	}
+
+	// Verify permissions (0644)
+	expectedPerm := os.FileMode(0644)
+	actualPerm := info.Mode().Perm()
+	if actualPerm != expectedPerm {
+		t.Errorf("Expected permissions %o, got %o", expectedPerm, actualPerm)
+	}
+}
+
+// TestNewLogWriter_FileAppended verifies existing file is appended (not truncated).
+func TestNewLogWriter_FileAppended(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	tmpFile := filepath.Join(t.TempDir(), "append.log")
+
+	// Create file with existing content
+	existingContent := `{"level":"info","message":"existing"}`
+	if err := os.WriteFile(tmpFile, []byte(existingContent+"\n"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+
+	writer := pluginsdk.NewLogWriter()
+	logger := zerolog.New(writer).With().Timestamp().Logger()
+	logger.Info().Msg("new message")
+
+	// Read back and verify both messages exist
+	content, err := os.ReadFile(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to read log file: %v", err)
+	}
+
+	if !bytes.Contains(content, []byte("existing")) {
+		t.Error("Existing content should be preserved")
+	}
+	if !bytes.Contains(content, []byte("new message")) {
+		t.Error("New content should be appended")
+	}
+}
+
+// TestNewLogWriter_AllLogLevels verifies debug/info/warn/error all captured in file.
+func TestNewLogWriter_AllLogLevels(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	tmpFile := filepath.Join(t.TempDir(), "levels.log")
+	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+
+	writer := pluginsdk.NewLogWriter()
+	logger := zerolog.New(writer).Level(zerolog.DebugLevel).With().Timestamp().Logger()
+
+	logger.Debug().Msg("debug message")
+	logger.Info().Msg("info message")
+	logger.Warn().Msg("warn message")
+	logger.Error().Msg("error message")
+
+	content, err := os.ReadFile(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to read log file: %v", err)
+	}
+
+	levels := []string{"debug", "info", "warn", "error"}
+	for _, level := range levels {
+		if !bytes.Contains(content, []byte(level+" message")) {
+			t.Errorf("Expected %s message in log file", level)
+		}
+	}
+}
+
+// TestNewLogWriter_EnvNotSet verifies os.Stderr returned when env var not set.
+func TestNewLogWriter_EnvNotSet(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	// Ensure env var is not set (empty string is treated as unset)
+	t.Setenv("PULUMICOST_LOG_FILE", "")
+
+	writer := pluginsdk.NewLogWriter()
+
+	if writer != os.Stderr {
+		t.Error("Expected os.Stderr when PULUMICOST_LOG_FILE is not set")
+	}
+}
+
+// TestNewLogWriter_EmptyString verifies os.Stderr returned when env var is empty string.
+func TestNewLogWriter_EmptyString(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	t.Setenv("PULUMICOST_LOG_FILE", "")
+
+	writer := pluginsdk.NewLogWriter()
+
+	if writer != os.Stderr {
+		t.Error("Expected os.Stderr when PULUMICOST_LOG_FILE is empty string")
+	}
+}
+
+// TestNewLogWriter_DirectoryPath verifies stderr + warning when path is a directory.
+func TestNewLogWriter_DirectoryPath(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	tmpDir := t.TempDir()
+	t.Setenv("PULUMICOST_LOG_FILE", tmpDir)
+
+	writer := pluginsdk.NewLogWriter()
+
+	if writer != os.Stderr {
+		t.Error("Expected os.Stderr when PULUMICOST_LOG_FILE points to a directory")
+	}
+}
+
+// TestNewLogWriter_NonexistentParent verifies stderr + warning when parent dir doesn't exist.
+func TestNewLogWriter_NonexistentParent(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	nonexistentPath := filepath.Join(t.TempDir(), "nonexistent", "subdir", "test.log")
+	t.Setenv("PULUMICOST_LOG_FILE", nonexistentPath)
+
+	writer := pluginsdk.NewLogWriter()
+
+	if writer != os.Stderr {
+		t.Error("Expected os.Stderr when parent directory doesn't exist")
+	}
+}
+
+// TestNewLogWriter_BackwardCompatibility verifies existing plugins work without modification.
+func TestNewLogWriter_BackwardCompatibility(t *testing.T) {
+	// Clear the env var to simulate existing plugin behavior
+	t.Setenv("PULUMICOST_LOG_FILE", "")
+
+	// Create a plugin logger the "old way" - should still work
+	var buf bytes.Buffer
+	logger := pluginsdk.NewPluginLogger("test-plugin", "v1.0.0", zerolog.InfoLevel, &buf)
+
+	logger.Info().Msg("test message")
+
+	if !bytes.Contains(buf.Bytes(), []byte("test message")) {
+		t.Error("Plugin logger should still work with custom writer")
+	}
+}
+
+// TestLogFileConstants_Values verifies log file constants have correct values.
+func TestLogFileConstants_Values(t *testing.T) {
+	// Test LogFilePermissions
+	expectedPerm := os.FileMode(0644)
+	if pluginsdk.LogFilePermissions != expectedPerm {
+		t.Errorf("LogFilePermissions: expected %o, got %o", expectedPerm, pluginsdk.LogFilePermissions)
+	}
+
+	// Test LogFileFlags
+	expectedFlags := os.O_APPEND | os.O_CREATE | os.O_WRONLY
+	if pluginsdk.LogFileFlags != expectedFlags {
+		t.Errorf("LogFileFlags: expected %d, got %d", expectedFlags, pluginsdk.LogFileFlags)
+	}
+}
+
+// BenchmarkNewLogWriter_File measures file writer creation performance.
+func BenchmarkNewLogWriter_File(b *testing.B) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	tmpFile := filepath.Join(b.TempDir(), "bench.log")
+	b.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		_ = pluginsdk.NewLogWriter()
+	}
+}
+
+// BenchmarkNewLogWriter_Stderr measures stderr fallback performance.
+func BenchmarkNewLogWriter_Stderr(b *testing.B) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+	b.Setenv("PULUMICOST_LOG_FILE", "")
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for range b.N {
+		_ = pluginsdk.NewLogWriter()
 	}
 }
