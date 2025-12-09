@@ -849,3 +849,176 @@ func TestCalculateRecommendationSummaryConsistentCurrency(t *testing.T) {
 func ptr(v float64) *float64 {
 	return &v
 }
+
+// =============================================================================
+// FallbackHint Tests
+// =============================================================================
+
+// TestFallbackHintDefaultValue tests default hint value (unspecified = 0) behavior.
+func TestFallbackHintDefaultValue(t *testing.T) {
+	// Verify that FallbackHint_FALLBACK_HINT_UNSPECIFIED is 0 (proto3 default)
+	if pbc.FallbackHint_FALLBACK_HINT_UNSPECIFIED != 0 {
+		t.Errorf("Expected FALLBACK_HINT_UNSPECIFIED to be 0, got %d",
+			pbc.FallbackHint_FALLBACK_HINT_UNSPECIFIED)
+	}
+
+	// A new GetActualCostResponse should have unspecified (0) as default
+	resp := &pbc.GetActualCostResponse{}
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_UNSPECIFIED {
+		t.Errorf("Expected default hint to be UNSPECIFIED, got %v", resp.GetFallbackHint())
+	}
+}
+
+// TestCreateActualCostResponseDefaultHint tests that CreateActualCostResponse returns unspecified hint by default.
+func TestCreateActualCostResponseDefaultHint(t *testing.T) {
+	calc := pluginsdk.NewCostCalculator()
+
+	results := []*pbc.ActualCostResult{
+		{Cost: 10.0, Source: "test"},
+	}
+	resp := calc.CreateActualCostResponse(results)
+
+	// Existing CreateActualCostResponse should work with default (unspecified) hint
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_UNSPECIFIED {
+		t.Errorf("Expected default hint to be UNSPECIFIED, got %v", resp.GetFallbackHint())
+	}
+
+	// Results should still be set correctly
+	if len(resp.GetResults()) != 1 {
+		t.Errorf("Expected 1 result, got %d", len(resp.GetResults()))
+	}
+}
+
+// TestWithFallbackHintNone tests WithFallbackHint(NONE) option.
+func TestWithFallbackHintNone(t *testing.T) {
+	resp := pluginsdk.NewActualCostResponse(
+		pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_NONE),
+	)
+
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_NONE {
+		t.Errorf("Expected FALLBACK_HINT_NONE, got %v", resp.GetFallbackHint())
+	}
+}
+
+// TestNewActualCostResponseWithResultsAndNoneHint tests NewActualCostResponse with results and explicit NONE hint.
+func TestNewActualCostResponseWithResultsAndNoneHint(t *testing.T) {
+	results := []*pbc.ActualCostResult{
+		{Cost: 25.50, Source: "aws-ce"},
+		{Cost: 10.00, Source: "aws-ce"},
+	}
+
+	resp := pluginsdk.NewActualCostResponse(
+		pluginsdk.WithResults(results),
+		pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_NONE),
+	)
+
+	// Check results
+	if len(resp.GetResults()) != 2 {
+		t.Errorf("Expected 2 results, got %d", len(resp.GetResults()))
+	}
+	if resp.GetResults()[0].GetCost() != 25.50 {
+		t.Errorf("Expected first cost 25.50, got %f", resp.GetResults()[0].GetCost())
+	}
+
+	// Check hint
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_NONE {
+		t.Errorf("Expected FALLBACK_HINT_NONE, got %v", resp.GetFallbackHint())
+	}
+}
+
+// TestWithFallbackHintRecommendedEmptyResults tests WithFallbackHint(RECOMMENDED) with empty results.
+func TestWithFallbackHintRecommendedEmptyResults(t *testing.T) {
+	resp := pluginsdk.NewActualCostResponse(
+		pluginsdk.WithResults(nil),
+		pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED),
+	)
+
+	// Should have no results
+	if len(resp.GetResults()) != 0 {
+		t.Errorf("Expected 0 results, got %d", len(resp.GetResults()))
+	}
+
+	// Should have RECOMMENDED hint
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED {
+		t.Errorf("Expected FALLBACK_HINT_RECOMMENDED, got %v", resp.GetFallbackHint())
+	}
+}
+
+// TestNewActualCostResponseNilResultsRecommended tests NewActualCostResponse with nil results and RECOMMENDED hint.
+func TestNewActualCostResponseNilResultsRecommended(t *testing.T) {
+	resp := pluginsdk.NewActualCostResponse(
+		pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED),
+	)
+
+	// Results should be nil/empty
+	if resp.GetResults() != nil && len(resp.GetResults()) != 0 {
+		t.Errorf("Expected nil or empty results, got %v", resp.GetResults())
+	}
+
+	// Hint should be RECOMMENDED
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED {
+		t.Errorf("Expected FALLBACK_HINT_RECOMMENDED, got %v", resp.GetFallbackHint())
+	}
+}
+
+// TestWithFallbackHintRequired tests WithFallbackHint(REQUIRED).
+func TestWithFallbackHintRequired(t *testing.T) {
+	resp := pluginsdk.NewActualCostResponse(
+		pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_REQUIRED),
+	)
+
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_REQUIRED {
+		t.Errorf("Expected FALLBACK_HINT_REQUIRED, got %v", resp.GetFallbackHint())
+	}
+}
+
+// TestNewActualCostResponseRequiredForUnsupportedType tests NewActualCostResponse with REQUIRED hint for unsupported type.
+func TestNewActualCostResponseRequiredForUnsupportedType(t *testing.T) {
+	// Simulate a plugin that cannot handle a specific resource type
+	// It returns empty results with REQUIRED hint
+	resp := pluginsdk.NewActualCostResponse(
+		pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_REQUIRED),
+	)
+
+	// No results (plugin doesn't handle this type)
+	if len(resp.GetResults()) != 0 {
+		t.Errorf("Expected 0 results for unsupported type, got %d", len(resp.GetResults()))
+	}
+
+	// REQUIRED hint signals core must try fallback
+	if resp.GetFallbackHint() != pbc.FallbackHint_FALLBACK_HINT_REQUIRED {
+		t.Errorf("Expected FALLBACK_HINT_REQUIRED, got %v", resp.GetFallbackHint())
+	}
+}
+
+// TestGetActualCostReturnsErrorForAPIFailures tests that GetActualCost should return error for API failures, not hint.
+func TestGetActualCostReturnsErrorForAPIFailures(t *testing.T) {
+	// This test documents the expected behavior: errors should be returned
+	// as gRPC errors, not as success responses with hints.
+	//
+	// The BasePlugin.GetActualCost returns an error (NoDataError), not a hint.
+	// This is the correct pattern - system failures use error path, not fallback path.
+
+	plugin := pluginsdk.NewBasePlugin("test-plugin")
+	ctx := context.Background()
+
+	req := &pbc.GetActualCostRequest{
+		ResourceId: "test-resource-id",
+	}
+
+	// Default implementation returns an error, not a response with hint
+	resp, err := plugin.GetActualCost(ctx, req)
+
+	// Should return error
+	if err == nil {
+		t.Error("Expected error for default GetActualCost, got nil")
+	}
+
+	// Response should be nil when error occurs
+	if resp != nil {
+		t.Errorf("Expected nil response when error occurs, got %v", resp)
+	}
+
+	// This demonstrates the pattern: errors (API failures, network issues) should
+	// return gRPC errors, not success responses with hints.
+}
