@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -916,4 +917,66 @@ func TestInterceptorChainBuilding(t *testing.T) {
 			assert.NotNil(t, interceptors[0], "tracing interceptor should be first")
 		})
 	}
+}
+
+// =============================================================================
+// Port Resolution Tests (--port flag, PULUMICOST_PLUGIN_PORT env var)
+// =============================================================================
+
+// TestResolvePort_RequestedTakesPrecedence tests that config.Port takes precedence over env var.
+func TestResolvePort_RequestedTakesPrecedence(t *testing.T) {
+	// Set env var to verify it gets ignored when requested port is specified
+	t.Setenv(EnvPort, "9000")
+
+	got := resolvePort(8080)
+
+	assert.Equal(t, 8080, got, "requested port should take precedence over env var")
+}
+
+// TestResolvePort_FallsBackToEnvVar tests that PULUMICOST_PLUGIN_PORT is used when no port requested.
+func TestResolvePort_FallsBackToEnvVar(t *testing.T) {
+	t.Setenv(EnvPort, "7777")
+
+	got := resolvePort(0)
+
+	assert.Equal(t, 7777, got, "should fall back to PULUMICOST_PLUGIN_PORT when requested is 0")
+}
+
+// TestResolvePort_ReturnsZeroWhenNeitherSet tests ephemeral port behavior.
+func TestResolvePort_ReturnsZeroWhenNeitherSet(t *testing.T) {
+	// Ensure env var is not set by setting it to empty string
+	// t.Setenv handles save/restore automatically
+	t.Setenv(EnvPort, "")
+	require.NoError(t, os.Unsetenv(EnvPort))
+
+	got := resolvePort(0)
+
+	assert.Equal(t, 0, got, "should return 0 (ephemeral) when neither port is specified")
+}
+
+// TestResolvePort_IgnoresGenericPORT tests that PORT env var is NOT read.
+// This is a critical security test - the generic PORT env var causes multi-plugin conflicts.
+func TestResolvePort_IgnoresGenericPORT(t *testing.T) {
+	// Set the DANGEROUS generic PORT env var
+	t.Setenv("PORT", "5000")
+	// Ensure our canonical env var is NOT set by setting then unsetting
+	// t.Setenv handles save/restore automatically
+	t.Setenv(EnvPort, "")
+	require.NoError(t, os.Unsetenv(EnvPort))
+
+	got := resolvePort(0)
+
+	// PORT should be IGNORED - we should get 0 (ephemeral), not 5000
+	assert.Equal(t, 0, got, "PORT env var should be ignored; only PULUMICOST_PLUGIN_PORT is read")
+}
+
+// TestParsePortFlag tests the ParsePortFlag function.
+// Note: Flag values cannot be easily tested in unit tests because flag.Parse()
+// affects global state. This test verifies the function doesn't panic.
+func TestParsePortFlag(t *testing.T) {
+	// Simply verify the function doesn't panic and returns a value
+	got := ParsePortFlag()
+
+	// Default value when flag is not explicitly set is 0
+	assert.GreaterOrEqual(t, got, 0, "ParsePortFlag should return non-negative value")
 }

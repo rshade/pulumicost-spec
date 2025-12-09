@@ -4,6 +4,7 @@ package pluginsdk
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -15,6 +16,37 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+// portFlag is the --port command-line flag for specifying the gRPC server port.
+// This is registered at package initialization time.
+//
+//nolint:gochecknoglobals // Package-level flag required for command-line parsing
+var portFlag = flag.Int("port", 0, "TCP port for gRPC server (overrides PULUMICOST_PLUGIN_PORT)")
+
+// ParsePortFlag returns the value of the --port command-line flag.
+// Returns 0 if the flag was not specified or if flag.Parse() has not been called.
+//
+// IMPORTANT: The caller must call flag.Parse() before calling this function.
+//
+// Example usage in plugin main():
+//
+//	func main() {
+//	    flag.Parse()  // Must be called first
+//	    port := pluginsdk.ParsePortFlag()
+//	    ctx := context.Background()
+//	    if err := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+//	        Plugin: &MyPlugin{},
+//	        Port:   port,
+//	    }); err != nil {
+//	        log.Fatal(err)
+//	    }
+//	}
+func ParsePortFlag() int {
+	if portFlag == nil {
+		return 0
+	}
+	return *portFlag
+}
 
 // DefaultSupportsNotImplementedReason is the standardized message returned when
 // a plugin does not implement the SupportsProvider interface.
@@ -287,6 +319,14 @@ type ServeConfig struct {
 	UnaryInterceptors []grpc.UnaryServerInterceptor
 }
 
+// resolvePort determines the port to use with the following priority:
+//  1. requested (set from --port flag via ParsePortFlag(), or explicitly configured in ServeConfig.Port)
+//  2. PULUMICOST_PLUGIN_PORT env var (via GetPort())
+//  3. 0 (ephemeral port - OS assigns available port)
+//
+// Note: The generic PORT env var is NOT supported to avoid multi-plugin conflicts.
+// When pulumicost-core spawns multiple plugins (e.g., aws-public + aws-ce), each
+// needs a unique port. Using --port flag allows the core to allocate distinct ports.
 func resolvePort(requested int) int {
 	if requested > 0 {
 		return requested
