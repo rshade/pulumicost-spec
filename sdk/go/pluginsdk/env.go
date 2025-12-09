@@ -28,7 +28,7 @@ const (
 	EnvLogFormat = "PULUMICOST_LOG_FORMAT"
 
 	// EnvLogFile is the environment variable for log file path.
-	// Empty string means stdout.
+	// Empty string means log to stderr.
 	EnvLogFile = "PULUMICOST_LOG_FILE"
 
 	// EnvTraceID is the environment variable for distributed tracing.

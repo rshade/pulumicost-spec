@@ -71,6 +71,8 @@ cd ../../ && make test && make lint
 
 **`pluginsdk/` Package - Plugin Development SDK**
 
+- `README.md` - **Comprehensive documentation** for `pluginsdk.Serve()` function, port resolution,
+  environment variables, and plugin development
 - `sdk.go` - gRPC server setup with `Serve()` function and `ServeConfig` options
 - `env.go` - Centralized environment variable handling for all PulumiCost plugins
 - `env_test.go` - Comprehensive tests for environment variable functions
@@ -80,15 +82,15 @@ cd ../../ && make test && make lint
 
 **Environment Variables (env.go)**:
 
-| Constant | Variable Name | Purpose |
-|----------|---------------|---------|
-| `EnvPort` | `PULUMICOST_PLUGIN_PORT` | gRPC server port (no fallback) |
-| `EnvLogLevel` | `PULUMICOST_LOG_LEVEL` | Log verbosity (debug, info, warn, error) |
-| `EnvLogLevelFallback` | `LOG_LEVEL` | Legacy fallback for log level |
-| `EnvLogFormat` | `PULUMICOST_LOG_FORMAT` | Log output format (json, text) |
-| `EnvLogFile` | `PULUMICOST_LOG_FILE` | Log file path (empty = stdout) |
-| `EnvTraceID` | `PULUMICOST_TRACE_ID` | Distributed tracing correlation ID |
-| `EnvTestMode` | `PULUMICOST_TEST_MODE` | Enable test mode (only "true" enables) |
+| Constant              | Variable Name            | Purpose                                  |
+| --------------------- | ------------------------ | ---------------------------------------- |
+| `EnvPort`             | `PULUMICOST_PLUGIN_PORT` | gRPC server port (no fallback)           |
+| `EnvLogLevel`         | `PULUMICOST_LOG_LEVEL`   | Log verbosity (debug, info, warn, error) |
+| `EnvLogLevelFallback` | `LOG_LEVEL`              | Legacy fallback for log level            |
+| `EnvLogFormat`        | `PULUMICOST_LOG_FORMAT`  | Log output format (json, text)           |
+| `EnvLogFile`          | `PULUMICOST_LOG_FILE`    | Log file path (empty = stderr)           |
+| `EnvTraceID`          | `PULUMICOST_TRACE_ID`    | Distributed tracing correlation ID       |
+| `EnvTestMode`         | `PULUMICOST_TEST_MODE`   | Enable test mode (only "true" enables)   |
 
 **Environment Functions**:
 
@@ -153,12 +155,12 @@ the core system should query other plugins for cost data.
 
 **Enum Values**:
 
-| Value | Int | Description |
-|-------|-----|-------------|
-| `FALLBACK_HINT_UNSPECIFIED` | 0 | Default. Treated as "no fallback needed" (backwards compatible) |
-| `FALLBACK_HINT_NONE` | 1 | Plugin has data; do not attempt fallback |
-| `FALLBACK_HINT_RECOMMENDED` | 2 | Plugin has no data; core SHOULD try other plugins |
-| `FALLBACK_HINT_REQUIRED` | 3 | Plugin cannot handle request; core MUST try fallback |
+| Value                       | Int | Description                                                     |
+| --------------------------- | --- | --------------------------------------------------------------- |
+| `FALLBACK_HINT_UNSPECIFIED` | 0   | Default. Treated as "no fallback needed" (backwards compatible) |
+| `FALLBACK_HINT_NONE`        | 1   | Plugin has data; do not attempt fallback                        |
+| `FALLBACK_HINT_RECOMMENDED` | 2   | Plugin has no data; core SHOULD try other plugins               |
+| `FALLBACK_HINT_REQUIRED`    | 3   | Plugin cannot handle request; core MUST try fallback            |
 
 **Usage Examples**:
 

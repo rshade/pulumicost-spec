@@ -4,6 +4,22 @@ The `pluginsdk` package provides a comprehensive development SDK for building Pu
 the core plugin interface, helper utilities for cost calculations, structured logging with zerolog, and testing
 utilities for plugin development.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Server Configuration](#server-configuration)
+- [Environment Variables](#environment-variables)
+- [Core Components](#core-components)
+- [Structured Logging](#structured-logging)
+- [Prometheus Metrics](#prometheus-metrics)
+- [Testing Utilities](#testing-utilities)
+- [Error Helpers](#error-helpers)
+- [FOCUS 1.2 Cost Records](#focus-12-cost-records)
+- [Manifest Management](#manifest-management)
+- [Migration](#migration-from-pulumicost-core)
+- [API Reference](#api-reference)
+
 ## Installation
 
 ```go
@@ -12,73 +28,288 @@ import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
 
 ## Quick Start
 
-### 1. Implement the Plugin Interface
+The simplest possible plugin implementation:
 
 ```go
 package main
 
 import (
     "context"
+    "flag"
+    "log"
+    "os"
+    "os/signal"
+    "syscall"
 
     "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
     pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
-type MyPlugin struct {
-    *pluginsdk.BasePlugin
+// MyPlugin implements the pluginsdk.Plugin interface.
+type MyPlugin struct{}
+
+func (p *MyPlugin) Name() string {
+    return "my-cost-plugin"
 }
 
-func NewMyPlugin() *MyPlugin {
-    plugin := &MyPlugin{
-        BasePlugin: pluginsdk.NewBasePlugin("my-plugin"),
-    }
-
-    // Configure supported providers and resource types
-    plugin.Matcher().AddProvider("aws")
-    plugin.Matcher().AddResourceType("aws:ec2:Instance")
-
-    return plugin
-}
-
-// Override GetProjectedCost to implement your pricing logic
 func (p *MyPlugin) GetProjectedCost(
     ctx context.Context,
     req *pbc.GetProjectedCostRequest,
 ) (*pbc.GetProjectedCostResponse, error) {
-    resource := req.GetResource()
+    // Implement projected cost calculation
+    return &pbc.GetProjectedCostResponse{}, nil
+}
 
-    // Check if resource is supported
-    if !p.Matcher().Supports(resource) {
-        return nil, pluginsdk.NotSupportedError(resource)
+func (p *MyPlugin) GetActualCost(
+    ctx context.Context,
+    req *pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+    // Implement actual cost retrieval
+    return &pbc.GetActualCostResponse{}, nil
+}
+
+func (p *MyPlugin) GetPricingSpec(
+    ctx context.Context,
+    req *pbc.GetPricingSpecRequest,
+) (*pbc.GetPricingSpecResponse, error) {
+    // Implement pricing spec lookup
+    return &pbc.GetPricingSpecResponse{}, nil
+}
+
+func (p *MyPlugin) EstimateCost(
+    ctx context.Context,
+    req *pbc.EstimateCostRequest,
+) (*pbc.EstimateCostResponse, error) {
+    // Implement cost estimation
+    return &pbc.EstimateCostResponse{}, nil
+}
+
+func main() {
+    // Parse command-line flags (required before ParsePortFlag)
+    flag.Parse()
+
+    // Create cancellable context for graceful shutdown
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    // Handle SIGINT and SIGTERM for graceful shutdown
+    sigCh := make(chan os.Signal, 1)
+    signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+    go func() {
+        <-sigCh
+        cancel()
+    }()
+
+    // Start the gRPC server
+    if err := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+        Plugin: &MyPlugin{},
+        Port:   pluginsdk.ParsePortFlag(), // Uses --port flag if provided
+    }); err != nil {
+        log.Fatalf("Server error: %v", err)
     }
-
-    // Calculate cost (example: $0.10/hour for t2.micro)
-    hourlyRate := 0.10
-
-    return p.Calculator().CreateProjectedCostResponse(
-        "USD",
-        hourlyRate,
-        "On-demand EC2 instance pricing",
-    ), nil
 }
 ```
 
-### 2. Serve Your Plugin
+## Server Configuration
+
+The `pluginsdk.Serve()` function is the entry point for running your plugin as a gRPC server.
+
+### Function Signature
 
 ```go
-func main() {
-    plugin := NewMyPlugin()
+func Serve(ctx context.Context, config ServeConfig) error
+```
 
-    ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-    defer cancel()
+`Serve` starts the gRPC server and blocks until the context is canceled or a fatal error occurs. It automatically handles:
 
-    if err := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
-        Plugin: plugin,
-        Port:   50051, // Optional: use 0 for automatic port
-    }); err != nil {
-        log.Fatal(err)
-    }
+- Port resolution (flag, env var, or ephemeral)
+- Graceful shutdown on context cancellation
+- Trace ID propagation
+- Port announcement to stdout (`PORT=<port>`)
+
+### ServeConfig
+
+Configuration for the server is provided via the `ServeConfig` struct:
+
+```go
+type ServeConfig struct {
+    // Required: The plugin implementation
+    Plugin Plugin
+
+    // Optional: TCP port to listen on.
+    // If 0, uses PULUMICOST_PLUGIN_PORT env var or an ephemeral port.
+    Port int
+
+    // Optional: Registry for looking up plugins (used for Supports validation).
+    // If nil, defaults to a no-op registry.
+    Registry RegistryLookup
+
+    // Optional: Custom logger.
+    // If nil, a default stderr logger is used.
+    Logger *zerolog.Logger
+
+    // Optional: Additional gRPC unary interceptors.
+    // Chained after the built-in tracing interceptor.
+    UnaryInterceptors []grpc.UnaryServerInterceptor
 }
+```
+
+### Port Resolution
+
+The server port is determined with the following priority:
+
+1. **Explicit configuration**: `ServeConfig.Port` (if > 0)
+2. **Environment variable**: `PULUMICOST_PLUGIN_PORT` (if set)
+3. **Ephemeral port**: The OS assigns an available port (if both above are 0/unset)
+
+The generic `PORT` environment variable is **not supported** to avoid conflicts when multiple plugins run on the same machine.
+
+### Port Announcement
+
+Upon starting, the server prints the selected port to stdout in the format:
+
+```text
+PORT=50051
+```
+
+This allows the parent process (e.g., pulumicost-core) to discover the ephemeral port.
+
+### ParsePortFlag
+
+The `pluginsdk` package provides a standard helper for the `--port` flag:
+
+```go
+// Returns value of --port flag (or 0 if not set)
+port := pluginsdk.ParsePortFlag()
+```
+
+**Important**: You MUST call `flag.Parse()` before calling `pluginsdk.ParsePortFlag()`.
+
+### Configuration Examples
+
+**Using the `--port` flag:**
+
+```bash
+./my-plugin --port 50051
+```
+
+**Using Environment Variable:**
+
+```bash
+export PULUMICOST_PLUGIN_PORT=50052
+./my-plugin
+```
+
+**Using Ephemeral Port:**
+
+```bash
+./my-plugin
+# Output: PORT=54321
+```
+
+### Multi-Plugin Orchestration
+
+When running multiple plugins on the same host (e.g., orchestrated by `pulumicost-core`),
+you must avoid port conflicts. This is why the generic `PORT` environment variable is **not supported**.
+
+Instead, assign unique ports using the `--port` flag or let the OS assign ephemeral ports:
+
+```bash
+# Plugin 1 (AWS)
+./aws-plugin --port 50051 &
+
+# Plugin 2 (Azure)
+./azure-plugin --port 50052 &
+```
+
+Or using ephemeral ports (recommended for dynamic orchestration):
+
+```bash
+# Plugins report their ports to stdout
+./aws-plugin    # Output: PORT=43291
+./azure-plugin  # Output: PORT=39102
+```
+
+### Graceful Shutdown
+
+The `Serve()` function monitors the provided `context.Context`. When the context is canceled (e.g., via SIGINT/SIGTERM handling):
+
+1. The server stops accepting new connections.
+2. `grpcServer.GracefulStop()` is called.
+3. Existing RPCs are allowed to complete.
+4. The function returns `context.Canceled` (or the cancellation error).
+
+This behavior ensures no in-flight requests are dropped during rolling updates or shutdown.
+
+#### Example: Signal Handling
+
+```go
+ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+defer cancel()
+
+if err := pluginsdk.Serve(ctx, config); err != nil {
+    // ...
+}
+```
+
+### Error Handling
+
+`Serve()` may return the following errors:
+
+- **"failed to listen: address already in use"**: The configured port is taken.
+- **"failed to listen: permission denied"**: The process lacks permission to bind to the port (e.g., ports < 1024).
+- **context.Canceled**: The server shut down gracefully due to context cancellation.
+
+**Common Mistake**: Calling `ParsePortFlag()` before `flag.Parse()` will always return 0,
+causing the server to use an ephemeral port (or env var) unexpectedly. Always call `flag.Parse()` first.
+
+## Environment Variables
+
+Plugins can be configured using standard environment variables.
+
+| Variable                 | Purpose                                          | Default       |
+| ------------------------ | ------------------------------------------------ | ------------- |
+| `PULUMICOST_PLUGIN_PORT` | gRPC server port (overridden by `--port`)        | Ephemeral (0) |
+| `PULUMICOST_LOG_LEVEL`   | Log verbosity (`debug`, `info`, `warn`, `error`) | `info`        |
+| `PULUMICOST_LOG_FORMAT`  | Log output format (`json`, `text`)               | `json`        |
+| `PULUMICOST_LOG_FILE`    | Path to log file (empty = stderr)                | stderr        |
+| `PULUMICOST_TRACE_ID`    | Distributed trace ID for correlation             | (none)        |
+| `PULUMICOST_TEST_MODE`   | Enable test mode features (`true` / `false`)     | `false`       |
+
+### Logging Configuration
+
+- **PULUMICOST_LOG_LEVEL**: Controls the verbosity of the logger.
+  - `debug`: Detailed debugging information
+  - `info`: Standard operational events
+  - `warn`: Warning conditions
+  - `error`: Error conditions
+  - **Fallback**: If `PULUMICOST_LOG_LEVEL` is not set, `GetLogLevel()` falls back to the legacy
+    `LOG_LEVEL` environment variable.
+- **PULUMICOST_LOG_FORMAT**: Controls the output structure.
+  - `json`: Structured JSON for production (default)
+  - `text`: Human-readable text for development
+- **PULUMICOST_LOG_FILE**: Redirects logs to a file instead of stderr.
+- **PULUMICOST_TEST_MODE**: Enables test mode features. Only `"true"` enables test mode; all other
+  values disable it. `GetTestMode()` logs a warning when the value is set but is not `"true"` or
+  `"false"`.
+
+### Distributed Tracing
+
+- **PULUMICOST_TRACE_ID**: If set, this ID is automatically attached to the logger and propagated
+  in gRPC contexts. This allows correlating plugin activity with the caller's trace.
+
+### Helper Functions
+
+The SDK provides getter functions to access these values type-safely:
+
+```go
+port := pluginsdk.GetPort()           // Returns int
+level := pluginsdk.GetLogLevel()      // Returns string (checks PULUMICOST_LOG_LEVEL, falls back to LOG_LEVEL)
+format := pluginsdk.GetLogFormat()    // Returns string
+file := pluginsdk.GetLogFile()        // Returns string
+traceID := pluginsdk.GetTraceID()     // Returns string
+isTest := pluginsdk.GetTestMode()     // Returns bool, logs warnings for invalid values
+isTest := pluginsdk.IsTestMode()      // Returns bool, silent version for repeated checks
 ```
 
 ## Core Components
@@ -94,6 +325,26 @@ type Plugin interface {
     GetActualCost(ctx context.Context, req *pbc.GetActualCostRequest) (*pbc.GetActualCostResponse, error)
     GetPricingSpec(ctx context.Context, req *pbc.GetPricingSpecRequest) (*pbc.GetPricingSpecResponse, error)
     EstimateCost(ctx context.Context, req *pbc.EstimateCostRequest) (*pbc.EstimateCostResponse, error)
+}
+```
+
+### Optional Interfaces
+
+Plugins can optionally implement these interfaces to provide advanced capabilities:
+
+**SupportsProvider** - Enables the plugin to declare which resources it supports.
+
+```go
+type SupportsProvider interface {
+    Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.SupportsResponse, error)
+}
+```
+
+**RecommendationsProvider** - Enables the plugin to provide cost optimization recommendations.
+
+```go
+type RecommendationsProvider interface {
+    GetRecommendations(ctx context.Context, req *pbc.GetRecommendationsRequest) (*pbc.GetRecommendationsResponse, error)
 }
 ```
 
@@ -372,27 +623,6 @@ For handlers with typical work (1ms+), the metrics overhead is under 1% of total
 | `MetricSubsystem`    | `plugin`     | Prometheus subsystem |
 | `DefaultMetricsPort` | `9090`       | Default HTTP port    |
 | `DefaultMetricsPath` | `/metrics`   | Default URL path     |
-
-## Server Configuration
-
-### ServeConfig Options
-
-```go
-pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
-    Plugin:   plugin,           // Required: your Plugin implementation
-    Port:     50051,            // Optional: 0 for PORT env or ephemeral
-    Registry: customRegistry,   // Optional: for Supports() validation
-    Logger:   &customLogger,    // Optional: custom zerolog.Logger
-})
-```
-
-### Port Resolution
-
-1. If `Port > 0`, uses that port
-2. If `PULUMICOST_PLUGIN_PORT` environment variable is set, uses that
-3. Otherwise, uses an ephemeral port
-
-The selected port is printed to stdout as `PORT=<port>`.
 
 ## Testing Utilities
 

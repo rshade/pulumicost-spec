@@ -26,7 +26,8 @@
 
 **Purpose**: Validate contracts and prepare for proto modification
 
-- [x] T001 Validate contract proto matches expected changes in specs/001-fallback-hint/contracts/costsource.proto
+- [x] T001 Validate contract proto matches expected changes in
+      specs/001-fallback-hint/contracts/costsource.proto
 - [x] T002 [P] Review existing GetActualCostResponse usage patterns in sdk/go/pluginsdk/helpers.go
 
 ---
@@ -38,7 +39,8 @@
 **⚠️ CRITICAL**: No SDK or user story work can begin until proto changes are complete and regenerated
 
 - [x] T003 Add FallbackHint enum to proto/pulumicost/v1/costsource.proto with four values
-- [x] T004 Add fallback_hint field to GetActualCostResponse message in proto/pulumicost/v1/costsource.proto
+- [x] T004 Add fallback_hint field to GetActualCostResponse message in
+      proto/pulumicost/v1/costsource.proto
 - [x] T005 Run `make generate` to regenerate Go bindings in sdk/go/proto/
 - [x] T006 Run `buf lint` to validate proto changes
 - [x] T007 Verify generated code compiles with `go build ./...`
@@ -55,13 +57,19 @@
 
 ### Tests for User Story 5
 
-- [x] T008 [P] [US5] Add test for default hint value (unspecified = 0) behavior in sdk/go/pluginsdk/helpers_test.go
-- [x] T009 [P] [US5] Add test verifying CreateActualCostResponse returns unspecified hint by default in sdk/go/pluginsdk/helpers_test.go
+- [x] T008 [P] [US5] Add test for default hint value (unspecified = 0) behavior in
+      sdk/go/pluginsdk/helpers_test.go
+- [x] T009 [P] [US5] Add test verifying CreateActualCostResponse returns unspecified hint by default in
+      sdk/go/pluginsdk/helpers_test.go
+- [x] T009a [P] [US5] Add test verifying wire format (JSON marshaling) omits fallback_hint when
+      zero/unspecified (SC-004) in sdk/go/pluginsdk/helpers_test.go
 
 ### Implementation for User Story 5
 
-- [x] T010 [US5] Verify CreateActualCostResponse continues to work without modification in sdk/go/pluginsdk/helpers.go
-- [x] T011 [US5] Add documentation comment to CreateActualCostResponse explaining default hint behavior in sdk/go/pluginsdk/helpers.go
+- [x] T010 [US5] Verify CreateActualCostResponse continues to work without modification in
+      sdk/go/pluginsdk/helpers.go
+- [x] T011 [US5] Add documentation comment to CreateActualCostResponse explaining default hint behavior
+      in sdk/go/pluginsdk/helpers.go
 
 **Checkpoint**: Backwards compatibility verified - existing code works without changes
 
@@ -76,15 +84,19 @@
 ### Tests for User Story 1
 
 - [x] T012 [P] [US1] Add test for WithFallbackHint(NONE) option in sdk/go/pluginsdk/helpers_test.go
-- [x] T013 [P] [US1] Add test for NewActualCostResponse with results and explicit NONE hint in sdk/go/pluginsdk/helpers_test.go
+- [x] T013 [P] [US1] Add test for NewActualCostResponse with results and explicit NONE hint in
+      sdk/go/pluginsdk/helpers_test.go
 
 ### Implementation for User Story 1
 
-- [x] T014 [US1] Define ActualCostResponseOption type for functional options in sdk/go/pluginsdk/helpers.go
+- [x] T014 [US1] Define ActualCostResponseOption type for functional options in
+      sdk/go/pluginsdk/helpers.go
 - [x] T015 [US1] Implement WithFallbackHint option function in sdk/go/pluginsdk/helpers.go
 - [x] T016 [US1] Implement WithResults option function in sdk/go/pluginsdk/helpers.go
-- [x] T017 [US1] Implement NewActualCostResponse constructor using functional options in sdk/go/pluginsdk/helpers.go
-- [x] T018 [US1] Add documentation comments for functional options pattern in sdk/go/pluginsdk/helpers.go (FR-008)
+- [x] T017 [US1] Implement NewActualCostResponse constructor using functional options in
+      sdk/go/pluginsdk/helpers.go
+- [x] T018 [US1] Add documentation comments for functional options pattern in
+      sdk/go/pluginsdk/helpers.go (FR-008)
 
 **Checkpoint**: Plugins can explicitly signal no-fallback with data
 
@@ -98,13 +110,17 @@
 
 ### Tests for User Story 2
 
-- [x] T019 [P] [US2] Add test for WithFallbackHint(RECOMMENDED) with empty results in sdk/go/pluginsdk/helpers_test.go
-- [x] T020 [P] [US2] Add test for NewActualCostResponse with nil results and RECOMMENDED hint in sdk/go/pluginsdk/helpers_test.go
+- [x] T019 [P] [US2] Add test for WithFallbackHint(RECOMMENDED) with empty results in
+      sdk/go/pluginsdk/helpers_test.go
+- [x] T020 [P] [US2] Add test for NewActualCostResponse with nil results and RECOMMENDED hint in
+      sdk/go/pluginsdk/helpers_test.go
 
 ### Implementation for User Story 2
 
-- [x] T021 [US2] Verify FALLBACK_HINT_RECOMMENDED correctly set via WithFallbackHint in sdk/go/pluginsdk/helpers.go
-- [x] T022 [US2] Add example usage for "no data" scenario in documentation comment in sdk/go/pluginsdk/helpers.go
+- [x] T021 [US2] Verify FALLBACK_HINT_RECOMMENDED correctly set via WithFallbackHint in
+      sdk/go/pluginsdk/helpers.go
+- [x] T022 [US2] Add example usage for "no data" scenario in documentation comment in
+      sdk/go/pluginsdk/helpers.go
 
 **Checkpoint**: Plugins can signal "no data, try others"
 
@@ -119,12 +135,15 @@
 ### Tests for User Story 3
 
 - [x] T023 [P] [US3] Add test for WithFallbackHint(REQUIRED) in sdk/go/pluginsdk/helpers_test.go
-- [x] T024 [P] [US3] Add test for NewActualCostResponse with REQUIRED hint for unsupported type in sdk/go/pluginsdk/helpers_test.go
+- [x] T024 [P] [US3] Add test for NewActualCostResponse with REQUIRED hint for unsupported type in
+      sdk/go/pluginsdk/helpers_test.go
 
 ### Implementation for User Story 3
 
-- [x] T025 [US3] Verify FALLBACK_HINT_REQUIRED correctly set via WithFallbackHint in sdk/go/pluginsdk/helpers.go
-- [x] T026 [US3] Add example usage for "cannot handle" scenario in documentation comment in sdk/go/pluginsdk/helpers.go
+- [x] T025 [US3] Verify FALLBACK_HINT_REQUIRED correctly set via WithFallbackHint in
+      sdk/go/pluginsdk/helpers.go
+- [x] T026 [US3] Add example usage for "cannot handle" scenario in documentation comment in
+      sdk/go/pluginsdk/helpers.go
 
 **Checkpoint**: Plugins can signal "not my job, must try others"
 
@@ -138,12 +157,15 @@
 
 ### Tests for User Story 4
 
-- [x] T027 [P] [US4] Add test verifying GetActualCost returns error for API failures (not hint) in sdk/go/pluginsdk/helpers_test.go
+- [x] T027 [P] [US4] Add test verifying GetActualCost returns error for API failures (not hint) in
+      sdk/go/pluginsdk/helpers_test.go
 
 ### Implementation for User Story 4
 
-- [x] T028 [US4] Add documentation clarifying error vs hint distinction in sdk/go/pluginsdk/helpers.go (FR-008)
-- [x] T029 [US4] Add example in documentation showing when to return error vs hint in sdk/go/pluginsdk/helpers.go (FR-008)
+- [x] T028 [US4] Add documentation clarifying error vs hint distinction in
+      sdk/go/pluginsdk/helpers.go (FR-008)
+- [x] T029 [US4] Add example in documentation showing when to return error vs hint in
+      sdk/go/pluginsdk/helpers.go (FR-008)
 
 **Checkpoint**: Error semantics clearly documented
 
@@ -154,15 +176,21 @@
 **Purpose**: Documentation, validation, and final polish
 
 - [x] T030 [P] Update quickstart.md with new functional options pattern examples (FR-009)
-- [x] T031 [P] Add FallbackHint decision matrix to quickstart.md in specs/001-fallback-hint/quickstart.md (FR-009, SC-005)
-- [x] T032 [P] Document zero-cost vs no-data distinction in quickstart.md in specs/001-fallback-hint/quickstart.md (FR-010)
-- [x] T033 [P] Document edge case: data + hint conflict (data wins) in specs/001-fallback-hint/quickstart.md
-- [x] T034 [P] Document edge case: unrecognized hint values (treat as UNSPECIFIED) in specs/001-fallback-hint/quickstart.md
-- [x] T035 [P] Document edge case: fallback chain termination in specs/001-fallback-hint/quickstart.md
+- [x] T031 [P] Add FallbackHint decision matrix to quickstart.md in
+      specs/001-fallback-hint/quickstart.md (FR-009, SC-005)
+- [x] T032 [P] Document zero-cost vs no-data distinction in quickstart.md in
+      specs/001-fallback-hint/quickstart.md (FR-010)
+- [x] T033 [P] Document edge case: data + hint conflict (data wins) in
+      specs/001-fallback-hint/quickstart.md
+- [x] T034 [P] Document edge case: unrecognized hint values (treat as UNSPECIFIED) in
+      specs/001-fallback-hint/quickstart.md
+- [x] T035 [P] Document edge case: fallback chain termination in
+      specs/001-fallback-hint/quickstart.md
 - [x] T036 Run `make lint` to verify all code passes linting
 - [x] T037 Run `make test` to verify all tests pass
 - [x] T038 Run `make validate` for full validation pipeline
-- [x] T039 Verify contract proto in specs/001-fallback-hint/contracts/costsource.proto matches final implementation
+- [x] T039 Verify contract proto in specs/001-fallback-hint/contracts/costsource.proto matches final
+      implementation
 
 ---
 
@@ -260,10 +288,10 @@ With multiple developers:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | 39 |
+| **Total Tasks** | 40 |
 | **Setup Tasks** | 2 |
 | **Foundational Tasks** | 5 |
-| **US5 (Backwards Compat) Tasks** | 4 |
+| **US5 (Backwards Compat) Tasks** | 5 |
 | **US1 (Data + NONE) Tasks** | 7 |
 | **US2 (No Data + RECOMMENDED) Tasks** | 4 |
 | **US3 (Cannot Handle + REQUIRED) Tasks** | 4 |

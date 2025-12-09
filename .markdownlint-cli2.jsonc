@@ -16,6 +16,7 @@
     ".claude/commands/",
     ".claude/agents/",
     ".specify/templates/",
-    ".opencode"
+    ".opencode",
+    "PR_MESSAGE.md"
   ]
 }
