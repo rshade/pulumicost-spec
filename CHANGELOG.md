@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5](https://github.com/rshade/pulumicost-spec/compare/v0.4.4...v0.4.5) (2025-12-10)
+
+
+### Added
+
+* **pluginsdk:** add mapping package for property extraction ([#148](https://github.com/rshade/pulumicost-spec/issues/148)) ([8fd1524](https://github.com/rshade/pulumicost-spec/commit/8fd1524877218272a7d219239058bfee43c294bc)), closes [#128](https://github.com/rshade/pulumicost-spec/issues/128)
+* **proto:** add getbudgets rpc for unified budget visibility ([#149](https://github.com/rshade/pulumicost-spec/issues/149)) ([b4018d7](https://github.com/rshade/pulumicost-spec/commit/b4018d794fd5b2c2f54541102c7625ffd900f26f)), closes [#123](https://github.com/rshade/pulumicost-spec/issues/123)
+* **sdk:** Support PULUMICOST_LOG_FILE for unified logging ([#145](https://github.com/rshade/pulumicost-spec/issues/145)) ([6b9a9b3](https://github.com/rshade/pulumicost-spec/commit/6b9a9b38e24f9b49a05095c140bd2500c4e8090b)), closes [#131](https://github.com/rshade/pulumicost-spec/issues/131)
+
+
+### Documentation
+
+* Document pluginsdk.Serve() behavior and configuration ([#146](https://github.com/rshade/pulumicost-spec/issues/146)) ([30687f9](https://github.com/rshade/pulumicost-spec/commit/30687f9ca34a1c262a0ac6b8f66f98301dce1987))
+* **sdk:** add core-plugin interface docs and contract tests ([#150](https://github.com/rshade/pulumicost-spec/issues/150)) ([87d4428](https://github.com/rshade/pulumicost-spec/commit/87d44289a5a63b25d8baeccb11f7eb9f56ba3128)), closes [#132](https://github.com/rshade/pulumicost-spec/issues/132) [#133](https://github.com/rshade/pulumicost-spec/issues/133) [#134](https://github.com/rshade/pulumicost-spec/issues/134) [#135](https://github.com/rshade/pulumicost-spec/issues/135)
+
 ## [0.4.4](https://github.com/rshade/pulumicost-spec/compare/v0.4.3...v0.4.4) (2025-12-09)
 
 ### Added
