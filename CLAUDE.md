@@ -556,3 +556,9 @@ cd schemas && /init            # JSON Schema validation
 - sdk/go/testing harness (007-zerolog-logging-example)
 - N/A (example code, no data persistence) (007-zerolog-logging-example)
 - JSON Schema draft 2020-12 + AJV (validation)(004-plugin-registry-schema)
+- Go 1.25.5 (per go.mod) + Go stdlib only (`strings`) (016-pluginsdk-mapping)
+- N/A (stateless helper functions, no data persistence) (016-pluginsdk-mapping)
+
+## Recent Changes
+
+- 012-pluginsdk-conformance: Added Go 1.25.4 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package)

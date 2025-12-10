@@ -9,6 +9,7 @@ cost source plugins. The SDK consists of six main packages:
 
 - **`currency/`** - ISO 4217 currency validation and metadata with zero-allocation validation
 - **`pluginsdk/`** - Plugin development SDK with environment variable handling and gRPC server utilities
+  - **`pluginsdk/mapping/`** - Property extraction helpers for AWS, Azure, GCP (SKU, region)
 - **`pricing/`** - Domain types, validation, and billing mode enumerations
 - **`proto/`** - Generated gRPC code from protobuf definitions (do not edit manually)
 - **`registry/`** - Plugin registry domain types with optimized zero-allocation validation
