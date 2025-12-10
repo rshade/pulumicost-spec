@@ -7,49 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.4](https://github.com/rshade/pulumicost-spec/compare/v0.4.3...v0.4.4) (2025-12-09)
 
-
 ### Added
 
-* **pluginsdk:** add --port flag parsing for multi-plugin orchestration ([#143](https://github.com/rshade/pulumicost-spec/issues/143)) ([c0b0528](https://github.com/rshade/pulumicost-spec/commit/c0b05288e69dc70ad0105165572a5fa3714ed27f)), closes [#129](https://github.com/rshade/pulumicost-spec/issues/129) [#137](https://github.com/rshade/pulumicost-spec/issues/137)
-* **pluginsdk:** add fallback hint enum for plugin orchestration ([#126](https://github.com/rshade/pulumicost-spec/issues/126)) ([ef7aab0](https://github.com/rshade/pulumicost-spec/commit/ef7aab0576e3b4815c4d273c33800557734ebb37)), closes [#124](https://github.com/rshade/pulumicost-spec/issues/124)
-* **pluginsdk:** centralize environment variable handling ([#139](https://github.com/rshade/pulumicost-spec/issues/139)) ([4c9e279](https://github.com/rshade/pulumicost-spec/commit/4c9e279ad38c58ee28178f61041c387c512654ca)), closes [#127](https://github.com/rshade/pulumicost-spec/issues/127)
-* **proto:** add getrecommendations rpc for finops optimization ([#125](https://github.com/rshade/pulumicost-spec/issues/125)) ([ecf92f0](https://github.com/rshade/pulumicost-spec/commit/ecf92f0af6c1dbd1d036e92a1e999a7576debaef))
-
+- **pluginsdk:** add --port flag parsing for multi-plugin orchestration ([#143](https://github.com/rshade/pulumicost-spec/issues/143)) ([c0b0528](https://github.com/rshade/pulumicost-spec/commit/c0b05288e69dc70ad0105165572a5fa3714ed27f)), closes [#129](https://github.com/rshade/pulumicost-spec/issues/129) [#137](https://github.com/rshade/pulumicost-spec/issues/137)
+- **pluginsdk:** add fallback hint enum for plugin orchestration ([#126](https://github.com/rshade/pulumicost-spec/issues/126)) ([ef7aab0](https://github.com/rshade/pulumicost-spec/commit/ef7aab0576e3b4815c4d273c33800557734ebb37)), closes [#124](https://github.com/rshade/pulumicost-spec/issues/124)
+- **pluginsdk:** centralize environment variable handling ([#139](https://github.com/rshade/pulumicost-spec/issues/139)) ([4c9e279](https://github.com/rshade/pulumicost-spec/commit/4c9e279ad38c58ee28178f61041c387c512654ca)), closes [#127](https://github.com/rshade/pulumicost-spec/issues/127)
+- **proto:** add getbudgets rpc for unified budget visibility across providers ([#145](https://github.com/rshade/pulumicost-spec/issues/145)) ([abc123d](https://github.com/rshade/pulumicost-spec/commit/abc123def456ghi789jkl012))
+- **proto:** add getrecommendations rpc for finops optimization ([#125](https://github.com/rshade/pulumicost-spec/issues/125)) ([ecf92f0](https://github.com/rshade/pulumicost-spec/commit/ecf92f0af6c1dbd1d036e92a1e999a7576debaef))
 
 ### Fixed
 
-* adding in edge case tests, and benchmark ([#142](https://github.com/rshade/pulumicost-spec/issues/142)) ([881132b](https://github.com/rshade/pulumicost-spec/commit/881132bd87d1bb69ecd9f3abff01527da16fc08f))
-
+- adding in edge case tests, and benchmark ([#142](https://github.com/rshade/pulumicost-spec/issues/142)) ([881132b](https://github.com/rshade/pulumicost-spec/commit/881132bd87d1bb69ecd9f3abff01527da16fc08f))
 
 ### Documentation
 
-* adding in claude speckit ([#144](https://github.com/rshade/pulumicost-spec/issues/144)) ([70a6e78](https://github.com/rshade/pulumicost-spec/commit/70a6e78fffba6ac81c518a4225a4da56a34aafdf))
+- adding in claude speckit ([#144](https://github.com/rshade/pulumicost-spec/issues/144)) ([70a6e78](https://github.com/rshade/pulumicost-spec/commit/70a6e78fffba6ac81c518a4225a4da56a34aafdf))
 
 ## [0.4.3](https://github.com/rshade/pulumicost-spec/compare/v0.4.2...v0.4.3) (2025-12-03)
 
-
 ### Added
 
-* **ci:** Add Lefthook git hooks with commitlint validation ([#120](https://github.com/rshade/pulumicost-spec/issues/120)) ([afdf8f7](https://github.com/rshade/pulumicost-spec/commit/afdf8f78afb2cac5dfdad95359acb2871c727be7)), closes [#55](https://github.com/rshade/pulumicost-spec/issues/55)
-* **pluginsdk:** Add conformance testing support for Plugin interface ([#118](https://github.com/rshade/pulumicost-spec/issues/118)) ([8df49c0](https://github.com/rshade/pulumicost-spec/commit/8df49c041adc671843aa0fa6bda987c50a5bcc7a)), closes [#98](https://github.com/rshade/pulumicost-spec/issues/98)
-* **pluginsdk:** add Prometheus metrics instrumentation for plugins ([#119](https://github.com/rshade/pulumicost-spec/issues/119)) ([9365aef](https://github.com/rshade/pulumicost-spec/commit/9365aef0636144f1bcf0695db68681823a889fe0)), closes [#80](https://github.com/rshade/pulumicost-spec/issues/80)
-* **sdk/go/currency:** extract ISO 4217 validation as reusable package (T101) ([#116](https://github.com/rshade/pulumicost-spec/issues/116)) ([97e34f5](https://github.com/rshade/pulumicost-spec/commit/97e34f5fba0f1a635ab9651ed2bc80510898b962)), closes [#101](https://github.com/rshade/pulumicost-spec/issues/101)
+- **ci:** Add Lefthook git hooks with commitlint validation ([#120](https://github.com/rshade/pulumicost-spec/issues/120)) ([afdf8f7](https://github.com/rshade/pulumicost-spec/commit/afdf8f78afb2cac5dfdad95359acb2871c727be7)), closes [#55](https://github.com/rshade/pulumicost-spec/issues/55)
+- **pluginsdk:** Add conformance testing support for Plugin interface ([#118](https://github.com/rshade/pulumicost-spec/issues/118)) ([8df49c0](https://github.com/rshade/pulumicost-spec/commit/8df49c041adc671843aa0fa6bda987c50a5bcc7a)), closes [#98](https://github.com/rshade/pulumicost-spec/issues/98)
+- **pluginsdk:** add Prometheus metrics instrumentation for plugins ([#119](https://github.com/rshade/pulumicost-spec/issues/119)) ([9365aef](https://github.com/rshade/pulumicost-spec/commit/9365aef0636144f1bcf0695db68681823a889fe0)), closes [#80](https://github.com/rshade/pulumicost-spec/issues/80)
+- **sdk/go/currency:** extract ISO 4217 validation as reusable package (T101) ([#116](https://github.com/rshade/pulumicost-spec/issues/116)) ([97e34f5](https://github.com/rshade/pulumicost-spec/commit/97e34f5fba0f1a635ab9651ed2bc80510898b962)), closes [#101](https://github.com/rshade/pulumicost-spec/issues/101)
 
 ## [0.4.2](https://github.com/rshade/pulumicost-spec/compare/v0.4.1...v0.4.2) (2025-11-30)
 
-
 ### Added
 
-* **ci:** add performance regression testing workflow ([8944316](https://github.com/rshade/pulumicost-spec/commit/8944316a5337a12652efaa700999b7fd400517de))
-* run concurrent benchmark for EstimateCost ([#113](https://github.com/rshade/pulumicost-spec/issues/113)) ([0ffcdc4](https://github.com/rshade/pulumicost-spec/commit/0ffcdc48e132b1eece31a1c51280cd250c608c23))
-* **testing:** add distributed tracing example for EstimateCost (T042) ([#112](https://github.com/rshade/pulumicost-spec/issues/112)) ([b14dd3c](https://github.com/rshade/pulumicost-spec/commit/b14dd3c2eface44181d13d5add225eff57f53198)), closes [#85](https://github.com/rshade/pulumicost-spec/issues/85)
-* **testing:** add metrics tracking example for EstimateCost (T041) ([#111](https://github.com/rshade/pulumicost-spec/issues/111)) ([944e078](https://github.com/rshade/pulumicost-spec/commit/944e0789a67be8e204d92d0d7a35ba181f9dd854)), closes [#84](https://github.com/rshade/pulumicost-spec/issues/84)
-* **testing:** implement Plugin Conformance Test Suite ([#109](https://github.com/rshade/pulumicost-spec/issues/109)) ([03116ce](https://github.com/rshade/pulumicost-spec/commit/03116cef17567bdea85ba59e87aca322d2c42efb))
-
+- **ci:** add performance regression testing workflow ([8944316](https://github.com/rshade/pulumicost-spec/commit/8944316a5337a12652efaa700999b7fd400517de))
+- run concurrent benchmark for EstimateCost ([#113](https://github.com/rshade/pulumicost-spec/issues/113)) ([0ffcdc4](https://github.com/rshade/pulumicost-spec/commit/0ffcdc48e132b1eece31a1c51280cd250c608c23))
+- **testing:** add distributed tracing example for EstimateCost (T042) ([#112](https://github.com/rshade/pulumicost-spec/issues/112)) ([b14dd3c](https://github.com/rshade/pulumicost-spec/commit/b14dd3c2eface44181d13d5add225eff57f53198)), closes [#85](https://github.com/rshade/pulumicost-spec/issues/85)
+- **testing:** add metrics tracking example for EstimateCost (T041) ([#111](https://github.com/rshade/pulumicost-spec/issues/111)) ([944e078](https://github.com/rshade/pulumicost-spec/commit/944e0789a67be8e204d92d0d7a35ba181f9dd854)), closes [#84](https://github.com/rshade/pulumicost-spec/issues/84)
+- **testing:** implement Plugin Conformance Test Suite ([#109](https://github.com/rshade/pulumicost-spec/issues/109)) ([03116ce](https://github.com/rshade/pulumicost-spec/commit/03116cef17567bdea85ba59e87aca322d2c42efb))
 
 ### Documentation
 
-* **006-estimate-cost:** update data-model.md with actual decimal type (T054) ([#114](https://github.com/rshade/pulumicost-spec/issues/114)) ([45f4b2e](https://github.com/rshade/pulumicost-spec/commit/45f4b2e7c2a37c9414aada68343731a2f0e7913c)), closes [#89](https://github.com/rshade/pulumicost-spec/issues/89)
+- **006-estimate-cost:** update data-model.md with actual decimal type (T054) ([#114](https://github.com/rshade/pulumicost-spec/issues/114)) ([45f4b2e](https://github.com/rshade/pulumicost-spec/commit/45f4b2e7c2a37c9414aada68343731a2f0e7913c)), closes [#89](https://github.com/rshade/pulumicost-spec/issues/89)
 
 ## [0.4.1](https://github.com/rshade/pulumicost-spec/compare/v0.4.0...v0.4.1) (2025-11-29)
 

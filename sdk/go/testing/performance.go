@@ -50,6 +50,11 @@ func DefaultBaselines() []PerformanceBaseline {
 			AdvancedLatency: PricingSpecAdvancedLatencyMs * time.Millisecond,
 		},
 		{
+			Method:          MethodGetBudgets,
+			StandardLatency: GetBudgetsStandardLatencyMs * time.Millisecond,
+			AdvancedLatency: GetBudgetsAdvancedLatencyMs * time.Millisecond,
+		},
+		{
 			Method:          "GetActualCost_24h",
 			StandardLatency: ActualCost24hStandardLatencyMs * time.Millisecond,
 			AdvancedLatency: ActualCost24hAdvancedLatencyMs * time.Millisecond,
@@ -213,6 +218,13 @@ func PerformanceTests() []ConformanceSuiteTest {
 			TestFunc:    createGetPricingSpecLatencyTest(),
 		},
 		{
+			Name:        "Performance_GetBudgetsLatency",
+			Description: "Validates GetBudgets RPC latency within thresholds (<5s)",
+			Category:    CategoryPerformance,
+			MinLevel:    ConformanceLevelStandard,
+			TestFunc:    createGetBudgetsLatencyTest(),
+		},
+		{
 			Name:        "Performance_BaselineVariance",
 			Description: "Validates performance variance is within 10% of baseline (SC-003)",
 			Category:    CategoryPerformance,
@@ -297,6 +309,22 @@ func createGetPricingSpecLatencyTest() func(*TestHarness) TestResult {
 		})
 		compareToBaseline(result, baseline)
 		return buildLatencyTestResult(MethodGetPricingSpec, result, baseline)
+	}
+}
+
+func createGetBudgetsLatencyTest() func(*TestHarness) TestResult {
+	return func(harness *TestHarness) TestResult {
+		baseline := GetBaseline(MethodGetBudgets)
+		result := measureLatency(MethodGetBudgets, LatencyTestIterations, func() error {
+			_, callErr := harness.Client().GetBudgets(context.Background(),
+				&pbc.GetBudgetsRequest{
+					Filter:        &pbc.BudgetFilter{},
+					IncludeStatus: false, // Faster without status
+				})
+			return callErr
+		})
+		compareToBaseline(result, baseline)
+		return buildLatencyTestResult(MethodGetBudgets, result, baseline)
 	}
 }
 

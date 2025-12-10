@@ -1,0 +1,41 @@
+{
+  "id": "billing-budget-67890",
+  "name": "GCP Monthly Cloud Budget",
+  "source": "gcp-billing",
+  "amount": {
+    "limit": 10000.0,
+    "currency": "USD"
+  },
+  "period": "BUDGET_PERIOD_MONTHLY",
+  "filter": {
+    "providers": ["gcp"],
+    "resource_types": ["compute.googleapis.com", "storage.googleapis.com"]
+  },
+  "thresholds": [
+    {
+      "percentage": 50.0,
+      "type": "THRESHOLD_TYPE_ACTUAL",
+      "triggered": true,
+      "triggered_at": "2025-12-05T14:20:00Z"
+    },
+    {
+      "percentage": 90.0,
+      "type": "THRESHOLD_TYPE_ACTUAL",
+      "triggered": false
+    }
+  ],
+  "status": {
+    "current_spend": 5200.0,
+    "forecasted_spend": 8500.0,
+    "percentage_used": 52.0,
+    "percentage_forecasted": 85.0,
+    "currency": "USD",
+    "health": "BUDGET_HEALTH_OK"
+  },
+  "created_at": "2025-01-15T00:00:00Z",
+  "updated_at": "2025-12-05T14:30:00Z",
+  "metadata": {
+    "gcp_billing_account": "01ABCD-234EFG-567HIJ",
+    "gcp_project_filter": "production-*"
+  }
+}

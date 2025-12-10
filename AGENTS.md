@@ -27,3 +27,12 @@
 - Run `make validate` before commits
 - Use conventional commits: `feat:`, `fix:`, `chore:`
 - Sanitize secrets in examples
+
+## Active Technologies
+
+- Go 1.24.10 (toolchain 1.25.4) + gRPC, protobuf, buf v1.32.1 (001-get-budgets-rpc)
+- JSON Schema (Draft 2020-12) for PricingSpec and BudgetSpec validation (001-get-budgets-rpc)
+
+## Recent Changes
+
+- 001-get-budgets-rpc: Added Go 1.24.10 (toolchain 1.25.4) + gRPC, protobuf, buf v1.32.1

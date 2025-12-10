@@ -4069,7 +4069,7 @@ var File_pulumicost_v1_costsource_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\n" +
-	"\x1epulumicost/v1/costsource.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x19pulumicost/v1/focus.proto\"\r\n" +
+	"\x1epulumicost/v1/costsource.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x19pulumicost/v1/focus.proto\x1a\x1apulumicost/v1/budget.proto\"\r\n" +
 	"\vNameRequest\"\"\n" +
 	"\fNameResponse\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"P\n" +
@@ -4451,7 +4451,7 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x1bRECOMMENDATION_PRIORITY_LOW\x10\x01\x12\"\n" +
 	"\x1eRECOMMENDATION_PRIORITY_MEDIUM\x10\x02\x12 \n" +
 	"\x1cRECOMMENDATION_PRIORITY_HIGH\x10\x03\x12$\n" +
-	" RECOMMENDATION_PRIORITY_CRITICAL\x10\x042\x85\x05\n" +
+	" RECOMMENDATION_PRIORITY_CRITICAL\x10\x042\xd8\x05\n" +
 	"\x11CostSourceService\x12?\n" +
 	"\x04Name\x12\x1a.pulumicost.v1.NameRequest\x1a\x1b.pulumicost.v1.NameResponse\x12K\n" +
 	"\bSupports\x12\x1e.pulumicost.v1.SupportsRequest\x1a\x1f.pulumicost.v1.SupportsResponse\x12Z\n" +
@@ -4459,7 +4459,9 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x10GetProjectedCost\x12&.pulumicost.v1.GetProjectedCostRequest\x1a'.pulumicost.v1.GetProjectedCostResponse\x12]\n" +
 	"\x0eGetPricingSpec\x12$.pulumicost.v1.GetPricingSpecRequest\x1a%.pulumicost.v1.GetPricingSpecResponse\x12W\n" +
 	"\fEstimateCost\x12\".pulumicost.v1.EstimateCostRequest\x1a#.pulumicost.v1.EstimateCostResponse\x12i\n" +
-	"\x12GetRecommendations\x12(.pulumicost.v1.GetRecommendationsRequest\x1a).pulumicost.v1.GetRecommendationsResponse2\xbf\x02\n" +
+	"\x12GetRecommendations\x12(.pulumicost.v1.GetRecommendationsRequest\x1a).pulumicost.v1.GetRecommendationsResponse\x12Q\n" +
+	"\n" +
+	"GetBudgets\x12 .pulumicost.v1.GetBudgetsRequest\x1a!.pulumicost.v1.GetBudgetsResponse2\xbf\x02\n" +
 	"\x14ObservabilityService\x12T\n" +
 	"\vHealthCheck\x12!.pulumicost.v1.HealthCheckRequest\x1a\".pulumicost.v1.HealthCheckResponse\x12Q\n" +
 	"\n" +
@@ -4554,6 +4556,8 @@ var file_pulumicost_v1_costsource_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil),             // 70: google.protobuf.Timestamp
 	(*FocusCostRecord)(nil),                   // 71: pulumicost.v1.FocusCostRecord
 	(*structpb.Struct)(nil),                   // 72: google.protobuf.Struct
+	(*GetBudgetsRequest)(nil),                 // 73: pulumicost.v1.GetBudgetsRequest
+	(*GetBudgetsResponse)(nil),                // 74: pulumicost.v1.GetBudgetsResponse
 }
 var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
 	19, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
@@ -4632,21 +4636,23 @@ var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
 	17, // 73: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
 	38, // 74: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
 	40, // 75: pulumicost.v1.CostSourceService.GetRecommendations:input_type -> pulumicost.v1.GetRecommendationsRequest
-	25, // 76: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
-	27, // 77: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
-	31, // 78: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
-	10, // 79: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
-	12, // 80: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
-	14, // 81: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
-	16, // 82: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
-	18, // 83: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
-	39, // 84: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
-	41, // 85: pulumicost.v1.CostSourceService.GetRecommendations:output_type -> pulumicost.v1.GetRecommendationsResponse
-	26, // 86: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
-	28, // 87: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
-	32, // 88: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
-	79, // [79:89] is the sub-list for method output_type
-	69, // [69:79] is the sub-list for method input_type
+	73, // 76: pulumicost.v1.CostSourceService.GetBudgets:input_type -> pulumicost.v1.GetBudgetsRequest
+	25, // 77: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
+	27, // 78: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
+	31, // 79: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
+	10, // 80: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
+	12, // 81: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
+	14, // 82: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
+	16, // 83: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
+	18, // 84: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
+	39, // 85: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
+	41, // 86: pulumicost.v1.CostSourceService.GetRecommendations:output_type -> pulumicost.v1.GetRecommendationsResponse
+	74, // 87: pulumicost.v1.CostSourceService.GetBudgets:output_type -> pulumicost.v1.GetBudgetsResponse
+	26, // 88: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
+	28, // 89: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
+	32, // 90: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
+	80, // [80:91] is the sub-list for method output_type
+	69, // [69:80] is the sub-list for method input_type
 	69, // [69:69] is the sub-list for extension type_name
 	69, // [69:69] is the sub-list for extension extendee
 	0,  // [0:69] is the sub-list for field type_name
@@ -4658,6 +4664,7 @@ func file_pulumicost_v1_costsource_proto_init() {
 		return
 	}
 	file_pulumicost_v1_focus_proto_init()
+	file_pulumicost_v1_budget_proto_init()
 	file_pulumicost_v1_costsource_proto_msgTypes[15].OneofWrappers = []any{}
 	file_pulumicost_v1_costsource_proto_msgTypes[34].OneofWrappers = []any{
 		(*Recommendation_Rightsize)(nil),

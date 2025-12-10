@@ -26,6 +26,7 @@ const (
 	CostSourceService_GetPricingSpec_FullMethodName     = "/pulumicost.v1.CostSourceService/GetPricingSpec"
 	CostSourceService_EstimateCost_FullMethodName       = "/pulumicost.v1.CostSourceService/EstimateCost"
 	CostSourceService_GetRecommendations_FullMethodName = "/pulumicost.v1.CostSourceService/GetRecommendations"
+	CostSourceService_GetBudgets_FullMethodName         = "/pulumicost.v1.CostSourceService/GetBudgets"
 )
 
 // CostSourceServiceClient is the client API for CostSourceService service.
@@ -70,6 +71,21 @@ type CostSourceServiceClient interface {
 	//   - InvalidArgument: Invalid filter criteria or pagination token
 	//   - Unavailable: Backend recommendation service unavailable
 	GetRecommendations(ctx context.Context, in *GetRecommendationsRequest, opts ...grpc.CallOption) (*GetRecommendationsResponse, error)
+	// GetBudgets returns budget information from the cost management service.
+	// This enables unified budget visibility across cloud providers (AWS, GCP, Azure, etc.).
+	//
+	// The method supports optional filtering by provider, region, resource type, and tags.
+	// Use include_status=false for faster responses when current spend data isn't needed.
+	// Response time should be <5 seconds for typical budget queries (100-1000 budgets).
+	//
+	// This is an optional RPC - plugins may return Unimplemented if budget functionality
+	// is not supported by the underlying cost management service.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid filter criteria or malformed request
+	//   - Unavailable: Budget service temporarily unavailable
+	//   - Unimplemented: Plugin does not support budget functionality
+	GetBudgets(ctx context.Context, in *GetBudgetsRequest, opts ...grpc.CallOption) (*GetBudgetsResponse, error)
 }
 
 type costSourceServiceClient struct {
@@ -150,6 +166,16 @@ func (c *costSourceServiceClient) GetRecommendations(ctx context.Context, in *Ge
 	return out, nil
 }
 
+func (c *costSourceServiceClient) GetBudgets(ctx context.Context, in *GetBudgetsRequest, opts ...grpc.CallOption) (*GetBudgetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBudgetsResponse)
+	err := c.cc.Invoke(ctx, CostSourceService_GetBudgets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CostSourceServiceServer is the server API for CostSourceService service.
 // All implementations must embed UnimplementedCostSourceServiceServer
 // for forward compatibility.
@@ -192,6 +218,21 @@ type CostSourceServiceServer interface {
 	//   - InvalidArgument: Invalid filter criteria or pagination token
 	//   - Unavailable: Backend recommendation service unavailable
 	GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error)
+	// GetBudgets returns budget information from the cost management service.
+	// This enables unified budget visibility across cloud providers (AWS, GCP, Azure, etc.).
+	//
+	// The method supports optional filtering by provider, region, resource type, and tags.
+	// Use include_status=false for faster responses when current spend data isn't needed.
+	// Response time should be <5 seconds for typical budget queries (100-1000 budgets).
+	//
+	// This is an optional RPC - plugins may return Unimplemented if budget functionality
+	// is not supported by the underlying cost management service.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid filter criteria or malformed request
+	//   - Unavailable: Budget service temporarily unavailable
+	//   - Unimplemented: Plugin does not support budget functionality
+	GetBudgets(context.Context, *GetBudgetsRequest) (*GetBudgetsResponse, error)
 	mustEmbedUnimplementedCostSourceServiceServer()
 }
 
@@ -222,6 +263,9 @@ func (UnimplementedCostSourceServiceServer) EstimateCost(context.Context, *Estim
 }
 func (UnimplementedCostSourceServiceServer) GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRecommendations not implemented")
+}
+func (UnimplementedCostSourceServiceServer) GetBudgets(context.Context, *GetBudgetsRequest) (*GetBudgetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetBudgets not implemented")
 }
 func (UnimplementedCostSourceServiceServer) mustEmbedUnimplementedCostSourceServiceServer() {}
 func (UnimplementedCostSourceServiceServer) testEmbeddedByValue()                           {}
@@ -370,6 +414,24 @@ func _CostSourceService_GetRecommendations_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CostSourceService_GetBudgets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBudgetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CostSourceServiceServer).GetBudgets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CostSourceService_GetBudgets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CostSourceServiceServer).GetBudgets(ctx, req.(*GetBudgetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CostSourceService_ServiceDesc is the grpc.ServiceDesc for CostSourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -404,6 +466,10 @@ var CostSourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRecommendations",
 			Handler:    _CostSourceService_GetRecommendations_Handler,
+		},
+		{
+			MethodName: "GetBudgets",
+			Handler:    _CostSourceService_GetBudgets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

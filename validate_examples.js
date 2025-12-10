@@ -81,6 +81,68 @@ if (fs.existsSync(recommendationsDir)) {
   }
 }
 
+// Validate budget examples (JSON syntax only - budget schema validation separate)
+const budgetsDir = "examples/budgets";
+if (fs.existsSync(budgetsDir)) {
+  const jsonFiles = fs
+    .readdirSync(budgetsDir)
+    .filter((f) => f.endsWith(".json"));
+
+  for (const file of jsonFiles) {
+    const filePath = path.join(budgetsDir, file);
+    try {
+      JSON.parse(fs.readFileSync(filePath, "utf8"));
+      console.log(`✅ ${file} budget JSON syntax is valid`);
+    } catch (err) {
+      console.error(`❌ ${file} budget has invalid JSON syntax:`, err.message);
+      allValid = false;
+    }
+  }
+}
+
+// Load and compile budget request schema
+const budgetSchemaPath = "schemas/budget_spec.schema.json";
+let validateBudgetRequest;
+if (fs.existsSync(budgetSchemaPath)) {
+  try {
+    const budgetSchema = JSON.parse(fs.readFileSync(budgetSchemaPath, "utf8"));
+    const cleanBudgetSchema = { ...budgetSchema };
+    delete cleanBudgetSchema.$schema;
+    validateBudgetRequest = ajv.compile(cleanBudgetSchema);
+    console.log("✅ Budget request schema compilation successful");
+  } catch (err) {
+    console.error("❌ Budget request schema compilation error:", err.message);
+    allValid = false;
+  }
+}
+
+// Validate budget request examples against schema
+const budgetRequestsDir = "examples/requests";
+if (fs.existsSync(budgetRequestsDir) && validateBudgetRequest) {
+  const jsonFiles = fs
+    .readdirSync(budgetRequestsDir)
+    .filter((f) => f.includes("budget") && f.endsWith(".json"));
+
+  for (const file of jsonFiles) {
+    const filePath = path.join(budgetRequestsDir, file);
+    try {
+      const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+      const valid = validateBudgetRequest(data);
+
+      if (valid) {
+        console.log(`✅ ${file} request is valid`);
+      } else {
+        console.error(`❌ ${file} request is invalid:`);
+        console.error(ajv.errorsText(validateBudgetRequest.errors));
+        allValid = false;
+      }
+    } catch (err) {
+      console.error(`❌ ${file} request has invalid JSON syntax:`, err.message);
+      allValid = false;
+    }
+  }
+}
+
 if (!allValid) {
   process.exit(1);
 }

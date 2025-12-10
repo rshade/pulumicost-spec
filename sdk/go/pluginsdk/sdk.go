@@ -83,6 +83,16 @@ type RecommendationsProvider interface {
 		*pbc.GetRecommendationsResponse, error)
 }
 
+// BudgetsProvider is an optional interface that plugins can implement
+// to provide budget information from cloud cost management services.
+// Plugins that do not implement this interface will return Unimplemented
+// when GetBudgets is called.
+type BudgetsProvider interface {
+	// GetBudgets retrieves budget information from the cost management service.
+	GetBudgets(ctx context.Context, req *pbc.GetBudgetsRequest) (
+		*pbc.GetBudgetsResponse, error)
+}
+
 // RegistryLookup defines the interface for looking up plugins by provider and region.
 // This is used to validate incoming Supports requests against registered plugins.
 type RegistryLookup interface {
@@ -301,6 +311,57 @@ func (s *Server) GetRecommendations(
 		Int32(FieldRecommendationCount, summary.GetTotalRecommendations()).
 		Float64(FieldTotalSavings, summary.GetTotalEstimatedSavings()).
 		Msg("GetRecommendations completed")
+
+	return resp, nil
+}
+
+// GetBudgets implements the gRPC GetBudgets method.
+// GetBudgets handles GetBudgets RPC requests.
+// If the plugin implements BudgetsProvider, delegates to it.
+// Otherwise returns Unimplemented error per specification.
+func (s *Server) GetBudgets(
+	ctx context.Context,
+	req *pbc.GetBudgetsRequest,
+) (*pbc.GetBudgetsResponse, error) {
+	// Log incoming request
+	s.logger.Debug().
+		Bool(FieldIncludeStatus, req.GetIncludeStatus()).
+		Msg("GetBudgets request received")
+
+	// Check if plugin implements BudgetsProvider
+	budgetsProvider, ok := s.plugin.(BudgetsProvider)
+	if !ok {
+		// Plugin does not implement budgets - return Unimplemented per spec
+		s.logger.Debug().Msg("GetBudgets returning Unimplemented (not supported by plugin)")
+		return nil, status.Error(codes.Unimplemented, "plugin does not support GetBudgets")
+	}
+
+	// Delegate to plugin's GetBudgets method
+	resp, err := budgetsProvider.GetBudgets(ctx, req)
+	if err != nil {
+		s.logger.Error().
+			Err(err).
+			Msg("GetBudgets handler error")
+		return nil, status.Error(codes.Internal, "plugin failed to execute GetBudgets")
+	}
+
+	// Guard against nil response from plugin
+	if resp == nil {
+		s.logger.Error().Msg("GetBudgets handler returned a nil response")
+		return nil, status.Error(codes.Internal, "plugin returned a nil response")
+	}
+
+	// Log successful response
+	summary := resp.GetSummary()
+	if summary != nil {
+		s.logger.Info().
+			Int32(FieldTotalBudgets, summary.GetTotalBudgets()).
+			Int32(FieldBudgetsOk, summary.GetBudgetsOk()).
+			Int32(FieldBudgetsWarning, summary.GetBudgetsWarning()).
+			Int32(FieldBudgetsCritical, summary.GetBudgetsCritical()).
+			Int32(FieldBudgetsExceeded, summary.GetBudgetsExceeded()).
+			Msg("GetBudgets completed")
+	}
 
 	return resp, nil
 }

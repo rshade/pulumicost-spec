@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -381,6 +382,87 @@ func testProviderSupport(
 	if spec.GetResourceType() != resourceType {
 		t.Errorf("Expected resource type %s, got %s", resourceType, spec.GetResourceType())
 	}
+}
+
+// TestCrossProviderBudgetMapping tests budget mapping across different providers.
+// This validates that budgets from AWS, GCP, and other providers are properly
+// structured and contain required fields for unified display.
+func TestCrossProviderBudgetMapping(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.MockBudgets = []*pbc.Budget{
+		{
+			Id:     "aws-budget-123",
+			Name:   "AWS Production Budget",
+			Source: "aws-budgets",
+			Amount: &pbc.BudgetAmount{
+				Limit:    5000.00,
+				Currency: "USD",
+			},
+			Period: pbc.BudgetPeriod_BUDGET_PERIOD_MONTHLY,
+			Status: &pbc.BudgetStatus{
+				CurrentSpend:         3200.00,
+				ForecastedSpend:      4800.00,
+				PercentageUsed:       64.0,
+				PercentageForecasted: 96.0,
+				Currency:             "USD",
+				Health:               pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_OK,
+			},
+		},
+		{
+			Id:     "gcp-budget-456",
+			Name:   "GCP Cloud Budget",
+			Source: "gcp-billing",
+			Amount: &pbc.BudgetAmount{
+				Limit:    10000.00,
+				Currency: "USD",
+			},
+			Period: pbc.BudgetPeriod_BUDGET_PERIOD_MONTHLY,
+			Status: &pbc.BudgetStatus{
+				CurrentSpend:         7500.00,
+				ForecastedSpend:      11000.00,
+				PercentageUsed:       75.0,
+				PercentageForecasted: 110.0,
+				Currency:             "USD",
+				Health:               pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_WARNING,
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	resp, err := client.GetBudgets(ctx, &pbc.GetBudgetsRequest{
+		Filter:        &pbc.BudgetFilter{},
+		IncludeStatus: true,
+	})
+	require.NoError(t, err)
+
+	// Validate response structure
+	err = plugintesting.ValidateBudgetsResponse(resp)
+	require.NoError(t, err)
+
+	// Verify cross-provider aspects
+	budgets := resp.GetBudgets()
+	require.Len(t, budgets, 2, "Expected 2 budgets")
+
+	// Check that budgets have different sources
+	sources := make(map[string]bool)
+	for _, budget := range budgets {
+		sources[budget.GetSource()] = true
+	}
+	require.Len(t, sources, 2, "Budgets should have different provider sources")
+
+	// Verify summary calculation
+	summary := resp.GetSummary()
+	require.NotNil(t, summary)
+	require.Equal(t, int32(2), summary.GetTotalBudgets(), "Summary total_budgets should be 2")
+	require.Equal(t, int32(1), summary.GetBudgetsOk(), "Should have 1 OK budget")
+	require.Equal(t, int32(1), summary.GetBudgetsWarning(), "Should have 1 warning budget")
+	require.Equal(t, int32(0), summary.GetBudgetsExceeded(), "Should have 0 exceeded budgets")
 }
 
 // TestConcurrentRequests tests plugin behavior under concurrent load.
