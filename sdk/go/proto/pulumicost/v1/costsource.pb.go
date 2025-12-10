@@ -1102,17 +1102,51 @@ func (x *GetPricingSpecResponse) GetSpec() *PricingSpec {
 }
 
 // ResourceDescriptor describes a cloud resource for cost analysis.
+// This message defines the contract between Core and Plugins for resource identification.
+//
+// Field Requirements:
+//   - REQUIRED fields must be non-empty for valid requests
+//   - OPTIONAL fields may be omitted or empty depending on context
+//
+// Validation Rules:
+//   - provider: Must be one of: "aws", "azure", "gcp", "kubernetes", "custom"
+//   - resource_type: Must match the plugin's supported resource types
+//   - sku: Format varies by provider (e.g., "t3.micro" for AWS, "Standard_B1s" for Azure)
+//   - region: Must match provider's region naming (e.g., "us-east-1", "eastus", "us-central1")
+//   - tags: Keys and values should be non-empty strings when provided
 type ResourceDescriptor struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// provider identifies the cloud provider ("aws", "azure", "gcp", "kubernetes", "custom")
+	// provider identifies the cloud provider.
+	// REQUIRED. Must be one of: "aws", "azure", "gcp", "kubernetes", "custom".
+	// Empty or unrecognized values will result in InvalidArgument error.
 	Provider string `protobuf:"bytes,1,opt,name=provider,proto3" json:"provider,omitempty"`
-	// resource_type specifies the resource type (e.g., "ec2", "s3", "k8s-namespace", "vm")
+	// resource_type specifies the type of resource being described.
+	// REQUIRED. Must match a resource type supported by the target plugin.
+	// Maximum length: 256 characters.
+	// Format: Alphanumeric with optional hyphens, colons, slashes (regex: ^[a-zA-Z][a-zA-Z0-9_\-:/]*$)
+	// Examples: "ec2", "s3", "k8s-namespace", "aws:ec2/instance:Instance".
+	// Empty values will result in InvalidArgument error.
 	ResourceType string `protobuf:"bytes,2,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
-	// sku is the provider SKU or instance size where applicable
+	// sku is the provider-specific SKU or instance size.
+	// OPTIONAL. Required for compute resources, may be omitted for others.
+	// Examples:
+	//   - AWS: "t3.micro", "m5.large"
+	//   - Azure: "Standard_B1s", "Standard_D2s_v3"
+	//   - GCP: "e2-micro", "n1-standard-1"
+	//   - Kubernetes: typically omitted (use tags for resource specifications)
 	Sku string `protobuf:"bytes,3,opt,name=sku,proto3" json:"sku,omitempty"`
-	// region specifies the deployment region (e.g., "us-east-1")
+	// region specifies the deployment region.
+	// OPTIONAL. Required for regional resources, omit for global resources.
+	// Examples:
+	//   - AWS: "us-east-1", "eu-west-1"
+	//   - Azure: "eastus", "westeurope"
+	//   - GCP: "us-central1", "europe-west1"
+	//   - Kubernetes: typically omitted or set to cluster region
 	Region string `protobuf:"bytes,4,opt,name=region,proto3" json:"region,omitempty"`
-	// tags provide label/tag hints for resource identification (e.g., app=web)
+	// tags provide label/tag hints for resource identification and filtering.
+	// OPTIONAL. Used for additional resource matching and cost allocation.
+	// Examples: {"app": "web", "env": "production", "team": "platform"}
+	// Both keys and values should be non-empty when provided.
 	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
