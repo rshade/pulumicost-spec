@@ -58,6 +58,14 @@ const (
 	FieldFilterActionType    = "filter_action_type"
 	FieldPageSize            = "page_size"
 	FieldTotalSavings        = "total_savings"
+
+	// GetBudgets-specific fields.
+	FieldIncludeStatus   = "include_status"
+	FieldTotalBudgets    = "total_budgets"
+	FieldBudgetsOk       = "budgets_ok"
+	FieldBudgetsWarning  = "budgets_warning"
+	FieldBudgetsCritical = "budgets_critical"
+	FieldBudgetsExceeded = "budgets_exceeded"
 )
 
 //nolint:gochecknoglobals // Intentional singleton for log file handle reuse (process lifetime)

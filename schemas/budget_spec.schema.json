@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rshade/pulumicost-spec/schemas/budget_spec.schema.json",
+  "title": "Budget Specification Schema",
+  "description": "JSON schema for validating budget specifications in examples and requests",
+  "type": "object",
+  "properties": {
+    "filter": {
+      "type": "object",
+      "description": "Optional filtering criteria for budget queries",
+      "properties": {
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Cloud provider restrictions"
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Geographic region restrictions"
+        },
+        "resource_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Resource type restrictions"
+        },
+        "tags": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "description": "Tag-based filtering"
+        }
+      },
+      "additionalProperties": false
+    },
+    "include_status": {
+      "type": "boolean",
+      "description": "Whether to fetch current spending status",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

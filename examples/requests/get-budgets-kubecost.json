@@ -1,0 +1,6 @@
+{
+  "filter": {
+    "providers": ["kubernetes"]
+  },
+  "include_status": true
+}

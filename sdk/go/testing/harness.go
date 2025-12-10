@@ -73,6 +73,10 @@ const (
 	ActualCost24hAdvancedLatencyMs = 1000
 	// ActualCost30dAdvancedLatencyMs is the GetActualCost 30d advanced latency threshold in milliseconds.
 	ActualCost30dAdvancedLatencyMs = 10000
+	// GetBudgetsStandardLatencyMs is the GetBudgets standard latency threshold in milliseconds (<5s).
+	GetBudgetsStandardLatencyMs = 5000
+	// GetBudgetsAdvancedLatencyMs is the GetBudgets advanced latency threshold in milliseconds (<2s).
+	GetBudgetsAdvancedLatencyMs = 2000
 
 	// AdvancedConcurrencyTimeoutSeconds is the timeout for advanced concurrency tests.
 	AdvancedConcurrencyTimeoutSeconds = 60
@@ -388,6 +392,94 @@ func ValidateEstimateCostResponse(response *pbc.EstimateCostResponse) error {
 
 	if response.GetCostMonthly() < 0 {
 		return fmt.Errorf("cost_monthly cannot be negative: %f", response.GetCostMonthly())
+	}
+
+	return nil
+}
+
+// ValidateBudgetsResponse validates a GetBudgets RPC response.
+//
+//nolint:gocognit,nestif // Complex validation logic requires nested checks
+func ValidateBudgetsResponse(response *pbc.GetBudgetsResponse) error {
+	if response == nil {
+		return errors.New("response is nil")
+	}
+
+	// Validate budgets
+	for i, budget := range response.GetBudgets() {
+		if budget.GetId() == "" {
+			return fmt.Errorf("budget[%d]: id is required", i)
+		}
+		if budget.GetName() == "" {
+			return fmt.Errorf("budget[%d]: name is required", i)
+		}
+		if budget.GetSource() == "" {
+			return fmt.Errorf("budget[%d]: source is required", i)
+		}
+		if budget.GetAmount() == nil {
+			return fmt.Errorf("budget[%d]: amount is required", i)
+		}
+		if budget.GetAmount().GetLimit() <= 0 {
+			return fmt.Errorf("budget[%d]: amount.limit must be positive: %f", i, budget.GetAmount().GetLimit())
+		}
+		if len(budget.GetAmount().GetCurrency()) != currencyCodeLength {
+			return fmt.Errorf("budget[%d]: amount.currency should be 3-character ISO code, got: %s",
+				i, budget.GetAmount().GetCurrency())
+		}
+		if budget.GetPeriod() == pbc.BudgetPeriod_BUDGET_PERIOD_UNSPECIFIED {
+			return fmt.Errorf("budget[%d]: period must be specified", i)
+		}
+
+		// Validate status if present
+		if budget.GetStatus() != nil {
+			status := budget.GetStatus()
+			if status.GetCurrentSpend() < 0 {
+				return fmt.Errorf("budget[%d]: status.current_spend cannot be negative: %f",
+					i, status.GetCurrentSpend())
+			}
+			if status.GetForecastedSpend() < status.GetCurrentSpend() && status.GetForecastedSpend() != 0 {
+				return fmt.Errorf("budget[%d]: status.forecasted_spend cannot be less than current_spend", i)
+			}
+			if status.GetPercentageUsed() < 0 {
+				return fmt.Errorf("budget[%d]: status.percentage_used cannot be negative: %f",
+					i, status.GetPercentageUsed())
+			}
+			if status.GetPercentageForecasted() < 0 {
+				return fmt.Errorf("budget[%d]: status.percentage_forecasted cannot be negative: %f",
+					i, status.GetPercentageForecasted())
+			}
+			if len(status.GetCurrency()) != currencyCodeLength {
+				return fmt.Errorf("budget[%d]: status.currency should be 3-character ISO code, got: %s",
+					i, status.GetCurrency())
+			}
+			if status.GetHealth() == pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_UNSPECIFIED {
+				return fmt.Errorf("budget[%d]: status.health must be specified", i)
+			}
+		}
+	}
+
+	// Validate summary
+	summary := response.GetSummary()
+	if summary != nil {
+		if summary.GetTotalBudgets() < 0 {
+			return fmt.Errorf("summary.total_budgets cannot be negative: %d", summary.GetTotalBudgets())
+		}
+		if summary.GetBudgetsOk() < 0 {
+			return fmt.Errorf("summary.budgets_ok cannot be negative: %d", summary.GetBudgetsOk())
+		}
+		if summary.GetBudgetsWarning() < 0 {
+			return fmt.Errorf("summary.budgets_warning cannot be negative: %d", summary.GetBudgetsWarning())
+		}
+		if summary.GetBudgetsExceeded() < 0 {
+			return fmt.Errorf("summary.budgets_exceeded cannot be negative: %d", summary.GetBudgetsExceeded())
+		}
+		if summary.GetBudgetsCritical() < 0 {
+			return fmt.Errorf("summary.budgets_critical cannot be negative: %d", summary.GetBudgetsCritical())
+		}
+		total := summary.GetBudgetsOk() + summary.GetBudgetsWarning() + summary.GetBudgetsCritical() + summary.GetBudgetsExceeded()
+		if total > summary.GetTotalBudgets() {
+			return fmt.Errorf("summary health counts exceed total_budgets: %d > %d", total, summary.GetTotalBudgets())
+		}
 	}
 
 	return nil

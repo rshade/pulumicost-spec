@@ -1,0 +1,6 @@
+{
+  "filter": {
+    "providers": ["gcp"]
+  },
+  "include_status": true
+}

@@ -77,6 +77,8 @@ service CostSourceService {
   rpc GetProjectedCost(GetProjectedCostRequest) returns (GetProjectedCostResponse);
   rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);
   rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+  rpc GetBudgets(GetBudgetsRequest) returns (GetBudgetsResponse);
 }
 ```
 
@@ -345,6 +347,66 @@ func validateResourceDescriptor(rd *ResourceDescriptor) error {
 - Use structured logging (JSON format recommended)
 - Log request/response for debugging
 - Include correlation IDs for tracing
+
+#### GetBudgets RPC
+
+Returns budget information from cloud cost management services. This is an **optional RPC** -
+plugins that don't support budgets should return `Unimplemented`.
+
+**Request**: `GetBudgetsRequest`
+
+```protobuf
+message GetBudgetsRequest {
+  BudgetFilter filter = 1;        // Optional filtering criteria
+  bool include_status = 2;        // Whether to include current spend status
+}
+```
+
+**Response**: `GetBudgetsResponse`
+
+```protobuf
+message GetBudgetsResponse {
+  repeated Budget budgets = 1;     // List of budget information
+  BudgetSummary summary = 2;       // Aggregated statistics
+}
+```
+
+**Implementation Notes**:
+
+- **Optional RPC**: Return `codes.Unimplemented` if your plugin doesn't support budgets
+- Use `include_status=false` for faster responses when status data isn't needed
+- Support provider filtering via `BudgetFilter.providers`
+- Budget data should be real-time or near real-time (not cached for hours)
+- Response time target: **<5 seconds** for typical budget queries
+- Return `InvalidArgument` for invalid filter criteria
+
+**Budget Data Structure**:
+
+```protobuf
+message Budget {
+  string id = 1;                    // Unique budget identifier
+  string name = 2;                  // Human-readable name
+  string source = 3;                // Provider identifier ("aws-budgets", "gcp-billing", etc.)
+  BudgetAmount amount = 4;          // Spending limit and currency
+  BudgetPeriod period = 5;          // Time period (monthly, quarterly, etc.)
+  BudgetFilter filter = 6;          // Scope restrictions
+  repeated BudgetThreshold thresholds = 7; // Alert thresholds
+  BudgetStatus status = 8;          // Current spend status (if requested)
+}
+```
+
+**Example Implementation**:
+
+```go
+func (s *Server) GetBudgets(ctx context.Context, req *pbc.GetBudgetsRequest) (*pbc.GetBudgetsResponse, error) {
+    // Check if plugin implements budget functionality
+    if budgetsProvider, ok := s.plugin.(BudgetsProvider); ok {
+        return budgetsProvider.GetBudgets(ctx, req)
+    }
+    // Optional RPC - return Unimplemented if not supported
+    return nil, status.Error(codes.Unimplemented, "plugin does not support GetBudgets")
+}
+```
 
 ## Packaging and Manifest Format
 

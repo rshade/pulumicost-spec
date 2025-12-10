@@ -225,6 +225,64 @@ func testGetPricingSpecRPC(harness *TestHarness) TestResult {
 	}
 }
 
+// testGetBudgetsRPC tests the GetBudgets RPC method.
+// This tests the optional RPC - if not implemented, Unimplemented error is expected.
+func testGetBudgetsRPC(harness *TestHarness) TestResult {
+	start := time.Now()
+	resp, err := harness.Client().GetBudgets(context.Background(), &pbc.GetBudgetsRequest{
+		Filter:        &pbc.BudgetFilter{},
+		IncludeStatus: false,
+	})
+	duration := time.Since(start)
+
+	if err != nil {
+		// Check if it's the expected Unimplemented error for plugins that don't support budgets
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.Unimplemented {
+			return TestResult{
+				Method:   "GetBudgets",
+				Category: CategoryRPCCorrectness,
+				Success:  true,
+				Duration: duration,
+				Details:  "Plugin correctly returns Unimplemented for unsupported GetBudgets RPC",
+			}
+		}
+		// Unexpected error
+		return TestResult{
+			Method:   "GetBudgets",
+			Category: CategoryRPCCorrectness,
+			Success:  false,
+			Error:    err,
+			Duration: duration,
+			Details:  "GetBudgets RPC failed with unexpected error",
+		}
+	}
+
+	// Plugin supports budgets - validate response
+	if valErr := ValidateBudgetsResponse(resp); valErr != nil {
+		return TestResult{
+			Method:   "GetBudgets",
+			Category: CategoryRPCCorrectness,
+			Success:  false,
+			Error:    valErr,
+			Duration: duration,
+			Details:  "Response validation failed",
+		}
+	}
+
+	return TestResult{
+		Method:   "GetBudgets",
+		Category: CategoryRPCCorrectness,
+		Success:  true,
+		Duration: duration,
+		Details:  fmt.Sprintf("Returned %d budgets", len(resp.GetBudgets())),
+	}
+}
+
+// testCrossProviderBudgetMapping is implemented as an integration test
+// due to the need for custom mock plugin configuration.
+// See TestCrossProviderBudgetMapping in integration_test.go
+
 // testNilResourceHandling tests that the plugin handles nil resources gracefully.
 func testNilResourceHandling(harness *TestHarness) TestResult {
 	start := time.Now()
@@ -370,6 +428,13 @@ func RPCCorrectnessTests() []ConformanceSuiteTest {
 			MinLevel:    ConformanceLevelBasic,
 			TestFunc:    createGetPricingSpecRPCTest(),
 		},
+		{
+			Name:        "RPCCorrectness_GetBudgetsRPC",
+			Description: "Validates GetBudgets RPC returns valid response or Unimplemented",
+			Category:    CategoryRPCCorrectness,
+			MinLevel:    ConformanceLevelBasic,
+			TestFunc:    createGetBudgetsRPCTest(),
+		},
 	}
 }
 
@@ -399,6 +464,10 @@ func createGetProjectedCostRPCTest() func(*TestHarness) TestResult {
 
 func createGetPricingSpecRPCTest() func(*TestHarness) TestResult {
 	return testGetPricingSpecRPC
+}
+
+func createGetBudgetsRPCTest() func(*TestHarness) TestResult {
+	return testGetBudgetsRPC
 }
 
 // RegisterRPCCorrectnessTests registers RPC correctness tests with a conformance suite.

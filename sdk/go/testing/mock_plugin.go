@@ -93,6 +93,10 @@ type MockPlugin struct {
 	// Recommendations configuration
 	RecommendationsConfig RecommendationsConfig
 
+	// Budgets configuration
+	ShouldErrorOnBudgets bool
+	MockBudgets          []*pbc.Budget
+
 	// FallbackHint configuration for GetActualCost responses.
 	// Thread Safety: This field must be set before the plugin begins serving
 	// requests. Use SetFallbackHint() for configuration, which documents the
@@ -654,6 +658,77 @@ func (m *MockPlugin) GetRecommendations(
 		Recommendations: recs,
 		Summary:         summary,
 		NextPageToken:   nextToken,
+	}, nil
+}
+
+// GetBudgets implements the mock GetBudgets RPC method.
+//
+//nolint:gocognit // Budget filtering logic requires multiple conditions
+func (m *MockPlugin) GetBudgets(
+	_ context.Context,
+	req *pbc.GetBudgetsRequest,
+) (*pbc.GetBudgetsResponse, error) {
+	if m.ShouldErrorOnBudgets {
+		return nil, status.Error(codes.Internal, "mock error")
+	}
+
+	// Return configured budgets or empty list
+	budgets := m.MockBudgets
+	if budgets == nil {
+		budgets = []*pbc.Budget{}
+	}
+
+	// Apply basic filtering if requested
+	if req.GetFilter() != nil {
+		filter := req.GetFilter()
+		if len(filter.GetProviders()) > 0 {
+			var filtered []*pbc.Budget
+			for _, budget := range budgets {
+				for _, provider := range filter.GetProviders() {
+					if strings.Contains(budget.GetSource(), provider) {
+						filtered = append(filtered, budget)
+						break
+					}
+				}
+			}
+			budgets = filtered
+		}
+	}
+
+	// Calculate summary
+	totalBudgets := len(budgets)
+	budgetsOk := 0
+	budgetsWarning := 0
+	budgetsCritical := 0
+	budgetsExceeded := 0
+
+	for _, budget := range budgets {
+		if budget.GetStatus() != nil {
+			switch budget.GetStatus().GetHealth() {
+			case pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_OK,
+				pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_UNSPECIFIED:
+				budgetsOk++
+			case pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_WARNING:
+				budgetsWarning++
+			case pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_CRITICAL:
+				budgetsCritical++
+			case pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_EXCEEDED:
+				budgetsExceeded++
+			}
+		} else {
+			budgetsOk++ // No status means assume OK
+		}
+	}
+
+	return &pbc.GetBudgetsResponse{
+		Budgets: budgets,
+		Summary: &pbc.BudgetSummary{
+			TotalBudgets:    int32(totalBudgets),    //nolint:gosec // length will not exceed int32 max
+			BudgetsOk:       int32(budgetsOk),       //nolint:gosec // count will not exceed int32 max
+			BudgetsWarning:  int32(budgetsWarning),  //nolint:gosec // count will not exceed int32 max
+			BudgetsCritical: int32(budgetsCritical), //nolint:gosec // count will not exceed int32 max
+			BudgetsExceeded: int32(budgetsExceeded), //nolint:gosec // count will not exceed int32 max
+		},
 	}, nil
 }
 

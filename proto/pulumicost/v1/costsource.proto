@@ -7,6 +7,7 @@ option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 import "pulumicost/v1/focus.proto";
+import "pulumicost/v1/budget.proto";
 
 // CostSourceService provides gRPC interface for cost source plugins to implement.
 // This service defines the contract for retrieving actual costs, projected costs,
@@ -52,6 +53,22 @@ service CostSourceService {
   //   - InvalidArgument: Invalid filter criteria or pagination token
   //   - Unavailable: Backend recommendation service unavailable
   rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+
+  // GetBudgets returns budget information from the cost management service.
+  // This enables unified budget visibility across cloud providers (AWS, GCP, Azure, etc.).
+  //
+  // The method supports optional filtering by provider, region, resource type, and tags.
+  // Use include_status=false for faster responses when current spend data isn't needed.
+  // Response time should be <5 seconds for typical budget queries (100-1000 budgets).
+  //
+  // This is an optional RPC - plugins may return Unimplemented if budget functionality
+  // is not supported by the underlying cost management service.
+  //
+  // Error cases:
+  //   - InvalidArgument: Invalid filter criteria or malformed request
+  //   - Unavailable: Budget service temporarily unavailable
+  //   - Unimplemented: Plugin does not support budget functionality
+  rpc GetBudgets(GetBudgetsRequest) returns (GetBudgetsResponse);
 }
 
 // NameRequest is used for the Name RPC call (empty request).

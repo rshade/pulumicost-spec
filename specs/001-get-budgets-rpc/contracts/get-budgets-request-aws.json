@@ -1,0 +1,7 @@
+{
+  "filter": {
+    "providers": ["aws"],
+    "regions": ["us-east-1", "us-west-2"]
+  },
+  "include_status": true
+}

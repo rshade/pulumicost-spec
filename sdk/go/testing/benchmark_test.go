@@ -2,6 +2,7 @@ package testing_test
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -768,4 +769,188 @@ func BenchmarkValidateActualCostResponse(b *testing.B) {
 			}
 		})
 	}
+}
+
+// =============================================================================
+// GetBudgets Performance Benchmarks - T040
+// =============================================================================
+
+// BenchmarkGetBudgets benchmarks the GetBudgets RPC method.
+func BenchmarkGetBudgets(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		_, err := client.GetBudgets(ctx, &pbc.GetBudgetsRequest{
+			Filter:        &pbc.BudgetFilter{},
+			IncludeStatus: true,
+		})
+		if err != nil {
+			b.Fatalf("GetBudgets() failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkGetBudgets_Scale benchmarks GetBudgets with different budget counts (100-1000).
+// Validates SC-007: System supports 100-1000 budgets per user/department.
+func BenchmarkGetBudgets_Scale(b *testing.B) {
+	testCases := []struct {
+		name        string
+		budgetCount int
+	}{
+		{"100Budgets", 100},
+		{"250Budgets", 250},
+		{"500Budgets", 500},
+		{"1000Budgets", 1000},
+	}
+
+	for _, tc := range testCases {
+		b.Run(tc.name, func(b *testing.B) {
+			plugin := plugintesting.NewMockPlugin()
+			plugin.MockBudgets = generateMockBudgets(tc.budgetCount)
+
+			harness := plugintesting.NewTestHarness(plugin)
+			harness.Start(&testing.T{})
+			defer harness.Stop()
+
+			client := harness.Client()
+			ctx := context.Background()
+
+			b.ReportAllocs()
+			b.ResetTimer()
+			for range b.N {
+				_, err := client.GetBudgets(ctx, &pbc.GetBudgetsRequest{
+					Filter:        &pbc.BudgetFilter{},
+					IncludeStatus: true,
+				})
+				if err != nil {
+					b.Fatalf("GetBudgets() failed: %v", err)
+				}
+			}
+		})
+	}
+}
+
+// TestGetBudgets_ScaleLatency validates <5s requirement for 100-1000 budgets (SC-001).
+func TestGetBudgets_ScaleLatency(t *testing.T) {
+	testCases := []struct {
+		name        string
+		budgetCount int
+		maxLatency  time.Duration
+	}{
+		{"100Budgets", 100, 5 * time.Second},
+		{"500Budgets", 500, 5 * time.Second},
+		{"1000Budgets", 1000, 5 * time.Second},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			plugin := plugintesting.NewMockPlugin()
+			plugin.MockBudgets = generateMockBudgets(tc.budgetCount)
+
+			harness := plugintesting.NewTestHarness(plugin)
+			harness.Start(t)
+			defer harness.Stop()
+
+			client := harness.Client()
+			ctx := context.Background()
+
+			start := time.Now()
+			resp, err := client.GetBudgets(ctx, &pbc.GetBudgetsRequest{
+				Filter:        &pbc.BudgetFilter{},
+				IncludeStatus: true,
+			})
+			duration := time.Since(start)
+
+			if err != nil {
+				t.Fatalf("GetBudgets() failed: %v", err)
+			}
+
+			if duration > tc.maxLatency {
+				t.Errorf("GetBudgets latency %v exceeds %v requirement for %d budgets",
+					duration, tc.maxLatency, tc.budgetCount)
+			}
+
+			// Verify correct count returned
+			if len(resp.GetBudgets()) != tc.budgetCount {
+				t.Errorf("Expected %d budgets, got %d", tc.budgetCount, len(resp.GetBudgets()))
+			}
+
+			t.Logf("GetBudgets latency for %d budgets: %v", tc.budgetCount, duration)
+		})
+	}
+}
+
+// BenchmarkGetBudgets_ConcurrentScale benchmarks concurrent GetBudgets with large budget counts.
+func BenchmarkGetBudgets_ConcurrentScale(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.MockBudgets = generateMockBudgets(500)
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.GetBudgets(ctx, &pbc.GetBudgetsRequest{
+				Filter:        &pbc.BudgetFilter{},
+				IncludeStatus: true,
+			})
+			if err != nil {
+				b.Fatalf("GetBudgets() failed: %v", err)
+			}
+		}
+	})
+}
+
+// generateMockBudgets creates n mock budgets with realistic data distribution.
+func generateMockBudgets(n int) []*pbc.Budget {
+	budgets := make([]*pbc.Budget, n)
+	providers := []string{"aws", "gcp", "azure", "kubernetes"}
+	healthStatuses := []pbc.BudgetHealthStatus{
+		pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_OK,
+		pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_WARNING,
+		pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_CRITICAL,
+		pbc.BudgetHealthStatus_BUDGET_HEALTH_STATUS_EXCEEDED,
+	}
+
+	for i := range n {
+		provider := providers[i%len(providers)]
+		health := healthStatuses[i%len(healthStatuses)]
+		limit := float64((i+1)*1000) + 500.0
+		spent := limit * (0.5 + float64(i%50)/100.0) // 50-99% utilization
+
+		idSuffix := fmt.Sprintf("%03d", i)
+		budgets[i] = &pbc.Budget{
+			Id:     "budget-" + provider + "-" + idSuffix,
+			Name:   provider + " Budget " + idSuffix[:2],
+			Source: provider + "-budgets",
+			Amount: &pbc.BudgetAmount{
+				Limit:    limit,
+				Currency: "USD",
+			},
+			Period: pbc.BudgetPeriod_BUDGET_PERIOD_MONTHLY,
+			Status: &pbc.BudgetStatus{
+				CurrentSpend:         spent,
+				ForecastedSpend:      spent * 1.1,
+				PercentageUsed:       (spent / limit) * 100,
+				PercentageForecasted: (spent * 1.1 / limit) * 100,
+				Currency:             "USD",
+				Health:               health,
+			},
+		}
+	}
+	return budgets
 }
