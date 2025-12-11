@@ -119,7 +119,7 @@ func TestValidateProjectedCostRequest_ErrorMessages(t *testing.T) {
 			t.Fatal("expected error, got nil")
 		}
 		errMsg := err.Error()
-		if !strings.Contains(errMsg, "mapping.ExtractSKU") {
+		if !strings.Contains(errMsg, "mapping helpers") {
 			t.Errorf("error message should contain mapping guidance, got: %s", errMsg)
 		}
 	})
@@ -138,7 +138,7 @@ func TestValidateProjectedCostRequest_ErrorMessages(t *testing.T) {
 			t.Fatal("expected error, got nil")
 		}
 		errMsg := err.Error()
-		if !strings.Contains(errMsg, "mapping.ExtractRegion") {
+		if !strings.Contains(errMsg, "mapping helpers") {
 			t.Errorf("error message should contain mapping guidance, got: %s", errMsg)
 		}
 	})
@@ -239,6 +239,19 @@ func TestValidateActualCostRequest_TimeRangeEdgeCases(t *testing.T) {
 		}
 	})
 
+	t.Run("one nanosecond difference (end before start) returns error", func(t *testing.T) {
+		now := time.Now()
+		req := &pbc.GetActualCostRequest{
+			ResourceId: "i-abc123",
+			Start:      timestamppb.New(now),
+			End:        timestamppb.New(now.Add(-time.Nanosecond)), // End time is 1ns before Start time
+		}
+		err := pluginsdk.ValidateActualCostRequest(req)
+		if !errors.Is(err, pluginsdk.ErrActualCostTimeRangeInvalid) {
+			t.Errorf("expected ErrActualCostTimeRangeInvalid for 1ns end before start, got: %v", err)
+		}
+	})
+
 	t.Run("large time range is valid", func(t *testing.T) {
 		now := time.Now()
 		req := &pbc.GetActualCostRequest{
@@ -270,7 +283,7 @@ func BenchmarkValidateProjectedCostRequest_Valid(b *testing.B) {
 	}
 }
 
-func BenchmarkValidateProjectedCostRequest_Invalid(b *testing.B) {
+func BenchmarkValidateProjectedCostRequest_Invalid_EmptyProvider(b *testing.B) {
 	req := &pbc.GetProjectedCostRequest{
 		Resource: &pbc.ResourceDescriptor{
 			Provider:     "",
@@ -300,7 +313,7 @@ func BenchmarkValidateActualCostRequest_Valid(b *testing.B) {
 	}
 }
 
-func BenchmarkValidateActualCostRequest_Invalid(b *testing.B) {
+func BenchmarkValidateActualCostRequest_Invalid_EmptyResourceID(b *testing.B) {
 	now := time.Now()
 	req := &pbc.GetActualCostRequest{
 		ResourceId: "",
