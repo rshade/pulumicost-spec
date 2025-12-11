@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.6](https://github.com/rshade/pulumicost-spec/compare/v0.4.5...v0.4.6) (2025-12-11)
+
+
+### Added
+
+* **pluginsdk:** add request validation helpers ([#151](https://github.com/rshade/pulumicost-spec/issues/151)) ([ef71ba6](https://github.com/rshade/pulumicost-spec/commit/ef71ba6018169b630f3068deab45b97bd1e3522c)), closes [#130](https://github.com/rshade/pulumicost-spec/issues/130)
+
+
+### Fixed
+
+* updating small bugs in spec ([#156](https://github.com/rshade/pulumicost-spec/issues/156)) ([83df05f](https://github.com/rshade/pulumicost-spec/commit/83df05f11ec2690c9b4e594128a9ba4022c20c8b))
+
 ## [0.4.5](https://github.com/rshade/pulumicost-spec/compare/v0.4.4...v0.4.5) (2025-12-10)
 
 
