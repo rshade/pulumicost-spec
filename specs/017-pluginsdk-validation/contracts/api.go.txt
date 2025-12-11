@@ -1,0 +1,24 @@
+package pluginsdk
+
+import (
+	pb "github.com/rshade/pulumicost-spec/proto/pulumicost/v1"
+)
+
+// ValidateProjectedCostRequest validates that a GetProjectedCostRequest is well-formed.
+//
+// It checks:
+// 1. Request is not nil
+// 2. Resource is not nil
+// 3. Provider, ResourceType, SKU, and Region are not empty
+//
+// It returns a descriptive error guiding the user to mapping helpers if validation fails.
+func ValidateProjectedCostRequest(req *pb.GetProjectedCostRequest) error
+
+// ValidateActualCostRequest validates that a GetActualCostRequest is well-formed.
+//
+// It checks:
+// 1. Request is not nil
+// 2. ResourceId is not empty
+// 3. StartTime and EndTime are present
+// 4. EndTime is after StartTime
+func ValidateActualCostRequest(req *pb.GetActualCostRequest) error

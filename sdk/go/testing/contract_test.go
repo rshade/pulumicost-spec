@@ -716,3 +716,20 @@ func BenchmarkRunStandardContractTests(b *testing.B) {
 		_ = plugintesting.RunStandardContractTests()
 	}
 }
+
+// BenchmarkValidateSupportsRequest benchmarks support request validation.
+func BenchmarkValidateSupportsRequest(b *testing.B) {
+	req := &pbc.SupportsRequest{
+		Resource: &pbc.ResourceDescriptor{
+			Provider:     "aws",
+			ResourceType: "ec2",
+			Sku:          "t3.micro",
+			Region:       "us-east-1",
+		},
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		_ = plugintesting.ValidateSupportsRequest(req)
+	}
+}
