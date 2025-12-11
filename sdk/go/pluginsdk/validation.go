@@ -1,4 +1,31 @@
 // Package pluginsdk provides a development SDK for PulumiCost plugins.
+//
+// # Request Validation
+//
+// This package provides lightweight request validation for plugin implementations.
+// For comprehensive contract testing with detailed error reporting, see sdk/go/testing/contract.go.
+//
+// Key differences:
+//   - pluginsdk: Simple errors, minimal dependencies, optimized for plugin defense-in-depth
+//   - testing/contract: Rich error context, comprehensive rules, designed for test suites
+//
+// # Usage
+//
+// Validate requests at plugin entry points:
+//
+//	func (s *MyPlugin) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostRequest) (*pb.GetProjectedCostResponse, error) {
+//	    if err := pluginsdk.ValidateProjectedCostRequest(req); err != nil {
+//	        return nil, status.Error(codes.InvalidArgument, err.Error())
+//	    }
+//	    // Process valid request...
+//	}
+//
+// # Performance
+//
+// Validation is optimized for performance:
+//   - Zero allocations on the happy path (valid request returns nil)
+//   - Error paths allocate only for the error message
+//   - Target: <100ns execution time for valid requests
 package pluginsdk
 
 import (
@@ -9,12 +36,12 @@ import (
 
 // Validation error messages for GetProjectedCostRequest.
 var (
-	ErrProjectedCostRequestNil    = errors.New("request is required")
-	ErrProjectedCostResourceNil   = errors.New("resource is required")
-	ErrProjectedCostProviderEmpty = errors.New("resource.provider is required")
-	ErrProjectedCostResourceType  = errors.New("resource.resource_type is required")
-	ErrProjectedCostSkuEmpty      = errors.New("resource.sku is required (use mapping.ExtractAWSSKU)")
-	ErrProjectedCostRegionEmpty   = errors.New("resource.region is required (use mapping.ExtractAWSRegion)")
+	ErrProjectedCostRequestNil        = errors.New("request is required")
+	ErrProjectedCostResourceNil       = errors.New("resource is required")
+	ErrProjectedCostProviderEmpty     = errors.New("resource.provider is required")
+	ErrProjectedCostResourceTypeEmpty = errors.New("resource.resource_type is required")
+	ErrProjectedCostSkuEmpty          = errors.New("resource.sku is required (use mapping.ExtractSKU)")
+	ErrProjectedCostRegionEmpty       = errors.New("resource.region is required (use mapping.ExtractRegion)")
 )
 
 // Validation error messages for GetActualCostRequest.
@@ -23,7 +50,9 @@ var (
 	ErrActualCostResourceIDEmpty  = errors.New("resource_id is required")
 	ErrActualCostStartTimeNil     = errors.New("start_time is required")
 	ErrActualCostEndTimeNil       = errors.New("end_time is required")
-	ErrActualCostTimeRangeInvalid = errors.New("end_time must be after start_time")
+	ErrActualCostTimeRangeInvalid = errors.New(
+		"end_time must be strictly after start_time (equal timestamps not allowed)",
+	)
 )
 
 // ValidateProjectedCostRequest validates a GetProjectedCostRequest for required fields.
@@ -58,7 +87,7 @@ func ValidateProjectedCostRequest(req *pbc.GetProjectedCostRequest) error {
 	}
 
 	if len(resource.GetResourceType()) == 0 {
-		return ErrProjectedCostResourceType
+		return ErrProjectedCostResourceTypeEmpty
 	}
 
 	if len(resource.GetSku()) == 0 {

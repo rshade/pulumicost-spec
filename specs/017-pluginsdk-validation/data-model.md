@@ -3,9 +3,11 @@
 ## Logical Entities
 
 ### ProjectedCostValidation
+
 Validates `pulumicost.v1.GetProjectedCostRequest`.
 
 **Fields Checked**:
+
 1. **Request**: Must not be nil.
 2. **Resource**: Must not be nil.
 3. **Resource.Provider**: Must not be empty.
@@ -16,9 +18,11 @@ Validates `pulumicost.v1.GetProjectedCostRequest`.
    - *Error Guidance*: "use mapping.ExtractAWSRegion()".
 
 ### ActualCostValidation
+
 Validates `pulumicost.v1.GetActualCostRequest`.
 
 **Fields Checked**:
+
 1. **Request**: Must not be nil.
 2. **ResourceId**: Must not be empty.
 3. **StartTime**: Must not be nil (and valid Timestamp).
@@ -26,5 +30,6 @@ Validates `pulumicost.v1.GetActualCostRequest`.
 5. **TimeRange**: EndTime > StartTime.
 
 ## Error Schema
+
 Standard Go `error` interface.
 Format: `"[field_name] is required[: guidance]"` or `"[rule description]"`

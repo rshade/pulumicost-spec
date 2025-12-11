@@ -50,12 +50,13 @@ tools to create a robust ecosystem of cost-estimation plugins.
   documented in a design specification under the `specs/` directory before implementation.
 
 ## Active Technologies
-- Go 1.21+ + `google.golang.org/grpc`, `google.golang.org/protobuf` (existing in project) (017-pluginsdk-validation)
 
-- Go 1.21+ (SDK), Protobuf 3 + `google.golang.org/grpc`, `google.golang.org/protobuf` (001-fallback-hint)
+- Go 1.25.5+ + `google.golang.org/grpc`, `google.golang.org/protobuf` (existing in project) (017-pluginsdk-validation)
+
+- Go 1.25.5+ (SDK), Protobuf 3 + `google.golang.org/grpc`, `google.golang.org/protobuf` (001-fallback-hint)
 - N/A (API Specification) (001-fallback-hint)
 
 ## Recent Changes
 
-- 001-fallback-hint: Added Go 1.21+ (SDK), Protobuf 3 + `google.golang.org/grpc`,
+- 001-fallback-hint: Added Go 1.25.5+ (SDK), Protobuf 3 + `google.golang.org/grpc`,
   `google.golang.org/protobuf`

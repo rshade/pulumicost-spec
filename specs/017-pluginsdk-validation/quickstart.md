@@ -2,7 +2,8 @@
 
 ## Introduction
 
-The `pluginsdk` package provides validation helpers to ensure requests are well-formed before processing. These helpers are used by both the Core (before sending requests) and Plugins (defense-in-depth).
+The `pluginsdk` package provides validation helpers to ensure requests are well-formed before processing. These
+helpers are used by both the Core (before sending requests) and Plugins (defense-in-depth).
 
 ## Usage
 

@@ -28,6 +28,11 @@ func TestValidateProjectedCostRequest(t *testing.T) {
 			wantErr: pluginsdk.ErrProjectedCostResourceNil,
 		},
 		{
+			name:    "unset resource field returns error",
+			req:     &pbc.GetProjectedCostRequest{}, // Resource field not set at all
+			wantErr: pluginsdk.ErrProjectedCostResourceNil,
+		},
+		{
 			name: "empty provider returns error",
 			req: &pbc.GetProjectedCostRequest{
 				Resource: &pbc.ResourceDescriptor{
@@ -49,7 +54,7 @@ func TestValidateProjectedCostRequest(t *testing.T) {
 					Region:       "us-east-1",
 				},
 			},
-			wantErr: pluginsdk.ErrProjectedCostResourceType,
+			wantErr: pluginsdk.ErrProjectedCostResourceTypeEmpty,
 		},
 		{
 			name: "empty sku returns error with mapping guidance",
@@ -114,7 +119,7 @@ func TestValidateProjectedCostRequest_ErrorMessages(t *testing.T) {
 			t.Fatal("expected error, got nil")
 		}
 		errMsg := err.Error()
-		if !strings.Contains(errMsg, "mapping.ExtractAWSSKU") {
+		if !strings.Contains(errMsg, "mapping.ExtractSKU") {
 			t.Errorf("error message should contain mapping guidance, got: %s", errMsg)
 		}
 	})
@@ -133,7 +138,7 @@ func TestValidateProjectedCostRequest_ErrorMessages(t *testing.T) {
 			t.Fatal("expected error, got nil")
 		}
 		errMsg := err.Error()
-		if !strings.Contains(errMsg, "mapping.ExtractAWSRegion") {
+		if !strings.Contains(errMsg, "mapping.ExtractRegion") {
 			t.Errorf("error message should contain mapping guidance, got: %s", errMsg)
 		}
 	})
