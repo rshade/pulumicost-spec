@@ -14,7 +14,9 @@ import (
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
-// Contract validation constants.
+// Contract validation constants defining the limits and constraints
+// for data exchange between Core and Plugin components. These constants
+// ensure resource consumption is bounded and data formats are consistent.
 const (
 	// MaxResourceIDLength is the maximum allowed resource ID length.
 	MaxResourceIDLength = 512
@@ -91,12 +93,12 @@ var resourceTypePattern = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_\-:/]*$`)
 // ContractError wraps a validation error with additional context.
 type ContractError struct {
 	Field   string
-	Value   interface{}
+	Value   any
 	Wrapped error
 }
 
 // NewContractError creates a new ContractError.
-func NewContractError(field string, value interface{}, err error) *ContractError {
+func NewContractError(field string, value any, err error) *ContractError {
 	return &ContractError{
 		Field:   field,
 		Value:   value,

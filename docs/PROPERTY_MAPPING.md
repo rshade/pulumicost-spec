@@ -380,13 +380,17 @@ sku := mapping.ExtractAWSSKU(props)
 // Cost calculations may fail silently
 ```
 
-**Solution**: Validate extraction results:
+**Solution**: Validate extraction results.
+
+For robust production plugins, use gRPC status errors to clearly communicate missing
+requirements back to the Core:
 
 ```go
+// Extract with validation
 sku := mapping.ExtractAWSSKU(props)
 if sku == "" {
-    log.Warn().Msg("No SKU found in resource properties")
-    // Use default SKU or return error
+    return nil, status.Errorf(codes.InvalidArgument,
+        "missing required instanceType for EC2 instance")
 }
 ```
 
