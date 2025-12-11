@@ -40,6 +40,7 @@ module.exports = {
         'ci', // CI/CD pipeline
         'deps', // Dependencies
         'docs', // Documentation
+        'main', // Main repository/release changes
       ],
     ],
 

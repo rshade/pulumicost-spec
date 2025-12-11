@@ -98,7 +98,7 @@ keys to check.
 - How does validation handle zero timestamps vs nil timestamps? Nil timestamps
   fail validation; zero timestamps (Unix epoch) are technically valid but may
   warn
-- What if start and end times are equal? Valid - represents an instant query
+- What if start and end times are equal? Invalid - end_time must be strictly after start_time.
 
 ## Requirements _(mandatory)_
 

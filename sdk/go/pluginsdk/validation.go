@@ -40,8 +40,8 @@ var (
 	ErrProjectedCostResourceNil       = errors.New("resource is required")
 	ErrProjectedCostProviderEmpty     = errors.New("resource.provider is required")
 	ErrProjectedCostResourceTypeEmpty = errors.New("resource.resource_type is required")
-	ErrProjectedCostSkuEmpty          = errors.New("resource.sku is required (use mapping.ExtractSKU)")
-	ErrProjectedCostRegionEmpty       = errors.New("resource.region is required (use mapping.ExtractRegion)")
+	ErrProjectedCostSkuEmpty          = errors.New("resource.sku is required (use mapping helpers)")
+	ErrProjectedCostRegionEmpty       = errors.New("resource.region is required (use mapping helpers)")
 )
 
 // Validation error messages for GetActualCostRequest.
