@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pulumicost.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// GetActualCostRequest contains parameters for retrieving historical cost data.
+message GetActualCostRequest {
+  // resource_id is a flexible ID per plugin (e.g., "i-abc123", "namespace/default")
+  string resource_id = 1;
+  // start timestamp for the cost query period
+  google.protobuf.Timestamp start = 2;
+  // end timestamp for the cost query period
+  google.protobuf.Timestamp end = 3;
+  // tags provide optional extra filters for cost retrieval
+  map<string, string> tags = 4;
+  // Canonical Cloud Identifier (e.g. AWS ARN, Azure Resource ID, GCP Full Resource Name)
+  string arn = 5;
+}

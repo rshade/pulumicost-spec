@@ -142,6 +142,7 @@ message GetActualCostRequest {
   google.protobuf.Timestamp start = 2;
   google.protobuf.Timestamp end = 3;
   map<string, string> tags = 4;   // optional filters
+  string arn = 5;                 // Canonical Cloud Identifier (AWS ARN, Azure Resource ID, GCP Full Resource Name)
 }
 ```
 
@@ -164,9 +165,25 @@ message ActualCostResult {
 **Implementation Notes**:
 
 - `resource_id` format is plugin-specific (e.g., AWS instance ID, K8s namespace)
+- `arn` provides the canonical cloud identifier (e.g., AWS ARN, Azure Resource ID, GCP Full Resource Name)
+  - Use `arn` as the primary identifier for cloud API calls when available
+  - Fall back to `resource_id` if `arn` is empty
 - Return time-series data points within the requested range
 - Include usage metrics when available for better cost analysis
 - Handle time zone conversion appropriately
+
+**Using the ARN Field**:
+
+```go
+func (s *Server) GetActualCost(ctx context.Context, req *pbc.GetActualCostRequest) (*pbc.GetActualCostResponse, error) {
+    // Use ARN as primary identifier, fall back to resource_id
+    identifier := req.Arn
+    if identifier == "" {
+        identifier = req.ResourceId
+    }
+    // Query cost source using identifier...
+}
+```
 
 #### GetProjectedCost RPC
 

@@ -107,6 +107,8 @@ message GetActualCostRequest {
   google.protobuf.Timestamp end = 3;
   // tags provide optional extra filters for cost retrieval
   map<string, string> tags = 4;
+  // New field: Canonical Cloud Identifier (e.g. AWS ARN, Azure Resource ID, GCP Full Resource Name)
+  string arn = 5;
 }
 
 // GetActualCostResponse contains the list of actual cost results.
