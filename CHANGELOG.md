@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.7](https://github.com/rshade/pulumicost-spec/compare/v0.4.6...v0.4.7) (2025-12-15)
+
+
+### Added
+
+* **proto:** add arn field to actual cost request ([#160](https://github.com/rshade/pulumicost-spec/issues/160)) ([a75b42b](https://github.com/rshade/pulumicost-spec/commit/a75b42b355395f590b7d211475de05f5083bd82b)), closes [#157](https://github.com/rshade/pulumicost-spec/issues/157)
+
 ## [0.4.6](https://github.com/rshade/pulumicost-spec/compare/v0.4.5...v0.4.6) (2025-12-11)
 
 
