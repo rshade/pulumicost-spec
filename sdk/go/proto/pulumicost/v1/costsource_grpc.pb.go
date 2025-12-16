@@ -19,14 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CostSourceService_Name_FullMethodName               = "/pulumicost.v1.CostSourceService/Name"
-	CostSourceService_Supports_FullMethodName           = "/pulumicost.v1.CostSourceService/Supports"
-	CostSourceService_GetActualCost_FullMethodName      = "/pulumicost.v1.CostSourceService/GetActualCost"
-	CostSourceService_GetProjectedCost_FullMethodName   = "/pulumicost.v1.CostSourceService/GetProjectedCost"
-	CostSourceService_GetPricingSpec_FullMethodName     = "/pulumicost.v1.CostSourceService/GetPricingSpec"
-	CostSourceService_EstimateCost_FullMethodName       = "/pulumicost.v1.CostSourceService/EstimateCost"
-	CostSourceService_GetRecommendations_FullMethodName = "/pulumicost.v1.CostSourceService/GetRecommendations"
-	CostSourceService_GetBudgets_FullMethodName         = "/pulumicost.v1.CostSourceService/GetBudgets"
+	CostSourceService_Name_FullMethodName                  = "/pulumicost.v1.CostSourceService/Name"
+	CostSourceService_Supports_FullMethodName              = "/pulumicost.v1.CostSourceService/Supports"
+	CostSourceService_GetActualCost_FullMethodName         = "/pulumicost.v1.CostSourceService/GetActualCost"
+	CostSourceService_GetProjectedCost_FullMethodName      = "/pulumicost.v1.CostSourceService/GetProjectedCost"
+	CostSourceService_GetPricingSpec_FullMethodName        = "/pulumicost.v1.CostSourceService/GetPricingSpec"
+	CostSourceService_EstimateCost_FullMethodName          = "/pulumicost.v1.CostSourceService/EstimateCost"
+	CostSourceService_GetRecommendations_FullMethodName    = "/pulumicost.v1.CostSourceService/GetRecommendations"
+	CostSourceService_DismissRecommendation_FullMethodName = "/pulumicost.v1.CostSourceService/DismissRecommendation"
+	CostSourceService_GetBudgets_FullMethodName            = "/pulumicost.v1.CostSourceService/GetBudgets"
 )
 
 // CostSourceServiceClient is the client API for CostSourceService service.
@@ -71,6 +72,21 @@ type CostSourceServiceClient interface {
 	//   - InvalidArgument: Invalid filter criteria or pagination token
 	//   - Unavailable: Backend recommendation service unavailable
 	GetRecommendations(ctx context.Context, in *GetRecommendationsRequest, opts ...grpc.CallOption) (*GetRecommendationsResponse, error)
+	// DismissRecommendation marks a recommendation as dismissed/ignored.
+	// This is an optional RPC - plugins that support stateful recommendation
+	// management can implement this to persist dismissal state. Plugins that
+	// don't support dismissals should return Unimplemented.
+	//
+	// When a recommendation is dismissed:
+	//   - It should not appear in future GetRecommendations responses
+	//   - The dismissal may expire after a configurable period
+	//   - Users can optionally provide a reason for the dismissal
+	//
+	// Error cases:
+	//   - InvalidArgument: Empty recommendation_id or invalid expiration
+	//   - NotFound: Recommendation ID does not exist
+	//   - Unimplemented: Plugin does not support recommendation dismissal
+	DismissRecommendation(ctx context.Context, in *DismissRecommendationRequest, opts ...grpc.CallOption) (*DismissRecommendationResponse, error)
 	// GetBudgets returns budget information from the cost management service.
 	// This enables unified budget visibility across cloud providers (AWS, GCP, Azure, etc.).
 	//
@@ -166,6 +182,16 @@ func (c *costSourceServiceClient) GetRecommendations(ctx context.Context, in *Ge
 	return out, nil
 }
 
+func (c *costSourceServiceClient) DismissRecommendation(ctx context.Context, in *DismissRecommendationRequest, opts ...grpc.CallOption) (*DismissRecommendationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DismissRecommendationResponse)
+	err := c.cc.Invoke(ctx, CostSourceService_DismissRecommendation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *costSourceServiceClient) GetBudgets(ctx context.Context, in *GetBudgetsRequest, opts ...grpc.CallOption) (*GetBudgetsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetBudgetsResponse)
@@ -218,6 +244,21 @@ type CostSourceServiceServer interface {
 	//   - InvalidArgument: Invalid filter criteria or pagination token
 	//   - Unavailable: Backend recommendation service unavailable
 	GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error)
+	// DismissRecommendation marks a recommendation as dismissed/ignored.
+	// This is an optional RPC - plugins that support stateful recommendation
+	// management can implement this to persist dismissal state. Plugins that
+	// don't support dismissals should return Unimplemented.
+	//
+	// When a recommendation is dismissed:
+	//   - It should not appear in future GetRecommendations responses
+	//   - The dismissal may expire after a configurable period
+	//   - Users can optionally provide a reason for the dismissal
+	//
+	// Error cases:
+	//   - InvalidArgument: Empty recommendation_id or invalid expiration
+	//   - NotFound: Recommendation ID does not exist
+	//   - Unimplemented: Plugin does not support recommendation dismissal
+	DismissRecommendation(context.Context, *DismissRecommendationRequest) (*DismissRecommendationResponse, error)
 	// GetBudgets returns budget information from the cost management service.
 	// This enables unified budget visibility across cloud providers (AWS, GCP, Azure, etc.).
 	//
@@ -263,6 +304,9 @@ func (UnimplementedCostSourceServiceServer) EstimateCost(context.Context, *Estim
 }
 func (UnimplementedCostSourceServiceServer) GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRecommendations not implemented")
+}
+func (UnimplementedCostSourceServiceServer) DismissRecommendation(context.Context, *DismissRecommendationRequest) (*DismissRecommendationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DismissRecommendation not implemented")
 }
 func (UnimplementedCostSourceServiceServer) GetBudgets(context.Context, *GetBudgetsRequest) (*GetBudgetsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetBudgets not implemented")
@@ -414,6 +458,24 @@ func _CostSourceService_GetRecommendations_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CostSourceService_DismissRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DismissRecommendationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CostSourceServiceServer).DismissRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CostSourceService_DismissRecommendation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CostSourceServiceServer).DismissRecommendation(ctx, req.(*DismissRecommendationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CostSourceService_GetBudgets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetBudgetsRequest)
 	if err := dec(in); err != nil {
@@ -466,6 +528,10 @@ var CostSourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRecommendations",
 			Handler:    _CostSourceService_GetRecommendations_Handler,
+		},
+		{
+			MethodName: "DismissRecommendation",
+			Handler:    _CostSourceService_DismissRecommendation_Handler,
 		},
 		{
 			MethodName: "GetBudgets",

@@ -54,6 +54,22 @@ service CostSourceService {
   //   - Unavailable: Backend recommendation service unavailable
   rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
 
+  // DismissRecommendation marks a recommendation as dismissed/ignored.
+  // This is an optional RPC - plugins that support stateful recommendation
+  // management can implement this to persist dismissal state. Plugins that
+  // don't support dismissals should return Unimplemented.
+  //
+  // When a recommendation is dismissed:
+  //   - It should not appear in future GetRecommendations responses
+  //   - The dismissal may expire after a configurable period
+  //   - Users can optionally provide a reason for the dismissal
+  //
+  // Error cases:
+  //   - InvalidArgument: Empty recommendation_id or invalid expiration
+  //   - NotFound: Recommendation ID does not exist
+  //   - Unimplemented: Plugin does not support recommendation dismissal
+  rpc DismissRecommendation(DismissRecommendationRequest) returns (DismissRecommendationResponse);
+
   // GetBudgets returns budget information from the cost management service.
   // This enables unified budget visibility across cloud providers (AWS, GCP, Azure, etc.).
   //
@@ -613,6 +629,22 @@ enum RecommendationPriority {
   RECOMMENDATION_PRIORITY_CRITICAL = 4;
 }
 
+// RecommendationSortBy specifies the field to sort recommendations by.
+enum RecommendationSortBy {
+  RECOMMENDATION_SORT_BY_UNSPECIFIED = 0;
+  RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS = 1;
+  RECOMMENDATION_SORT_BY_PRIORITY = 2;
+  RECOMMENDATION_SORT_BY_CREATED_AT = 3;
+  RECOMMENDATION_SORT_BY_CONFIDENCE = 4;
+}
+
+// SortOrder specifies ascending or descending sort order.
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
 // =============================================================================
 // GetRecommendations RPC - Request/Response Messages
 // =============================================================================
@@ -628,6 +660,10 @@ message GetRecommendationsRequest {
   int32 page_size = 3;
   // page_token is the continuation token from a previous response
   string page_token = 4;
+  // excluded_recommendation_ids contains IDs of recommendations to exclude from results.
+  // Use this to filter out recommendations that have been dismissed by users.
+  // Plugins should not return recommendations matching these IDs.
+  repeated string excluded_recommendation_ids = 5;
 }
 
 // GetRecommendationsResponse contains the recommendations and summary.
@@ -654,6 +690,63 @@ message RecommendationFilter {
   RecommendationCategory category = 4;
   // action_type filters by recommended action type
   RecommendationActionType action_type = 5;
+  // sku filters by SKU or instance type (e.g., "t2.medium", "gp2").
+  // When provided, plugins generate recommendations for this specific SKU.
+  // This enables resource-specific recommendations like instance generation
+  // upgrades (t2→t3) or Graviton migrations (m5→m6g).
+  string sku = 6;
+  // tags provides additional resource metadata for recommendation generation.
+  // Example: {"size": "100"} for EBS volume size, {"env": "prod"} for filtering.
+  // Plugins use this metadata to provide context-aware recommendations.
+  map<string, string> tags = 7;
+
+  // ==========================================================================
+  // P0: Must-have filter fields for production use
+  // ==========================================================================
+
+  // priority filters by recommendation priority level.
+  // Use to focus on high-impact recommendations during triage.
+  RecommendationPriority priority = 8;
+  // min_estimated_savings filters to only include recommendations above this
+  // savings threshold. The value is expressed in the same currency as
+  // RecommendationImpact.currency and RecommendationSummary.currency.
+  // Example: 100.0 to show only recommendations saving at least 100 units of currency.
+  double min_estimated_savings = 9;
+  // source filters by recommendation source (e.g., "aws-cost-explorer",
+  // "kubecost", "azure-advisor", "gcp-recommender").
+  // Use in multi-source environments to focus on specific backends.
+  string source = 10;
+
+  // ==========================================================================
+  // P1: Should-have filter fields for enterprise scale
+  // ==========================================================================
+
+  // account_id filters by cloud account/subscription/project ID.
+  // Essential for multi-account AWS Organizations, Azure subscriptions,
+  // or GCP projects. Format is provider-specific.
+  string account_id = 11;
+  // sort_by specifies the field to sort recommendations by.
+  // Default is UNSPECIFIED (implementation-defined order).
+  RecommendationSortBy sort_by = 12;
+  // sort_order specifies ascending or descending sort order.
+  // Default is UNSPECIFIED (DESC for savings/priority, ASC for others).
+  SortOrder sort_order = 13;
+
+  // ==========================================================================
+  // P2: Nice-to-have filter fields for advanced use cases
+  // ==========================================================================
+
+  // min_confidence_score filters to only include recommendations with
+  // confidence score >= this value. Range: 0.0 to 1.0.
+  // Use for automated remediation pipelines requiring high confidence.
+  double min_confidence_score = 14;
+  // max_age_days filters to only include recommendations created within
+  // the last N days. Use to focus on fresh recommendations.
+  // Value of 0 means no age filtering (include all).
+  int32 max_age_days = 15;
+  // resource_id filters for recommendations affecting a specific resource.
+  // Format is provider-specific (e.g., AWS instance ID, K8s resource name).
+  string resource_id = 16;
 }
 
 // =============================================================================
@@ -865,4 +958,61 @@ message RecommendationSummary {
   map<string, int32> count_by_action_type = 7;
   // savings_by_action_type maps action type name to total savings
   map<string, double> savings_by_action_type = 8;
+}
+
+// =============================================================================
+// DismissRecommendation RPC - Request/Response Messages
+// =============================================================================
+
+// DismissalReason specifies why a recommendation was dismissed.
+enum DismissalReason {
+  DISMISSAL_REASON_UNSPECIFIED = 0;
+  // User determined the recommendation is not applicable to their use case
+  DISMISSAL_REASON_NOT_APPLICABLE = 1;
+  // Recommendation was already implemented through other means
+  DISMISSAL_REASON_ALREADY_IMPLEMENTED = 2;
+  // Business requirements prevent implementing this recommendation
+  DISMISSAL_REASON_BUSINESS_CONSTRAINT = 3;
+  // Technical constraints prevent implementing this recommendation
+  DISMISSAL_REASON_TECHNICAL_CONSTRAINT = 4;
+  // User plans to implement later, dismissing temporarily
+  DISMISSAL_REASON_DEFERRED = 5;
+  // Recommendation is inaccurate or based on incorrect data
+  DISMISSAL_REASON_INACCURATE = 6;
+  // Other reason (see custom_reason field)
+  DISMISSAL_REASON_OTHER = 7;
+}
+
+// DismissRecommendationRequest contains parameters for dismissing a recommendation.
+message DismissRecommendationRequest {
+  // recommendation_id is the unique identifier of the recommendation to dismiss.
+  // Required field.
+  string recommendation_id = 1;
+  // reason specifies why the recommendation is being dismissed.
+  // Optional but recommended for audit purposes.
+  DismissalReason reason = 2;
+  // custom_reason provides free-form text when reason is OTHER or
+  // to supplement the structured reason. Max 500 characters.
+  string custom_reason = 3;
+  // expires_at specifies when the dismissal should expire and the
+  // recommendation should reappear. If not set, dismissal is permanent
+  // (or until the recommendation naturally expires).
+  optional google.protobuf.Timestamp expires_at = 4;
+  // dismissed_by identifies who dismissed the recommendation (e.g., user ID, email).
+  // Optional, used for audit purposes.
+  string dismissed_by = 5;
+}
+
+// DismissRecommendationResponse confirms the dismissal.
+message DismissRecommendationResponse {
+  // success indicates if the dismissal was successful.
+  bool success = 1;
+  // message provides additional context (e.g., confirmation or error details).
+  string message = 2;
+  // dismissed_at is the timestamp when the dismissal was recorded.
+  google.protobuf.Timestamp dismissed_at = 3;
+  // expires_at echoes back when the dismissal will expire (if set).
+  optional google.protobuf.Timestamp expires_at = 4;
+  // recommendation_id echoes back the dismissed recommendation ID for confirmation.
+  string recommendation_id = 5;
 }

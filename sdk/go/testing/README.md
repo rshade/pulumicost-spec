@@ -571,6 +571,63 @@ func TestGetRecommendationsFiltered(t *testing.T) {
             Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
         },
     })
+
+    // The following examples demonstrate various filter configurations.
+    // Error handling shown once at the end for brevity.
+
+    // P0: Filter by priority and minimum savings threshold
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        Filter: &pbc.RecommendationFilter{
+            Priority:            pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_HIGH,
+            MinEstimatedSavings: 100.0, // Only recommendations saving $100+
+            SortBy:              pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+            SortOrder:           pbc.SortOrder_SORT_ORDER_DESC,
+        },
+    })
+
+    // P0: Filter by source for multi-source environments
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        Filter: &pbc.RecommendationFilter{
+            Source:   "kubecost",
+            Provider: "kubernetes",
+        },
+    })
+
+    // P1: Filter by account for enterprise multi-account setups
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        Filter: &pbc.RecommendationFilter{
+            AccountId: "123456789012",
+            Provider:  "aws",
+            SortBy:    pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_PRIORITY,
+        },
+    })
+
+    // P2: Filter for automation pipelines - high confidence, recent only
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        Filter: &pbc.RecommendationFilter{
+            MinConfidenceScore: 0.8,
+            MaxAgeDays:         7, // Recommendations from last 7 days
+        },
+    })
+
+    // P2: Get recommendations for a specific resource
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        Filter: &pbc.RecommendationFilter{
+            ResourceId: "i-0abc123def456789",
+        },
+    })
+
+    // Combined: SKU-based filtering with savings threshold
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        Filter: &pbc.RecommendationFilter{
+            Provider:            "aws",
+            ResourceType:        "ec2",
+            Sku:                 "t2.medium",
+            Tags:                map[string]string{"env": "production"},
+            MinEstimatedSavings: 50.0,
+            Category:            pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+        },
+    })
     if err != nil {
         t.Fatalf("GetRecommendations() failed: %v", err)
     }

@@ -43,6 +43,43 @@ Priority level for recommendations.
 | `RECOMMENDATION_PRIORITY_HIGH` | 3 | High priority, significant impact |
 | `RECOMMENDATION_PRIORITY_CRITICAL` | 4 | Critical priority, immediate action |
 
+### RecommendationSortBy
+
+Field to sort recommendations by.
+
+| Value | Number | Description |
+|-------|--------|-------------|
+| `RECOMMENDATION_SORT_BY_UNSPECIFIED` | 0 | Implementation-defined order |
+| `RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS` | 1 | Sort by estimated savings amount |
+| `RECOMMENDATION_SORT_BY_PRIORITY` | 2 | Sort by priority level |
+| `RECOMMENDATION_SORT_BY_CREATED_AT` | 3 | Sort by creation timestamp |
+| `RECOMMENDATION_SORT_BY_CONFIDENCE` | 4 | Sort by confidence score |
+
+### SortOrder
+
+Ascending or descending sort order.
+
+| Value | Number | Description |
+|-------|--------|-------------|
+| `SORT_ORDER_UNSPECIFIED` | 0 | Default (DESC for savings/priority, ASC for others) |
+| `SORT_ORDER_ASC` | 1 | Ascending order (lowest first) |
+| `SORT_ORDER_DESC` | 2 | Descending order (highest first) |
+
+### DismissalReason
+
+Reason for dismissing a recommendation.
+
+| Value | Number | Description |
+|-------|--------|-------------|
+| `DISMISSAL_REASON_UNSPECIFIED` | 0 | Default/unknown reason |
+| `DISMISSAL_REASON_NOT_APPLICABLE` | 1 | Recommendation not applicable to use case |
+| `DISMISSAL_REASON_ALREADY_IMPLEMENTED` | 2 | Already implemented through other means |
+| `DISMISSAL_REASON_BUSINESS_CONSTRAINT` | 3 | Business requirements prevent implementation |
+| `DISMISSAL_REASON_TECHNICAL_CONSTRAINT` | 4 | Technical constraints prevent implementation |
+| `DISMISSAL_REASON_DEFERRED` | 5 | Deferred for later implementation |
+| `DISMISSAL_REASON_INACCURATE` | 6 | Recommendation based on incorrect data |
+| `DISMISSAL_REASON_OTHER` | 7 | Other reason (see custom_reason) |
+
 ## Messages
 
 ### GetRecommendationsRequest
@@ -55,6 +92,7 @@ Request message for GetRecommendations RPC.
 | `projection_period` | string | 2 | "daily", "monthly" (default), "annual" |
 | `page_size` | int32 | 3 | Maximum results per page (default: 50) |
 | `page_token` | string | 4 | Continuation token from previous response |
+| `excluded_recommendation_ids` | repeated string | 5 | Recommendation IDs to exclude from results |
 
 ### GetRecommendationsResponse
 
@@ -70,6 +108,8 @@ Response message for GetRecommendations RPC.
 
 Filter criteria for narrowing recommendations.
 
+#### Core Filter Fields (1-7)
+
 | Field | Type | Number | Description |
 |-------|------|--------|-------------|
 | `provider` | string | 1 | Filter by provider (aws, azure, gcp, kubernetes) |
@@ -77,6 +117,32 @@ Filter criteria for narrowing recommendations.
 | `resource_type` | string | 3 | Filter by resource type |
 | `category` | RecommendationCategory | 4 | Filter by category |
 | `action_type` | RecommendationActionType | 5 | Filter by action type |
+| `sku` | string | 6 | Filter by SKU/instance type (e.g., "t2.medium", "gp2") |
+| `tags` | map<string, string> | 7 | Filter by resource metadata/tags |
+
+#### P0: Must-Have Filter Fields (8-10)
+
+| Field | Type | Number | Description |
+|-------|------|--------|-------------|
+| `priority` | RecommendationPriority | 8 | Filter by priority level (LOW, MEDIUM, HIGH, CRITICAL) |
+| `min_estimated_savings` | double | 9 | Minimum savings threshold (e.g., 100.0 for $100) |
+| `source` | string | 10 | Filter by source (aws-cost-explorer, kubecost, etc.) |
+
+#### P1: Enterprise Scale Filter Fields (11-13)
+
+| Field | Type | Number | Description |
+|-------|------|--------|-------------|
+| `account_id` | string | 11 | Filter by cloud account/subscription/project ID |
+| `sort_by` | RecommendationSortBy | 12 | Field to sort results by |
+| `sort_order` | SortOrder | 13 | Ascending or descending sort order |
+
+#### P2: Advanced Filter Fields (14-16)
+
+| Field | Type | Number | Description |
+|-------|------|--------|-------------|
+| `min_confidence_score` | double | 14 | Minimum confidence threshold (0.0-1.0) |
+| `max_age_days` | int32 | 15 | Maximum recommendation age in days (0 = no limit) |
+| `resource_id` | string | 16 | Filter for specific resource by ID |
 
 ### Recommendation
 
@@ -229,11 +295,35 @@ Aggregated summary of recommendations.
 | `count_by_action_type` | map<string, int32> | 7 | Count per action type |
 | `savings_by_action_type` | map<string, double> | 8 | Savings per action type |
 
+### DismissRecommendationRequest
+
+Request message for DismissRecommendation RPC.
+
+| Field | Type | Number | Description |
+|-------|------|--------|-------------|
+| `recommendation_id` | string | 1 | ID of recommendation to dismiss |
+| `reason` | DismissalReason | 2 | Reason for dismissal |
+| `custom_reason` | string | 3 | Custom reason text (for DISMISSAL_REASON_OTHER) |
+| `dismissed_by` | string | 4 | User/system that dismissed (for audit) |
+| `expires_at` | google.protobuf.Timestamp | 5 | When dismissal expires (optional) |
+
+### DismissRecommendationResponse
+
+Response message for DismissRecommendation RPC.
+
+| Field | Type | Number | Description |
+|-------|------|--------|-------------|
+| `success` | bool | 1 | Whether dismissal was successful |
+| `message` | string | 2 | Status message or error details |
+| `dismissed_at` | google.protobuf.Timestamp | 3 | The time the recommendation was dismissed |
+| `expires_at` | optional google.protobuf.Timestamp | 4 | When the dismissal automatically expires |
+
 ## Relationships
 
 ```text
 GetRecommendationsRequest
-    └── RecommendationFilter (optional)
+    ├── RecommendationFilter (optional)
+    └── excluded_recommendation_ids (repeated string)
 
 GetRecommendationsResponse
     ├── Recommendation (repeated)
@@ -252,6 +342,12 @@ GetRecommendationsResponse
     │   │   └── ModifyAction
     │   └── RecommendationImpact
     └── RecommendationSummary
+
+DismissRecommendationRequest
+    └── DismissalReason (enum)
+
+DismissRecommendationResponse
+    └── (simple success/message response)
 ```
 
 ## Validation Rules
@@ -271,3 +367,12 @@ GetRecommendationsResponse
 | ResourceInfo | provider | Required, non-empty |
 | GetRecommendationsRequest | projection_period | "daily", "monthly", "annual" |
 | GetRecommendationsRequest | page_size | 0 < value <= 1000 (0 uses default 50) |
+| RecommendationFilter | min_estimated_savings | If present, value >= 0.0 |
+| RecommendationFilter | min_confidence_score | If present, 0.0 <= value <= 1.0 |
+| RecommendationFilter | max_age_days | If present, value >= 0 |
+| RecommendationFilter | priority | If present, valid enum value |
+| RecommendationFilter | sort_by | If present, valid enum value |
+| RecommendationFilter | sort_order | If present, valid enum value |
+| DismissRecommendationRequest | recommendation_id | Required, non-empty |
+| DismissRecommendationRequest | reason | Required, valid enum value |
+| DismissRecommendationRequest | custom_reason | Required if reason is DISMISSAL_REASON_OTHER |
