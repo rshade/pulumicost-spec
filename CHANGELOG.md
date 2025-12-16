@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.8](https://github.com/rshade/pulumicost-spec/compare/v0.4.7...v0.4.8) (2025-12-16)
+
+
+### Added
+
+* **proto:** add comprehensive filter and dismissal to recommendations ([#166](https://github.com/rshade/pulumicost-spec/issues/166)) ([71240b8](https://github.com/rshade/pulumicost-spec/commit/71240b852b590dee01c8063f613ef5dc4ece62e9)), closes [#165](https://github.com/rshade/pulumicost-spec/issues/165)
+
+
+### Documentation
+
+* updating the documentation for the latest changes ([2589c1a](https://github.com/rshade/pulumicost-spec/commit/2589c1aff4e06f576d2617ed4b38d7222cca60a4))
+* updating the documentation for the latest changes ([#164](https://github.com/rshade/pulumicost-spec/issues/164)) ([b54b806](https://github.com/rshade/pulumicost-spec/commit/b54b806b27e554fdd384f23a93ca328128eb5b3e))
+
 ## [0.4.7](https://github.com/rshade/pulumicost-spec/compare/v0.4.6...v0.4.7) (2025-12-15)
 
 
