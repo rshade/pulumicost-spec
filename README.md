@@ -764,12 +764,20 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Documentation**: Complete API reference and developer guides
-- **[Plugin Developer Guide](PLUGIN_DEVELOPER_GUIDE.md)**: Comprehensive plugin development guide
-- **[Observability Guide](OBSERVABILITY_GUIDE.md)**: Structured logging and metrics
-- **Testing**: Multi-level conformance testing framework
-- **CI/CD**: Automated validation and performance testing
-- **Issues**: GitHub issues for bug reports and feature requests
+### Guides
+
+- **[Plugin Developer Guide](./PLUGIN_DEVELOPER_GUIDE.md)** - Complete guide to building cost source plugins
+- **[Observability Guide](./OBSERVABILITY_GUIDE.md)** - Structured logging and Prometheus metrics
+- **[Plugin Startup Protocol](./docs/PLUGIN_STARTUP_PROTOCOL.md)** - Plugin lifecycle and initialization
+- **[Property Mapping](./docs/PROPERTY_MAPPING.md)** - Extracting properties from cloud resources
+- **[FOCUS 1.2 Columns](./docs/focus-columns.md)** - FinOps FOCUS column mapping reference
+- **[Plugin Registry Spec](./docs/plugin-registry-specification.md)** - Plugin registration and discovery
+- **[Migration Guide](./docs/PLUGIN_MIGRATION_GUIDE.md)** - Upgrading between spec versions
+
+### Community
+
+- **[Issues](https://github.com/rshade/pulumicost-spec/issues)** - Bug reports and feature requests
+- **[Project Board](https://github.com/users/rshade/projects/3)** - Development roadmap and progress
 
 ---
 
