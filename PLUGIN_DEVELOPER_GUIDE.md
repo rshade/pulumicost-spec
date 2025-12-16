@@ -67,7 +67,7 @@ This section covers each RPC method in detail.
 
 ### Service Interface
 
-The service defines 8 RPC methods that provide different aspects of cost information:
+The service defines 9 RPC methods that provide different aspects of cost information:
 
 ```protobuf
 service CostSourceService {
@@ -78,6 +78,7 @@ service CostSourceService {
   rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);
   rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
   rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+  rpc DismissRecommendation(DismissRecommendationRequest) returns (DismissRecommendationResponse);
   rpc GetBudgets(GetBudgetsRequest) returns (GetBudgetsResponse);
 }
 ```
@@ -375,10 +376,11 @@ plugins that don't support recommendations should return an empty list.
 
 ```protobuf
 message GetRecommendationsRequest {
-  RecommendationFilter filter = 1;   // Optional filtering criteria
-  string projection_period = 2;      // Savings projection period: "daily", "monthly" (default), "annual"
-  int32 page_size = 3;               // Max recommendations to return (default: 50, max: 1000)
-  string page_token = 4;             // Pagination token from previous response
+  RecommendationFilter filter = 1;           // Optional filtering criteria
+  string projection_period = 2;              // Savings projection period: "daily", "monthly" (default), "annual"
+  int32 page_size = 3;                       // Max recommendations to return (default: 50, max: 1000)
+  string page_token = 4;                     // Pagination token from previous response
+  repeated string excluded_recommendation_ids = 5;  // Recommendation IDs to exclude from results
 }
 ```
 
@@ -398,9 +400,57 @@ message GetRecommendationsResponse {
 - Recommendations are paginated - use `page_token` to retrieve subsequent pages
 - The `summary` field provides statistics for the **current page** only; clients must aggregate across pages
 - Response time target: **<10 seconds** for typical recommendation queries
-- Support filtering by provider, region, resource type, category, and action type
+- Support filtering by provider, region, resource type, category, action type, SKU, and tags
 - Return `InvalidArgument` for invalid filter criteria or pagination tokens
 - Return `Unavailable` when the backend recommendation service is down
+
+**Filter Criteria**:
+
+The `RecommendationFilter` message supports comprehensive filtering with 16 fields organized by priority:
+
+**Core Filter Fields (1-7)**:
+
+| Field           | Type   | Description                                            |
+| --------------- | ------ | ------------------------------------------------------ |
+| `provider`      | string | Filter by cloud provider (aws, azure, gcp, kubernetes) |
+| `region`        | string | Filter by deployment region                            |
+| `resource_type` | string | Filter by resource type (e.g., "ec2", "ebs")           |
+| `category`      | enum   | Filter by recommendation category                      |
+| `action_type`   | enum   | Filter by recommended action type                      |
+| `sku`           | string | Filter by SKU/instance type (e.g., "t2.medium", "gp2") |
+| `tags`          | map    | Filter by resource metadata/tags                       |
+
+**P0: Must-Have Filter Fields (8-10)**:
+
+| Field                   | Type   | Description                                                   |
+| ----------------------- | ------ | ------------------------------------------------------------- |
+| `priority`              | enum   | Filter by priority level (LOW, MEDIUM, HIGH, CRITICAL)        |
+| `min_estimated_savings` | double | Only return recommendations saving at least this amount       |
+| `source`                | string | Filter by source (aws-cost-explorer, kubecost, azure-advisor) |
+
+**P1: Enterprise Scale Filter Fields (11-13)**:
+
+| Field        | Type   | Description                                                  |
+| ------------ | ------ | ------------------------------------------------------------ |
+| `account_id` | string | Filter by cloud account/subscription/project ID              |
+| `sort_by`    | enum   | Sort by: ESTIMATED_SAVINGS, PRIORITY, CREATED_AT, CONFIDENCE |
+| `sort_order` | enum   | ASC or DESC (default varies by sort_by)                      |
+
+**P2: Advanced Filter Fields (14-16)**:
+
+| Field                  | Type   | Description                                               |
+| ---------------------- | ------ | --------------------------------------------------------- |
+| `min_confidence_score` | double | Only return recommendations with confidence >= this value |
+| `max_age_days`         | int32  | Only return recommendations created within N days         |
+| `resource_id`          | string | Filter for specific resource by ID                        |
+
+**Common Filtering Patterns**:
+
+- **High-impact triage**: `priority=CRITICAL`, `min_estimated_savings=100.0`
+- **Instance upgrades**: `sku="t2.medium"`, `action_type=RIGHTSIZE`
+- **Multi-account focus**: `account_id="123456789012"`, `sort_by=ESTIMATED_SAVINGS`
+- **Automation pipeline**: `min_confidence_score=0.8`, `max_age_days=7`
+- **Source-specific review**: `source="kubecost"`, `provider="kubernetes"`
 
 **Recommendation Categories**:
 
@@ -432,6 +482,163 @@ func (s *Server) GetRecommendations(ctx context.Context, req *pbc.GetRecommendat
             TotalRecommendations: 0,
         },
     }, nil
+}
+```
+
+**Example Client Usage**:
+
+```go
+// P0: High-impact triage - show critical recommendations saving at least $100/month
+req := &pbc.GetRecommendationsRequest{
+    Filter: &pbc.RecommendationFilter{
+        Priority:            pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_CRITICAL,
+        MinEstimatedSavings: 100.0,
+        SortBy:              pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+        SortOrder:           pbc.SortOrder_SORT_ORDER_DESC,
+    },
+    ProjectionPeriod: "monthly",
+}
+
+// P0: Multi-source environment - focus on Kubecost recommendations
+req = &pbc.GetRecommendationsRequest{
+    Filter: &pbc.RecommendationFilter{
+        Source:   "kubecost",
+        Provider: "kubernetes",
+        Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+    },
+}
+
+// P1: Enterprise multi-account - recommendations for specific AWS account
+req = &pbc.GetRecommendationsRequest{
+    Filter: &pbc.RecommendationFilter{
+        Provider:  "aws",
+        AccountId: "123456789012",
+        SortBy:    pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+        SortOrder: pbc.SortOrder_SORT_ORDER_DESC,
+    },
+}
+
+// P2: Automation pipeline - high confidence, recent recommendations only
+req = &pbc.GetRecommendationsRequest{
+    Filter: &pbc.RecommendationFilter{
+        MinConfidenceScore: 0.8,  // Only highly confident recommendations
+        MaxAgeDays:         7,    // Created in the last week
+        ActionType:         pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
+    },
+}
+
+// P2: Specific resource lookup - get recommendations for one instance
+req = &pbc.GetRecommendationsRequest{
+    Filter: &pbc.RecommendationFilter{
+        ResourceId: "i-0abc123def456789",
+        Provider:   "aws",
+    },
+}
+
+// Combined: Instance type upgrades for production with significant savings
+req = &pbc.GetRecommendationsRequest{
+    Filter: &pbc.RecommendationFilter{
+        Provider:            "aws",
+        ResourceType:        "ec2",
+        Sku:                 "t2.medium",
+        Tags:                map[string]string{"env": "production"},
+        MinEstimatedSavings: 50.0,
+        SortBy:              pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_PRIORITY,
+        SortOrder:           pbc.SortOrder_SORT_ORDER_DESC,
+    },
+    ProjectionPeriod: "monthly",
+}
+```
+
+#### DismissRecommendation RPC
+
+Dismisses a recommendation so it won't appear in future GetRecommendations responses.
+This is an **optional RPC** - plugins that don't support dismissals should return `Unimplemented`.
+For stateless plugins, use `excluded_recommendation_ids` in GetRecommendationsRequest instead.
+
+**Request**: `DismissRecommendationRequest`
+
+```protobuf
+message DismissRecommendationRequest {
+  string recommendation_id = 1;           // ID of recommendation to dismiss
+  DismissalReason reason = 2;             // Reason for dismissal
+  string custom_reason = 3;               // Custom reason text (for DISMISSAL_REASON_OTHER)
+  string dismissed_by = 4;                // User/system that dismissed (for audit)
+  google.protobuf.Timestamp expires_at = 5; // When dismissal expires (optional)
+}
+```
+
+**Response**: `DismissRecommendationResponse`
+
+```protobuf
+message DismissRecommendationResponse {
+  bool success = 1;    // Whether dismissal was successful
+  string message = 2;  // Status message or error details
+  google.protobuf.Timestamp dismissed_at = 3;  // When the dismissal was recorded
+  optional google.protobuf.Timestamp expires_at = 4;  // When the dismissal expires (if set)
+}
+```
+
+**Dismissal Reasons**:
+
+| Reason                                  | Description                                  |
+| --------------------------------------- | -------------------------------------------- |
+| `DISMISSAL_REASON_NOT_APPLICABLE`       | Recommendation not applicable to use case    |
+| `DISMISSAL_REASON_ALREADY_IMPLEMENTED`  | Already implemented through other means      |
+| `DISMISSAL_REASON_BUSINESS_CONSTRAINT`  | Business requirements prevent implementation |
+| `DISMISSAL_REASON_TECHNICAL_CONSTRAINT` | Technical constraints prevent implementation |
+| `DISMISSAL_REASON_DEFERRED`             | Deferred for later implementation            |
+| `DISMISSAL_REASON_INACCURATE`           | Recommendation based on incorrect data       |
+| `DISMISSAL_REASON_OTHER`                | Other reason (requires custom_reason)        |
+
+**Implementation Notes**:
+
+- **Optional RPC**: Return `codes.Unimplemented` if your plugin doesn't support dismissals
+- Dismissals may be temporary (using `expires_at`) or permanent
+- Use `dismissed_by` for audit trails in enterprise environments
+- Dismissed recommendations should not appear in subsequent GetRecommendations calls
+- Validate that `recommendation_id` exists before dismissing
+- Return `NotFound` if the recommendation doesn't exist
+- Return `InvalidArgument` if `custom_reason` is empty when reason is `OTHER`
+
+**Example Implementation**:
+
+```go
+func (s *Server) DismissRecommendation(ctx context.Context, req *pbc.DismissRecommendationRequest) (*pbc.DismissRecommendationResponse, error) {
+    // Check if plugin implements dismissal functionality
+    if dismisser, ok := s.plugin.(RecommendationDismisser); ok {
+        return dismisser.DismissRecommendation(ctx, req)
+    }
+    // Optional RPC - return Unimplemented if not supported
+    return nil, status.Error(codes.Unimplemented, "plugin does not support DismissRecommendation")
+}
+```
+
+**Client Usage Examples**:
+
+```go
+// Dismiss a recommendation as not applicable
+req := &pbc.DismissRecommendationRequest{
+    RecommendationId: "rec-abc123",
+    Reason:           pbc.DismissalReason_DISMISSAL_REASON_NOT_APPLICABLE,
+    DismissedBy:      "user@example.com",
+}
+
+// Dismiss with custom reason
+req = &pbc.DismissRecommendationRequest{
+    RecommendationId: "rec-xyz789",
+    Reason:           pbc.DismissalReason_DISMISSAL_REASON_OTHER,
+    CustomReason:     "Resource is being migrated next quarter",
+    DismissedBy:      "ops-team",
+}
+
+// Temporary dismissal (expires in 30 days)
+expiresAt := timestamppb.New(time.Now().Add(30 * 24 * time.Hour))
+req = &pbc.DismissRecommendationRequest{
+    RecommendationId: "rec-def456",
+    Reason:           pbc.DismissalReason_DISMISSAL_REASON_DEFERRED,
+    DismissedBy:      "finance@example.com",
+    ExpiresAt:        expiresAt,
 }
 ```
 

@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
+	"time"
 
 	"github.com/rshade/pulumicost-spec/sdk/go/currency"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
@@ -14,6 +16,9 @@ import (
 // HoursPerMonth is the standard number of hours used for monthly cost calculations.
 // This value (730) represents the average number of hours in a month (365.25 days / 12 months * 24 hours).
 const HoursPerMonth = 730.0
+
+// HoursPerDay is the number of hours in a day for time calculations.
+const HoursPerDay = 24
 
 // ResourceMatcher helps plugins determine if they support a resource.
 //
@@ -454,6 +459,12 @@ func ValidateRecommendationSummary(summary *pbc.RecommendationSummary) error {
 // ApplyRecommendationFilter filters recommendations based on the provided filter criteria.
 // ApplyRecommendationFilter returns recommendations that match ALL specified filter criteria.
 // Empty filter values are ignored (match all).
+//
+// Supported filter fields:
+//   - Core filters (1-7): provider, region, resource_type, category, action_type, sku, tags
+//   - P0 filters (8-10): priority, min_estimated_savings, source
+//   - P1 filters (11-13): account_id (sort_by/sort_order handled by SortRecommendations)
+//   - P2 filters (14-16): min_confidence_score, max_age_days, resource_id
 func ApplyRecommendationFilter(
 	recommendations []*pbc.Recommendation,
 	filter *pbc.RecommendationFilter,
@@ -472,7 +483,10 @@ func ApplyRecommendationFilter(
 }
 
 // matchesFilter checks if a recommendation matches all filter criteria.
+//
+//nolint:gocognit,gocyclo,cyclop // filter matching logic for 16 fields requires complexity
 func matchesFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	// Core filters (1-7)
 	// Filter by provider
 	if filter.GetProvider() != "" {
 		if rec.GetResource() == nil || rec.GetResource().GetProvider() != filter.GetProvider() {
@@ -508,7 +522,245 @@ func matchesFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bo
 		}
 	}
 
+	// Filter by SKU (field 6)
+	if filter.GetSku() != "" {
+		if rec.GetResource() == nil || rec.GetResource().GetSku() != filter.GetSku() {
+			return false
+		}
+	}
+
+	// Filter by tags (field 7) - all specified tags must match
+	if len(filter.GetTags()) > 0 {
+		if rec.GetResource() == nil {
+			return false
+		}
+		recTags := rec.GetResource().GetTags()
+		for key, value := range filter.GetTags() {
+			if recTags[key] != value {
+				return false
+			}
+		}
+	}
+
+	// P0 filters (8-10)
+	// Filter by priority (field 8)
+	if filter.GetPriority() != pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_UNSPECIFIED {
+		if rec.GetPriority() != filter.GetPriority() {
+			return false
+		}
+	}
+
+	// Filter by min_estimated_savings (field 9)
+	if filter.GetMinEstimatedSavings() > 0 {
+		if rec.GetImpact() == nil || rec.GetImpact().GetEstimatedSavings() < filter.GetMinEstimatedSavings() {
+			return false
+		}
+	}
+
+	// Filter by source (field 10)
+	if filter.GetSource() != "" {
+		if rec.GetSource() != filter.GetSource() {
+			return false
+		}
+	}
+
+	// P1 filters (11-13) - sort_by/sort_order handled by SortRecommendations
+	// Filter by account_id (field 11) - stored in resource tags or metadata
+	// Note: account_id is typically stored in recommendation metadata
+	if filter.GetAccountId() != "" {
+		// Check metadata for account_id
+		if rec.GetMetadata()["account_id"] != filter.GetAccountId() {
+			return false
+		}
+	}
+
+	// P2 filters (14-16)
+	// Filter by min_confidence_score (field 14)
+	if filter.GetMinConfidenceScore() > 0 {
+		if rec.ConfidenceScore != nil {
+			if *rec.ConfidenceScore < filter.GetMinConfidenceScore() { //nolint:protogetter // direct access needed to distinguish nil from 0
+				return false
+			}
+		}
+		// nil confidence passes filter (unknown != low confidence).
+		// We explicitly check for nil to avoid GetConfidenceScore() defaulting to 0,
+		// which would incorrectly filter out recommendations with unknown confidence.
+	}
+
+	// Filter by max_age_days (field 15)
+	if filter.GetMaxAgeDays() > 0 && rec.GetCreatedAt() != nil {
+		maxAge := time.Duration(filter.GetMaxAgeDays()) * HoursPerDay * time.Hour
+		cutoff := time.Now().Add(-maxAge)
+		if rec.GetCreatedAt().AsTime().Before(cutoff) {
+			return false
+		}
+	}
+
+	// Filter by resource_id (field 16)
+	if filter.GetResourceId() != "" {
+		if rec.GetResource() == nil || rec.GetResource().GetId() != filter.GetResourceId() {
+			return false
+		}
+	}
+
 	return true
+}
+
+// ExcludeRecommendationsByIDs removes recommendations with IDs in the exclusion list.
+// Use this to filter out dismissed recommendations from GetRecommendations results.
+func ExcludeRecommendationsByIDs(
+	recommendations []*pbc.Recommendation,
+	excludedIDs []string,
+) []*pbc.Recommendation {
+	if len(excludedIDs) == 0 {
+		return recommendations
+	}
+
+	// Build lookup set for O(1) checks
+	excluded := make(map[string]bool, len(excludedIDs))
+	for _, id := range excludedIDs {
+		excluded[id] = true
+	}
+
+	result := make([]*pbc.Recommendation, 0, len(recommendations))
+	for _, rec := range recommendations {
+		if rec == nil {
+			continue
+		}
+		if !excluded[rec.GetId()] {
+			result = append(result, rec)
+		}
+	}
+	return result
+}
+
+// SortRecommendations sorts recommendations based on the specified sort criteria.
+// If sort_by is UNSPECIFIED, recommendations are returned in their original order.
+// Default sort order is DESC for ESTIMATED_SAVINGS and PRIORITY, ASC for others.
+func SortRecommendations(
+	recommendations []*pbc.Recommendation,
+	sortBy pbc.RecommendationSortBy,
+	sortOrder pbc.SortOrder,
+) []*pbc.Recommendation {
+	if len(recommendations) == 0 || sortBy == pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_UNSPECIFIED {
+		return recommendations
+	}
+
+	// Make a copy to avoid modifying the original slice
+	sorted := make([]*pbc.Recommendation, len(recommendations))
+	copy(sorted, recommendations)
+
+	// Determine effective sort order (default varies by sort field)
+	ascending := determineSortOrder(sortBy, sortOrder)
+
+	sort.SliceStable(sorted, func(i, j int) bool {
+		less := compareRecommendations(sorted[i], sorted[j], sortBy)
+		if ascending {
+			return less
+		}
+		return !less
+	})
+
+	return sorted
+}
+
+// determineSortOrder returns true for ascending, false for descending.
+func determineSortOrder(sortBy pbc.RecommendationSortBy, sortOrder pbc.SortOrder) bool {
+	if sortOrder == pbc.SortOrder_SORT_ORDER_ASC {
+		return true
+	}
+	if sortOrder == pbc.SortOrder_SORT_ORDER_DESC {
+		return false
+	}
+	// Default: DESC for savings/priority, ASC for created_at/confidence
+	switch sortBy {
+	case pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+		pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_PRIORITY:
+		return false
+	case pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_CREATED_AT,
+		pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_CONFIDENCE,
+		pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_UNSPECIFIED:
+		return true
+	default:
+		return true
+	}
+}
+
+// compareRecommendations returns true if rec1 < rec2 for the given sort field.
+func compareRecommendations(rec1, rec2 *pbc.Recommendation, sortBy pbc.RecommendationSortBy) bool {
+	switch sortBy {
+	case pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS:
+		savingsI := float64(0)
+		savingsJ := float64(0)
+		if rec1.GetImpact() != nil {
+			savingsI = rec1.GetImpact().GetEstimatedSavings()
+		}
+		if rec2.GetImpact() != nil {
+			savingsJ = rec2.GetImpact().GetEstimatedSavings()
+		}
+		return savingsI < savingsJ
+
+	case pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_PRIORITY:
+		return rec1.GetPriority() < rec2.GetPriority()
+
+	case pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_CREATED_AT:
+		timeI := time.Time{}
+		timeJ := time.Time{}
+		if rec1.GetCreatedAt() != nil {
+			timeI = rec1.GetCreatedAt().AsTime()
+		}
+		if rec2.GetCreatedAt() != nil {
+			timeJ = rec2.GetCreatedAt().AsTime()
+		}
+		return timeI.Before(timeJ)
+
+	case pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_CONFIDENCE:
+		// Treat nil as -1 to group unknown confidence at one end
+		conf1 := float64(-1)
+		conf2 := float64(-1)
+		if rec1.ConfidenceScore != nil {
+			conf1 = *rec1.ConfidenceScore //nolint:protogetter // direct access needed to distinguish nil from 0
+		}
+		if rec2.ConfidenceScore != nil {
+			conf2 = *rec2.ConfidenceScore //nolint:protogetter // direct access needed to distinguish nil from 0
+		}
+		return conf1 < conf2
+
+	case pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_UNSPECIFIED:
+		return false
+
+	default:
+		return false
+	}
+}
+
+// ValidateRecommendationFilter validates filter field values.
+// Returns an error if any filter value is invalid.
+func ValidateRecommendationFilter(filter *pbc.RecommendationFilter) error {
+	if filter == nil {
+		return nil
+	}
+
+	// Validate min_estimated_savings
+	if filter.GetMinEstimatedSavings() < 0 {
+		return errors.New("min_estimated_savings cannot be negative")
+	}
+
+	// Validate min_confidence_score (must be between 0.0 and 1.0)
+	minConf := filter.GetMinConfidenceScore()
+	if minConf < 0 || minConf > 1 {
+		return fmt.Errorf(
+			"min_confidence_score must be between 0.0 and 1.0, got %f",
+			minConf,
+		)
+	}
+
+	// Validate max_age_days
+	if filter.GetMaxAgeDays() < 0 {
+		return errors.New("max_age_days cannot be negative")
+	}
+
+	return nil
 }
 
 // =============================================================================
