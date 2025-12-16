@@ -1,4 +1,4 @@
-# PulumiCost Specification v0.1.0
+# PulumiCost Specification v0.4.7
 
 ## Production-ready specification for cloud cost source plugins
 
@@ -14,7 +14,7 @@ cost data retrieval across AWS, Azure, GCP, Kubernetes, and custom providers.
 
 ## Overview
 
-PulumiCost Specification v0.1.0 is a complete, enterprise-ready protocol for
+PulumiCost Specification v0.4.7 is a complete, enterprise-ready protocol for
 standardizing cloud cost data retrieval. It provides:
 
 ### Core Features
@@ -50,31 +50,44 @@ standardizing cloud cost data retrieval. It provides:
 ```text
 pulumicost-spec/
 ├─ proto/pulumicost/v1/           # gRPC service definitions
-│  └─ costsource.proto            # Complete v0.1.0 service specification
+│  └─ costsource.proto            # Complete CostSource service specification
 ├─ schemas/                       # JSON schema validation
-│  └─ pricing_spec.schema.json    # Comprehensive v0.1.0 pricing schema
+│  └─ pricing_spec.schema.json    # Comprehensive pricing schema (44+ billing modes)
 ├─ sdk/go/                        # Production Go SDK
 │  ├─ proto/                      # Generated protobuf bindings (auto-generated)
-│  ├─ pluginsdk/                  # Plugin development SDK
-│  ├─ types/                      # Helper types and validation
-│  └─ testing/                    # Complete testing framework
+│  ├─ pluginsdk/                  # Plugin development SDK with Serve(), logging, metrics
+│  │  └─ mapping/                 # Property extraction helpers (AWS, Azure, GCP)
+│  ├─ pricing/                    # Domain types, billing modes, and validation
+│  ├─ currency/                   # ISO 4217 currency validation (180+ currencies)
+│  ├─ registry/                   # Plugin registry domain types (8 enum types)
+│  └─ testing/                    # Complete testing framework with conformance
 ├─ examples/                      # Cross-vendor examples
-│  ├─ specs/                      # 8 comprehensive pricing examples
+│  ├─ specs/                      # 10 comprehensive pricing examples
 │  └─ requests/                   # Sample gRPC request payloads
+├─ docs/                          # Comprehensive documentation
+│  ├─ PLUGIN_MIGRATION_GUIDE.md   # Migration guide for breaking changes
+│  ├─ PLUGIN_STARTUP_PROTOCOL.md  # Plugin startup and lifecycle
+│  ├─ PROPERTY_MAPPING.md         # Property extraction documentation
+│  └─ focus-columns.md            # FOCUS 1.2 column mapping
 ├─ .github/workflows/             # Enterprise CI/CD pipeline
 │  └─ ci.yml                      # Complete validation and testing
-└─ docs/                          # Comprehensive documentation
+├─ OBSERVABILITY_GUIDE.md         # Structured logging and metrics guide
+└─ PLUGIN_DEVELOPER_GUIDE.md      # Complete plugin development guide
 ```
 
 ### Core Components
 
-- **[gRPC Service](proto/pulumicost/v1/costsource.proto)**: Complete v0.1.0 CostSourceService with 6 RPC methods
+- **[gRPC Service](proto/pulumicost/v1/costsource.proto)**: CostSourceService with 8 RPC methods
 - **[JSON Schema](schemas/pricing_spec.schema.json)**: Comprehensive validation supporting all major cloud providers
 - **[Go SDK](sdk/go/)**: Production-ready SDK with automatic protobuf generation
-- **[Plugin SDK](sdk/go/pluginsdk/)**: ServeConfig, helpers, and testing
+- **[Plugin SDK](sdk/go/pluginsdk/)**: Serve(), environment handling, logging, metrics, FOCUS builder
+- **[Pricing Package](sdk/go/pricing/)**: 44+ billing modes, domain types, schema validation
+- **[Currency Package](sdk/go/currency/)**: ISO 4217 validation with zero-allocation performance
+- **[Registry Package](sdk/go/registry/)**: Plugin registry types with optimized enum validation
 - **[Testing Framework](sdk/go/testing/)**: Multi-level conformance testing (Basic, Standard, Advanced)
 - **[Examples](examples/)**: Cross-vendor examples demonstrating all major billing models
-- **[CI/CD Pipeline](.github/workflows/ci.yml)**: Complete validation, testing, and performance benchmarks
+- **[Plugin Developer Guide](PLUGIN_DEVELOPER_GUIDE.md)**: Complete guide to building plugins
+- **[Observability Guide](OBSERVABILITY_GUIDE.md)**: Structured logging and Prometheus metrics
 
 ## Quick Start
 
@@ -82,9 +95,11 @@ pulumicost-spec/
 
 ```bash
 # Add SDK to your Go project
-go get github.com/rshade/pulumicost-spec/sdk/go/proto
+go get github.com/rshade/pulumicost-spec/sdk/go/proto      # Generated protobuf code
 go get github.com/rshade/pulumicost-spec/sdk/go/pluginsdk  # Plugin development SDK
-go get github.com/rshade/pulumicost-spec/sdk/go/types
+go get github.com/rshade/pulumicost-spec/sdk/go/pricing    # Domain types and validation
+go get github.com/rshade/pulumicost-spec/sdk/go/currency   # ISO 4217 currency validation
+go get github.com/rshade/pulumicost-spec/sdk/go/registry   # Plugin registry types
 ```
 
 ### Development Setup
@@ -409,7 +424,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/types"
+    "github.com/rshade/pulumicost-spec/sdk/go/pricing"
 )
 
 func main() {
@@ -434,7 +449,7 @@ func main() {
     }`
 
     // Validate the JSON document against the schema
-    err := types.ValidatePricingSpec([]byte(pricingSpecJSON))
+    err := pricing.ValidatePricingSpec([]byte(pricingSpecJSON))
     if err != nil {
         log.Fatalf("Validation failed: %v", err)
     }
@@ -453,7 +468,7 @@ package main
 import (
     "fmt"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/types"
+    "github.com/rshade/pulumicost-spec/sdk/go/pricing"
 )
 
 func main() {
@@ -467,7 +482,7 @@ func main() {
     }
 
     for _, mode := range validModes {
-        if types.IsValidBillingMode(mode) {
+        if pricing.IsValidBillingMode(mode) {
             fmt.Printf("✓ %s is a valid billing mode\n", mode)
         } else {
             fmt.Printf("✗ %s is not a valid billing mode\n", mode)
@@ -476,7 +491,7 @@ func main() {
 
     // Get all available billing modes
     fmt.Printf("\nAll available billing modes:\n")
-    for _, mode := range types.GetAllBillingModes() {
+    for _, mode := range pricing.GetAllBillingModes() {
         fmt.Printf("  - %s\n", mode)
     }
 }
@@ -608,16 +623,25 @@ See [Examples Documentation](examples/README.md) for detailed explanations.
 
 ### gRPC Service Interface
 
-The CostSourceService provides 6 core RPC methods:
+The CostSourceService provides 8 RPC methods for comprehensive cost management:
 
 ```protobuf
 service CostSourceService {
-  rpc Name(NameRequest) returns (NameResponse);                    // Plugin identification
-  rpc Supports(SupportsRequest) returns (SupportsResponse);        // Resource support check
-  rpc GetActualCost(GetActualCostRequest) returns (GetActualCostResponse);    // Historical costs
+  // Core Plugin Information
+  rpc Name(NameRequest) returns (NameResponse);                              // Plugin identification
+  rpc Supports(SupportsRequest) returns (SupportsResponse);                  // Resource support check
+
+  // Cost Data Retrieval
+  rpc GetActualCost(GetActualCostRequest) returns (GetActualCostResponse);   // Historical costs (FOCUS 1.2)
   rpc GetProjectedCost(GetProjectedCostRequest) returns (GetProjectedCostResponse); // Cost projections
   rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);       // Pricing specifications
-  rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);       // Cost estimation before deployment
+
+  // Pre-Deployment Analysis
+  rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);      // "What-if" cost estimation
+
+  // Cost Optimization
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse); // Cost optimization advice
+  rpc GetBudgets(GetBudgetsRequest) returns (GetBudgetsResponse);            // Budget tracking and alerts
 }
 ```
 
@@ -633,8 +657,12 @@ The [pricing specification schema](schemas/pricing_spec.schema.json) validates:
 ### SDK Architecture
 
 - **[Generated Proto](sdk/go/proto/)**: Auto-generated from protobuf definitions
-- **[Helper Types](sdk/go/types/)**: Domain types, validation, billing mode constants
-- **[Testing Framework](sdk/go/testing/)**: Comprehensive plugin testing suite
+- **[Plugin SDK](sdk/go/pluginsdk/)**: Serve(), environment handling, logging, metrics, FOCUS builder
+  - **[Mapping](sdk/go/pluginsdk/mapping/)**: Property extraction helpers for AWS, Azure, GCP
+- **[Pricing](sdk/go/pricing/)**: Domain types, validation, 44+ billing mode constants
+- **[Currency](sdk/go/currency/)**: ISO 4217 validation (180+ currencies, zero-allocation)
+- **[Registry](sdk/go/registry/)**: Plugin registry types (8 enum types, zero-allocation)
+- **[Testing Framework](sdk/go/testing/)**: Comprehensive plugin testing suite with conformance
 
 ## CI/CD Pipeline
 
@@ -728,7 +756,7 @@ Semantic versioning for proto changes:
 - **MINOR**: Backward-compatible additions
 - **PATCH**: Bug fixes, documentation updates
 
-Current version: **v0.1.0** (production-ready)
+Current version: **v0.4.7** (production-ready)
 
 ## License
 
@@ -736,11 +764,13 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Documentation**: Complete API reference and examples
+- **Documentation**: Complete API reference and developer guides
+- **[Plugin Developer Guide](PLUGIN_DEVELOPER_GUIDE.md)**: Comprehensive plugin development guide
+- **[Observability Guide](OBSERVABILITY_GUIDE.md)**: Structured logging and metrics
 - **Testing**: Multi-level conformance testing framework
 - **CI/CD**: Automated validation and performance testing
 - **Issues**: GitHub issues for bug reports and feature requests
 
 ---
 
-**PulumiCost Specification v0.1.0** - Production-ready protocol for cloud cost source plugins
+**PulumiCost Specification v0.4.7** - Production-ready protocol for cloud cost source plugins

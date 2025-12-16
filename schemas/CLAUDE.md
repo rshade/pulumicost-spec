@@ -16,7 +16,7 @@ across cloud providers and billing models.
 
 - **JSON Schema Draft 2020-12** compliance for modern validation features
 - **Schema ID**: `https://spec.pulumicost.dev/schemas/pricing_spec.schema.json`
-- **Version**: v0.1.0 production-ready specification
+- **Version**: v0.4.6 production-ready specification
 - **Validation Mode**: Strict with `additionalProperties: false` for most objects
 
 **Required Fields Foundation**:

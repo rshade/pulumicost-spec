@@ -123,7 +123,7 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 ### Current Repository Status (pulumicost-spec)
 
 **Repository Type**: Specification repository
-**Version**: v0.1.0 (production-ready)
+**Version**: v0.4.6 (production-ready)
 **Key Components**:
 
 - gRPC service definitions (`proto/pulumicost/v1/costsource.proto`)
@@ -134,7 +134,7 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 
 **Architecture Highlights**:
 
-- 5 RPC methods (Name, Supports, GetActualCost, GetProjectedCost, GetPricingSpec)
+- 8 RPC methods (Name, Supports, GetActualCost, GetProjectedCost, GetPricingSpec, EstimateCost, GetRecommendations, GetBudgets)
 - 44+ billing modes across all major cloud providers
 - Multi-level conformance testing (Basic/Standard/Advanced)
 - Complete CI/CD pipeline with validation and benchmarks

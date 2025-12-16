@@ -54,7 +54,7 @@ This guide walks through the complete plugin development lifecycle from implemen
 
 Before starting plugin development, ensure you have:
 
-- Go 1.19+ installed
+- Go 1.25+ installed
 - Protocol Buffers compiler (protoc)
 - buf CLI tool (<https://docs.buf.build/installation>)
 - Basic understanding of gRPC and protocol buffers
@@ -67,7 +67,7 @@ This section covers each RPC method in detail.
 
 ### Service Interface
 
-The service defines 6 RPC methods that provide different aspects of cost information:
+The service defines 8 RPC methods that provide different aspects of cost information:
 
 ```protobuf
 service CostSourceService {
@@ -365,6 +365,76 @@ func validateResourceDescriptor(rd *ResourceDescriptor) error {
 - Log request/response for debugging
 - Include correlation IDs for tracing
 
+#### GetRecommendations RPC
+
+Returns cost optimization recommendations from the underlying cost management service
+(AWS Cost Explorer, Kubecost, Azure Advisor, GCP Recommender, etc.). This is an **optional RPC** -
+plugins that don't support recommendations should return an empty list.
+
+**Request**: `GetRecommendationsRequest`
+
+```protobuf
+message GetRecommendationsRequest {
+  RecommendationFilter filter = 1;   // Optional filtering criteria
+  string projection_period = 2;      // Savings projection period: "daily", "monthly" (default), "annual"
+  int32 page_size = 3;               // Max recommendations to return (default: 50, max: 1000)
+  string page_token = 4;             // Pagination token from previous response
+}
+```
+
+**Response**: `GetRecommendationsResponse`
+
+```protobuf
+message GetRecommendationsResponse {
+  repeated Recommendation recommendations = 1;  // List of recommendations
+  RecommendationSummary summary = 2;            // Aggregated statistics
+  string next_page_token = 3;                   // Token for next page (empty if last)
+}
+```
+
+**Implementation Notes**:
+
+- **Optional RPC**: Return an empty list if your plugin doesn't support recommendations
+- Recommendations are paginated - use `page_token` to retrieve subsequent pages
+- The `summary` field provides statistics for the **current page** only; clients must aggregate across pages
+- Response time target: **<10 seconds** for typical recommendation queries
+- Support filtering by provider, region, resource type, category, and action type
+- Return `InvalidArgument` for invalid filter criteria or pagination tokens
+- Return `Unavailable` when the backend recommendation service is down
+
+**Recommendation Categories**:
+
+- `COST`: Cost optimization suggestions (rightsizing, termination, etc.)
+- `PERFORMANCE`: Performance improvement suggestions
+- `SECURITY`: Security posture improvements
+- `RELIABILITY`: Reliability and resilience improvements
+
+**Recommendation Action Types**:
+
+- `RIGHTSIZE`: Resize to a more appropriate SKU/size
+- `TERMINATE`: Delete unused or idle resources
+- `PURCHASE_COMMITMENT`: Purchase reserved instances or savings plans
+- `ADJUST_REQUESTS`: Adjust resource requests (Kubernetes)
+- `MODIFY_POLICY`: Modify storage or lifecycle policies
+
+**Example Implementation**:
+
+```go
+func (s *Server) GetRecommendations(ctx context.Context, req *pbc.GetRecommendationsRequest) (*pbc.GetRecommendationsResponse, error) {
+    // Check if plugin implements recommendations functionality
+    if recsProvider, ok := s.plugin.(RecommendationsProvider); ok {
+        return recsProvider.GetRecommendations(ctx, req)
+    }
+    // Optional RPC - return empty list if not supported
+    return &pbc.GetRecommendationsResponse{
+        Recommendations: []*pbc.Recommendation{},
+        Summary: &pbc.RecommendationSummary{
+            TotalRecommendations: 0,
+        },
+    }, nil
+}
+```
+
 #### GetBudgets RPC
 
 Returns budget information from cloud cost management services. This is an **optional RPC** -
@@ -494,7 +564,7 @@ auth:
 
 # Plugin dependencies (optional)
 dependencies:
-  min_go_version: "1.19"
+  min_go_version: "1.25"
   external_tools: []
 
 # Health check configuration
@@ -670,7 +740,7 @@ import (
  "time"
 
  pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
- "github.com/rshade/pulumicost-spec/sdk/go/types"
+ "github.com/rshade/pulumicost-spec/sdk/go/pricing"
  "google.golang.org/grpc"
  "google.golang.org/grpc/codes"
  "google.golang.org/grpc/status"
@@ -810,7 +880,7 @@ func (s *server) GetPricingSpec(ctx context.Context, req *pb.GetPricingSpecReque
 
  switch req.Resource.ResourceType {
  case "vm":
-  spec.BillingMode = string(types.PerHour)
+  spec.BillingMode = string(pricing.PerHour)
   spec.RatePerUnit = 0.05
   spec.MetricHints = []*pb.UsageMetricHint{
    {
@@ -819,7 +889,7 @@ func (s *server) GetPricingSpec(ctx context.Context, req *pb.GetPricingSpecReque
    },
   }
  case "storage":
-  spec.BillingMode = string(types.PerGBMonth)
+  spec.BillingMode = string(pricing.PerGBMonth)
   spec.RatePerUnit = 0.10
   spec.MetricHints = []*pb.UsageMetricHint{
    {
@@ -914,20 +984,12 @@ func main() {
 ```go
 module github.com/yourorg/my-cost-plugin
 
-go 1.19
+go 1.25
 
 require (
- github.com/rshade/pulumicost-spec/sdk/go/proto v0.1.0
- google.golang.org/grpc v1.58.3
- google.golang.org/protobuf v1.31.0
-)
-
-require (
- github.com/golang/protobuf v1.5.3 // indirect
- golang.org/x/net v0.12.0 // indirect
- golang.org/x/sys v0.10.0 // indirect
- golang.org/x/text v0.11.0 // indirect
- google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
+ github.com/rshade/pulumicost-spec/sdk/go v0.4.6
+ google.golang.org/grpc v1.68.0
+ google.golang.org/protobuf v1.36.0
 )
 ```
 
@@ -959,7 +1021,7 @@ auth:
   env_vars: []
 
 dependencies:
-  min_go_version: "1.19"
+  min_go_version: "1.25"
 
 health_check:
   enabled: false
@@ -1421,7 +1483,7 @@ import (
  "encoding/json"
  "testing"
 
- "github.com/rshade/pulumicost-spec/sdk/go/types"
+ "github.com/rshade/pulumicost-spec/sdk/go/pricing"
  "github.com/stretchr/testify/assert"
  "github.com/stretchr/testify/require"
 )
@@ -1484,7 +1546,7 @@ func TestPricingSpecValidation(t *testing.T) {
    require.NoError(t, err)
 
    // Validate using the schema
-   err = types.ValidatePricingSpec(data)
+   err = pricing.ValidatePricingSpec(data)
 
    if tt.wantErr {
     assert.Error(t, err)
@@ -1507,7 +1569,7 @@ func TestBillingModeValidation(t *testing.T) {
 
  for _, mode := range validModes {
   t.Run(mode, func(t *testing.T) {
-   assert.True(t, types.ValidBillingMode(mode))
+   assert.True(t, pricing.IsValidBillingMode(mode))
   })
  }
 
@@ -1520,7 +1582,7 @@ func TestBillingModeValidation(t *testing.T) {
 
  for _, mode := range invalidModes {
   t.Run(mode, func(t *testing.T) {
-   assert.False(t, types.ValidBillingMode(mode))
+   assert.False(t, pricing.IsValidBillingMode(mode))
   })
  }
 }
@@ -1642,9 +1704,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version: "1.25"
 
       - name: Install dependencies
         run: go mod tidy

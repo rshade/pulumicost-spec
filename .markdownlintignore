@@ -7,5 +7,6 @@ CodeRabbitPrompt.md
 Github_Development_Prompt.md
 .claude/commands/
 .claude/agents/
+.claude/ralph-loop.local.md
 .specify/templates/
 PR_MESSAGE.md
