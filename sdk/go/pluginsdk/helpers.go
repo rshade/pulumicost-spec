@@ -654,11 +654,12 @@ func SortRecommendations(
 	ascending := determineSortOrder(sortBy, sortOrder)
 
 	sort.SliceStable(sorted, func(i, j int) bool {
-		less := compareRecommendations(sorted[i], sorted[j], sortBy)
 		if ascending {
-			return less
+			return compareRecommendations(sorted[i], sorted[j], sortBy)
 		}
-		return !less
+		// Swap arguments for descending order to maintain strict weak ordering.
+		// Using !less would break the sort contract for equal elements.
+		return compareRecommendations(sorted[j], sorted[i], sortBy)
 	})
 
 	return sorted

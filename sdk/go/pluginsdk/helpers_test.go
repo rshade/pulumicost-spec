@@ -1287,3 +1287,256 @@ func TestValidateActualCostResponseStopsAtFirstError(t *testing.T) {
 		t.Errorf("Expected error to mention negative cost, got: %s", errMsg)
 	}
 }
+
+// =============================================================================
+// SortRecommendations Tests
+// =============================================================================
+
+// TestSortRecommendations tests the SortRecommendations function.
+func TestSortRecommendations(t *testing.T) {
+	// Create test recommendations with varying savings
+	rec100 := &pbc.Recommendation{
+		Id:     "rec-100",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 100.0, Currency: "USD"},
+	}
+	rec50 := &pbc.Recommendation{
+		Id:     "rec-50",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 50.0, Currency: "USD"},
+	}
+	rec200 := &pbc.Recommendation{
+		Id:     "rec-200",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 200.0, Currency: "USD"},
+	}
+
+	testCases := []struct {
+		name        string
+		recs        []*pbc.Recommendation
+		sortBy      pbc.RecommendationSortBy
+		sortOrder   pbc.SortOrder
+		expectedIDs []string
+	}{
+		{
+			name:        "unspecified sort returns original order",
+			recs:        []*pbc.Recommendation{rec100, rec50, rec200},
+			sortBy:      pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_UNSPECIFIED,
+			sortOrder:   pbc.SortOrder_SORT_ORDER_UNSPECIFIED,
+			expectedIDs: []string{"rec-100", "rec-50", "rec-200"},
+		},
+		{
+			name:        "sort by savings ascending",
+			recs:        []*pbc.Recommendation{rec100, rec50, rec200},
+			sortBy:      pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+			sortOrder:   pbc.SortOrder_SORT_ORDER_ASC,
+			expectedIDs: []string{"rec-50", "rec-100", "rec-200"},
+		},
+		{
+			name:        "sort by savings descending",
+			recs:        []*pbc.Recommendation{rec100, rec50, rec200},
+			sortBy:      pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+			sortOrder:   pbc.SortOrder_SORT_ORDER_DESC,
+			expectedIDs: []string{"rec-200", "rec-100", "rec-50"},
+		},
+		{
+			name:        "default order for savings is descending",
+			recs:        []*pbc.Recommendation{rec100, rec50, rec200},
+			sortBy:      pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+			sortOrder:   pbc.SortOrder_SORT_ORDER_UNSPECIFIED,
+			expectedIDs: []string{"rec-200", "rec-100", "rec-50"},
+		},
+		{
+			name:        "empty slice",
+			recs:        []*pbc.Recommendation{},
+			sortBy:      pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+			sortOrder:   pbc.SortOrder_SORT_ORDER_ASC,
+			expectedIDs: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := pluginsdk.SortRecommendations(tc.recs, tc.sortBy, tc.sortOrder)
+			if len(result) != len(tc.expectedIDs) {
+				t.Errorf("expected %d results, got %d", len(tc.expectedIDs), len(result))
+				return
+			}
+			for i, rec := range result {
+				if rec.GetId() != tc.expectedIDs[i] {
+					t.Errorf("expected ID %s at position %d, got %s", tc.expectedIDs[i], i, rec.GetId())
+				}
+			}
+		})
+	}
+}
+
+// TestSortRecommendationsDoesNotModifyOriginal tests that sorting does not modify the original slice.
+func TestSortRecommendationsDoesNotModifyOriginal(t *testing.T) {
+	rec100 := &pbc.Recommendation{
+		Id:     "rec-100",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 100.0, Currency: "USD"},
+	}
+	rec50 := &pbc.Recommendation{
+		Id:     "rec-50",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 50.0, Currency: "USD"},
+	}
+	rec200 := &pbc.Recommendation{
+		Id:     "rec-200",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 200.0, Currency: "USD"},
+	}
+
+	original := []*pbc.Recommendation{rec100, rec50, rec200}
+
+	// Sort and get result
+	_ = pluginsdk.SortRecommendations(
+		original,
+		pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+		pbc.SortOrder_SORT_ORDER_ASC,
+	)
+
+	// Original should remain unchanged
+	expectedOriginal := []string{"rec-100", "rec-50", "rec-200"}
+	for i, rec := range original {
+		if rec.GetId() != expectedOriginal[i] {
+			t.Errorf("original modified: expected ID %s at position %d, got %s",
+				expectedOriginal[i], i, rec.GetId())
+		}
+	}
+}
+
+// TestSortRecommendationsWithEqualValues tests sorting with equal values maintains stability.
+// This test specifically verifies the fix for the strict weak ordering violation.
+func TestSortRecommendationsWithEqualValues(t *testing.T) {
+	// Create recommendations with equal savings values
+	recA := &pbc.Recommendation{
+		Id:     "rec-A",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 100.0, Currency: "USD"},
+	}
+	recB := &pbc.Recommendation{
+		Id:     "rec-B",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 100.0, Currency: "USD"},
+	}
+	recC := &pbc.Recommendation{
+		Id:     "rec-C",
+		Impact: &pbc.RecommendationImpact{EstimatedSavings: 100.0, Currency: "USD"},
+	}
+
+	testCases := []struct {
+		name        string
+		sortOrder   pbc.SortOrder
+		expectedIDs []string
+	}{
+		{
+			name:        "ascending - equal values maintain original order (stable)",
+			sortOrder:   pbc.SortOrder_SORT_ORDER_ASC,
+			expectedIDs: []string{"rec-A", "rec-B", "rec-C"},
+		},
+		{
+			name:        "descending - equal values maintain original order (stable)",
+			sortOrder:   pbc.SortOrder_SORT_ORDER_DESC,
+			expectedIDs: []string{"rec-A", "rec-B", "rec-C"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			input := []*pbc.Recommendation{recA, recB, recC}
+			result := pluginsdk.SortRecommendations(
+				input,
+				pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+				tc.sortOrder,
+			)
+
+			for i, rec := range result {
+				if rec.GetId() != tc.expectedIDs[i] {
+					t.Errorf("expected ID %s at position %d, got %s", tc.expectedIDs[i], i, rec.GetId())
+				}
+			}
+		})
+	}
+}
+
+// TestSortRecommendationsByPriority tests sorting by priority.
+func TestSortRecommendationsByPriority(t *testing.T) {
+	recHigh := &pbc.Recommendation{
+		Id:       "rec-high",
+		Priority: pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_HIGH,
+	}
+	recMedium := &pbc.Recommendation{
+		Id:       "rec-medium",
+		Priority: pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_MEDIUM,
+	}
+	recLow := &pbc.Recommendation{
+		Id:       "rec-low",
+		Priority: pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_LOW,
+	}
+
+	testCases := []struct {
+		name        string
+		sortOrder   pbc.SortOrder
+		expectedIDs []string
+	}{
+		{
+			name:        "ascending priority",
+			sortOrder:   pbc.SortOrder_SORT_ORDER_ASC,
+			expectedIDs: []string{"rec-low", "rec-medium", "rec-high"},
+		},
+		{
+			name:        "descending priority (default)",
+			sortOrder:   pbc.SortOrder_SORT_ORDER_UNSPECIFIED,
+			expectedIDs: []string{"rec-high", "rec-medium", "rec-low"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			input := []*pbc.Recommendation{recHigh, recMedium, recLow}
+			result := pluginsdk.SortRecommendations(
+				input,
+				pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_PRIORITY,
+				tc.sortOrder,
+			)
+
+			for i, rec := range result {
+				if rec.GetId() != tc.expectedIDs[i] {
+					t.Errorf("expected ID %s at position %d, got %s", tc.expectedIDs[i], i, rec.GetId())
+				}
+			}
+		})
+	}
+}
+
+// TestSortRecommendationsStrictWeakOrdering verifies the comparison function satisfies
+// strict weak ordering requirements for sort.SliceStable.
+// This is a regression test for the bug where !less was used for descending order.
+func TestSortRecommendationsStrictWeakOrdering(t *testing.T) {
+	// Create many recommendations with some equal values to stress test the sort
+	recs := make([]*pbc.Recommendation, 100)
+	for i := range 100 {
+		// Use modulo to create repeated values (tests stability and ordering)
+		savings := float64((i % 10) * 10)
+		recs[i] = &pbc.Recommendation{
+			Id:     string(rune('A' + i)),
+			Impact: &pbc.RecommendationImpact{EstimatedSavings: savings, Currency: "USD"},
+		}
+	}
+
+	// This should not panic - the bug caused panics with violated sort contracts
+	result := pluginsdk.SortRecommendations(
+		recs,
+		pbc.RecommendationSortBy_RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS,
+		pbc.SortOrder_SORT_ORDER_DESC,
+	)
+
+	if len(result) != 100 {
+		t.Errorf("expected 100 results, got %d", len(result))
+	}
+
+	// Verify descending order
+	for i := 1; i < len(result); i++ {
+		prev := result[i-1].GetImpact().GetEstimatedSavings()
+		curr := result[i].GetImpact().GetEstimatedSavings()
+		if prev < curr {
+			t.Errorf("not in descending order: position %d has %f, position %d has %f",
+				i-1, prev, i, curr)
+		}
+	}
+}
