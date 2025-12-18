@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.9](https://github.com/rshade/pulumicost-spec/compare/v0.4.8...v0.4.9) (2025-12-18)
+
+
+### Added
+
+* **proto:** add target_resources for resource-scoped recs ([#171](https://github.com/rshade/pulumicost-spec/issues/171)) ([4526eb7](https://github.com/rshade/pulumicost-spec/commit/4526eb70d93b9e7e05e6d06519c75bd44a80da00))
+* **proto:** extend recommendation action types for cost optimization ([#173](https://github.com/rshade/pulumicost-spec/issues/173)) ([4abebd1](https://github.com/rshade/pulumicost-spec/commit/4abebd1cfabea315a150065a65aca53d3291c6c0)), closes [#170](https://github.com/rshade/pulumicost-spec/issues/170)
+
+
+### Fixed
+
+* fixing test issues and mockplugin ([#172](https://github.com/rshade/pulumicost-spec/issues/172)) ([fa0b641](https://github.com/rshade/pulumicost-spec/commit/fa0b641e23df8e80652a88a8e1fea513a8e16de8))
+* **sdk:** correct strict weak ordering violation in sort recommendations ([#168](https://github.com/rshade/pulumicost-spec/issues/168)) ([0860d38](https://github.com/rshade/pulumicost-spec/commit/0860d3841b5adb69871f99debe1454bf662820e6)), closes [#167](https://github.com/rshade/pulumicost-spec/issues/167)
+
 ## [0.4.8](https://github.com/rshade/pulumicost-spec/compare/v0.4.7...v0.4.8) (2025-12-16)
 
 
