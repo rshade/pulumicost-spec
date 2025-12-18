@@ -627,7 +627,14 @@ func (m *MockPlugin) GetRecommendations(
 		recs = []*pbc.Recommendation{}
 	}
 
-	// Apply filter if provided.
+	// Apply target_resources filtering first (defines SCOPE).
+	// When provided, only recommendations matching target resources are included.
+	// When empty/nil, all recommendations are returned (backward compatible).
+	if len(req.GetTargetResources()) > 0 {
+		recs = filterByTargetResources(recs, req.GetTargetResources())
+	}
+
+	// Apply filter if provided (defines SELECTION CRITERIA within scope).
 	// NOTE: This uses a local implementation rather than pluginsdk.ApplyRecommendationFilter
 	// to avoid circular imports (pluginsdk imports testing for conformance functions).
 	if req.GetFilter() != nil {
@@ -777,6 +784,79 @@ func CalculateMockSummary(recs []*pbc.Recommendation, projectionPeriod string) *
 	summary.Currency = detectedCurrency
 
 	return summary
+}
+
+// =============================================================================
+// Target Resources Filtering (Feature 019-target-resources)
+// =============================================================================
+
+// filterByTargetResources filters recommendations to only include those matching
+// at least one of the target resources. This implements the SCOPE filtering for
+// stack-scoped recommendations, pre-deployment optimization, and batch analysis.
+//
+// Matching uses OR logic: a recommendation is included if it matches ANY target.
+func filterByTargetResources(recs []*pbc.Recommendation, targets []*pbc.ResourceDescriptor) []*pbc.Recommendation {
+	result := make([]*pbc.Recommendation, 0, len(recs))
+	for _, rec := range recs {
+		if matchesAnyTargetResource(rec, targets) {
+			result = append(result, rec)
+		}
+	}
+	return result
+}
+
+// matchesAnyTargetResource checks if a recommendation matches at least one target resource.
+func matchesAnyTargetResource(rec *pbc.Recommendation, targets []*pbc.ResourceDescriptor) bool {
+	resource := rec.GetResource()
+	if resource == nil {
+		return false
+	}
+
+	for _, target := range targets {
+		if matchesResourceDescriptor(resource, target) {
+			return true
+		}
+	}
+	return false
+}
+
+// matchesResourceDescriptor checks if a ResourceRecommendationInfo matches a ResourceDescriptor.
+// Matching rules (per spec FR-008):
+//   - provider and resource_type must always match (required fields)
+//   - sku, region, and tags are matched only when specified in the target
+//   - If specified, optional fields must match exactly (strict matching)
+func matchesResourceDescriptor(resource *pbc.ResourceRecommendationInfo, target *pbc.ResourceDescriptor) bool {
+	if target == nil {
+		return false
+	}
+
+	// Required fields must always match
+	if resource.GetProvider() != target.GetProvider() {
+		return false
+	}
+	if resource.GetResourceType() != target.GetResourceType() {
+		return false
+	}
+
+	// Optional fields: only check if specified in target (strict matching)
+	if target.GetSku() != "" && resource.GetSku() != target.GetSku() {
+		return false
+	}
+	if target.GetRegion() != "" && resource.GetRegion() != target.GetRegion() {
+		return false
+	}
+
+	// Tags: all specified tags must be present with exact values
+	if len(target.GetTags()) > 0 {
+		resourceTags := resource.GetTags()
+		for key, targetValue := range target.GetTags() {
+			if resourceTags[key] != targetValue {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 // applyMockFilter filters recommendations based on the filter criteria.

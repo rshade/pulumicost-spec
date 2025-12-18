@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"sync"
 	"testing"
@@ -2699,4 +2700,628 @@ func TestGetRecommendations_CategoryDistribution(t *testing.T) {
 			t.Errorf("Summary category count for %s: expected %d, got %d", cat, count, summaryCount)
 		}
 	}
+}
+
+// =============================================================================
+// Target Resources Filtering Tests (Feature 019-target-resources)
+// =============================================================================
+
+// TestTargetResourcesFiltering_SingleResource tests filtering with a single target resource.
+// US1: Stack-scoped recommendations - filter to only return recommendations for targeted resources.
+func TestTargetResourcesFiltering_SingleResource(t *testing.T) {
+	// Create a mock plugin with known recommendations
+	plugin := plugintesting.NewMockPlugin()
+
+	// Configure recommendations with different providers/types for testing
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id:       "rec-aws-1",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Id:           "i-12345",
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Region:       "us-east-1",
+				},
+			},
+			{
+				Id:       "rec-aws-2",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Id:           "i-67890",
+					Provider:     "aws",
+					ResourceType: "rds",
+					Region:       "us-east-1",
+				},
+			},
+			{
+				Id:       "rec-azure-1",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Id:           "vm-12345",
+					Provider:     "azure",
+					ResourceType: "vm",
+					Region:       "eastus",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	// Request recommendations for only AWS EC2 resources
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{Provider: "aws", ResourceType: "ec2"},
+		},
+	}
+
+	resp, err := client.GetRecommendations(ctx, req)
+	require.NoError(t, err)
+
+	// Should only return the EC2 recommendation
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 1, "Expected 1 recommendation for EC2 target")
+	require.Equal(t, "rec-aws-1", recs[0].GetId())
+	require.Equal(t, "aws", recs[0].GetResource().GetProvider())
+	require.Equal(t, "ec2", recs[0].GetResource().GetResourceType())
+}
+
+// TestTargetResourcesFiltering_MultipleResources tests filtering with multiple target resources.
+// US1: Stack-scoped recommendations with multiple resources in the stack.
+func TestTargetResourcesFiltering_MultipleResources(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id:       "rec-aws-ec2",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+				},
+			},
+			{
+				Id:       "rec-aws-rds",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "rds",
+				},
+			},
+			{
+				Id:       "rec-aws-s3",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "s3",
+				},
+			},
+			{
+				Id:       "rec-azure-vm",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "azure",
+					ResourceType: "vm",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request recommendations for EC2 and RDS (not S3 or Azure)
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{Provider: "aws", ResourceType: "ec2"},
+			{Provider: "aws", ResourceType: "rds"},
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	// Should return EC2 and RDS recommendations (OR logic between targets)
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 2, "Expected 2 recommendations matching target resources")
+
+	// Verify the correct recommendations are returned
+	ids := make(map[string]bool)
+	for _, rec := range recs {
+		ids[rec.GetId()] = true
+	}
+	require.True(t, ids["rec-aws-ec2"], "Expected EC2 recommendation")
+	require.True(t, ids["rec-aws-rds"], "Expected RDS recommendation")
+	require.False(t, ids["rec-aws-s3"], "S3 should NOT be included")
+	require.False(t, ids["rec-azure-vm"], "Azure VM should NOT be included")
+}
+
+// TestTargetResourcesFiltering_EmptyPreservesExisting tests backward compatibility.
+// US1: Empty target_resources should return all recommendations (existing behavior).
+func TestTargetResourcesFiltering_EmptyPreservesExisting(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{Id: "rec-1", Resource: &pbc.ResourceRecommendationInfo{Provider: "aws", ResourceType: "ec2"}},
+			{Id: "rec-2", Resource: &pbc.ResourceRecommendationInfo{Provider: "azure", ResourceType: "vm"}},
+			{Id: "rec-3", Resource: &pbc.ResourceRecommendationInfo{Provider: "gcp", ResourceType: "compute"}},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	t.Run("nil target_resources returns all", func(t *testing.T) {
+		req := &pbc.GetRecommendationsRequest{
+			TargetResources: nil,
+		}
+		resp, err := harness.Client().GetRecommendations(context.Background(), req)
+		require.NoError(t, err)
+		require.Len(t, resp.GetRecommendations(), 3, "Expected all 3 recommendations with nil targets")
+	})
+
+	t.Run("empty target_resources returns all", func(t *testing.T) {
+		req := &pbc.GetRecommendationsRequest{
+			TargetResources: []*pbc.ResourceDescriptor{},
+		}
+		resp, err := harness.Client().GetRecommendations(context.Background(), req)
+		require.NoError(t, err)
+		require.Len(t, resp.GetRecommendations(), 3, "Expected all 3 recommendations with empty targets")
+	})
+}
+
+// TestTargetResourcesFiltering_WithSKU tests SKU-specific filtering.
+// US2: Pre-deployment optimization - analyze proposed resources with specific SKUs.
+func TestTargetResourcesFiltering_WithSKU(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id: "rec-t3-micro",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.micro",
+					Region:       "us-east-1",
+				},
+			},
+			{
+				Id: "rec-t3-medium",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.medium",
+					Region:       "us-east-1",
+				},
+			},
+			{
+				Id: "rec-m5-large",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "m5.large",
+					Region:       "us-east-1",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request only t3.medium recommendations (strict SKU match)
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{Provider: "aws", ResourceType: "ec2", Sku: "t3.medium"},
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 1, "Expected 1 recommendation for t3.medium")
+	require.Equal(t, "rec-t3-medium", recs[0].GetId())
+	require.Equal(t, "t3.medium", recs[0].GetResource().GetSku())
+}
+
+// TestTargetResourcesFiltering_WithRegion tests region-specific filtering.
+// US2: Pre-deployment optimization - analyze proposed resources in specific regions.
+func TestTargetResourcesFiltering_WithRegion(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id: "rec-us-east-1",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Region:       "us-east-1",
+				},
+			},
+			{
+				Id: "rec-us-west-2",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Region:       "us-west-2",
+				},
+			},
+			{
+				Id: "rec-eu-west-1",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Region:       "eu-west-1",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request only us-west-2 recommendations (strict region match)
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{Provider: "aws", ResourceType: "ec2", Region: "us-west-2"},
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 1, "Expected 1 recommendation for us-west-2")
+	require.Equal(t, "rec-us-west-2", recs[0].GetId())
+	require.Equal(t, "us-west-2", recs[0].GetResource().GetRegion())
+}
+
+// TestTargetResourcesFiltering_MultiProvider tests multi-provider filtering.
+// US2: Pre-deployment optimization - analyze proposed resources across multiple providers.
+func TestTargetResourcesFiltering_MultiProvider(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id: "rec-aws-ec2",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.medium",
+				},
+			},
+			{
+				Id: "rec-azure-vm",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "azure",
+					ResourceType: "vm",
+					Sku:          "Standard_B2s",
+				},
+			},
+			{
+				Id: "rec-gcp-compute",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "gcp",
+					ResourceType: "compute",
+					Sku:          "e2-medium",
+				},
+			},
+			{
+				Id: "rec-aws-s3",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "s3",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request AWS EC2 and Azure VM (cross-provider)
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{Provider: "aws", ResourceType: "ec2"},
+			{Provider: "azure", ResourceType: "vm"},
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 2, "Expected 2 recommendations (AWS EC2 + Azure VM)")
+
+	ids := make(map[string]bool)
+	for _, rec := range recs {
+		ids[rec.GetId()] = true
+	}
+	require.True(t, ids["rec-aws-ec2"], "Expected AWS EC2 recommendation")
+	require.True(t, ids["rec-azure-vm"], "Expected Azure VM recommendation")
+	require.False(t, ids["rec-gcp-compute"], "GCP should NOT be included")
+	require.False(t, ids["rec-aws-s3"], "AWS S3 should NOT be included")
+}
+
+// TestTargetResourcesFiltering_WithTags tests tag-based filtering.
+// US3: Batch resource analysis - query recommendations for resources with specific tags.
+func TestTargetResourcesFiltering_WithTags(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id: "rec-prod-web",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Tags:         map[string]string{"env": "prod", "app": "web"},
+				},
+			},
+			{
+				Id: "rec-prod-api",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Tags:         map[string]string{"env": "prod", "app": "api"},
+				},
+			},
+			{
+				Id: "rec-dev-web",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Tags:         map[string]string{"env": "dev", "app": "web"},
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request only prod environment (tag subset match)
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{
+				Provider:     "aws",
+				ResourceType: "ec2",
+				Tags:         map[string]string{"env": "prod"},
+			},
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 2, "Expected 2 prod recommendations")
+
+	ids := make(map[string]bool)
+	for _, rec := range recs {
+		ids[rec.GetId()] = true
+	}
+	require.True(t, ids["rec-prod-web"], "Expected prod-web")
+	require.True(t, ids["rec-prod-api"], "Expected prod-api")
+	require.False(t, ids["rec-dev-web"], "dev-web should NOT be included")
+}
+
+// TestTargetResourcesFiltering_ANDLogicWithFilter tests AND logic between target_resources and filter.
+// US3: Batch resource analysis - target_resources defines scope, filter defines selection.
+func TestTargetResourcesFiltering_ANDLogicWithFilter(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id:       "rec-cost-aws",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+				},
+			},
+			{
+				Id:       "rec-perf-aws",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+				},
+			},
+			{
+				Id:       "rec-cost-azure",
+				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "azure",
+					ResourceType: "vm",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request AWS EC2 with COST category filter
+	// Should return only rec-cost-aws (matches both scope AND filter)
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{Provider: "aws", ResourceType: "ec2"},
+		},
+		Filter: &pbc.RecommendationFilter{
+			Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 1, "Expected 1 recommendation (COST + AWS EC2)")
+	require.Equal(t, "rec-cost-aws", recs[0].GetId())
+	require.Equal(t, pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST, recs[0].GetCategory())
+}
+
+// TestTargetResourcesFiltering_LargeList tests handling of many target resources.
+// US3: Batch resource analysis - support for large batches up to the limit.
+func TestTargetResourcesFiltering_LargeList(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	// Generate 50 recommendations with different resource types
+	recs := make([]*pbc.Recommendation, 50)
+	for i := range 50 {
+		recs[i] = &pbc.Recommendation{
+			Id: fmt.Sprintf("rec-%d", i),
+			Resource: &pbc.ResourceRecommendationInfo{
+				Provider:     "aws",
+				ResourceType: fmt.Sprintf("type-%d", i),
+			},
+		}
+	}
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: recs,
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request 25 specific resource types (batch query)
+	targets := make([]*pbc.ResourceDescriptor, 25)
+	for i := range 25 {
+		targets[i] = &pbc.ResourceDescriptor{
+			Provider:     "aws",
+			ResourceType: fmt.Sprintf("type-%d", i*2), // Even types: 0, 2, 4, ...
+		}
+	}
+
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: targets,
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	result := resp.GetRecommendations()
+	require.Len(t, result, 25, "Expected 25 recommendations for batch query")
+
+	// Verify all returned recommendations are for even-numbered types
+	for _, rec := range result {
+		resourceType := rec.GetResource().GetResourceType()
+		require.Contains(t, resourceType, "type-", "Should be type-X format")
+	}
+}
+
+// TestTargetResourcesFiltering_NoMatchReturnsEmpty tests that no match returns empty list.
+// Edge Case: When target_resources matches nothing, return empty recommendations.
+func TestTargetResourcesFiltering_NoMatchReturnsEmpty(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	// Configure with some recommendations
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id: "rec-aws",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.large",
+					Region:       "us-east-1",
+				},
+			},
+			{
+				Id: "rec-azure",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "azure",
+					ResourceType: "vm",
+					Sku:          "Standard_B2s",
+					Region:       "eastus",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request non-existent resource type
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{
+				Provider:     "gcp", // No GCP recommendations exist
+				ResourceType: "compute-instance",
+			},
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	// Should return empty list, not an error
+	recs := resp.GetRecommendations()
+	require.Empty(t, recs, "Non-matching target_resources should return empty list")
+}
+
+// TestTargetResourcesFiltering_DuplicatesHandled tests that duplicate targets are handled.
+// Edge Case: Duplicate ResourceDescriptors in target_resources should not cause duplicates.
+func TestTargetResourcesFiltering_DuplicatesHandled(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+
+	// Configure with one matching recommendation
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: []*pbc.Recommendation{
+			{
+				Id: "rec-aws",
+				Resource: &pbc.ResourceRecommendationInfo{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.large",
+					Region:       "us-east-1",
+				},
+			},
+		},
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Request the same resource multiple times
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: []*pbc.ResourceDescriptor{
+			{Provider: "aws", ResourceType: "ec2"},
+			{Provider: "aws", ResourceType: "ec2"}, // Duplicate
+			{Provider: "aws", ResourceType: "ec2"}, // Another duplicate
+		},
+	}
+
+	resp, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.NoError(t, err)
+
+	// Should return exactly 1 recommendation (not 3 duplicates)
+	recs := resp.GetRecommendations()
+	require.Len(t, recs, 1, "Duplicate targets should not cause duplicate recommendations")
+	require.Equal(t, "rec-aws", recs[0].GetId())
 }

@@ -664,6 +664,32 @@ message GetRecommendationsRequest {
   // Use this to filter out recommendations that have been dismissed by users.
   // Plugins should not return recommendations matching these IDs.
   repeated string excluded_recommendation_ids = 5;
+
+  // target_resources specifies the resources to analyze for recommendations.
+  // When provided, plugins return recommendations ONLY for these resources.
+  // When empty, plugins return recommendations for all resources in scope.
+  //
+  // Use cases:
+  //   - Stack-scoped recommendations: Pass Pulumi stack resources for targeted analysis
+  //   - Pre-deployment optimization: Analyze proposed resources before creation
+  //   - Batch resource analysis: Query recommendations for a known resource list
+  //
+  // Interaction with filter:
+  //   - target_resources defines the SCOPE (which resources to analyze)
+  //   - filter defines SELECTION CRITERIA within that scope (category, priority, etc.)
+  //   - Both are applied (AND logic): recommendations must match a target resource
+  //     AND satisfy any filter criteria
+  //
+  // Matching rules:
+  //   - provider and resource_type must always match (required fields)
+  //   - sku, region, and tags are matched only when specified in the target
+  //   - If specified, optional fields must match exactly (strict matching)
+  //
+  // Validation:
+  //   - Maximum 100 resources per request (exceeding returns InvalidArgument)
+  //   - Each ResourceDescriptor must have valid provider and resource_type
+  //   - Empty target_resources is valid (analyze all resources in scope)
+  repeated ResourceDescriptor target_resources = 6;
 }
 
 // GetRecommendationsResponse contains the recommendations and summary.

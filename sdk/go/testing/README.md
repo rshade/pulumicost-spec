@@ -693,6 +693,65 @@ func TestGetRecommendationsPagination(t *testing.T) {
         }
     }
 }
+
+// Test target_resources filtering (resource-scoped recommendations)
+func TestGetRecommendationsTargetResources(t *testing.T) {
+    client := harness.Client()
+    ctx := context.Background()
+
+    // Stack-scoped: Get recommendations for specific Pulumi stack resources
+    resp, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        TargetResources: []*pbc.ResourceDescriptor{
+            {Provider: "aws", ResourceType: "ec2", Sku: "t3.large", Region: "us-east-1"},
+            {Provider: "aws", ResourceType: "rds", Sku: "db.r5.large", Region: "us-east-1"},
+        },
+    })
+    if err != nil {
+        t.Fatalf("GetRecommendations() failed: %v", err)
+    }
+    // Only recommendations matching these resources are returned
+
+    // Pre-deployment: Analyze proposed resources before creation
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        TargetResources: []*pbc.ResourceDescriptor{
+            {
+                Provider:     "aws",
+                ResourceType: "ec2",
+                Sku:          "m5.4xlarge",  // SKU from Pulumi preview
+                Region:       "us-west-2",
+                Tags:         map[string]string{"env": "production"},
+            },
+        },
+    })
+    // Returns SKU-specific recommendations (e.g., "consider m5.2xlarge")
+
+    // Batch + Filter: Combined target_resources AND filter (AND logic)
+    resp, err = client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
+        TargetResources: []*pbc.ResourceDescriptor{
+            {Provider: "aws", ResourceType: "ec2"},
+            {Provider: "aws", ResourceType: "rds"},
+        },
+        Filter: &pbc.RecommendationFilter{
+            Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+            Priority: pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_HIGH,
+        },
+    })
+    // Returns high-priority COST recommendations for ec2/rds resources only
+
+    _ = resp // Use resp
+}
+```
+
+**Target Resources Validation:**
+
+```go
+// Validate target_resources before request (max 100 resources)
+targets := []*pbc.ResourceDescriptor{
+    {Provider: "aws", ResourceType: "ec2"},
+}
+if err := plugintesting.ValidateTargetResources(targets); err != nil {
+    t.Fatalf("Invalid target_resources: %v", err)
+}
 ```
 
 **Mock Plugin Configuration for Recommendations:**
