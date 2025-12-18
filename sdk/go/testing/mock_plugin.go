@@ -621,6 +621,11 @@ func (m *MockPlugin) GetRecommendations(
 		return nil, status.Error(codes.Unavailable, msg)
 	}
 
+	// Validate request contract constraints (including MaxTargetResources limit)
+	if err := ValidateGetRecommendationsRequest(req); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "request validation failed: %v", err)
+	}
+
 	// Return configured recommendations or empty list
 	recs := m.RecommendationsConfig.Recommendations
 	if recs == nil {
