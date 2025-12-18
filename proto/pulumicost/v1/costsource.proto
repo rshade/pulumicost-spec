@@ -618,6 +618,26 @@ enum RecommendationActionType {
   RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS = 4;
   RECOMMENDATION_ACTION_TYPE_MODIFY = 5;
   RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED = 6;
+  // Move workloads to different regions, zones, or SKUs for cost optimization.
+  // Common in Azure Advisor (region migration) and GCP Recommender (zone migration).
+  // Use ModifyAction with modification_type="region_migration" or "zone_migration".
+  RECOMMENDATION_ACTION_TYPE_MIGRATE = 7;
+  // Combine multiple smaller resources into fewer, larger ones for efficiency.
+  // Common in Azure Advisor and Kubecost for node consolidation.
+  // Use ModifyAction with modification_type="node_consolidation" or "resource_merge".
+  RECOMMENDATION_ACTION_TYPE_CONSOLIDATE = 8;
+  // Start/stop resources on a schedule (e.g., dev/test environments).
+  // Common in AWS Instance Scheduler and Azure Automation.
+  // Use ModifyAction with modification_type="start_stop_schedule".
+  RECOMMENDATION_ACTION_TYPE_SCHEDULE = 9;
+  // Architectural changes such as moving to serverless or managed services.
+  // Common in GCP Recommender for App Engine/Cloud Run migration suggestions.
+  // Use ModifyAction with modification_type="serverless_migration" or "service_upgrade".
+  RECOMMENDATION_ACTION_TYPE_REFACTOR = 10;
+  // Catch-all for provider-specific recommendations not fitting other categories.
+  // Use when no other action type accurately describes the recommendation.
+  // Include details in Recommendation.metadata or Recommendation.description.
+  RECOMMENDATION_ACTION_TYPE_OTHER = 11;
 }
 
 // RecommendationPriority indicates the urgency of a recommendation.

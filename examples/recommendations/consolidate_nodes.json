@@ -1,0 +1,43 @@
+{
+  "id": "rec-consolidate-nodes-001",
+  "category": "RECOMMENDATION_CATEGORY_COST",
+  "action_type": "RECOMMENDATION_ACTION_TYPE_CONSOLIDATE",
+  "priority": "RECOMMENDATION_PRIORITY_HIGH",
+  "description": "Consolidate underutilized Kubernetes nodes from 5 to 3 for improved efficiency",
+  "resource": {
+    "id": "nodepool-prod-001",
+    "name": "production-node-pool",
+    "provider": "kubernetes",
+    "resource_type": "kubernetes:core/v1:NodePool",
+    "region": "us-central1"
+  },
+  "modify": {
+    "modification_type": "node_consolidation",
+    "current_config": {
+      "node_count": "5",
+      "node_type": "n2-standard-4",
+      "avg_cpu_utilization": "35%",
+      "avg_memory_utilization": "40%"
+    },
+    "recommended_config": {
+      "node_count": "3",
+      "node_type": "n2-standard-8",
+      "expected_cpu_utilization": "70%",
+      "expected_memory_utilization": "75%"
+    }
+  },
+  "impact": {
+    "estimated_savings": 320.0,
+    "currency": "USD",
+    "projection_period": "monthly",
+    "savings_percentage": 40.0
+  },
+  "confidence_score": 0.92,
+  "source": "kubecost",
+  "metadata": {
+    "workload_count": "45",
+    "drain_safe": "true",
+    "pdb_compatible": "true",
+    "consolidation_algorithm": "bin_packing"
+  }
+}

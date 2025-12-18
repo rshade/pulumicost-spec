@@ -1,0 +1,40 @@
+{
+  "id": "rec-schedule-dev-001",
+  "category": "RECOMMENDATION_CATEGORY_COST",
+  "action_type": "RECOMMENDATION_ACTION_TYPE_SCHEDULE",
+  "priority": "RECOMMENDATION_PRIORITY_HIGH",
+  "description": "Schedule development AKS cluster for business hours only (weekdays 8am-6pm EST)",
+  "resource": {
+    "id": "/subscriptions/xxx/resourceGroups/dev-rg/providers/Microsoft.ContainerService/managedClusters/dev-aks",
+    "name": "dev-aks-cluster",
+    "provider": "azure",
+    "resource_type": "azure:containerservice/kubernetesCluster:KubernetesCluster",
+    "region": "eastus"
+  },
+  "modify": {
+    "modification_type": "start_stop_schedule",
+    "current_config": {
+      "running": "24x7",
+      "monthly_hours": "730"
+    },
+    "recommended_config": {
+      "schedule": "weekdays-8am-6pm",
+      "timezone": "America/New_York",
+      "monthly_hours": "220"
+    }
+  },
+  "impact": {
+    "estimated_savings": 500.0,
+    "currency": "USD",
+    "projection_period": "monthly",
+    "savings_percentage": 70.0
+  },
+  "confidence_score": 0.95,
+  "source": "azure-advisor",
+  "metadata": {
+    "cluster_node_count": "3",
+    "current_monthly_cost": "715.00",
+    "weekend_usage_detected": "false",
+    "after_hours_usage_detected": "minimal"
+  }
+}

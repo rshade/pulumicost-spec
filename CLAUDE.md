@@ -535,8 +535,6 @@ cd schemas && /init            # JSON Schema validation
 ## Active Technologies
 
 - Go 1.25.5 (per go.mod) + Protocol Buffers v3 + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1 (019-target-resources)
-- N/A (stateless RPC extension) (019-target-resources)
-
 - Go 1.25.5 (per go.mod) + zerolog v1.34.0+ (already in go.mod), stdlib only for file operations (015-log-file)
 - File system (log file) - append mode with 0644 permissions (015-log-file)
 - Go 1.25.5 (per go.mod) + zerolog (logging), google.golang.org/grpc (001-pluginsdk-serve-docs)
@@ -550,18 +548,8 @@ cd schemas && /init            # JSON Schema validation
 - N/A (static in-memory data structures) (013-iso4217-currency)
 - Go 1.25.5 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package) (012-pluginsdk-conformance)
 - N/A (testing utilities only) (012-pluginsdk-conformance)
-- Go 1.24.10 (toolchain go1.25.5)
-- Protocol Buffers v3 + google.golang.org/protobuf
-- google.golang.org/grpc
-- buf v1.32.1 (010-focus-column-audit)
-- crypto/rand (stdlib) (008-trace-id-validation)
-- zerolog v1.34.0+
 - sdk/go/testing harness (007-zerolog-logging-example)
 - N/A (example code, no data persistence) (007-zerolog-logging-example)
 - JSON Schema draft 2020-12 + AJV (validation)(004-plugin-registry-schema)
 - Go 1.25.5 (per go.mod) + Go stdlib only (`strings`) (016-pluginsdk-mapping)
 - N/A (stateless helper functions, no data persistence) (016-pluginsdk-mapping)
-
-## Recent Changes
-
-- 012-pluginsdk-conformance: Added Go 1.25.4 + `sdk/go/testing` (conformance suite), `sdk/go/pluginsdk` (target package)

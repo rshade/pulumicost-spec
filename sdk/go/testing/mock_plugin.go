@@ -564,6 +564,12 @@ func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE,
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT,
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MIGRATE,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_CONSOLIDATE,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_SCHEDULE,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_REFACTOR,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_OTHER,
 	}
 
 	priorities := []pbc.RecommendationPriority{
