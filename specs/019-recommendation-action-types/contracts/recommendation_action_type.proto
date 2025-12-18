@@ -1,0 +1,66 @@
+// Contract: Extended RecommendationActionType Enum
+// Feature: 019-recommendation-action-types
+// Date: 2025-12-17
+//
+// This file shows the proto definition changes for the RecommendationActionType enum.
+// The actual implementation will modify proto/pulumicost/v1/costsource.proto
+
+syntax = "proto3";
+
+package pulumicost.v1;
+
+// RecommendationActionType indicates the type of action recommended.
+// Extended with 5 new values (7-11) for comprehensive FinOps platform coverage.
+enum RecommendationActionType {
+  // Default/unknown action type.
+  RECOMMENDATION_ACTION_TYPE_UNSPECIFIED = 0;
+
+  // Resize resource to optimal size based on utilization metrics.
+  // Common across all cloud providers for compute optimization.
+  RECOMMENDATION_ACTION_TYPE_RIGHTSIZE = 1;
+
+  // Delete/terminate unused or idle resource.
+  // Typically for resources with zero or minimal utilization.
+  RECOMMENDATION_ACTION_TYPE_TERMINATE = 2;
+
+  // Purchase reserved instances, savings plans, or committed use discounts.
+  // For workloads with predictable, steady-state usage patterns.
+  RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT = 3;
+
+  // Adjust Kubernetes resource requests and limits.
+  // Specific to containerized workloads (Kubecost, native K8s VPA).
+  RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS = 4;
+
+  // Generic modification to resource configuration.
+  // Catch-all for configuration changes not covered by specific action types.
+  RECOMMENDATION_ACTION_TYPE_MODIFY = 5;
+
+  // Delete unused or orphaned resources (volumes, snapshots, IPs).
+  // Different from TERMINATE - focuses on dependent resources, not primary compute.
+  RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED = 6;
+
+  // NEW: Move workloads to different regions, zones, or SKUs for cost optimization.
+  // Common in Azure Advisor (region migration) and GCP Recommender (zone migration).
+  // Use ModifyAction with modification_type="region_migration" or "zone_migration".
+  RECOMMENDATION_ACTION_TYPE_MIGRATE = 7;
+
+  // NEW: Combine multiple smaller resources into fewer, larger ones for efficiency.
+  // Common in Azure Advisor and Kubecost for node consolidation.
+  // Use ModifyAction with modification_type="node_consolidation" or "resource_merge".
+  RECOMMENDATION_ACTION_TYPE_CONSOLIDATE = 8;
+
+  // NEW: Start/stop resources on a schedule (e.g., dev/test environments).
+  // Common in AWS Instance Scheduler and Azure Automation.
+  // Use ModifyAction with modification_type="start_stop_schedule".
+  RECOMMENDATION_ACTION_TYPE_SCHEDULE = 9;
+
+  // NEW: Architectural changes such as moving to serverless or managed services.
+  // Common in GCP Recommender for App Engine/Cloud Run migration suggestions.
+  // Use ModifyAction with modification_type="serverless_migration" or "service_upgrade".
+  RECOMMENDATION_ACTION_TYPE_REFACTOR = 10;
+
+  // NEW: Catch-all for provider-specific recommendations not fitting other categories.
+  // Use when no other action type accurately describes the recommendation.
+  // Include details in Recommendation.metadata or Recommendation.description.
+  RECOMMENDATION_ACTION_TYPE_OTHER = 11;
+}

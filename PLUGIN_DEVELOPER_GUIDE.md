@@ -461,11 +461,30 @@ The `RecommendationFilter` message supports comprehensive filtering with 16 fiel
 
 **Recommendation Action Types**:
 
-- `RIGHTSIZE`: Resize to a more appropriate SKU/size
-- `TERMINATE`: Delete unused or idle resources
-- `PURCHASE_COMMITMENT`: Purchase reserved instances or savings plans
-- `ADJUST_REQUESTS`: Adjust resource requests (Kubernetes)
-- `MODIFY_POLICY`: Modify storage or lifecycle policies
+| Action Type           | Value | Description                                             |
+| --------------------- | ----- | ------------------------------------------------------- |
+| `UNSPECIFIED`         | 0     | Default/unknown action type                             |
+| `RIGHTSIZE`           | 1     | Resize to a more appropriate SKU/size                   |
+| `TERMINATE`           | 2     | Delete unused or idle resources                         |
+| `PURCHASE_COMMITMENT` | 3     | Purchase reserved instances or savings plans            |
+| `ADJUST_REQUESTS`     | 4     | Adjust resource requests (Kubernetes)                   |
+| `MODIFY`              | 5     | Generic configuration modification                      |
+| `DELETE_UNUSED`       | 6     | Delete unused/orphaned resources (volumes, snapshots)   |
+| `MIGRATE`             | 7     | Move workloads to different regions/zones/SKUs          |
+| `CONSOLIDATE`         | 8     | Combine multiple resources into fewer, larger ones      |
+| `SCHEDULE`            | 9     | Start/stop resources on schedule (dev/test)             |
+| `REFACTOR`            | 10    | Architectural changes (e.g., move to serverless)        |
+| `OTHER`               | 11    | Provider-specific catch-all                             |
+
+**Backward Compatibility**:
+
+The `RecommendationActionType` enum is designed for forward and backward compatibility:
+
+- **Adding new values**: New enum values (7-11) were added without breaking existing plugins
+- **Old plugins**: Continue to work without modification, returning action types 0-6
+- **New plugins**: Can use all 12 action types for better categorization
+- **Unknown values**: Proto3 preserves unknown enum values as numeric representations
+- **Filtering**: Clients can filter by any action type; unrecognized types are handled gracefully
 
 **Example Implementation**:
 
@@ -3098,6 +3117,60 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
     // Your implementation
 }
 ```
+
+### Recommendation Action Types Reference
+
+This reference section details the available recommendation action types, including recent
+additions (7-11), and provides guidance on migration and compatibility.
+
+#### Complete Action Types Table
+
+| Action Type | Value | Description | Example Usage |
+|-------------|-------|-------------|---------------|
+| `UNSPECIFIED` | 0 | Default/unknown action type | Initial state, error cases |
+| `RIGHTSIZE` | 1 | Resize to a more appropriate SKU/size | Change AWS t3.large to t3.medium |
+| `TERMINATE` | 2 | Delete unused or idle resources | Delete idle EC2 instance |
+| `PURCHASE_COMMITMENT` | 3 | Purchase reserved instances or savings plans | Buy 1yr All Upfront RI |
+| `ADJUST_REQUESTS` | 4 | Adjust resource requests (Kubernetes) | Reduce CPU request from 1000m to 500m |
+| `MODIFY` | 5 | Generic configuration modification | Enable GP3 on EBS volume |
+| `DELETE_UNUSED` | 6 | Delete unused/orphaned resources | Delete unattached EBS volume |
+| `MIGRATE` | 7 | Move workloads to different regions/zones/SKUs | Move from us-east-1 to us-east-2 |
+| `CONSOLIDATE` | 8 | Combine multiple resources into fewer, larger ones | Merge 3 small node pools into 1 large |
+| `SCHEDULE` | 9 | Start/stop resources on schedule | Stop dev instances at night |
+| `REFACTOR` | 10 | Architectural changes | Move from EC2 to Lambda |
+| `OTHER` | 11 | Provider-specific catch-all | Custom action not fitting above |
+
+#### Migration Guide
+
+Plugins should update their logic to use specific action types (7-11) instead of generic `MODIFY` or `OTHER` where applicable.
+
+#### Example: Migrating from MODIFY to SCHEDULE
+
+*Before:*
+
+```go
+// Old: Using generic MODIFY for scheduling
+rec.ActionType = pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY
+rec.Description = "Schedule this instance to stop at night"
+```
+
+*After:*
+
+```go
+// New: Using specific SCHEDULE type
+rec.ActionType = pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_SCHEDULE
+rec.Description = "Schedule this instance to stop at night"
+```
+
+#### Backward Compatibility
+
+- **Guarantees**: New action types (7-11) are added as new enum values. Existing values (0-6)
+  remain unchanged, ensuring binary compatibility with existing clients and plugins.
+- **Edge Cases**:
+  - **Old Client, New Plugin**: An old client reading a new action type (e.g., 7) will see the
+    numeric value. Clients should handle unknown enum values gracefully (typically treating them
+    as `UNSPECIFIED` or displaying the raw value).
+  - **New Client, Old Plugin**: Fully compatible.
 
 ### Getting Help
 

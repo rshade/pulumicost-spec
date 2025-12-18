@@ -1,0 +1,40 @@
+{
+  "id": "rec-migrate-region-001",
+  "category": "RECOMMENDATION_CATEGORY_COST",
+  "action_type": "RECOMMENDATION_ACTION_TYPE_MIGRATE",
+  "priority": "RECOMMENDATION_PRIORITY_MEDIUM",
+  "description": "Migrate EC2 instances from us-east-1 to us-west-2 for 15% cost reduction",
+  "resource": {
+    "id": "i-1234567890abcdef0",
+    "name": "web-server-cluster",
+    "provider": "aws",
+    "resource_type": "aws:ec2/instance:Instance",
+    "region": "us-east-1",
+    "sku": "m5.xlarge"
+  },
+  "modify": {
+    "modification_type": "region_migration",
+    "current_config": {
+      "region": "us-east-1",
+      "availability_zone": "us-east-1a"
+    },
+    "recommended_config": {
+      "region": "us-west-2",
+      "availability_zone": "us-west-2a"
+    }
+  },
+  "impact": {
+    "estimated_savings": 150.0,
+    "currency": "USD",
+    "projection_period": "monthly",
+    "savings_percentage": 15.0
+  },
+  "confidence_score": 0.85,
+  "source": "aws-cost-explorer",
+  "metadata": {
+    "current_monthly_cost": "1000.00",
+    "projected_monthly_cost": "850.00",
+    "migration_effort": "medium",
+    "downtime_required": "yes"
+  }
+}

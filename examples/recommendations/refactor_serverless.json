@@ -1,0 +1,46 @@
+{
+  "id": "rec-refactor-serverless-001",
+  "category": "RECOMMENDATION_CATEGORY_COST",
+  "action_type": "RECOMMENDATION_ACTION_TYPE_REFACTOR",
+  "priority": "RECOMMENDATION_PRIORITY_MEDIUM",
+  "description": "Migrate low-traffic API from Compute Engine VM to Cloud Run for pay-per-use pricing",
+  "resource": {
+    "id": "projects/my-project/zones/us-central1-a/instances/api-server",
+    "name": "legacy-api-server",
+    "provider": "gcp",
+    "resource_type": "gcp:compute/instance:Instance",
+    "region": "us-central1",
+    "sku": "n1-standard-2"
+  },
+  "modify": {
+    "modification_type": "serverless_migration",
+    "current_config": {
+      "compute_type": "vm",
+      "instance_type": "n1-standard-2",
+      "running_hours": "730",
+      "avg_requests_per_hour": "50"
+    },
+    "recommended_config": {
+      "compute_type": "cloud_run",
+      "memory": "512Mi",
+      "cpu": "1",
+      "min_instances": "0",
+      "max_instances": "10"
+    }
+  },
+  "impact": {
+    "estimated_savings": 85.0,
+    "currency": "USD",
+    "projection_period": "monthly",
+    "savings_percentage": 80.0
+  },
+  "confidence_score": 0.78,
+  "source": "gcp-recommender",
+  "metadata": {
+    "current_monthly_cost": "106.00",
+    "projected_monthly_cost": "21.00",
+    "migration_complexity": "medium",
+    "containerization_required": "true",
+    "traffic_pattern": "bursty_low_volume"
+  }
+}

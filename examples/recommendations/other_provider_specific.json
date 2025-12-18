@@ -1,0 +1,40 @@
+{
+  "id": "rec-other-custom-001",
+  "category": "RECOMMENDATION_CATEGORY_COST",
+  "action_type": "RECOMMENDATION_ACTION_TYPE_OTHER",
+  "priority": "RECOMMENDATION_PRIORITY_LOW",
+  "description": "Enable S3 Intelligent-Tiering for infrequently accessed objects",
+  "resource": {
+    "id": "arn:aws:s3:::my-data-bucket",
+    "name": "my-data-bucket",
+    "provider": "aws",
+    "resource_type": "aws:s3/bucket:Bucket",
+    "region": "us-east-1"
+  },
+  "modify": {
+    "modification_type": "storage_class_optimization",
+    "current_config": {
+      "storage_class": "STANDARD",
+      "lifecycle_rules": "none"
+    },
+    "recommended_config": {
+      "storage_class": "INTELLIGENT_TIERING",
+      "lifecycle_rules": "auto_archive_after_90_days"
+    }
+  },
+  "impact": {
+    "estimated_savings": 45.0,
+    "currency": "USD",
+    "projection_period": "monthly",
+    "savings_percentage": 30.0
+  },
+  "confidence_score": 0.88,
+  "source": "aws-cost-explorer",
+  "metadata": {
+    "bucket_size_gb": "500",
+    "objects_accessed_monthly": "15%",
+    "current_storage_cost": "150.00",
+    "recommendation_type": "provider_specific_optimization",
+    "note": "Uses OTHER action type for provider-specific recommendations not fitting standard categories"
+  }
+}

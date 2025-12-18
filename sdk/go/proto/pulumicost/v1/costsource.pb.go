@@ -408,18 +408,43 @@ const (
 	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS     RecommendationActionType = 4
 	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY              RecommendationActionType = 5
 	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED       RecommendationActionType = 6
+	// Move workloads to different regions, zones, or SKUs for cost optimization.
+	// Common in Azure Advisor (region migration) and GCP Recommender (zone migration).
+	// Use ModifyAction with modification_type="region_migration" or "zone_migration".
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MIGRATE RecommendationActionType = 7
+	// Combine multiple smaller resources into fewer, larger ones for efficiency.
+	// Common in Azure Advisor and Kubecost for node consolidation.
+	// Use ModifyAction with modification_type="node_consolidation" or "resource_merge".
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_CONSOLIDATE RecommendationActionType = 8
+	// Start/stop resources on a schedule (e.g., dev/test environments).
+	// Common in AWS Instance Scheduler and Azure Automation.
+	// Use ModifyAction with modification_type="start_stop_schedule".
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_SCHEDULE RecommendationActionType = 9
+	// Architectural changes such as moving to serverless or managed services.
+	// Common in GCP Recommender for App Engine/Cloud Run migration suggestions.
+	// Use ModifyAction with modification_type="serverless_migration" or "service_upgrade".
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_REFACTOR RecommendationActionType = 10
+	// Catch-all for provider-specific recommendations not fitting other categories.
+	// Use when no other action type accurately describes the recommendation.
+	// Include details in Recommendation.metadata or Recommendation.description.
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_OTHER RecommendationActionType = 11
 )
 
 // Enum value maps for RecommendationActionType.
 var (
 	RecommendationActionType_name = map[int32]string{
-		0: "RECOMMENDATION_ACTION_TYPE_UNSPECIFIED",
-		1: "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE",
-		2: "RECOMMENDATION_ACTION_TYPE_TERMINATE",
-		3: "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT",
-		4: "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS",
-		5: "RECOMMENDATION_ACTION_TYPE_MODIFY",
-		6: "RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED",
+		0:  "RECOMMENDATION_ACTION_TYPE_UNSPECIFIED",
+		1:  "RECOMMENDATION_ACTION_TYPE_RIGHTSIZE",
+		2:  "RECOMMENDATION_ACTION_TYPE_TERMINATE",
+		3:  "RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT",
+		4:  "RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS",
+		5:  "RECOMMENDATION_ACTION_TYPE_MODIFY",
+		6:  "RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED",
+		7:  "RECOMMENDATION_ACTION_TYPE_MIGRATE",
+		8:  "RECOMMENDATION_ACTION_TYPE_CONSOLIDATE",
+		9:  "RECOMMENDATION_ACTION_TYPE_SCHEDULE",
+		10: "RECOMMENDATION_ACTION_TYPE_REFACTOR",
+		11: "RECOMMENDATION_ACTION_TYPE_OTHER",
 	}
 	RecommendationActionType_value = map[string]int32{
 		"RECOMMENDATION_ACTION_TYPE_UNSPECIFIED":         0,
@@ -429,6 +454,11 @@ var (
 		"RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS":     4,
 		"RECOMMENDATION_ACTION_TYPE_MODIFY":              5,
 		"RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED":       6,
+		"RECOMMENDATION_ACTION_TYPE_MIGRATE":             7,
+		"RECOMMENDATION_ACTION_TYPE_CONSOLIDATE":         8,
+		"RECOMMENDATION_ACTION_TYPE_SCHEDULE":            9,
+		"RECOMMENDATION_ACTION_TYPE_REFACTOR":            10,
+		"RECOMMENDATION_ACTION_TYPE_OTHER":               11,
 	}
 )
 
@@ -5028,7 +5058,7 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x1cRECOMMENDATION_CATEGORY_COST\x10\x01\x12'\n" +
 	"#RECOMMENDATION_CATEGORY_PERFORMANCE\x10\x02\x12$\n" +
 	" RECOMMENDATION_CATEGORY_SECURITY\x10\x03\x12'\n" +
-	"#RECOMMENDATION_CATEGORY_RELIABILITY\x10\x04*\xd3\x02\n" +
+	"#RECOMMENDATION_CATEGORY_RELIABILITY\x10\x04*\x9f\x04\n" +
 	"\x18RecommendationActionType\x12*\n" +
 	"&RECOMMENDATION_ACTION_TYPE_UNSPECIFIED\x10\x00\x12(\n" +
 	"$RECOMMENDATION_ACTION_TYPE_RIGHTSIZE\x10\x01\x12(\n" +
@@ -5036,7 +5066,13 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	".RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT\x10\x03\x12.\n" +
 	"*RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS\x10\x04\x12%\n" +
 	"!RECOMMENDATION_ACTION_TYPE_MODIFY\x10\x05\x12,\n" +
-	"(RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED\x10\x06*\xce\x01\n" +
+	"(RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED\x10\x06\x12&\n" +
+	"\"RECOMMENDATION_ACTION_TYPE_MIGRATE\x10\a\x12*\n" +
+	"&RECOMMENDATION_ACTION_TYPE_CONSOLIDATE\x10\b\x12'\n" +
+	"#RECOMMENDATION_ACTION_TYPE_SCHEDULE\x10\t\x12'\n" +
+	"#RECOMMENDATION_ACTION_TYPE_REFACTOR\x10\n" +
+	"\x12$\n" +
+	" RECOMMENDATION_ACTION_TYPE_OTHER\x10\v*\xce\x01\n" +
 	"\x16RecommendationPriority\x12'\n" +
 	"#RECOMMENDATION_PRIORITY_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bRECOMMENDATION_PRIORITY_LOW\x10\x01\x12\"\n" +
