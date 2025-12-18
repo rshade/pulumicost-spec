@@ -51,29 +51,36 @@ const (
 	// hoursPerDay is the number of hours in a day for time range calculations.
 	// Defined locally to keep contract.go self-contained as shared contract tests.
 	hoursPerDay = 24
+
+	// MaxTargetResources is the maximum number of target resources allowed
+	// in a GetRecommendationsRequest. This limit prevents unbounded memory
+	// and processing costs while providing sufficient headroom for typical
+	// Pulumi stacks (most have 10-50 resources).
+	MaxTargetResources = 100
 )
 
 // Validation error types for contract testing.
 var (
-	ErrNilRequest              = errors.New("request is nil")
-	ErrNilResource             = errors.New("resource descriptor is nil")
-	ErrEmptyProvider           = errors.New("provider is required")
-	ErrEmptyResourceType       = errors.New("resource_type is required")
-	ErrInvalidProvider         = errors.New("invalid provider value")
-	ErrEmptyResourceID         = errors.New("resource_id is required")
-	ErrResourceIDTooLong       = errors.New("resource_id exceeds maximum length")
-	ErrNilStartTime            = errors.New("start timestamp is required")
-	ErrNilEndTime              = errors.New("end timestamp is required")
-	ErrInvalidTimeRange        = errors.New("end time must be after start time")
-	ErrTimeRangeTooShort       = errors.New("time range is too short")
-	ErrTimeRangeTooLong        = errors.New("time range exceeds maximum")
-	ErrFutureStartTime         = errors.New("start time cannot be in the future")
-	ErrInvalidPageSize         = errors.New("page_size exceeds maximum")
-	ErrEmptyResourceTypeFmt    = errors.New("resource_type format is invalid")
-	ErrTagKeyTooLong           = errors.New("tag key exceeds maximum length")
-	ErrTagValueTooLong         = errors.New("tag value exceeds maximum length")
-	ErrTooManyTags             = errors.New("tag count exceeds maximum")
-	ErrInvalidProjectionPeriod = errors.New("invalid projection_period value")
+	ErrNilRequest                  = errors.New("request is nil")
+	ErrNilResource                 = errors.New("resource descriptor is nil")
+	ErrEmptyProvider               = errors.New("provider is required")
+	ErrEmptyResourceType           = errors.New("resource_type is required")
+	ErrInvalidProvider             = errors.New("invalid provider value")
+	ErrEmptyResourceID             = errors.New("resource_id is required")
+	ErrResourceIDTooLong           = errors.New("resource_id exceeds maximum length")
+	ErrNilStartTime                = errors.New("start timestamp is required")
+	ErrNilEndTime                  = errors.New("end timestamp is required")
+	ErrInvalidTimeRange            = errors.New("end time must be after start time")
+	ErrTimeRangeTooShort           = errors.New("time range is too short")
+	ErrTimeRangeTooLong            = errors.New("time range exceeds maximum")
+	ErrFutureStartTime             = errors.New("start time cannot be in the future")
+	ErrInvalidPageSize             = errors.New("page_size exceeds maximum")
+	ErrEmptyResourceTypeFmt        = errors.New("resource_type format is invalid")
+	ErrTagKeyTooLong               = errors.New("tag key exceeds maximum length")
+	ErrTagValueTooLong             = errors.New("tag value exceeds maximum length")
+	ErrTooManyTags                 = errors.New("tag count exceeds maximum")
+	ErrInvalidProjectionPeriod     = errors.New("invalid projection_period value")
+	ErrTargetResourcesExceedsLimit = errors.New("target_resources exceeds maximum")
 )
 
 // ValidProviders is the list of valid provider values.
@@ -233,12 +240,41 @@ func ValidateGetRecommendationsRequest(req *pbc.GetRecommendationsRequest) error
 		}
 	}
 
+	// Validate target_resources if present
+	if err := ValidateTargetResources(req.GetTargetResources()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // =============================================================================
 // Component Validation Functions
 // =============================================================================
+
+// ValidateTargetResources validates the target_resources field of a GetRecommendationsRequest.
+// Returns nil if the list is empty/nil (preserves existing behavior) or all entries are valid.
+// Returns an error if the list exceeds MaxTargetResources or contains invalid entries.
+func ValidateTargetResources(targets []*pbc.ResourceDescriptor) error {
+	// Empty or nil is valid - preserves existing behavior (analyze all resources)
+	if len(targets) == 0 {
+		return nil
+	}
+
+	// Check maximum limit
+	if len(targets) > MaxTargetResources {
+		return NewContractError("target_resources", len(targets), ErrTargetResourcesExceedsLimit)
+	}
+
+	// Validate each resource descriptor
+	for i, resource := range targets {
+		if err := ValidateResourceDescriptor(resource); err != nil {
+			return fmt.Errorf("target_resources[%d]: %w", i, err)
+		}
+	}
+
+	return nil
+}
 
 // ValidateResourceDescriptor validates a ResourceDescriptor message.
 // This is the core validation used by multiple RPC requests.

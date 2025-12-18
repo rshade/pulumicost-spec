@@ -525,6 +525,132 @@ func TestValidateTags(t *testing.T) {
 	}
 }
 
+func TestValidateTargetResources(t *testing.T) {
+	tests := []struct {
+		name        string
+		targets     []*pbc.ResourceDescriptor
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:    "nil targets (valid - preserves existing behavior)",
+			targets: nil,
+			wantErr: false,
+		},
+		{
+			name:    "empty targets (valid - preserves existing behavior)",
+			targets: []*pbc.ResourceDescriptor{},
+			wantErr: false,
+		},
+		{
+			name: "single valid target",
+			targets: []*pbc.ResourceDescriptor{
+				{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.medium",
+					Region:       "us-east-1",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "multiple valid targets",
+			targets: []*pbc.ResourceDescriptor{
+				{Provider: "aws", ResourceType: "ec2", Sku: "t3.medium", Region: "us-east-1"},
+				{Provider: "azure", ResourceType: "vm", Sku: "Standard_B1s", Region: "eastus"},
+				{Provider: "gcp", ResourceType: "compute-instance", Sku: "e2-micro", Region: "us-central1"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid targets with tags",
+			targets: []*pbc.ResourceDescriptor{
+				{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Tags:         map[string]string{"env": "prod", "team": "platform"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:        "exceeds maximum limit",
+			targets:     generateResourceDescriptors(plugintesting.MaxTargetResources + 1),
+			wantErr:     true,
+			errContains: "exceeds maximum",
+		},
+		{
+			name:    "at maximum limit is valid",
+			targets: generateResourceDescriptors(plugintesting.MaxTargetResources),
+			wantErr: false,
+		},
+		{
+			name: "invalid resource in list - nil element",
+			targets: []*pbc.ResourceDescriptor{
+				{Provider: "aws", ResourceType: "ec2"},
+				nil,
+			},
+			wantErr:     true,
+			errContains: "target_resources[1]",
+		},
+		{
+			name: "invalid resource in list - empty provider",
+			targets: []*pbc.ResourceDescriptor{
+				{Provider: "aws", ResourceType: "ec2"},
+				{Provider: "", ResourceType: "ec2"},
+			},
+			wantErr:     true,
+			errContains: "target_resources[1]",
+		},
+		{
+			name: "invalid resource in list - invalid provider",
+			targets: []*pbc.ResourceDescriptor{
+				{Provider: "aws", ResourceType: "ec2"},
+				{Provider: "invalid-provider", ResourceType: "ec2"},
+			},
+			wantErr:     true,
+			errContains: "target_resources[1]",
+		},
+		{
+			name: "invalid resource in list - empty resource_type",
+			targets: []*pbc.ResourceDescriptor{
+				{Provider: "aws", ResourceType: "ec2"},
+				{Provider: "aws", ResourceType: ""},
+			},
+			wantErr:     true,
+			errContains: "target_resources[1]",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := plugintesting.ValidateTargetResources(tt.targets)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateTargetResources() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErr && tt.errContains != "" && err != nil {
+				if !strings.Contains(strings.ToLower(err.Error()), strings.ToLower(tt.errContains)) {
+					t.Errorf("error should contain %q, got %q", tt.errContains, err.Error())
+				}
+			}
+		})
+	}
+}
+
+// generateResourceDescriptors creates a slice of valid ResourceDescriptor for testing.
+func generateResourceDescriptors(count int) []*pbc.ResourceDescriptor {
+	providers := []string{"aws", "azure", "gcp", "kubernetes", "custom"}
+	resources := make([]*pbc.ResourceDescriptor, count)
+	for i := range count {
+		resources[i] = &pbc.ResourceDescriptor{
+			Provider:     providers[i%len(providers)],
+			ResourceType: fmt.Sprintf("resource-%d", i),
+		}
+	}
+	return resources
+}
+
 func TestContractTestSuite(t *testing.T) {
 	results := plugintesting.RunStandardContractTests()
 

@@ -534,6 +534,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod) + Protocol Buffers v3 + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1 (019-target-resources)
+- N/A (stateless RPC extension) (019-target-resources)
+
 - Go 1.25.5 (per go.mod) + zerolog v1.34.0+ (already in go.mod), stdlib only for file operations (015-log-file)
 - File system (log file) - append mode with 0644 permissions (015-log-file)
 - Go 1.25.5 (per go.mod) + zerolog (logging), google.golang.org/grpc (001-pluginsdk-serve-docs)
