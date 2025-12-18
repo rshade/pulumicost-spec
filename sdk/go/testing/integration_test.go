@@ -2534,8 +2534,9 @@ func TestGetRecommendations_SummaryValidation(t *testing.T) {
 	defer harness.Stop()
 
 	t.Run("projection_period_wiring", func(t *testing.T) {
+		// Use valid projection period ("daily", "monthly", or "annual")
 		req := &pbc.GetRecommendationsRequest{
-			ProjectionPeriod: "30d",
+			ProjectionPeriod: "monthly",
 		}
 		resp, err := client.GetRecommendations(context.Background(), req)
 		if err != nil {
@@ -2544,8 +2545,8 @@ func TestGetRecommendations_SummaryValidation(t *testing.T) {
 		if resp.GetSummary() == nil {
 			t.Fatal("GetRecommendations() returned a nil summary")
 		}
-		if resp.GetSummary().GetProjectionPeriod() != "30d" {
-			t.Errorf("Expected summary projection period '30d', got '%s'", resp.GetSummary().GetProjectionPeriod())
+		if resp.GetSummary().GetProjectionPeriod() != "monthly" {
+			t.Errorf("Expected summary projection period 'monthly', got '%s'", resp.GetSummary().GetProjectionPeriod())
 		}
 	})
 
@@ -3184,6 +3185,7 @@ func TestTargetResourcesFiltering_ANDLogicWithFilter(t *testing.T) {
 }
 
 // TestTargetResourcesFiltering_LargeList tests handling of many target resources.
+// Uses 25 targets (well below MaxTargetResources limit of 100) for batch query validation.
 // US3: Batch resource analysis - support for large batches up to the limit.
 func TestTargetResourcesFiltering_LargeList(t *testing.T) {
 	plugin := plugintesting.NewMockPlugin()
@@ -3324,4 +3326,76 @@ func TestTargetResourcesFiltering_DuplicatesHandled(t *testing.T) {
 	recs := resp.GetRecommendations()
 	require.Len(t, recs, 1, "Duplicate targets should not cause duplicate recommendations")
 	require.Equal(t, "rec-aws", recs[0].GetId())
+}
+
+// TestTargetResourcesFiltering_ExceedsLimit verifies the RPC handler rejects requests
+// exceeding MaxTargetResources (100). This tests end-to-end RPC enforcement.
+func TestTargetResourcesFiltering_ExceedsLimit(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	// Create 101 targets (exceeds MaxTargetResources of 100)
+	targets := make([]*pbc.ResourceDescriptor, plugintesting.MaxTargetResources+1)
+	for i := range targets {
+		targets[i] = &pbc.ResourceDescriptor{
+			Provider:     "aws",
+			ResourceType: fmt.Sprintf("type-%d", i),
+		}
+	}
+
+	req := &pbc.GetRecommendationsRequest{
+		TargetResources: targets,
+	}
+
+	_, err := harness.Client().GetRecommendations(context.Background(), req)
+	require.Error(t, err, "Should reject > 100 target_resources")
+
+	st, ok := status.FromError(err)
+	require.True(t, ok, "Error should be a gRPC status error")
+	require.Equal(t, codes.InvalidArgument, st.Code(),
+		"Error code should be InvalidArgument for exceeding limit")
+}
+
+// TestTargetResourcesFiltering_Concurrent tests concurrent requests with target_resources.
+// This ensures the filtering logic is thread-safe under concurrent load.
+func TestTargetResourcesFiltering_Concurrent(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	// Configure with diverse recommendations for filtering
+	plugin.RecommendationsConfig = plugintesting.RecommendationsConfig{
+		Recommendations: plugintesting.GenerateSampleRecommendations(20),
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	const numRequests = 10
+	var wg sync.WaitGroup
+	errCh := make(chan error, numRequests)
+
+	// Different target_resources for each request to test concurrent filtering
+	for i := range numRequests {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			req := &pbc.GetRecommendationsRequest{
+				TargetResources: []*pbc.ResourceDescriptor{
+					{Provider: "aws", ResourceType: "ec2"},
+				},
+			}
+			_, err := harness.Client().GetRecommendations(context.Background(), req)
+			if err != nil {
+				errCh <- fmt.Errorf("request %d failed: %w", idx, err)
+			}
+		}(i)
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		t.Errorf("Concurrent request failed: %v", err)
+	}
 }

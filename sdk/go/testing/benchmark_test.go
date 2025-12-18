@@ -557,10 +557,8 @@ func BenchmarkGetRecommendations_LargeResultSet(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for range b.N {
-		_, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
-			// Request the full configured set in a single response for SC-005.
-			PageSize: largeResultSetRecommendationCount,
-		})
+		// PageSize=0 returns all results without pagination for SC-005 large result set testing.
+		_, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{})
 		if err != nil {
 			b.Fatalf("GetRecommendations() failed: %v", err)
 		}
@@ -617,10 +615,9 @@ func TestGetRecommendations_LargeResultSetLatency(t *testing.T) {
 	ctx := context.Background()
 
 	// Measure single request latency for the full result set
+	// PageSize=0 returns all results without pagination for SC-005 large result set testing.
 	start := time.Now()
-	_, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{
-		PageSize: largeResultSetRecommendationCount,
-	})
+	_, err := client.GetRecommendations(ctx, &pbc.GetRecommendationsRequest{})
 	duration := time.Since(start)
 
 	if err != nil {
