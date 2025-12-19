@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.10](https://github.com/rshade/pulumicost-spec/compare/v0.4.9...v0.4.10) (2025-12-19)
+
+
+### Added
+
+* **proto:** add greenops metrics and utilization modeling ([#176](https://github.com/rshade/pulumicost-spec/issues/176)) ([d00dc45](https://github.com/rshade/pulumicost-spec/commit/d00dc4504c3fc88cc2a7c21ae294db0ee339116c))
+
 ## [0.4.9](https://github.com/rshade/pulumicost-spec/compare/v0.4.8...v0.4.9) (2025-12-18)
 
 
