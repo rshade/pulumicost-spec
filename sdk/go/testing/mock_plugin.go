@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/rshade/pulumicost-spec/sdk/go/internal/utilization"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
@@ -58,9 +59,30 @@ const (
 	confidenceStep       = 0.075 // Confidence increment per variation
 	savingsBase          = 50.0  // Base savings amount
 	savingsIncrement     = 25.0  // Savings increment per recommendation
+
+	// Mock impact metric base values at 100% utilization.
+	// These are arbitrary values for testing purposes only.
+	mockCarbonPerHour = 100.0 // gCO2e per hour at 100% utilization
+	mockEnergyPerHour = 1.0   // kWh per hour at 100% utilization
+	mockWaterPerHour  = 5.0   // L per hour at 100% utilization
 )
 
 // MockPlugin provides a configurable mock implementation of CostSourceServiceServer.
+//
+// # Thread Safety
+//
+// All configuration fields must be set before calling Start() on the associated TestHarness.
+// Concurrent modification of fields during RPC handling will result in data races.
+// Use separate MockPlugin instances for concurrent tests.
+//
+// The recommended pattern is:
+//
+//	plugin := NewMockPlugin()
+//	plugin.ShouldErrorOnName = true  // Configure before Start()
+//	harness := NewTestHarness(plugin)
+//	harness.Start(t)
+//	defer harness.Stop()
+//	// Now safe to make concurrent RPC calls
 type MockPlugin struct {
 	pbc.UnimplementedCostSourceServiceServer
 
@@ -89,6 +111,10 @@ type MockPlugin struct {
 	ActualCostDataPoints int
 	BaseHourlyRate       float64
 	Currency             string
+
+	// GreenOps configuration
+	SupportedMetrics []pbc.MetricKind
+	OmitMetrics      []pbc.MetricKind
 
 	// Recommendations configuration
 	RecommendationsConfig RecommendationsConfig
@@ -221,8 +247,9 @@ func (m *MockPlugin) Supports(_ context.Context, req *pbc.SupportsRequest) (*pbc
 	for _, supportedResource := range supportedResources {
 		if resourceType == supportedResource {
 			return &pbc.SupportsResponse{
-				Supported: true,
-				Reason:    "",
+				Supported:        true,
+				Reason:           "",
+				SupportedMetrics: m.SupportedMetrics,
 			}, nil
 		}
 	}
@@ -293,6 +320,57 @@ func (m *MockPlugin) GetActualCost(
 	}, nil
 }
 
+// shouldOmitMetric checks if a metric kind should be omitted from responses.
+func (m *MockPlugin) shouldOmitMetric(kind pbc.MetricKind) bool {
+	for _, omit := range m.OmitMetrics {
+		if kind == omit {
+			return true
+		}
+	}
+	return false
+}
+
+// buildImpactMetrics creates impact metrics based on configured supported metrics and utilization.
+func (m *MockPlugin) buildImpactMetrics(utilization float64) []*pbc.ImpactMetric {
+	var metrics []*pbc.ImpactMetric
+	for _, kind := range m.SupportedMetrics {
+		if m.shouldOmitMetric(kind) {
+			continue
+		}
+
+		val, unit := getImpactMetricValue(kind, utilization)
+		if val == 0 && unit == "" {
+			continue // Skip unspecified or unknown metric kinds
+		}
+
+		// Always add carbon even if 0 for testing purposes.
+		if val > 0 || kind == pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT {
+			metrics = append(metrics, &pbc.ImpactMetric{
+				Kind:  kind,
+				Value: val,
+				Unit:  unit,
+			})
+		}
+	}
+	return metrics
+}
+
+// getImpactMetricValue returns the value and unit for a given metric kind based on utilization.
+func getImpactMetricValue(kind pbc.MetricKind, utilization float64) (float64, string) {
+	switch kind {
+	case pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT:
+		return mockCarbonPerHour * utilization, "gCO2e"
+	case pbc.MetricKind_METRIC_KIND_ENERGY_CONSUMPTION:
+		return mockEnergyPerHour * utilization, "kWh"
+	case pbc.MetricKind_METRIC_KIND_WATER_USAGE:
+		return mockWaterPerHour * utilization, "L"
+	case pbc.MetricKind_METRIC_KIND_UNSPECIFIED:
+		return 0, "" // Not a valid sustainability metric
+	default:
+		return 0, ""
+	}
+}
+
 // GetProjectedCost returns mock projected cost data.
 func (m *MockPlugin) GetProjectedCost(
 	_ context.Context,
@@ -314,17 +392,27 @@ func (m *MockPlugin) GetProjectedCost(
 	// Calculate cost based on resource type (keep in sync with GetPricingSpec).
 	multiplier := getRateMultiplier(resource.GetResourceType())
 
+	// Incorporate utilization into impact modeling (for GreenOps metrics).
+	util := utilization.Get(req)
+
 	unitPrice := m.BaseHourlyRate * multiplier
 	costPerMonth := unitPrice * HoursPerDay * daysPerMonth
 
-	billingDetail := fmt.Sprintf("mock-%s-rate", strings.ToLower(resource.GetProvider()))
+	billingDetail := fmt.Sprintf("mock-%s-rate (util:%.2f)", strings.ToLower(resource.GetProvider()), util)
 
-	return &pbc.GetProjectedCostResponse{
+	resp := &pbc.GetProjectedCostResponse{
 		UnitPrice:     unitPrice,
 		Currency:      m.Currency,
 		CostPerMonth:  costPerMonth,
 		BillingDetail: billingDetail,
-	}, nil
+	}
+
+	// Add impact metrics if configured
+	if len(m.SupportedMetrics) > 0 {
+		resp.ImpactMetrics = m.buildImpactMetrics(util)
+	}
+
+	return resp, nil
 }
 
 // getBillingModeAndUnit returns billing mode and unit for a resource type.
@@ -560,16 +648,18 @@ func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 	}
 
 	actionTypes := []pbc.RecommendationActionType{
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MIGRATE,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_CONSOLIDATE,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_SCHEDULE,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_REFACTOR,
-		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_OTHER,
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED,         // 0
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_RIGHTSIZE,           // 1
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_TERMINATE,           // 2
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT, // 3
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS,     // 4
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY,              // 5
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED,       // 6
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MIGRATE,             // 7
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_CONSOLIDATE,         // 8
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_SCHEDULE,            // 9
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_REFACTOR,            // 10
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_OTHER,               // 11
 	}
 
 	priorities := []pbc.RecommendationPriority{
@@ -1100,3 +1190,7 @@ func NewActualCostResponseWithHint(
 // NOTE: ValidateActualCostResponseHelper was removed. Use pluginsdk.ValidateActualCostResponse
 // instead, which is the canonical implementation for validating GetActualCostResponse messages.
 // Import: "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+// NOTE: getUtilization was removed. Use github.com/rshade/pulumicost-spec/sdk/go/internal/utilization.Get()
+// which is the shared implementation. The circular dependency that previously prevented this
+// import has been resolved by creating the internal/utilization package.

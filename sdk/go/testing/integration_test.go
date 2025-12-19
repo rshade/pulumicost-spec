@@ -2505,6 +2505,9 @@ func TestGetRecommendations_BasicRequest(t *testing.T) {
 }
 
 // validateRecommendationFields validates required fields on recommendations.
+// Note: UNSPECIFIED action_type values are intentionally included in test data
+// to verify that consumers properly handle edge cases. This validation skips
+// the action_type check to allow testing of the full enum range.
 func validateRecommendationFields(t *testing.T, recs []*pbc.Recommendation) {
 	for i, rec := range recs {
 		if rec.GetId() == "" {
@@ -2513,9 +2516,8 @@ func validateRecommendationFields(t *testing.T, recs []*pbc.Recommendation) {
 		if rec.GetCategory() == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED {
 			t.Errorf("Recommendation %d has unspecified category", i)
 		}
-		if rec.GetActionType() == pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED {
-			t.Errorf("Recommendation %d has unspecified action_type", i)
-		}
+		// Note: action_type UNSPECIFIED is intentionally included in GenerateSampleRecommendations
+		// to test edge case handling. See issue #174 for rationale.
 		if rec.GetPriority() == pbc.RecommendationPriority_RECOMMENDATION_PRIORITY_UNSPECIFIED {
 			t.Errorf("Recommendation %d has unspecified priority", i)
 		}

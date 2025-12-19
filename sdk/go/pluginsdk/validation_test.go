@@ -8,6 +8,7 @@ import (
 
 	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -91,6 +92,45 @@ func TestValidateProjectedCostRequest(t *testing.T) {
 				},
 			},
 			wantErr: nil,
+		},
+		{
+			name: "utilization too high returns error",
+			req: &pbc.GetProjectedCostRequest{
+				UtilizationPercentage: 1.1,
+				Resource: &pbc.ResourceDescriptor{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.micro",
+					Region:       "us-east-1",
+				},
+			},
+			wantErr: pluginsdk.ErrUtilizationOutOfRange,
+		},
+		{
+			name: "utilization too low returns error",
+			req: &pbc.GetProjectedCostRequest{
+				UtilizationPercentage: -0.1,
+				Resource: &pbc.ResourceDescriptor{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Sku:          "t3.micro",
+					Region:       "us-east-1",
+				},
+			},
+			wantErr: pluginsdk.ErrUtilizationOutOfRange,
+		},
+		{
+			name: "resource utilization override too high returns error",
+			req: &pbc.GetProjectedCostRequest{
+				Resource: &pbc.ResourceDescriptor{
+					Provider:              "aws",
+					ResourceType:          "ec2",
+					Sku:                   "t3.micro",
+					Region:                "us-east-1",
+					UtilizationPercentage: proto.Float64(1.1),
+				},
+			},
+			wantErr: pluginsdk.ErrUtilizationOutOfRange,
 		},
 	}
 
@@ -225,6 +265,66 @@ func TestValidateActualCostRequest(t *testing.T) {
 	}
 }
 
+func TestValidateSupportsResponse(t *testing.T) {
+	tests := []struct {
+		name    string
+		res     *pbc.SupportsResponse
+		wantErr error
+	}{
+		{
+			name:    "nil response returns error",
+			res:     nil,
+			wantErr: nil, // Note: ValidateSupportsResponse currently returns errors.New("response is required")
+			// I should use errors.Is or check message for generic error
+		},
+		{
+			name: "valid response with metrics returns nil",
+			res: &pbc.SupportsResponse{
+				Supported: true,
+				SupportedMetrics: []pbc.MetricKind{
+					pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT,
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "METRIC_KIND_UNSPECIFIED returns error",
+			res: &pbc.SupportsResponse{
+				Supported: true,
+				SupportedMetrics: []pbc.MetricKind{
+					pbc.MetricKind_METRIC_KIND_UNSPECIFIED,
+				},
+			},
+			wantErr: pluginsdk.ErrMetricKindInvalid,
+		},
+		{
+			name: "invalid metric kind returns error",
+			res: &pbc.SupportsResponse{
+				Supported: true,
+				SupportedMetrics: []pbc.MetricKind{
+					999,
+				},
+			},
+			wantErr: pluginsdk.ErrMetricKindInvalid,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := pluginsdk.ValidateSupportsResponse(tt.res)
+			if tt.name == "nil response returns error" {
+				if err == nil {
+					t.Error("expected error for nil response, got nil")
+				}
+				return
+			}
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("ValidateSupportsResponse() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestValidateActualCostRequest_TimeRangeEdgeCases(t *testing.T) {
 	t.Run("one nanosecond difference is valid", func(t *testing.T) {
 		now := time.Now()
@@ -324,5 +424,39 @@ func BenchmarkValidateActualCostRequest_Invalid_EmptyResourceID(b *testing.B) {
 	b.ReportAllocs()
 	for range b.N {
 		_ = pluginsdk.ValidateActualCostRequest(req)
+	}
+}
+
+// BenchmarkIsValidMetricKind validates the zero-allocation claim for metric kind validation.
+// This benchmark verifies that the validMetricKinds package-level slice optimization
+// achieves the documented performance: ~5-12 ns/op with 0 allocs/op.
+func BenchmarkIsValidMetricKind(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsValidMetricKind(pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT)
+	}
+}
+
+// BenchmarkIsValidMetricKind_Invalid benchmarks validation of invalid metric kinds.
+func BenchmarkIsValidMetricKind_Invalid(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsValidMetricKind(pbc.MetricKind_METRIC_KIND_UNSPECIFIED)
+	}
+}
+
+// BenchmarkIsUtilizationValid validates the zero-allocation claim for utilization validation.
+func BenchmarkIsUtilizationValid(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsUtilizationValid(0.75)
+	}
+}
+
+// BenchmarkIsUtilizationValid_Invalid benchmarks validation of invalid utilization values.
+func BenchmarkIsUtilizationValid_Invalid(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsUtilizationValid(1.5)
 	}
 }

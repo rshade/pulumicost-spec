@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "name": "greenops-plugin",
+    "version": "1.0.0",
+    "description": "Specialized plugin for GreenOps and sustainability tracking, providing carbon footprint, energy consumption, and water usage metrics alongside cost data.",
+    "author": "GreenOps Team",
+    "license": "Apache-2.0",
+    "keywords": ["greenops", "sustainability", "carbon", "energy", "water"],
+    "created_at": "2025-12-18T10:00:00Z"
+  },
+  "specification": {
+    "spec_version": "1.0.0",
+    "supported_providers": ["aws", "gcp", "azure"],
+    "supported_metrics": [
+      "METRIC_KIND_CARBON_FOOTPRINT",
+      "METRIC_KIND_ENERGY_CONSUMPTION",
+      "METRIC_KIND_WATER_USAGE"
+    ],
+    "capabilities": [
+      "impact_modeling", "utilization_adjustment"
+    ]
+  }
+}

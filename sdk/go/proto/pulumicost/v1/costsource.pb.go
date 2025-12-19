@@ -23,6 +23,62 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// MetricKind represents the type of sustainability/impact metric supported by a plugin.
+type MetricKind int32
+
+const (
+	MetricKind_METRIC_KIND_UNSPECIFIED MetricKind = 0
+	// Carbon Footprint in grams of CO2 equivalent (gCO2e)
+	MetricKind_METRIC_KIND_CARBON_FOOTPRINT MetricKind = 1
+	// Electrical Energy Consumption in kilowatt-hours (kWh)
+	MetricKind_METRIC_KIND_ENERGY_CONSUMPTION MetricKind = 2
+	// Water Usage in liters (L)
+	MetricKind_METRIC_KIND_WATER_USAGE MetricKind = 3
+)
+
+// Enum value maps for MetricKind.
+var (
+	MetricKind_name = map[int32]string{
+		0: "METRIC_KIND_UNSPECIFIED",
+		1: "METRIC_KIND_CARBON_FOOTPRINT",
+		2: "METRIC_KIND_ENERGY_CONSUMPTION",
+		3: "METRIC_KIND_WATER_USAGE",
+	}
+	MetricKind_value = map[string]int32{
+		"METRIC_KIND_UNSPECIFIED":        0,
+		"METRIC_KIND_CARBON_FOOTPRINT":   1,
+		"METRIC_KIND_ENERGY_CONSUMPTION": 2,
+		"METRIC_KIND_WATER_USAGE":        3,
+	}
+)
+
+func (x MetricKind) Enum() *MetricKind {
+	p := new(MetricKind)
+	*p = x
+	return p
+}
+
+func (x MetricKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MetricKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_costsource_proto_enumTypes[0].Descriptor()
+}
+
+func (MetricKind) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_costsource_proto_enumTypes[0]
+}
+
+func (x MetricKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MetricKind.Descriptor instead.
+func (MetricKind) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{0}
+}
+
 // FallbackHint indicates whether the core system should attempt to query
 // other plugins for the requested resource.
 type FallbackHint int32
@@ -68,11 +124,11 @@ func (x FallbackHint) String() string {
 }
 
 func (FallbackHint) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[0].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[1].Descriptor()
 }
 
 func (FallbackHint) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[0]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[1]
 }
 
 func (x FallbackHint) Number() protoreflect.EnumNumber {
@@ -81,7 +137,7 @@ func (x FallbackHint) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FallbackHint.Descriptor instead.
 func (FallbackHint) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{0}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{1}
 }
 
 // ErrorCategory defines the category of plugin errors.
@@ -121,11 +177,11 @@ func (x ErrorCategory) String() string {
 }
 
 func (ErrorCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[1].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[2].Descriptor()
 }
 
 func (ErrorCategory) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[1]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[2]
 }
 
 func (x ErrorCategory) Number() protoreflect.EnumNumber {
@@ -134,7 +190,7 @@ func (x ErrorCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ErrorCategory.Descriptor instead.
 func (ErrorCategory) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{1}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{2}
 }
 
 // ErrorCode defines standard error codes for plugin operations.
@@ -216,11 +272,11 @@ func (x ErrorCode) String() string {
 }
 
 func (ErrorCode) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[2].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[3].Descriptor()
 }
 
 func (ErrorCode) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[2]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[3]
 }
 
 func (x ErrorCode) Number() protoreflect.EnumNumber {
@@ -229,7 +285,7 @@ func (x ErrorCode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ErrorCode.Descriptor instead.
 func (ErrorCode) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{2}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{3}
 }
 
 // MetricType represents the type of metric being reported.
@@ -272,11 +328,11 @@ func (x MetricType) String() string {
 }
 
 func (MetricType) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[3].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[4].Descriptor()
 }
 
 func (MetricType) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[3]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[4]
 }
 
 func (x MetricType) Number() protoreflect.EnumNumber {
@@ -285,7 +341,7 @@ func (x MetricType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use MetricType.Descriptor instead.
 func (MetricType) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{3}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{4}
 }
 
 // SLIStatus represents whether an SLI is meeting its target.
@@ -325,11 +381,11 @@ func (x SLIStatus) String() string {
 }
 
 func (SLIStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[4].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[5].Descriptor()
 }
 
 func (SLIStatus) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[4]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[5]
 }
 
 func (x SLIStatus) Number() protoreflect.EnumNumber {
@@ -338,7 +394,7 @@ func (x SLIStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SLIStatus.Descriptor instead.
 func (SLIStatus) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{4}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{5}
 }
 
 // RecommendationCategory classifies the type of optimization recommendation.
@@ -381,11 +437,11 @@ func (x RecommendationCategory) String() string {
 }
 
 func (RecommendationCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[5].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[6].Descriptor()
 }
 
 func (RecommendationCategory) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[5]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[6]
 }
 
 func (x RecommendationCategory) Number() protoreflect.EnumNumber {
@@ -394,7 +450,7 @@ func (x RecommendationCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RecommendationCategory.Descriptor instead.
 func (RecommendationCategory) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{5}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{6}
 }
 
 // RecommendationActionType specifies the type of action recommended.
@@ -473,11 +529,11 @@ func (x RecommendationActionType) String() string {
 }
 
 func (RecommendationActionType) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[6].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[7].Descriptor()
 }
 
 func (RecommendationActionType) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[6]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[7]
 }
 
 func (x RecommendationActionType) Number() protoreflect.EnumNumber {
@@ -486,7 +542,7 @@ func (x RecommendationActionType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RecommendationActionType.Descriptor instead.
 func (RecommendationActionType) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{6}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{7}
 }
 
 // RecommendationPriority indicates the urgency of a recommendation.
@@ -529,11 +585,11 @@ func (x RecommendationPriority) String() string {
 }
 
 func (RecommendationPriority) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[7].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[8].Descriptor()
 }
 
 func (RecommendationPriority) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[7]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[8]
 }
 
 func (x RecommendationPriority) Number() protoreflect.EnumNumber {
@@ -542,7 +598,7 @@ func (x RecommendationPriority) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RecommendationPriority.Descriptor instead.
 func (RecommendationPriority) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{7}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{8}
 }
 
 // RecommendationSortBy specifies the field to sort recommendations by.
@@ -585,11 +641,11 @@ func (x RecommendationSortBy) String() string {
 }
 
 func (RecommendationSortBy) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[8].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[9].Descriptor()
 }
 
 func (RecommendationSortBy) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[8]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[9]
 }
 
 func (x RecommendationSortBy) Number() protoreflect.EnumNumber {
@@ -598,7 +654,7 @@ func (x RecommendationSortBy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RecommendationSortBy.Descriptor instead.
 func (RecommendationSortBy) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{8}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{9}
 }
 
 // SortOrder specifies ascending or descending sort order.
@@ -635,11 +691,11 @@ func (x SortOrder) String() string {
 }
 
 func (SortOrder) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[9].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[10].Descriptor()
 }
 
 func (SortOrder) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[9]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[10]
 }
 
 func (x SortOrder) Number() protoreflect.EnumNumber {
@@ -648,7 +704,7 @@ func (x SortOrder) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SortOrder.Descriptor instead.
 func (SortOrder) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{9}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{10}
 }
 
 // DismissalReason specifies why a recommendation was dismissed.
@@ -707,11 +763,11 @@ func (x DismissalReason) String() string {
 }
 
 func (DismissalReason) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[10].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[11].Descriptor()
 }
 
 func (DismissalReason) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[10]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[11]
 }
 
 func (x DismissalReason) Number() protoreflect.EnumNumber {
@@ -720,7 +776,7 @@ func (x DismissalReason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DismissalReason.Descriptor instead.
 func (DismissalReason) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{10}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{11}
 }
 
 // Status represents the health check status
@@ -760,11 +816,11 @@ func (x HealthCheckResponse_Status) String() string {
 }
 
 func (HealthCheckResponse_Status) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_costsource_proto_enumTypes[11].Descriptor()
+	return file_pulumicost_v1_costsource_proto_enumTypes[12].Descriptor()
 }
 
 func (HealthCheckResponse_Status) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_costsource_proto_enumTypes[11]
+	return &file_pulumicost_v1_costsource_proto_enumTypes[12]
 }
 
 func (x HealthCheckResponse_Status) Number() protoreflect.EnumNumber {
@@ -773,7 +829,7 @@ func (x HealthCheckResponse_Status) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use HealthCheckResponse_Status.Descriptor instead.
 func (HealthCheckResponse_Status) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{17, 0}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{18, 0}
 }
 
 // NameRequest is used for the Name RPC call (empty request).
@@ -859,6 +915,70 @@ func (x *NameResponse) GetName() string {
 	return ""
 }
 
+// ImpactMetric represents a single sustainability impact measurement.
+type ImpactMetric struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// kind specifies the type of impact metric (Carbon, Energy, etc.)
+	Kind MetricKind `protobuf:"varint,1,opt,name=kind,proto3,enum=pulumicost.v1.MetricKind" json:"kind,omitempty"`
+	// value is the numeric measurement
+	Value float64 `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	// unit is the measurement unit (e.g., "gCO2e", "kWh", "L")
+	Unit          string `protobuf:"bytes,3,opt,name=unit,proto3" json:"unit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImpactMetric) Reset() {
+	*x = ImpactMetric{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImpactMetric) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImpactMetric) ProtoMessage() {}
+
+func (x *ImpactMetric) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImpactMetric.ProtoReflect.Descriptor instead.
+func (*ImpactMetric) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ImpactMetric) GetKind() MetricKind {
+	if x != nil {
+		return x.Kind
+	}
+	return MetricKind_METRIC_KIND_UNSPECIFIED
+}
+
+func (x *ImpactMetric) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *ImpactMetric) GetUnit() string {
+	if x != nil {
+		return x.Unit
+	}
+	return ""
+}
+
 // SupportsRequest contains the resource descriptor to check support for.
 type SupportsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -870,7 +990,7 @@ type SupportsRequest struct {
 
 func (x *SupportsRequest) Reset() {
 	*x = SupportsRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[2]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -882,7 +1002,7 @@ func (x *SupportsRequest) String() string {
 func (*SupportsRequest) ProtoMessage() {}
 
 func (x *SupportsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[2]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -895,7 +1015,7 @@ func (x *SupportsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportsRequest.ProtoReflect.Descriptor instead.
 func (*SupportsRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{2}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *SupportsRequest) GetResource() *ResourceDescriptor {
@@ -914,14 +1034,16 @@ type SupportsResponse struct {
 	Reason string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
 	// capabilities declares optional capabilities the plugin supports
 	// Example: {"recommendations": true}
-	Capabilities  map[string]bool `protobuf:"bytes,3,rep,name=capabilities,proto3" json:"capabilities,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Capabilities map[string]bool `protobuf:"bytes,3,rep,name=capabilities,proto3" json:"capabilities,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	// supported_metrics declares optional sustainability metrics the plugin supports
+	SupportedMetrics []MetricKind `protobuf:"varint,4,rep,packed,name=supported_metrics,json=supportedMetrics,proto3,enum=pulumicost.v1.MetricKind" json:"supported_metrics,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *SupportsResponse) Reset() {
 	*x = SupportsResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[3]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -933,7 +1055,7 @@ func (x *SupportsResponse) String() string {
 func (*SupportsResponse) ProtoMessage() {}
 
 func (x *SupportsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[3]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -946,7 +1068,7 @@ func (x *SupportsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportsResponse.ProtoReflect.Descriptor instead.
 func (*SupportsResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{3}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *SupportsResponse) GetSupported() bool {
@@ -970,6 +1092,13 @@ func (x *SupportsResponse) GetCapabilities() map[string]bool {
 	return nil
 }
 
+func (x *SupportsResponse) GetSupportedMetrics() []MetricKind {
+	if x != nil {
+		return x.SupportedMetrics
+	}
+	return nil
+}
+
 // GetActualCostRequest contains parameters for retrieving historical cost data.
 type GetActualCostRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -989,7 +1118,7 @@ type GetActualCostRequest struct {
 
 func (x *GetActualCostRequest) Reset() {
 	*x = GetActualCostRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[4]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1001,7 +1130,7 @@ func (x *GetActualCostRequest) String() string {
 func (*GetActualCostRequest) ProtoMessage() {}
 
 func (x *GetActualCostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[4]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1014,7 +1143,7 @@ func (x *GetActualCostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetActualCostRequest.ProtoReflect.Descriptor instead.
 func (*GetActualCostRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{4}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetActualCostRequest) GetResourceId() string {
@@ -1065,7 +1194,7 @@ type GetActualCostResponse struct {
 
 func (x *GetActualCostResponse) Reset() {
 	*x = GetActualCostResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[5]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1077,7 +1206,7 @@ func (x *GetActualCostResponse) String() string {
 func (*GetActualCostResponse) ProtoMessage() {}
 
 func (x *GetActualCostResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[5]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1090,7 +1219,7 @@ func (x *GetActualCostResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetActualCostResponse.ProtoReflect.Descriptor instead.
 func (*GetActualCostResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{5}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetActualCostResponse) GetResults() []*ActualCostResult {
@@ -1111,14 +1240,16 @@ func (x *GetActualCostResponse) GetFallbackHint() FallbackHint {
 type GetProjectedCostRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// resource contains the resource descriptor for cost projection
-	Resource      *ResourceDescriptor `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Resource *ResourceDescriptor `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	// utilization_percentage is the global default utilization for all resources in request (0.0 to 1.0)
+	UtilizationPercentage float64 `protobuf:"fixed64,2,opt,name=utilization_percentage,json=utilizationPercentage,proto3" json:"utilization_percentage,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *GetProjectedCostRequest) Reset() {
 	*x = GetProjectedCostRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[6]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1130,7 +1261,7 @@ func (x *GetProjectedCostRequest) String() string {
 func (*GetProjectedCostRequest) ProtoMessage() {}
 
 func (x *GetProjectedCostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[6]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1143,7 +1274,7 @@ func (x *GetProjectedCostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProjectedCostRequest.ProtoReflect.Descriptor instead.
 func (*GetProjectedCostRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{6}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetProjectedCostRequest) GetResource() *ResourceDescriptor {
@@ -1151,6 +1282,13 @@ func (x *GetProjectedCostRequest) GetResource() *ResourceDescriptor {
 		return x.Resource
 	}
 	return nil
+}
+
+func (x *GetProjectedCostRequest) GetUtilizationPercentage() float64 {
+	if x != nil {
+		return x.UtilizationPercentage
+	}
+	return 0
 }
 
 // GetProjectedCostResponse contains projected cost information.
@@ -1164,13 +1302,15 @@ type GetProjectedCostResponse struct {
 	CostPerMonth float64 `protobuf:"fixed64,3,opt,name=cost_per_month,json=costPerMonth,proto3" json:"cost_per_month,omitempty"`
 	// billing_detail provides context (e.g., "on-demand", "kubecost-avg-daily")
 	BillingDetail string `protobuf:"bytes,4,opt,name=billing_detail,json=billingDetail,proto3" json:"billing_detail,omitempty"`
+	// impact_metrics contains sustainability metrics (Carbon, Energy, etc.)
+	ImpactMetrics []*ImpactMetric `protobuf:"bytes,5,rep,name=impact_metrics,json=impactMetrics,proto3" json:"impact_metrics,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetProjectedCostResponse) Reset() {
 	*x = GetProjectedCostResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[7]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1182,7 +1322,7 @@ func (x *GetProjectedCostResponse) String() string {
 func (*GetProjectedCostResponse) ProtoMessage() {}
 
 func (x *GetProjectedCostResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[7]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1195,7 +1335,7 @@ func (x *GetProjectedCostResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProjectedCostResponse.ProtoReflect.Descriptor instead.
 func (*GetProjectedCostResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{7}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetProjectedCostResponse) GetUnitPrice() float64 {
@@ -1226,6 +1366,13 @@ func (x *GetProjectedCostResponse) GetBillingDetail() string {
 	return ""
 }
 
+func (x *GetProjectedCostResponse) GetImpactMetrics() []*ImpactMetric {
+	if x != nil {
+		return x.ImpactMetrics
+	}
+	return nil
+}
+
 // GetPricingSpecRequest contains the resource descriptor for pricing specification.
 type GetPricingSpecRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1237,7 +1384,7 @@ type GetPricingSpecRequest struct {
 
 func (x *GetPricingSpecRequest) Reset() {
 	*x = GetPricingSpecRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[8]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1249,7 +1396,7 @@ func (x *GetPricingSpecRequest) String() string {
 func (*GetPricingSpecRequest) ProtoMessage() {}
 
 func (x *GetPricingSpecRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[8]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1262,7 +1409,7 @@ func (x *GetPricingSpecRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPricingSpecRequest.ProtoReflect.Descriptor instead.
 func (*GetPricingSpecRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{8}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetPricingSpecRequest) GetResource() *ResourceDescriptor {
@@ -1283,7 +1430,7 @@ type GetPricingSpecResponse struct {
 
 func (x *GetPricingSpecResponse) Reset() {
 	*x = GetPricingSpecResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[9]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1295,7 +1442,7 @@ func (x *GetPricingSpecResponse) String() string {
 func (*GetPricingSpecResponse) ProtoMessage() {}
 
 func (x *GetPricingSpecResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[9]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1308,7 +1455,7 @@ func (x *GetPricingSpecResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPricingSpecResponse.ProtoReflect.Descriptor instead.
 func (*GetPricingSpecResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{9}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetPricingSpecResponse) GetSpec() *PricingSpec {
@@ -1364,14 +1511,17 @@ type ResourceDescriptor struct {
 	// OPTIONAL. Used for additional resource matching and cost allocation.
 	// Examples: {"app": "web", "env": "production", "team": "platform"}
 	// Both keys and values should be non-empty when provided.
-	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Tags map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// utilization_percentage is a per-resource utilization override (0.0 to 1.0).
+	// OPTIONAL. If provided, overrides the global request default.
+	UtilizationPercentage *float64 `protobuf:"fixed64,6,opt,name=utilization_percentage,json=utilizationPercentage,proto3,oneof" json:"utilization_percentage,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *ResourceDescriptor) Reset() {
 	*x = ResourceDescriptor{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[10]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1383,7 +1533,7 @@ func (x *ResourceDescriptor) String() string {
 func (*ResourceDescriptor) ProtoMessage() {}
 
 func (x *ResourceDescriptor) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[10]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1396,7 +1546,7 @@ func (x *ResourceDescriptor) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceDescriptor.ProtoReflect.Descriptor instead.
 func (*ResourceDescriptor) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{10}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ResourceDescriptor) GetProvider() string {
@@ -1434,6 +1584,13 @@ func (x *ResourceDescriptor) GetTags() map[string]string {
 	return nil
 }
 
+func (x *ResourceDescriptor) GetUtilizationPercentage() float64 {
+	if x != nil && x.UtilizationPercentage != nil {
+		return *x.UtilizationPercentage
+	}
+	return 0
+}
+
 // ActualCostResult represents a single cost data point.
 type ActualCostResult struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1449,14 +1606,16 @@ type ActualCostResult struct {
 	Source string `protobuf:"bytes,5,opt,name=source,proto3" json:"source,omitempty"`
 	// focus_record provides the cost data in FOCUS 1.2 format.
 	// This field is optional and will eventually replace the legacy fields.
-	FocusRecord   *FocusCostRecord `protobuf:"bytes,6,opt,name=focus_record,json=focusRecord,proto3" json:"focus_record,omitempty"`
+	FocusRecord *FocusCostRecord `protobuf:"bytes,6,opt,name=focus_record,json=focusRecord,proto3" json:"focus_record,omitempty"`
+	// impact_metrics contains sustainability metrics (Carbon, Energy, etc.)
+	ImpactMetrics []*ImpactMetric `protobuf:"bytes,7,rep,name=impact_metrics,json=impactMetrics,proto3" json:"impact_metrics,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ActualCostResult) Reset() {
 	*x = ActualCostResult{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[11]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1468,7 +1627,7 @@ func (x *ActualCostResult) String() string {
 func (*ActualCostResult) ProtoMessage() {}
 
 func (x *ActualCostResult) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[11]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1481,7 +1640,7 @@ func (x *ActualCostResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActualCostResult.ProtoReflect.Descriptor instead.
 func (*ActualCostResult) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{11}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ActualCostResult) GetTimestamp() *timestamppb.Timestamp {
@@ -1526,6 +1685,13 @@ func (x *ActualCostResult) GetFocusRecord() *FocusCostRecord {
 	return nil
 }
 
+func (x *ActualCostResult) GetImpactMetrics() []*ImpactMetric {
+	if x != nil {
+		return x.ImpactMetrics
+	}
+	return nil
+}
+
 // UsageMetricHint provides guidance on usage metrics for cost calculation.
 type UsageMetricHint struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1539,7 +1705,7 @@ type UsageMetricHint struct {
 
 func (x *UsageMetricHint) Reset() {
 	*x = UsageMetricHint{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[12]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1551,7 +1717,7 @@ func (x *UsageMetricHint) String() string {
 func (*UsageMetricHint) ProtoMessage() {}
 
 func (x *UsageMetricHint) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[12]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1564,7 +1730,7 @@ func (x *UsageMetricHint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UsageMetricHint.ProtoReflect.Descriptor instead.
 func (*UsageMetricHint) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{12}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UsageMetricHint) GetMetric() string {
@@ -1623,7 +1789,7 @@ type PricingSpec struct {
 
 func (x *PricingSpec) Reset() {
 	*x = PricingSpec{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[13]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1635,7 +1801,7 @@ func (x *PricingSpec) String() string {
 func (*PricingSpec) ProtoMessage() {}
 
 func (x *PricingSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[13]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1648,7 +1814,7 @@ func (x *PricingSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PricingSpec.ProtoReflect.Descriptor instead.
 func (*PricingSpec) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{13}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *PricingSpec) GetProvider() string {
@@ -1767,7 +1933,7 @@ type PricingTier struct {
 
 func (x *PricingTier) Reset() {
 	*x = PricingTier{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[14]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1779,7 +1945,7 @@ func (x *PricingTier) String() string {
 func (*PricingTier) ProtoMessage() {}
 
 func (x *PricingTier) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[14]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1792,7 +1958,7 @@ func (x *PricingTier) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PricingTier.ProtoReflect.Descriptor instead.
 func (*PricingTier) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{14}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PricingTier) GetMinQuantity() float64 {
@@ -1844,7 +2010,7 @@ type ErrorDetail struct {
 
 func (x *ErrorDetail) Reset() {
 	*x = ErrorDetail{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[15]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1856,7 +2022,7 @@ func (x *ErrorDetail) String() string {
 func (*ErrorDetail) ProtoMessage() {}
 
 func (x *ErrorDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[15]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1869,7 +2035,7 @@ func (x *ErrorDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ErrorDetail.ProtoReflect.Descriptor instead.
 func (*ErrorDetail) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{15}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ErrorDetail) GetCode() ErrorCode {
@@ -1925,7 +2091,7 @@ type HealthCheckRequest struct {
 
 func (x *HealthCheckRequest) Reset() {
 	*x = HealthCheckRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[16]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1937,7 +2103,7 @@ func (x *HealthCheckRequest) String() string {
 func (*HealthCheckRequest) ProtoMessage() {}
 
 func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[16]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1950,7 +2116,7 @@ func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckRequest.ProtoReflect.Descriptor instead.
 func (*HealthCheckRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{16}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *HealthCheckRequest) GetServiceName() string {
@@ -1975,7 +2141,7 @@ type HealthCheckResponse struct {
 
 func (x *HealthCheckResponse) Reset() {
 	*x = HealthCheckResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[17]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1987,7 +2153,7 @@ func (x *HealthCheckResponse) String() string {
 func (*HealthCheckResponse) ProtoMessage() {}
 
 func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[17]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2000,7 +2166,7 @@ func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckResponse.ProtoReflect.Descriptor instead.
 func (*HealthCheckResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{17}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *HealthCheckResponse) GetStatus() HealthCheckResponse_Status {
@@ -2037,7 +2203,7 @@ type GetMetricsRequest struct {
 
 func (x *GetMetricsRequest) Reset() {
 	*x = GetMetricsRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[18]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2049,7 +2215,7 @@ func (x *GetMetricsRequest) String() string {
 func (*GetMetricsRequest) ProtoMessage() {}
 
 func (x *GetMetricsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[18]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2062,7 +2228,7 @@ func (x *GetMetricsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMetricsRequest.ProtoReflect.Descriptor instead.
 func (*GetMetricsRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{18}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetMetricsRequest) GetMetricNames() []string {
@@ -2094,7 +2260,7 @@ type GetMetricsResponse struct {
 
 func (x *GetMetricsResponse) Reset() {
 	*x = GetMetricsResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[19]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2106,7 +2272,7 @@ func (x *GetMetricsResponse) String() string {
 func (*GetMetricsResponse) ProtoMessage() {}
 
 func (x *GetMetricsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[19]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2119,7 +2285,7 @@ func (x *GetMetricsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMetricsResponse.ProtoReflect.Descriptor instead.
 func (*GetMetricsResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{19}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetMetricsResponse) GetMetrics() []*Metric {
@@ -2160,7 +2326,7 @@ type Metric struct {
 
 func (x *Metric) Reset() {
 	*x = Metric{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[20]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2172,7 +2338,7 @@ func (x *Metric) String() string {
 func (*Metric) ProtoMessage() {}
 
 func (x *Metric) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[20]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2185,7 +2351,7 @@ func (x *Metric) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Metric.ProtoReflect.Descriptor instead.
 func (*Metric) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{20}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *Metric) GetName() string {
@@ -2231,7 +2397,7 @@ type MetricSample struct {
 
 func (x *MetricSample) Reset() {
 	*x = MetricSample{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[21]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2243,7 +2409,7 @@ func (x *MetricSample) String() string {
 func (*MetricSample) ProtoMessage() {}
 
 func (x *MetricSample) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[21]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2256,7 +2422,7 @@ func (x *MetricSample) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MetricSample.ProtoReflect.Descriptor instead.
 func (*MetricSample) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{21}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *MetricSample) GetLabels() map[string]string {
@@ -2293,7 +2459,7 @@ type GetServiceLevelIndicatorsRequest struct {
 
 func (x *GetServiceLevelIndicatorsRequest) Reset() {
 	*x = GetServiceLevelIndicatorsRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[22]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2305,7 +2471,7 @@ func (x *GetServiceLevelIndicatorsRequest) String() string {
 func (*GetServiceLevelIndicatorsRequest) ProtoMessage() {}
 
 func (x *GetServiceLevelIndicatorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[22]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2318,7 +2484,7 @@ func (x *GetServiceLevelIndicatorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetServiceLevelIndicatorsRequest.ProtoReflect.Descriptor instead.
 func (*GetServiceLevelIndicatorsRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{22}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetServiceLevelIndicatorsRequest) GetTimeRange() *TimeRange {
@@ -2348,7 +2514,7 @@ type GetServiceLevelIndicatorsResponse struct {
 
 func (x *GetServiceLevelIndicatorsResponse) Reset() {
 	*x = GetServiceLevelIndicatorsResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[23]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2360,7 +2526,7 @@ func (x *GetServiceLevelIndicatorsResponse) String() string {
 func (*GetServiceLevelIndicatorsResponse) ProtoMessage() {}
 
 func (x *GetServiceLevelIndicatorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[23]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2373,7 +2539,7 @@ func (x *GetServiceLevelIndicatorsResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use GetServiceLevelIndicatorsResponse.ProtoReflect.Descriptor instead.
 func (*GetServiceLevelIndicatorsResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{23}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetServiceLevelIndicatorsResponse) GetSlis() []*ServiceLevelIndicator {
@@ -2411,7 +2577,7 @@ type ServiceLevelIndicator struct {
 
 func (x *ServiceLevelIndicator) Reset() {
 	*x = ServiceLevelIndicator{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[24]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2423,7 +2589,7 @@ func (x *ServiceLevelIndicator) String() string {
 func (*ServiceLevelIndicator) ProtoMessage() {}
 
 func (x *ServiceLevelIndicator) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[24]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2436,7 +2602,7 @@ func (x *ServiceLevelIndicator) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceLevelIndicator.ProtoReflect.Descriptor instead.
 func (*ServiceLevelIndicator) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{24}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ServiceLevelIndicator) GetName() string {
@@ -2494,7 +2660,7 @@ type TimeRange struct {
 
 func (x *TimeRange) Reset() {
 	*x = TimeRange{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[25]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2506,7 +2672,7 @@ func (x *TimeRange) String() string {
 func (*TimeRange) ProtoMessage() {}
 
 func (x *TimeRange) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[25]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2519,7 +2685,7 @@ func (x *TimeRange) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimeRange.ProtoReflect.Descriptor instead.
 func (*TimeRange) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{25}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *TimeRange) GetStart() *timestamppb.Timestamp {
@@ -2560,7 +2726,7 @@ type TelemetryMetadata struct {
 
 func (x *TelemetryMetadata) Reset() {
 	*x = TelemetryMetadata{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[26]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2572,7 +2738,7 @@ func (x *TelemetryMetadata) String() string {
 func (*TelemetryMetadata) ProtoMessage() {}
 
 func (x *TelemetryMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[26]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2585,7 +2751,7 @@ func (x *TelemetryMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TelemetryMetadata.ProtoReflect.Descriptor instead.
 func (*TelemetryMetadata) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{26}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *TelemetryMetadata) GetTraceId() string {
@@ -2662,7 +2828,7 @@ type LogEntry struct {
 
 func (x *LogEntry) Reset() {
 	*x = LogEntry{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[27]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2674,7 +2840,7 @@ func (x *LogEntry) String() string {
 func (*LogEntry) ProtoMessage() {}
 
 func (x *LogEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[27]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2687,7 +2853,7 @@ func (x *LogEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogEntry.ProtoReflect.Descriptor instead.
 func (*LogEntry) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{27}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *LogEntry) GetTimestamp() *timestamppb.Timestamp {
@@ -2765,7 +2931,7 @@ type ErrorDetails struct {
 
 func (x *ErrorDetails) Reset() {
 	*x = ErrorDetails{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[28]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2777,7 +2943,7 @@ func (x *ErrorDetails) String() string {
 func (*ErrorDetails) ProtoMessage() {}
 
 func (x *ErrorDetails) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[28]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2790,7 +2956,7 @@ func (x *ErrorDetails) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ErrorDetails.ProtoReflect.Descriptor instead.
 func (*ErrorDetails) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{28}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ErrorDetails) GetErrorCode() string {
@@ -2863,7 +3029,7 @@ type EstimateCostRequest struct {
 
 func (x *EstimateCostRequest) Reset() {
 	*x = EstimateCostRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[29]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2875,7 +3041,7 @@ func (x *EstimateCostRequest) String() string {
 func (*EstimateCostRequest) ProtoMessage() {}
 
 func (x *EstimateCostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[29]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2888,7 +3054,7 @@ func (x *EstimateCostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EstimateCostRequest.ProtoReflect.Descriptor instead.
 func (*EstimateCostRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{29}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *EstimateCostRequest) GetResourceType() string {
@@ -2925,7 +3091,7 @@ type EstimateCostResponse struct {
 
 func (x *EstimateCostResponse) Reset() {
 	*x = EstimateCostResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[30]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2937,7 +3103,7 @@ func (x *EstimateCostResponse) String() string {
 func (*EstimateCostResponse) ProtoMessage() {}
 
 func (x *EstimateCostResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[30]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2950,7 +3116,7 @@ func (x *EstimateCostResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EstimateCostResponse.ProtoReflect.Descriptor instead.
 func (*EstimateCostResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{30}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *EstimateCostResponse) GetCurrency() string {
@@ -3014,7 +3180,7 @@ type GetRecommendationsRequest struct {
 
 func (x *GetRecommendationsRequest) Reset() {
 	*x = GetRecommendationsRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[31]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3026,7 +3192,7 @@ func (x *GetRecommendationsRequest) String() string {
 func (*GetRecommendationsRequest) ProtoMessage() {}
 
 func (x *GetRecommendationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[31]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3039,7 +3205,7 @@ func (x *GetRecommendationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRecommendationsRequest.ProtoReflect.Descriptor instead.
 func (*GetRecommendationsRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{31}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetRecommendationsRequest) GetFilter() *RecommendationFilter {
@@ -3101,7 +3267,7 @@ type GetRecommendationsResponse struct {
 
 func (x *GetRecommendationsResponse) Reset() {
 	*x = GetRecommendationsResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[32]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3113,7 +3279,7 @@ func (x *GetRecommendationsResponse) String() string {
 func (*GetRecommendationsResponse) ProtoMessage() {}
 
 func (x *GetRecommendationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[32]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3126,7 +3292,7 @@ func (x *GetRecommendationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRecommendationsResponse.ProtoReflect.Descriptor instead.
 func (*GetRecommendationsResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{32}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetRecommendationsResponse) GetRecommendations() []*Recommendation {
@@ -3211,7 +3377,7 @@ type RecommendationFilter struct {
 
 func (x *RecommendationFilter) Reset() {
 	*x = RecommendationFilter{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[33]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3223,7 +3389,7 @@ func (x *RecommendationFilter) String() string {
 func (*RecommendationFilter) ProtoMessage() {}
 
 func (x *RecommendationFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[33]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3236,7 +3402,7 @@ func (x *RecommendationFilter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecommendationFilter.ProtoReflect.Descriptor instead.
 func (*RecommendationFilter) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{33}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *RecommendationFilter) GetProvider() string {
@@ -3395,7 +3561,7 @@ type Recommendation struct {
 
 func (x *Recommendation) Reset() {
 	*x = Recommendation{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[34]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3407,7 +3573,7 @@ func (x *Recommendation) String() string {
 func (*Recommendation) ProtoMessage() {}
 
 func (x *Recommendation) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[34]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3420,7 +3586,7 @@ func (x *Recommendation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Recommendation.ProtoReflect.Descriptor instead.
 func (*Recommendation) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{34}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *Recommendation) GetId() string {
@@ -3619,7 +3785,7 @@ type ResourceRecommendationInfo struct {
 
 func (x *ResourceRecommendationInfo) Reset() {
 	*x = ResourceRecommendationInfo{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[35]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3631,7 +3797,7 @@ func (x *ResourceRecommendationInfo) String() string {
 func (*ResourceRecommendationInfo) ProtoMessage() {}
 
 func (x *ResourceRecommendationInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[35]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3644,7 +3810,7 @@ func (x *ResourceRecommendationInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceRecommendationInfo.ProtoReflect.Descriptor instead.
 func (*ResourceRecommendationInfo) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{35}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ResourceRecommendationInfo) GetId() string {
@@ -3724,7 +3890,7 @@ type ResourceUtilization struct {
 
 func (x *ResourceUtilization) Reset() {
 	*x = ResourceUtilization{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[36]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3736,7 +3902,7 @@ func (x *ResourceUtilization) String() string {
 func (*ResourceUtilization) ProtoMessage() {}
 
 func (x *ResourceUtilization) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[36]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3749,7 +3915,7 @@ func (x *ResourceUtilization) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceUtilization.ProtoReflect.Descriptor instead.
 func (*ResourceUtilization) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{36}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *ResourceUtilization) GetCpuPercent() float64 {
@@ -3813,7 +3979,7 @@ type RightsizeAction struct {
 
 func (x *RightsizeAction) Reset() {
 	*x = RightsizeAction{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[37]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3825,7 +3991,7 @@ func (x *RightsizeAction) String() string {
 func (*RightsizeAction) ProtoMessage() {}
 
 func (x *RightsizeAction) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[37]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3838,7 +4004,7 @@ func (x *RightsizeAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RightsizeAction.ProtoReflect.Descriptor instead.
 func (*RightsizeAction) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{37}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *RightsizeAction) GetCurrentSku() string {
@@ -3889,7 +4055,7 @@ type TerminateAction struct {
 
 func (x *TerminateAction) Reset() {
 	*x = TerminateAction{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[38]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3901,7 +4067,7 @@ func (x *TerminateAction) String() string {
 func (*TerminateAction) ProtoMessage() {}
 
 func (x *TerminateAction) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[38]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3914,7 +4080,7 @@ func (x *TerminateAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TerminateAction.ProtoReflect.Descriptor instead.
 func (*TerminateAction) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{38}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *TerminateAction) GetTerminationReason() string {
@@ -3950,7 +4116,7 @@ type CommitmentAction struct {
 
 func (x *CommitmentAction) Reset() {
 	*x = CommitmentAction{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[39]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3962,7 +4128,7 @@ func (x *CommitmentAction) String() string {
 func (*CommitmentAction) ProtoMessage() {}
 
 func (x *CommitmentAction) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[39]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3975,7 +4141,7 @@ func (x *CommitmentAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitmentAction.ProtoReflect.Descriptor instead.
 func (*CommitmentAction) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{39}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *CommitmentAction) GetCommitmentType() string {
@@ -4042,7 +4208,7 @@ type KubernetesAction struct {
 
 func (x *KubernetesAction) Reset() {
 	*x = KubernetesAction{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[40]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4054,7 +4220,7 @@ func (x *KubernetesAction) String() string {
 func (*KubernetesAction) ProtoMessage() {}
 
 func (x *KubernetesAction) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[40]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4067,7 +4233,7 @@ func (x *KubernetesAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KubernetesAction.ProtoReflect.Descriptor instead.
 func (*KubernetesAction) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{40}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *KubernetesAction) GetClusterId() string {
@@ -4153,7 +4319,7 @@ type KubernetesResources struct {
 
 func (x *KubernetesResources) Reset() {
 	*x = KubernetesResources{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[41]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4165,7 +4331,7 @@ func (x *KubernetesResources) String() string {
 func (*KubernetesResources) ProtoMessage() {}
 
 func (x *KubernetesResources) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[41]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4178,7 +4344,7 @@ func (x *KubernetesResources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KubernetesResources.ProtoReflect.Descriptor instead.
 func (*KubernetesResources) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{41}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *KubernetesResources) GetCpu() string {
@@ -4210,7 +4376,7 @@ type ModifyAction struct {
 
 func (x *ModifyAction) Reset() {
 	*x = ModifyAction{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[42]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4222,7 +4388,7 @@ func (x *ModifyAction) String() string {
 func (*ModifyAction) ProtoMessage() {}
 
 func (x *ModifyAction) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[42]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4235,7 +4401,7 @@ func (x *ModifyAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModifyAction.ProtoReflect.Descriptor instead.
 func (*ModifyAction) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{42}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *ModifyAction) GetModificationType() string {
@@ -4284,7 +4450,7 @@ type RecommendationImpact struct {
 
 func (x *RecommendationImpact) Reset() {
 	*x = RecommendationImpact{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[43]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4296,7 +4462,7 @@ func (x *RecommendationImpact) String() string {
 func (*RecommendationImpact) ProtoMessage() {}
 
 func (x *RecommendationImpact) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[43]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4309,7 +4475,7 @@ func (x *RecommendationImpact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecommendationImpact.ProtoReflect.Descriptor instead.
 func (*RecommendationImpact) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{43}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *RecommendationImpact) GetEstimatedSavings() float64 {
@@ -4394,7 +4560,7 @@ type RecommendationSummary struct {
 
 func (x *RecommendationSummary) Reset() {
 	*x = RecommendationSummary{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[44]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4406,7 +4572,7 @@ func (x *RecommendationSummary) String() string {
 func (*RecommendationSummary) ProtoMessage() {}
 
 func (x *RecommendationSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[44]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4419,7 +4585,7 @@ func (x *RecommendationSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecommendationSummary.ProtoReflect.Descriptor instead.
 func (*RecommendationSummary) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{44}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *RecommendationSummary) GetTotalRecommendations() int32 {
@@ -4503,7 +4669,7 @@ type DismissRecommendationRequest struct {
 
 func (x *DismissRecommendationRequest) Reset() {
 	*x = DismissRecommendationRequest{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[45]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4515,7 +4681,7 @@ func (x *DismissRecommendationRequest) String() string {
 func (*DismissRecommendationRequest) ProtoMessage() {}
 
 func (x *DismissRecommendationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[45]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4528,7 +4694,7 @@ func (x *DismissRecommendationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DismissRecommendationRequest.ProtoReflect.Descriptor instead.
 func (*DismissRecommendationRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{45}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *DismissRecommendationRequest) GetRecommendationId() string {
@@ -4585,7 +4751,7 @@ type DismissRecommendationResponse struct {
 
 func (x *DismissRecommendationResponse) Reset() {
 	*x = DismissRecommendationResponse{}
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[46]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4597,7 +4763,7 @@ func (x *DismissRecommendationResponse) String() string {
 func (*DismissRecommendationResponse) ProtoMessage() {}
 
 func (x *DismissRecommendationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_costsource_proto_msgTypes[46]
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4610,7 +4776,7 @@ func (x *DismissRecommendationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DismissRecommendationResponse.ProtoReflect.Descriptor instead.
 func (*DismissRecommendationResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{46}
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *DismissRecommendationResponse) GetSuccess() bool {
@@ -4655,13 +4821,18 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x1epulumicost/v1/costsource.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x19pulumicost/v1/focus.proto\x1a\x1apulumicost/v1/budget.proto\"\r\n" +
 	"\vNameRequest\"\"\n" +
 	"\fNameResponse\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"P\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"g\n" +
+	"\fImpactMetric\x12-\n" +
+	"\x04kind\x18\x01 \x01(\x0e2\x19.pulumicost.v1.MetricKindR\x04kind\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value\x12\x12\n" +
+	"\x04unit\x18\x03 \x01(\tR\x04unit\"P\n" +
 	"\x0fSupportsRequest\x12=\n" +
-	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"\xe0\x01\n" +
+	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"\xa8\x02\n" +
 	"\x10SupportsResponse\x12\x1c\n" +
 	"\tsupported\x18\x01 \x01(\bR\tsupported\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\x12U\n" +
-	"\fcapabilities\x18\x03 \x03(\v21.pulumicost.v1.SupportsResponse.CapabilitiesEntryR\fcapabilities\x1a?\n" +
+	"\fcapabilities\x18\x03 \x03(\v21.pulumicost.v1.SupportsResponse.CapabilitiesEntryR\fcapabilities\x12F\n" +
+	"\x11supported_metrics\x18\x04 \x03(\x0e2\x19.pulumicost.v1.MetricKindR\x10supportedMetrics\x1a?\n" +
 	"\x11CapabilitiesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xa5\x02\n" +
@@ -4677,28 +4848,32 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x94\x01\n" +
 	"\x15GetActualCostResponse\x129\n" +
 	"\aresults\x18\x01 \x03(\v2\x1f.pulumicost.v1.ActualCostResultR\aresults\x12@\n" +
-	"\rfallback_hint\x18\x02 \x01(\x0e2\x1b.pulumicost.v1.FallbackHintR\ffallbackHint\"X\n" +
+	"\rfallback_hint\x18\x02 \x01(\x0e2\x1b.pulumicost.v1.FallbackHintR\ffallbackHint\"\x8f\x01\n" +
 	"\x17GetProjectedCostRequest\x12=\n" +
-	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"\xa2\x01\n" +
+	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\x125\n" +
+	"\x16utilization_percentage\x18\x02 \x01(\x01R\x15utilizationPercentage\"\xe6\x01\n" +
 	"\x18GetProjectedCostResponse\x12\x1d\n" +
 	"\n" +
 	"unit_price\x18\x01 \x01(\x01R\tunitPrice\x12\x1a\n" +
 	"\bcurrency\x18\x02 \x01(\tR\bcurrency\x12$\n" +
 	"\x0ecost_per_month\x18\x03 \x01(\x01R\fcostPerMonth\x12%\n" +
-	"\x0ebilling_detail\x18\x04 \x01(\tR\rbillingDetail\"V\n" +
+	"\x0ebilling_detail\x18\x04 \x01(\tR\rbillingDetail\x12B\n" +
+	"\x0eimpact_metrics\x18\x05 \x03(\v2\x1b.pulumicost.v1.ImpactMetricR\rimpactMetrics\"V\n" +
 	"\x15GetPricingSpecRequest\x12=\n" +
 	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"H\n" +
 	"\x16GetPricingSpecResponse\x12.\n" +
-	"\x04spec\x18\x01 \x01(\v2\x1a.pulumicost.v1.PricingSpecR\x04spec\"\xf9\x01\n" +
+	"\x04spec\x18\x01 \x01(\v2\x1a.pulumicost.v1.PricingSpecR\x04spec\"\xd0\x02\n" +
 	"\x12ResourceDescriptor\x12\x1a\n" +
 	"\bprovider\x18\x01 \x01(\tR\bprovider\x12#\n" +
 	"\rresource_type\x18\x02 \x01(\tR\fresourceType\x12\x10\n" +
 	"\x03sku\x18\x03 \x01(\tR\x03sku\x12\x16\n" +
 	"\x06region\x18\x04 \x01(\tR\x06region\x12?\n" +
-	"\x04tags\x18\x05 \x03(\v2+.pulumicost.v1.ResourceDescriptor.TagsEntryR\x04tags\x1a7\n" +
+	"\x04tags\x18\x05 \x03(\v2+.pulumicost.v1.ResourceDescriptor.TagsEntryR\x04tags\x12:\n" +
+	"\x16utilization_percentage\x18\x06 \x01(\x01H\x00R\x15utilizationPercentage\x88\x01\x01\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xfd\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x19\n" +
+	"\x17_utilization_percentage\"\xc1\x02\n" +
 	"\x10ActualCostResult\x128\n" +
 	"\ttimestamp\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x12\n" +
 	"\x04cost\x18\x02 \x01(\x01R\x04cost\x12!\n" +
@@ -4706,7 +4881,8 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\n" +
 	"usage_unit\x18\x04 \x01(\tR\tusageUnit\x12\x16\n" +
 	"\x06source\x18\x05 \x01(\tR\x06source\x12A\n" +
-	"\ffocus_record\x18\x06 \x01(\v2\x1e.pulumicost.v1.FocusCostRecordR\vfocusRecord\"=\n" +
+	"\ffocus_record\x18\x06 \x01(\v2\x1e.pulumicost.v1.FocusCostRecordR\vfocusRecord\x12B\n" +
+	"\x0eimpact_metrics\x18\a \x03(\v2\x1b.pulumicost.v1.ImpactMetricR\rimpactMetrics\"=\n" +
 	"\x0fUsageMetricHint\x12\x16\n" +
 	"\x06metric\x18\x01 \x01(\tR\x06metric\x12\x12\n" +
 	"\x04unit\x18\x02 \x01(\tR\x04unit\"\xeb\x04\n" +
@@ -5011,7 +5187,13 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampH\x00R\texpiresAt\x88\x01\x01\x12+\n" +
 	"\x11recommendation_id\x18\x05 \x01(\tR\x10recommendationIdB\r\n" +
-	"\v_expires_at*\x80\x01\n" +
+	"\v_expires_at*\x8c\x01\n" +
+	"\n" +
+	"MetricKind\x12\x1b\n" +
+	"\x17METRIC_KIND_UNSPECIFIED\x10\x00\x12 \n" +
+	"\x1cMETRIC_KIND_CARBON_FOOTPRINT\x10\x01\x12\"\n" +
+	"\x1eMETRIC_KIND_ENERGY_CONSUMPTION\x10\x02\x12\x1b\n" +
+	"\x17METRIC_KIND_WATER_USAGE\x10\x03*\x80\x01\n" +
 	"\fFallbackHint\x12\x1d\n" +
 	"\x19FALLBACK_HINT_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12FALLBACK_HINT_NONE\x10\x01\x12\x1d\n" +
@@ -5127,199 +5309,205 @@ func file_pulumicost_v1_costsource_proto_rawDescGZIP() []byte {
 	return file_pulumicost_v1_costsource_proto_rawDescData
 }
 
-var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 12)
-var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 64)
+var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 13)
+var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 65)
 var file_pulumicost_v1_costsource_proto_goTypes = []any{
-	(FallbackHint)(0),                         // 0: pulumicost.v1.FallbackHint
-	(ErrorCategory)(0),                        // 1: pulumicost.v1.ErrorCategory
-	(ErrorCode)(0),                            // 2: pulumicost.v1.ErrorCode
-	(MetricType)(0),                           // 3: pulumicost.v1.MetricType
-	(SLIStatus)(0),                            // 4: pulumicost.v1.SLIStatus
-	(RecommendationCategory)(0),               // 5: pulumicost.v1.RecommendationCategory
-	(RecommendationActionType)(0),             // 6: pulumicost.v1.RecommendationActionType
-	(RecommendationPriority)(0),               // 7: pulumicost.v1.RecommendationPriority
-	(RecommendationSortBy)(0),                 // 8: pulumicost.v1.RecommendationSortBy
-	(SortOrder)(0),                            // 9: pulumicost.v1.SortOrder
-	(DismissalReason)(0),                      // 10: pulumicost.v1.DismissalReason
-	(HealthCheckResponse_Status)(0),           // 11: pulumicost.v1.HealthCheckResponse.Status
-	(*NameRequest)(nil),                       // 12: pulumicost.v1.NameRequest
-	(*NameResponse)(nil),                      // 13: pulumicost.v1.NameResponse
-	(*SupportsRequest)(nil),                   // 14: pulumicost.v1.SupportsRequest
-	(*SupportsResponse)(nil),                  // 15: pulumicost.v1.SupportsResponse
-	(*GetActualCostRequest)(nil),              // 16: pulumicost.v1.GetActualCostRequest
-	(*GetActualCostResponse)(nil),             // 17: pulumicost.v1.GetActualCostResponse
-	(*GetProjectedCostRequest)(nil),           // 18: pulumicost.v1.GetProjectedCostRequest
-	(*GetProjectedCostResponse)(nil),          // 19: pulumicost.v1.GetProjectedCostResponse
-	(*GetPricingSpecRequest)(nil),             // 20: pulumicost.v1.GetPricingSpecRequest
-	(*GetPricingSpecResponse)(nil),            // 21: pulumicost.v1.GetPricingSpecResponse
-	(*ResourceDescriptor)(nil),                // 22: pulumicost.v1.ResourceDescriptor
-	(*ActualCostResult)(nil),                  // 23: pulumicost.v1.ActualCostResult
-	(*UsageMetricHint)(nil),                   // 24: pulumicost.v1.UsageMetricHint
-	(*PricingSpec)(nil),                       // 25: pulumicost.v1.PricingSpec
-	(*PricingTier)(nil),                       // 26: pulumicost.v1.PricingTier
-	(*ErrorDetail)(nil),                       // 27: pulumicost.v1.ErrorDetail
-	(*HealthCheckRequest)(nil),                // 28: pulumicost.v1.HealthCheckRequest
-	(*HealthCheckResponse)(nil),               // 29: pulumicost.v1.HealthCheckResponse
-	(*GetMetricsRequest)(nil),                 // 30: pulumicost.v1.GetMetricsRequest
-	(*GetMetricsResponse)(nil),                // 31: pulumicost.v1.GetMetricsResponse
-	(*Metric)(nil),                            // 32: pulumicost.v1.Metric
-	(*MetricSample)(nil),                      // 33: pulumicost.v1.MetricSample
-	(*GetServiceLevelIndicatorsRequest)(nil),  // 34: pulumicost.v1.GetServiceLevelIndicatorsRequest
-	(*GetServiceLevelIndicatorsResponse)(nil), // 35: pulumicost.v1.GetServiceLevelIndicatorsResponse
-	(*ServiceLevelIndicator)(nil),             // 36: pulumicost.v1.ServiceLevelIndicator
-	(*TimeRange)(nil),                         // 37: pulumicost.v1.TimeRange
-	(*TelemetryMetadata)(nil),                 // 38: pulumicost.v1.TelemetryMetadata
-	(*LogEntry)(nil),                          // 39: pulumicost.v1.LogEntry
-	(*ErrorDetails)(nil),                      // 40: pulumicost.v1.ErrorDetails
-	(*EstimateCostRequest)(nil),               // 41: pulumicost.v1.EstimateCostRequest
-	(*EstimateCostResponse)(nil),              // 42: pulumicost.v1.EstimateCostResponse
-	(*GetRecommendationsRequest)(nil),         // 43: pulumicost.v1.GetRecommendationsRequest
-	(*GetRecommendationsResponse)(nil),        // 44: pulumicost.v1.GetRecommendationsResponse
-	(*RecommendationFilter)(nil),              // 45: pulumicost.v1.RecommendationFilter
-	(*Recommendation)(nil),                    // 46: pulumicost.v1.Recommendation
-	(*ResourceRecommendationInfo)(nil),        // 47: pulumicost.v1.ResourceRecommendationInfo
-	(*ResourceUtilization)(nil),               // 48: pulumicost.v1.ResourceUtilization
-	(*RightsizeAction)(nil),                   // 49: pulumicost.v1.RightsizeAction
-	(*TerminateAction)(nil),                   // 50: pulumicost.v1.TerminateAction
-	(*CommitmentAction)(nil),                  // 51: pulumicost.v1.CommitmentAction
-	(*KubernetesAction)(nil),                  // 52: pulumicost.v1.KubernetesAction
-	(*KubernetesResources)(nil),               // 53: pulumicost.v1.KubernetesResources
-	(*ModifyAction)(nil),                      // 54: pulumicost.v1.ModifyAction
-	(*RecommendationImpact)(nil),              // 55: pulumicost.v1.RecommendationImpact
-	(*RecommendationSummary)(nil),             // 56: pulumicost.v1.RecommendationSummary
-	(*DismissRecommendationRequest)(nil),      // 57: pulumicost.v1.DismissRecommendationRequest
-	(*DismissRecommendationResponse)(nil),     // 58: pulumicost.v1.DismissRecommendationResponse
-	nil,                                       // 59: pulumicost.v1.SupportsResponse.CapabilitiesEntry
-	nil,                                       // 60: pulumicost.v1.GetActualCostRequest.TagsEntry
-	nil,                                       // 61: pulumicost.v1.ResourceDescriptor.TagsEntry
-	nil,                                       // 62: pulumicost.v1.PricingSpec.PluginMetadataEntry
-	nil,                                       // 63: pulumicost.v1.ErrorDetail.DetailsEntry
-	nil,                                       // 64: pulumicost.v1.MetricSample.LabelsEntry
-	nil,                                       // 65: pulumicost.v1.LogEntry.FieldsEntry
-	nil,                                       // 66: pulumicost.v1.RecommendationFilter.TagsEntry
-	nil,                                       // 67: pulumicost.v1.Recommendation.MetadataEntry
-	nil,                                       // 68: pulumicost.v1.ResourceRecommendationInfo.TagsEntry
-	nil,                                       // 69: pulumicost.v1.ResourceUtilization.CustomMetricsEntry
-	nil,                                       // 70: pulumicost.v1.ModifyAction.CurrentConfigEntry
-	nil,                                       // 71: pulumicost.v1.ModifyAction.RecommendedConfigEntry
-	nil,                                       // 72: pulumicost.v1.RecommendationSummary.CountByCategoryEntry
-	nil,                                       // 73: pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
-	nil,                                       // 74: pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
-	nil,                                       // 75: pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
-	(*timestamppb.Timestamp)(nil),             // 76: google.protobuf.Timestamp
-	(*FocusCostRecord)(nil),                   // 77: pulumicost.v1.FocusCostRecord
-	(*structpb.Struct)(nil),                   // 78: google.protobuf.Struct
-	(*GetBudgetsRequest)(nil),                 // 79: pulumicost.v1.GetBudgetsRequest
-	(*GetBudgetsResponse)(nil),                // 80: pulumicost.v1.GetBudgetsResponse
+	(MetricKind)(0),                           // 0: pulumicost.v1.MetricKind
+	(FallbackHint)(0),                         // 1: pulumicost.v1.FallbackHint
+	(ErrorCategory)(0),                        // 2: pulumicost.v1.ErrorCategory
+	(ErrorCode)(0),                            // 3: pulumicost.v1.ErrorCode
+	(MetricType)(0),                           // 4: pulumicost.v1.MetricType
+	(SLIStatus)(0),                            // 5: pulumicost.v1.SLIStatus
+	(RecommendationCategory)(0),               // 6: pulumicost.v1.RecommendationCategory
+	(RecommendationActionType)(0),             // 7: pulumicost.v1.RecommendationActionType
+	(RecommendationPriority)(0),               // 8: pulumicost.v1.RecommendationPriority
+	(RecommendationSortBy)(0),                 // 9: pulumicost.v1.RecommendationSortBy
+	(SortOrder)(0),                            // 10: pulumicost.v1.SortOrder
+	(DismissalReason)(0),                      // 11: pulumicost.v1.DismissalReason
+	(HealthCheckResponse_Status)(0),           // 12: pulumicost.v1.HealthCheckResponse.Status
+	(*NameRequest)(nil),                       // 13: pulumicost.v1.NameRequest
+	(*NameResponse)(nil),                      // 14: pulumicost.v1.NameResponse
+	(*ImpactMetric)(nil),                      // 15: pulumicost.v1.ImpactMetric
+	(*SupportsRequest)(nil),                   // 16: pulumicost.v1.SupportsRequest
+	(*SupportsResponse)(nil),                  // 17: pulumicost.v1.SupportsResponse
+	(*GetActualCostRequest)(nil),              // 18: pulumicost.v1.GetActualCostRequest
+	(*GetActualCostResponse)(nil),             // 19: pulumicost.v1.GetActualCostResponse
+	(*GetProjectedCostRequest)(nil),           // 20: pulumicost.v1.GetProjectedCostRequest
+	(*GetProjectedCostResponse)(nil),          // 21: pulumicost.v1.GetProjectedCostResponse
+	(*GetPricingSpecRequest)(nil),             // 22: pulumicost.v1.GetPricingSpecRequest
+	(*GetPricingSpecResponse)(nil),            // 23: pulumicost.v1.GetPricingSpecResponse
+	(*ResourceDescriptor)(nil),                // 24: pulumicost.v1.ResourceDescriptor
+	(*ActualCostResult)(nil),                  // 25: pulumicost.v1.ActualCostResult
+	(*UsageMetricHint)(nil),                   // 26: pulumicost.v1.UsageMetricHint
+	(*PricingSpec)(nil),                       // 27: pulumicost.v1.PricingSpec
+	(*PricingTier)(nil),                       // 28: pulumicost.v1.PricingTier
+	(*ErrorDetail)(nil),                       // 29: pulumicost.v1.ErrorDetail
+	(*HealthCheckRequest)(nil),                // 30: pulumicost.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil),               // 31: pulumicost.v1.HealthCheckResponse
+	(*GetMetricsRequest)(nil),                 // 32: pulumicost.v1.GetMetricsRequest
+	(*GetMetricsResponse)(nil),                // 33: pulumicost.v1.GetMetricsResponse
+	(*Metric)(nil),                            // 34: pulumicost.v1.Metric
+	(*MetricSample)(nil),                      // 35: pulumicost.v1.MetricSample
+	(*GetServiceLevelIndicatorsRequest)(nil),  // 36: pulumicost.v1.GetServiceLevelIndicatorsRequest
+	(*GetServiceLevelIndicatorsResponse)(nil), // 37: pulumicost.v1.GetServiceLevelIndicatorsResponse
+	(*ServiceLevelIndicator)(nil),             // 38: pulumicost.v1.ServiceLevelIndicator
+	(*TimeRange)(nil),                         // 39: pulumicost.v1.TimeRange
+	(*TelemetryMetadata)(nil),                 // 40: pulumicost.v1.TelemetryMetadata
+	(*LogEntry)(nil),                          // 41: pulumicost.v1.LogEntry
+	(*ErrorDetails)(nil),                      // 42: pulumicost.v1.ErrorDetails
+	(*EstimateCostRequest)(nil),               // 43: pulumicost.v1.EstimateCostRequest
+	(*EstimateCostResponse)(nil),              // 44: pulumicost.v1.EstimateCostResponse
+	(*GetRecommendationsRequest)(nil),         // 45: pulumicost.v1.GetRecommendationsRequest
+	(*GetRecommendationsResponse)(nil),        // 46: pulumicost.v1.GetRecommendationsResponse
+	(*RecommendationFilter)(nil),              // 47: pulumicost.v1.RecommendationFilter
+	(*Recommendation)(nil),                    // 48: pulumicost.v1.Recommendation
+	(*ResourceRecommendationInfo)(nil),        // 49: pulumicost.v1.ResourceRecommendationInfo
+	(*ResourceUtilization)(nil),               // 50: pulumicost.v1.ResourceUtilization
+	(*RightsizeAction)(nil),                   // 51: pulumicost.v1.RightsizeAction
+	(*TerminateAction)(nil),                   // 52: pulumicost.v1.TerminateAction
+	(*CommitmentAction)(nil),                  // 53: pulumicost.v1.CommitmentAction
+	(*KubernetesAction)(nil),                  // 54: pulumicost.v1.KubernetesAction
+	(*KubernetesResources)(nil),               // 55: pulumicost.v1.KubernetesResources
+	(*ModifyAction)(nil),                      // 56: pulumicost.v1.ModifyAction
+	(*RecommendationImpact)(nil),              // 57: pulumicost.v1.RecommendationImpact
+	(*RecommendationSummary)(nil),             // 58: pulumicost.v1.RecommendationSummary
+	(*DismissRecommendationRequest)(nil),      // 59: pulumicost.v1.DismissRecommendationRequest
+	(*DismissRecommendationResponse)(nil),     // 60: pulumicost.v1.DismissRecommendationResponse
+	nil,                                       // 61: pulumicost.v1.SupportsResponse.CapabilitiesEntry
+	nil,                                       // 62: pulumicost.v1.GetActualCostRequest.TagsEntry
+	nil,                                       // 63: pulumicost.v1.ResourceDescriptor.TagsEntry
+	nil,                                       // 64: pulumicost.v1.PricingSpec.PluginMetadataEntry
+	nil,                                       // 65: pulumicost.v1.ErrorDetail.DetailsEntry
+	nil,                                       // 66: pulumicost.v1.MetricSample.LabelsEntry
+	nil,                                       // 67: pulumicost.v1.LogEntry.FieldsEntry
+	nil,                                       // 68: pulumicost.v1.RecommendationFilter.TagsEntry
+	nil,                                       // 69: pulumicost.v1.Recommendation.MetadataEntry
+	nil,                                       // 70: pulumicost.v1.ResourceRecommendationInfo.TagsEntry
+	nil,                                       // 71: pulumicost.v1.ResourceUtilization.CustomMetricsEntry
+	nil,                                       // 72: pulumicost.v1.ModifyAction.CurrentConfigEntry
+	nil,                                       // 73: pulumicost.v1.ModifyAction.RecommendedConfigEntry
+	nil,                                       // 74: pulumicost.v1.RecommendationSummary.CountByCategoryEntry
+	nil,                                       // 75: pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
+	nil,                                       // 76: pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
+	nil,                                       // 77: pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
+	(*timestamppb.Timestamp)(nil),             // 78: google.protobuf.Timestamp
+	(*FocusCostRecord)(nil),                   // 79: pulumicost.v1.FocusCostRecord
+	(*structpb.Struct)(nil),                   // 80: google.protobuf.Struct
+	(*GetBudgetsRequest)(nil),                 // 81: pulumicost.v1.GetBudgetsRequest
+	(*GetBudgetsResponse)(nil),                // 82: pulumicost.v1.GetBudgetsResponse
 }
 var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
-	22, // 0: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	59, // 1: pulumicost.v1.SupportsResponse.capabilities:type_name -> pulumicost.v1.SupportsResponse.CapabilitiesEntry
-	76, // 2: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
-	76, // 3: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
-	60, // 4: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
-	23, // 5: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
-	0,  // 6: pulumicost.v1.GetActualCostResponse.fallback_hint:type_name -> pulumicost.v1.FallbackHint
-	22, // 7: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	22, // 8: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	25, // 9: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
-	61, // 10: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
-	76, // 11: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
-	77, // 12: pulumicost.v1.ActualCostResult.focus_record:type_name -> pulumicost.v1.FocusCostRecord
-	24, // 13: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
-	62, // 14: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
-	26, // 15: pulumicost.v1.PricingSpec.pricing_tiers:type_name -> pulumicost.v1.PricingTier
-	2,  // 16: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
-	1,  // 17: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
-	63, // 18: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
-	76, // 19: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
-	11, // 20: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
-	76, // 21: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
-	32, // 22: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
-	76, // 23: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
-	3,  // 24: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
-	33, // 25: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
-	64, // 26: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
-	76, // 27: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
-	37, // 28: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
-	36, // 29: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
-	76, // 30: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
-	4,  // 31: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
-	76, // 32: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
-	76, // 33: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
-	76, // 34: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
-	65, // 35: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
-	40, // 36: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
-	78, // 37: pulumicost.v1.EstimateCostRequest.attributes:type_name -> google.protobuf.Struct
-	45, // 38: pulumicost.v1.GetRecommendationsRequest.filter:type_name -> pulumicost.v1.RecommendationFilter
-	22, // 39: pulumicost.v1.GetRecommendationsRequest.target_resources:type_name -> pulumicost.v1.ResourceDescriptor
-	46, // 40: pulumicost.v1.GetRecommendationsResponse.recommendations:type_name -> pulumicost.v1.Recommendation
-	56, // 41: pulumicost.v1.GetRecommendationsResponse.summary:type_name -> pulumicost.v1.RecommendationSummary
-	5,  // 42: pulumicost.v1.RecommendationFilter.category:type_name -> pulumicost.v1.RecommendationCategory
-	6,  // 43: pulumicost.v1.RecommendationFilter.action_type:type_name -> pulumicost.v1.RecommendationActionType
-	66, // 44: pulumicost.v1.RecommendationFilter.tags:type_name -> pulumicost.v1.RecommendationFilter.TagsEntry
-	7,  // 45: pulumicost.v1.RecommendationFilter.priority:type_name -> pulumicost.v1.RecommendationPriority
-	8,  // 46: pulumicost.v1.RecommendationFilter.sort_by:type_name -> pulumicost.v1.RecommendationSortBy
-	9,  // 47: pulumicost.v1.RecommendationFilter.sort_order:type_name -> pulumicost.v1.SortOrder
-	5,  // 48: pulumicost.v1.Recommendation.category:type_name -> pulumicost.v1.RecommendationCategory
-	6,  // 49: pulumicost.v1.Recommendation.action_type:type_name -> pulumicost.v1.RecommendationActionType
-	47, // 50: pulumicost.v1.Recommendation.resource:type_name -> pulumicost.v1.ResourceRecommendationInfo
-	49, // 51: pulumicost.v1.Recommendation.rightsize:type_name -> pulumicost.v1.RightsizeAction
-	50, // 52: pulumicost.v1.Recommendation.terminate:type_name -> pulumicost.v1.TerminateAction
-	51, // 53: pulumicost.v1.Recommendation.commitment:type_name -> pulumicost.v1.CommitmentAction
-	52, // 54: pulumicost.v1.Recommendation.kubernetes:type_name -> pulumicost.v1.KubernetesAction
-	54, // 55: pulumicost.v1.Recommendation.modify:type_name -> pulumicost.v1.ModifyAction
-	55, // 56: pulumicost.v1.Recommendation.impact:type_name -> pulumicost.v1.RecommendationImpact
-	7,  // 57: pulumicost.v1.Recommendation.priority:type_name -> pulumicost.v1.RecommendationPriority
-	76, // 58: pulumicost.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
-	67, // 59: pulumicost.v1.Recommendation.metadata:type_name -> pulumicost.v1.Recommendation.MetadataEntry
-	68, // 60: pulumicost.v1.ResourceRecommendationInfo.tags:type_name -> pulumicost.v1.ResourceRecommendationInfo.TagsEntry
-	48, // 61: pulumicost.v1.ResourceRecommendationInfo.utilization:type_name -> pulumicost.v1.ResourceUtilization
-	69, // 62: pulumicost.v1.ResourceUtilization.custom_metrics:type_name -> pulumicost.v1.ResourceUtilization.CustomMetricsEntry
-	48, // 63: pulumicost.v1.RightsizeAction.projected_utilization:type_name -> pulumicost.v1.ResourceUtilization
-	53, // 64: pulumicost.v1.KubernetesAction.current_requests:type_name -> pulumicost.v1.KubernetesResources
-	53, // 65: pulumicost.v1.KubernetesAction.recommended_requests:type_name -> pulumicost.v1.KubernetesResources
-	53, // 66: pulumicost.v1.KubernetesAction.current_limits:type_name -> pulumicost.v1.KubernetesResources
-	53, // 67: pulumicost.v1.KubernetesAction.recommended_limits:type_name -> pulumicost.v1.KubernetesResources
-	70, // 68: pulumicost.v1.ModifyAction.current_config:type_name -> pulumicost.v1.ModifyAction.CurrentConfigEntry
-	71, // 69: pulumicost.v1.ModifyAction.recommended_config:type_name -> pulumicost.v1.ModifyAction.RecommendedConfigEntry
-	72, // 70: pulumicost.v1.RecommendationSummary.count_by_category:type_name -> pulumicost.v1.RecommendationSummary.CountByCategoryEntry
-	73, // 71: pulumicost.v1.RecommendationSummary.savings_by_category:type_name -> pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
-	74, // 72: pulumicost.v1.RecommendationSummary.count_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
-	75, // 73: pulumicost.v1.RecommendationSummary.savings_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
-	10, // 74: pulumicost.v1.DismissRecommendationRequest.reason:type_name -> pulumicost.v1.DismissalReason
-	76, // 75: pulumicost.v1.DismissRecommendationRequest.expires_at:type_name -> google.protobuf.Timestamp
-	76, // 76: pulumicost.v1.DismissRecommendationResponse.dismissed_at:type_name -> google.protobuf.Timestamp
-	76, // 77: pulumicost.v1.DismissRecommendationResponse.expires_at:type_name -> google.protobuf.Timestamp
-	12, // 78: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
-	14, // 79: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
-	16, // 80: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
-	18, // 81: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
-	20, // 82: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
-	41, // 83: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
-	43, // 84: pulumicost.v1.CostSourceService.GetRecommendations:input_type -> pulumicost.v1.GetRecommendationsRequest
-	57, // 85: pulumicost.v1.CostSourceService.DismissRecommendation:input_type -> pulumicost.v1.DismissRecommendationRequest
-	79, // 86: pulumicost.v1.CostSourceService.GetBudgets:input_type -> pulumicost.v1.GetBudgetsRequest
-	28, // 87: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
-	30, // 88: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
-	34, // 89: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
-	13, // 90: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
-	15, // 91: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
-	17, // 92: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
-	19, // 93: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
-	21, // 94: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
-	42, // 95: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
-	44, // 96: pulumicost.v1.CostSourceService.GetRecommendations:output_type -> pulumicost.v1.GetRecommendationsResponse
-	58, // 97: pulumicost.v1.CostSourceService.DismissRecommendation:output_type -> pulumicost.v1.DismissRecommendationResponse
-	80, // 98: pulumicost.v1.CostSourceService.GetBudgets:output_type -> pulumicost.v1.GetBudgetsResponse
-	29, // 99: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
-	31, // 100: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
-	35, // 101: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
-	90, // [90:102] is the sub-list for method output_type
-	78, // [78:90] is the sub-list for method input_type
-	78, // [78:78] is the sub-list for extension type_name
-	78, // [78:78] is the sub-list for extension extendee
-	0,  // [0:78] is the sub-list for field type_name
+	0,  // 0: pulumicost.v1.ImpactMetric.kind:type_name -> pulumicost.v1.MetricKind
+	24, // 1: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	61, // 2: pulumicost.v1.SupportsResponse.capabilities:type_name -> pulumicost.v1.SupportsResponse.CapabilitiesEntry
+	0,  // 3: pulumicost.v1.SupportsResponse.supported_metrics:type_name -> pulumicost.v1.MetricKind
+	78, // 4: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
+	78, // 5: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
+	62, // 6: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
+	25, // 7: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
+	1,  // 8: pulumicost.v1.GetActualCostResponse.fallback_hint:type_name -> pulumicost.v1.FallbackHint
+	24, // 9: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	15, // 10: pulumicost.v1.GetProjectedCostResponse.impact_metrics:type_name -> pulumicost.v1.ImpactMetric
+	24, // 11: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	27, // 12: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
+	63, // 13: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
+	78, // 14: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
+	79, // 15: pulumicost.v1.ActualCostResult.focus_record:type_name -> pulumicost.v1.FocusCostRecord
+	15, // 16: pulumicost.v1.ActualCostResult.impact_metrics:type_name -> pulumicost.v1.ImpactMetric
+	26, // 17: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
+	64, // 18: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
+	28, // 19: pulumicost.v1.PricingSpec.pricing_tiers:type_name -> pulumicost.v1.PricingTier
+	3,  // 20: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
+	2,  // 21: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
+	65, // 22: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
+	78, // 23: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
+	12, // 24: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
+	78, // 25: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
+	34, // 26: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
+	78, // 27: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
+	4,  // 28: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
+	35, // 29: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
+	66, // 30: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
+	78, // 31: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
+	39, // 32: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
+	38, // 33: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
+	78, // 34: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
+	5,  // 35: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
+	78, // 36: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
+	78, // 37: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
+	78, // 38: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	67, // 39: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
+	42, // 40: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
+	80, // 41: pulumicost.v1.EstimateCostRequest.attributes:type_name -> google.protobuf.Struct
+	47, // 42: pulumicost.v1.GetRecommendationsRequest.filter:type_name -> pulumicost.v1.RecommendationFilter
+	24, // 43: pulumicost.v1.GetRecommendationsRequest.target_resources:type_name -> pulumicost.v1.ResourceDescriptor
+	48, // 44: pulumicost.v1.GetRecommendationsResponse.recommendations:type_name -> pulumicost.v1.Recommendation
+	58, // 45: pulumicost.v1.GetRecommendationsResponse.summary:type_name -> pulumicost.v1.RecommendationSummary
+	6,  // 46: pulumicost.v1.RecommendationFilter.category:type_name -> pulumicost.v1.RecommendationCategory
+	7,  // 47: pulumicost.v1.RecommendationFilter.action_type:type_name -> pulumicost.v1.RecommendationActionType
+	68, // 48: pulumicost.v1.RecommendationFilter.tags:type_name -> pulumicost.v1.RecommendationFilter.TagsEntry
+	8,  // 49: pulumicost.v1.RecommendationFilter.priority:type_name -> pulumicost.v1.RecommendationPriority
+	9,  // 50: pulumicost.v1.RecommendationFilter.sort_by:type_name -> pulumicost.v1.RecommendationSortBy
+	10, // 51: pulumicost.v1.RecommendationFilter.sort_order:type_name -> pulumicost.v1.SortOrder
+	6,  // 52: pulumicost.v1.Recommendation.category:type_name -> pulumicost.v1.RecommendationCategory
+	7,  // 53: pulumicost.v1.Recommendation.action_type:type_name -> pulumicost.v1.RecommendationActionType
+	49, // 54: pulumicost.v1.Recommendation.resource:type_name -> pulumicost.v1.ResourceRecommendationInfo
+	51, // 55: pulumicost.v1.Recommendation.rightsize:type_name -> pulumicost.v1.RightsizeAction
+	52, // 56: pulumicost.v1.Recommendation.terminate:type_name -> pulumicost.v1.TerminateAction
+	53, // 57: pulumicost.v1.Recommendation.commitment:type_name -> pulumicost.v1.CommitmentAction
+	54, // 58: pulumicost.v1.Recommendation.kubernetes:type_name -> pulumicost.v1.KubernetesAction
+	56, // 59: pulumicost.v1.Recommendation.modify:type_name -> pulumicost.v1.ModifyAction
+	57, // 60: pulumicost.v1.Recommendation.impact:type_name -> pulumicost.v1.RecommendationImpact
+	8,  // 61: pulumicost.v1.Recommendation.priority:type_name -> pulumicost.v1.RecommendationPriority
+	78, // 62: pulumicost.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
+	69, // 63: pulumicost.v1.Recommendation.metadata:type_name -> pulumicost.v1.Recommendation.MetadataEntry
+	70, // 64: pulumicost.v1.ResourceRecommendationInfo.tags:type_name -> pulumicost.v1.ResourceRecommendationInfo.TagsEntry
+	50, // 65: pulumicost.v1.ResourceRecommendationInfo.utilization:type_name -> pulumicost.v1.ResourceUtilization
+	71, // 66: pulumicost.v1.ResourceUtilization.custom_metrics:type_name -> pulumicost.v1.ResourceUtilization.CustomMetricsEntry
+	50, // 67: pulumicost.v1.RightsizeAction.projected_utilization:type_name -> pulumicost.v1.ResourceUtilization
+	55, // 68: pulumicost.v1.KubernetesAction.current_requests:type_name -> pulumicost.v1.KubernetesResources
+	55, // 69: pulumicost.v1.KubernetesAction.recommended_requests:type_name -> pulumicost.v1.KubernetesResources
+	55, // 70: pulumicost.v1.KubernetesAction.current_limits:type_name -> pulumicost.v1.KubernetesResources
+	55, // 71: pulumicost.v1.KubernetesAction.recommended_limits:type_name -> pulumicost.v1.KubernetesResources
+	72, // 72: pulumicost.v1.ModifyAction.current_config:type_name -> pulumicost.v1.ModifyAction.CurrentConfigEntry
+	73, // 73: pulumicost.v1.ModifyAction.recommended_config:type_name -> pulumicost.v1.ModifyAction.RecommendedConfigEntry
+	74, // 74: pulumicost.v1.RecommendationSummary.count_by_category:type_name -> pulumicost.v1.RecommendationSummary.CountByCategoryEntry
+	75, // 75: pulumicost.v1.RecommendationSummary.savings_by_category:type_name -> pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
+	76, // 76: pulumicost.v1.RecommendationSummary.count_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
+	77, // 77: pulumicost.v1.RecommendationSummary.savings_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
+	11, // 78: pulumicost.v1.DismissRecommendationRequest.reason:type_name -> pulumicost.v1.DismissalReason
+	78, // 79: pulumicost.v1.DismissRecommendationRequest.expires_at:type_name -> google.protobuf.Timestamp
+	78, // 80: pulumicost.v1.DismissRecommendationResponse.dismissed_at:type_name -> google.protobuf.Timestamp
+	78, // 81: pulumicost.v1.DismissRecommendationResponse.expires_at:type_name -> google.protobuf.Timestamp
+	13, // 82: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
+	16, // 83: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
+	18, // 84: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
+	20, // 85: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
+	22, // 86: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
+	43, // 87: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
+	45, // 88: pulumicost.v1.CostSourceService.GetRecommendations:input_type -> pulumicost.v1.GetRecommendationsRequest
+	59, // 89: pulumicost.v1.CostSourceService.DismissRecommendation:input_type -> pulumicost.v1.DismissRecommendationRequest
+	81, // 90: pulumicost.v1.CostSourceService.GetBudgets:input_type -> pulumicost.v1.GetBudgetsRequest
+	30, // 91: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
+	32, // 92: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
+	36, // 93: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
+	14, // 94: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
+	17, // 95: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
+	19, // 96: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
+	21, // 97: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
+	23, // 98: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
+	44, // 99: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
+	46, // 100: pulumicost.v1.CostSourceService.GetRecommendations:output_type -> pulumicost.v1.GetRecommendationsResponse
+	60, // 101: pulumicost.v1.CostSourceService.DismissRecommendation:output_type -> pulumicost.v1.DismissRecommendationResponse
+	82, // 102: pulumicost.v1.CostSourceService.GetBudgets:output_type -> pulumicost.v1.GetBudgetsResponse
+	31, // 103: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
+	33, // 104: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
+	37, // 105: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
+	94, // [94:106] is the sub-list for method output_type
+	82, // [82:94] is the sub-list for method input_type
+	82, // [82:82] is the sub-list for extension type_name
+	82, // [82:82] is the sub-list for extension extendee
+	0,  // [0:82] is the sub-list for field type_name
 }
 
 func init() { file_pulumicost_v1_costsource_proto_init() }
@@ -5329,24 +5517,25 @@ func file_pulumicost_v1_costsource_proto_init() {
 	}
 	file_pulumicost_v1_focus_proto_init()
 	file_pulumicost_v1_budget_proto_init()
-	file_pulumicost_v1_costsource_proto_msgTypes[15].OneofWrappers = []any{}
-	file_pulumicost_v1_costsource_proto_msgTypes[34].OneofWrappers = []any{
+	file_pulumicost_v1_costsource_proto_msgTypes[11].OneofWrappers = []any{}
+	file_pulumicost_v1_costsource_proto_msgTypes[16].OneofWrappers = []any{}
+	file_pulumicost_v1_costsource_proto_msgTypes[35].OneofWrappers = []any{
 		(*Recommendation_Rightsize)(nil),
 		(*Recommendation_Terminate)(nil),
 		(*Recommendation_Commitment)(nil),
 		(*Recommendation_Kubernetes)(nil),
 		(*Recommendation_Modify)(nil),
 	}
-	file_pulumicost_v1_costsource_proto_msgTypes[43].OneofWrappers = []any{}
-	file_pulumicost_v1_costsource_proto_msgTypes[45].OneofWrappers = []any{}
+	file_pulumicost_v1_costsource_proto_msgTypes[44].OneofWrappers = []any{}
 	file_pulumicost_v1_costsource_proto_msgTypes[46].OneofWrappers = []any{}
+	file_pulumicost_v1_costsource_proto_msgTypes[47].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_costsource_proto_rawDesc), len(file_pulumicost_v1_costsource_proto_rawDesc)),
-			NumEnums:      12,
-			NumMessages:   64,
+			NumEnums:      13,
+			NumMessages:   65,
 			NumExtensions: 0,
 			NumServices:   2,
 		},
