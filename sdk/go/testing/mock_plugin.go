@@ -90,6 +90,10 @@ type MockPlugin struct {
 	BaseHourlyRate       float64
 	Currency             string
 
+	// GreenOps configuration
+	SupportedMetrics []pbc.MetricKind
+	OmitMetrics      []pbc.MetricKind
+
 	// Recommendations configuration
 	RecommendationsConfig RecommendationsConfig
 
@@ -221,8 +225,9 @@ func (m *MockPlugin) Supports(_ context.Context, req *pbc.SupportsRequest) (*pbc
 	for _, supportedResource := range supportedResources {
 		if resourceType == supportedResource {
 			return &pbc.SupportsResponse{
-				Supported: true,
-				Reason:    "",
+				Supported:        true,
+				Reason:           "",
+				SupportedMetrics: m.SupportedMetrics,
 			}, nil
 		}
 	}
@@ -314,17 +319,66 @@ func (m *MockPlugin) GetProjectedCost(
 	// Calculate cost based on resource type (keep in sync with GetPricingSpec).
 	multiplier := getRateMultiplier(resource.GetResourceType())
 
+	// Incorporate utilization into impact modeling (for GreenOps metrics).
+	// In this mock, we just log it or adjust unit price slightly to show it's working.
+	utilization := getUtilization(req)
+
 	unitPrice := m.BaseHourlyRate * multiplier
+	// Higher utilization might mean more efficient energy/carbon? 
+	// Or more total impact? Usually more total impact.
+	// For this mock, we'll keep unit price constant but validate utilization in tests.
+
 	costPerMonth := unitPrice * HoursPerDay * daysPerMonth
 
-	billingDetail := fmt.Sprintf("mock-%s-rate", strings.ToLower(resource.GetProvider()))
+	billingDetail := fmt.Sprintf("mock-%s-rate (util:%.2f)", strings.ToLower(resource.GetProvider()), utilization)
 
-	return &pbc.GetProjectedCostResponse{
+	resp := &pbc.GetProjectedCostResponse{
 		UnitPrice:     unitPrice,
 		Currency:      m.Currency,
 		CostPerMonth:  costPerMonth,
 		BillingDetail: billingDetail,
-	}, nil
+	}
+
+	// Calculate and add impact metrics if configured
+	if len(m.SupportedMetrics) > 0 {
+		for _, kind := range m.SupportedMetrics {
+			// Check if this metric should be omitted for this specific request
+			shouldOmit := false
+			for _, omit := range m.OmitMetrics {
+				if kind == omit {
+					shouldOmit = true
+					break
+				}
+			}
+			if shouldOmit {
+				continue
+			}
+
+			var val float64
+			var unit string
+			switch kind {
+			case pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT:
+				val = 100.0 * utilization
+				unit = "gCO2e"
+			case pbc.MetricKind_METRIC_KIND_ENERGY_CONSUMPTION:
+				val = 1.0 * utilization
+				unit = "kWh"
+			case pbc.MetricKind_METRIC_KIND_WATER_USAGE:
+				val = 5.0 * utilization
+				unit = "L"
+			}
+
+			if val > 0 || kind == pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT { // Always add carbon even if 0 for testing
+				resp.ImpactMetrics = append(resp.ImpactMetrics, &pbc.ImpactMetric{
+					Kind:  kind,
+					Value: val,
+					Unit:  unit,
+				})
+			}
+		}
+	}
+
+	return resp, nil
 }
 
 // getBillingModeAndUnit returns billing mode and unit for a resource type.
@@ -1100,3 +1154,27 @@ func NewActualCostResponseWithHint(
 // NOTE: ValidateActualCostResponseHelper was removed. Use pluginsdk.ValidateActualCostResponse
 // instead, which is the canonical implementation for validating GetActualCostResponse messages.
 // Import: "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+// getUtilization extracts utilization percentage for mock purposes.
+// Implementation mirrors pluginsdk.GetUtilization to avoid circular dependency.
+func getUtilization(req *pbc.GetProjectedCostRequest) float64 {
+	if req == nil {
+		return 0.5
+	}
+	util := req.GetUtilizationPercentage()
+	resourceProvided := false
+	if req.GetResource() != nil && req.GetResource().UtilizationPercentage != nil {
+		util = req.GetResource().GetUtilizationPercentage()
+		resourceProvided = true
+	}
+	if !resourceProvided && util == 0 {
+		util = 0.5
+	}
+	if util < 0 {
+		return 0.0
+	}
+	if util > 1.0 {
+		return 1.0
+	}
+	return util
+}

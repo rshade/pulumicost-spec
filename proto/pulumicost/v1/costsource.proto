@@ -96,6 +96,27 @@ message NameResponse {
   string name = 1;
 }
 
+// MetricKind represents the type of sustainability/impact metric supported by a plugin.
+enum MetricKind {
+  METRIC_KIND_UNSPECIFIED = 0;
+  // Carbon Footprint in grams of CO2 equivalent (gCO2e)
+  METRIC_KIND_CARBON_FOOTPRINT = 1;
+  // Electrical Energy Consumption in kilowatt-hours (kWh)
+  METRIC_KIND_ENERGY_CONSUMPTION = 2;
+  // Water Usage in liters (L)
+  METRIC_KIND_WATER_USAGE = 3;
+}
+
+// ImpactMetric represents a single sustainability impact measurement.
+message ImpactMetric {
+  // kind specifies the type of impact metric (Carbon, Energy, etc.)
+  MetricKind kind = 1;
+  // value is the numeric measurement
+  double value = 2;
+  // unit is the measurement unit (e.g., "gCO2e", "kWh", "L")
+  string unit = 3;
+}
+
 // SupportsRequest contains the resource descriptor to check support for.
 message SupportsRequest {
   // resource contains the resource descriptor to check support for
@@ -111,6 +132,8 @@ message SupportsResponse {
   // capabilities declares optional capabilities the plugin supports
   // Example: {"recommendations": true}
   map<string, bool> capabilities = 3;
+  // supported_metrics declares optional sustainability metrics the plugin supports
+  repeated MetricKind supported_metrics = 4;
 }
 
 // GetActualCostRequest contains parameters for retrieving historical cost data.
@@ -139,6 +162,8 @@ message GetActualCostResponse {
 message GetProjectedCostRequest {
   // resource contains the resource descriptor for cost projection
   ResourceDescriptor resource = 1;
+  // utilization_percentage is the global default utilization for all resources in request (0.0 to 1.0)
+  double utilization_percentage = 2;
 }
 
 // GetProjectedCostResponse contains projected cost information.
@@ -151,6 +176,8 @@ message GetProjectedCostResponse {
   double cost_per_month = 3;
   // billing_detail provides context (e.g., "on-demand", "kubecost-avg-daily")
   string billing_detail = 4;
+  // impact_metrics contains sustainability metrics (Carbon, Energy, etc.)
+  repeated ImpactMetric impact_metrics = 5;
 }
 
 // GetPricingSpecRequest contains the resource descriptor for pricing specification.
@@ -215,6 +242,10 @@ message ResourceDescriptor {
   // Examples: {"app": "web", "env": "production", "team": "platform"}
   // Both keys and values should be non-empty when provided.
   map<string, string> tags = 5;
+
+  // utilization_percentage is a per-resource utilization override (0.0 to 1.0).
+  // OPTIONAL. If provided, overrides the global request default.
+  optional double utilization_percentage = 6;
 }
 
 // ActualCostResult represents a single cost data point.
@@ -232,6 +263,8 @@ message ActualCostResult {
   // focus_record provides the cost data in FOCUS 1.2 format.
   // This field is optional and will eventually replace the legacy fields.
   FocusCostRecord focus_record = 6;
+  // impact_metrics contains sustainability metrics (Carbon, Energy, etc.)
+  repeated ImpactMetric impact_metrics = 7;
 }
 
 // UsageMetricHint provides guidance on usage metrics for cost calculation.

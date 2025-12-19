@@ -42,6 +42,8 @@ var (
 	ErrProjectedCostResourceTypeEmpty = errors.New("resource.resource_type is required")
 	ErrProjectedCostSkuEmpty          = errors.New("resource.sku is required (use mapping helpers)")
 	ErrProjectedCostRegionEmpty       = errors.New("resource.region is required (use mapping helpers)")
+	ErrUtilizationOutOfRange          = errors.New("utilization_percentage must be between 0.0 and 1.0")
+	ErrMetricKindInvalid              = errors.New("invalid metric kind")
 )
 
 // Validation error messages for GetActualCostRequest.
@@ -67,6 +69,7 @@ var (
 //  4. ResourceType empty check
 //  5. SKU empty check (with mapping helper guidance)
 //  6. Region empty check (with mapping helper guidance)
+//  7. Utilization range check (if provided)
 //
 // Performance: Zero allocations on the happy path (valid request returns nil).
 // Error paths allocate for the error message.
@@ -77,9 +80,19 @@ func ValidateProjectedCostRequest(req *pbc.GetProjectedCostRequest) error {
 		return ErrProjectedCostRequestNil
 	}
 
+	if req.GetUtilizationPercentage() < 0 || req.GetUtilizationPercentage() > 1 {
+		return ErrUtilizationOutOfRange
+	}
+
 	resource := req.GetResource()
 	if resource == nil {
 		return ErrProjectedCostResourceNil
+	}
+
+	if resource.UtilizationPercentage != nil {
+		if resource.GetUtilizationPercentage() < 0 || resource.GetUtilizationPercentage() > 1 {
+			return ErrUtilizationOutOfRange
+		}
 	}
 
 	if len(resource.GetProvider()) == 0 {
@@ -99,6 +112,39 @@ func ValidateProjectedCostRequest(req *pbc.GetProjectedCostRequest) error {
 	}
 
 	return nil
+}
+
+// ValidateSupportsResponse validates a SupportsResponse for correctness.
+//
+// Validation order:
+//  1. Response nil check
+//  2. Supported metrics validity check
+//
+// Returns nil if the response is valid, or an error describing the failure.
+func ValidateSupportsResponse(res *pbc.SupportsResponse) error {
+	if res == nil {
+		return errors.New("response is required")
+	}
+
+	for _, kind := range res.GetSupportedMetrics() {
+		if !IsValidMetricKind(kind) {
+			return ErrMetricKindInvalid
+		}
+	}
+
+	return nil
+}
+
+// IsValidMetricKind returns true if the MetricKind is a recognized sustainability metric.
+func IsValidMetricKind(kind pbc.MetricKind) bool {
+	switch kind {
+	case pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT,
+		pbc.MetricKind_METRIC_KIND_ENERGY_CONSUMPTION,
+		pbc.MetricKind_METRIC_KIND_WATER_USAGE:
+		return true
+	default:
+		return false
+	}
 }
 
 // ValidateActualCostRequest validates a GetActualCostRequest for required fields.
