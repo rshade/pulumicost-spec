@@ -46,6 +46,11 @@ var (
 	ErrMetricKindInvalid              = errors.New("invalid metric kind")
 )
 
+// Validation error messages for SupportsResponse.
+var (
+	ErrSupportsResponseNil = errors.New("response is required")
+)
+
 // Validation error messages for GetActualCostRequest.
 var (
 	ErrActualCostRequestNil       = errors.New("request is required")
@@ -125,7 +130,7 @@ func ValidateProjectedCostRequest(req *pbc.GetProjectedCostRequest) error {
 // Returns nil if the response is valid, or an error describing the failure.
 func ValidateSupportsResponse(res *pbc.SupportsResponse) error {
 	if res == nil {
-		return errors.New("response is required")
+		return ErrSupportsResponseNil
 	}
 
 	for _, kind := range res.GetSupportedMetrics() {

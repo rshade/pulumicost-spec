@@ -162,7 +162,15 @@ message GetActualCostResponse {
 message GetProjectedCostRequest {
   // resource contains the resource descriptor for cost projection
   ResourceDescriptor resource = 1;
-  // utilization_percentage is the global default utilization for all resources in request (0.0 to 1.0)
+  // utilization_percentage is the global default utilization for all resources in request.
+  // Valid range: 0.0 to 1.0 (representing 0% to 100% utilization).
+  //
+  // NOTE: Due to proto3 semantics, 0.0 cannot be distinguished from "not set".
+  // When this field is 0.0 (proto3 default for unset double), the SDK applies
+  // a baseline default of 0.5 (50% utilization).
+  //
+  // To explicitly request 0% utilization, use the resource-level override:
+  //   resource.utilization_percentage = proto.Float64(0.0)
   double utilization_percentage = 2;
 }
 

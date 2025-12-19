@@ -274,8 +274,7 @@ func TestValidateSupportsResponse(t *testing.T) {
 		{
 			name:    "nil response returns error",
 			res:     nil,
-			wantErr: nil, // Note: ValidateSupportsResponse currently returns errors.New("response is required")
-			// I should use errors.Is or check message for generic error
+			wantErr: pluginsdk.ErrSupportsResponseNil,
 		},
 		{
 			name: "valid response with metrics returns nil",
@@ -312,12 +311,6 @@ func TestValidateSupportsResponse(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := pluginsdk.ValidateSupportsResponse(tt.res)
-			if tt.name == "nil response returns error" {
-				if err == nil {
-					t.Error("expected error for nil response, got nil")
-				}
-				return
-			}
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("ValidateSupportsResponse() error = %v, wantErr %v", err, tt.wantErr)
 			}
