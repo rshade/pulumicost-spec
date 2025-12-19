@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -20,10 +20,10 @@ func TestUtilizationPrecedence(t *testing.T) {
 	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
 
 	tests := []struct {
-		name       string
-		global     float64
-		override   *float64
-		expected   string // Part of BillingDetail in mock
+		name     string
+		global   float64
+		override *float64
+		expected string // Part of BillingDetail in mock
 	}{
 		{
 			name:     "Neither provided uses default 0.5",
@@ -44,11 +44,18 @@ func TestUtilizationPrecedence(t *testing.T) {
 			expected: "util:0.25",
 		},
 		{
-			name:     "Explicit global 0.0 uses global 0.0 (if resource level not set)",
-			global:   0.0,
+			name:   "Global 0.0 with no resource override uses default (proto3 limitation)",
+			global: 0.0,
+			// Protobuf3 uses 0.0 as default for double, so we can't distinguish
+			// "explicitly 0.0" from "not set" at the global level.
 			override: nil,
-			expected: "util:0.50", // Note: our heuristic treats global 0.0 as unset if no override. 
-			// If we wanted literal 0.0, we'd need optional on global.
+			expected: "util:0.50",
+		},
+		{
+			name:     "Explicit 0.0 at resource level is honored",
+			global:   0.75,
+			override: proto.Float64(0.0), // Explicit zero via pointer
+			expected: "util:0.00",
 		},
 	}
 

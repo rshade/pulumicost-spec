@@ -5,9 +5,23 @@ import (
 	"testing"
 	"time"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 )
+
+// countMatchingMetrics returns the number of expected metrics found in the supported list.
+func countMatchingMetrics(expected, supported []pbc.MetricKind) int {
+	count := 0
+	for _, exp := range expected {
+		for _, got := range supported {
+			if exp == got {
+				count++
+				break
+			}
+		}
+	}
+	return count
+}
 
 // TestGreenOpsDiscovery validates that plugins can advertise supported GreenOps metrics.
 func TestGreenOpsDiscovery(t *testing.T) {
@@ -47,17 +61,7 @@ func TestGreenOpsDiscovery(t *testing.T) {
 			t.Errorf("Expected %d metrics, got %d", len(expectedMetrics), len(supported))
 		}
 
-		// Check if all expected metrics are present
-		foundCount := 0
-		for _, expected := range expectedMetrics {
-			for _, got := range supported {
-				if expected == got {
-					foundCount++
-					break
-				}
-			}
-		}
-
+		foundCount := countMatchingMetrics(expectedMetrics, supported)
 		if foundCount != len(expectedMetrics) {
 			t.Errorf("Metric mismatch: found %d/%d expected metrics", foundCount, len(expectedMetrics))
 		}

@@ -62,14 +62,15 @@ var (
 //   - Core: Pre-flight validation before sending requests to plugins
 //   - Plugins: Defense-in-depth validation upon receiving requests
 //
-// Validation order (fail-fast):
+// Validation order (fail-fast, structural before field values):
 //  1. Request nil check
 //  2. Resource nil check
 //  3. Provider empty check
 //  4. ResourceType empty check
 //  5. SKU empty check (with mapping helper guidance)
 //  6. Region empty check (with mapping helper guidance)
-//  7. Utilization range check (if provided)
+//  7. Global utilization range check (if non-zero)
+//  8. Resource-level utilization range check (if provided)
 //
 // Performance: Zero allocations on the happy path (valid request returns nil).
 // Error paths allocate for the error message.
@@ -80,19 +81,9 @@ func ValidateProjectedCostRequest(req *pbc.GetProjectedCostRequest) error {
 		return ErrProjectedCostRequestNil
 	}
 
-	if req.GetUtilizationPercentage() < 0 || req.GetUtilizationPercentage() > 1 {
-		return ErrUtilizationOutOfRange
-	}
-
 	resource := req.GetResource()
 	if resource == nil {
 		return ErrProjectedCostResourceNil
-	}
-
-	if resource.UtilizationPercentage != nil {
-		if resource.GetUtilizationPercentage() < 0 || resource.GetUtilizationPercentage() > 1 {
-			return ErrUtilizationOutOfRange
-		}
 	}
 
 	if len(resource.GetProvider()) == 0 {
@@ -109,6 +100,17 @@ func ValidateProjectedCostRequest(req *pbc.GetProjectedCostRequest) error {
 
 	if len(resource.GetRegion()) == 0 {
 		return ErrProjectedCostRegionEmpty
+	}
+
+	// Validate utilization values using centralized helper
+	// Global utilization: non-zero values must be valid (protobuf3 default is 0.0)
+	if u := req.GetUtilizationPercentage(); u != 0 && !IsUtilizationValid(u) {
+		return ErrUtilizationOutOfRange
+	}
+
+	// Resource-level utilization: if explicitly set, must be valid
+	if resource.UtilizationPercentage != nil && !IsUtilizationValid(resource.GetUtilizationPercentage()) {
+		return ErrUtilizationOutOfRange
 	}
 
 	return nil
@@ -135,16 +137,33 @@ func ValidateSupportsResponse(res *pbc.SupportsResponse) error {
 	return nil
 }
 
+// validMetricKinds contains all valid sustainability metric kinds for zero-allocation validation.
+// This follows the pattern established in sdk/go/registry for optimized enum validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var validMetricKinds = []pbc.MetricKind{
+	pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT,
+	pbc.MetricKind_METRIC_KIND_ENERGY_CONSUMPTION,
+	pbc.MetricKind_METRIC_KIND_WATER_USAGE,
+}
+
+// ValidMetricKinds returns all valid sustainability metric kinds.
+// The returned slice is shared and must not be modified.
+func ValidMetricKinds() []pbc.MetricKind {
+	return validMetricKinds
+}
+
 // IsValidMetricKind returns true if the MetricKind is a recognized sustainability metric.
+// METRIC_KIND_UNSPECIFIED is not in the valid list and returns false.
+//
+// Performance: Zero allocations, ~5-12 ns/op for small enum sets.
 func IsValidMetricKind(kind pbc.MetricKind) bool {
-	switch kind {
-	case pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT,
-		pbc.MetricKind_METRIC_KIND_ENERGY_CONSUMPTION,
-		pbc.MetricKind_METRIC_KIND_WATER_USAGE:
-		return true
-	default:
-		return false
+	for _, valid := range validMetricKinds {
+		if kind == valid {
+			return true
+		}
 	}
+	return false
 }
 
 // ValidateActualCostRequest validates a GetActualCostRequest for required fields.

@@ -2,14 +2,24 @@ package testing_test
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
 )
 
-func TestUtilizationClamping(t *testing.T) {
+// TestUtilizationPassthrough verifies that out-of-range utilization values pass through
+// without modification. The SDK follows a "strict validation" approach where:
+//
+//  1. ValidateProjectedCostRequest rejects out-of-range values with errors
+//  2. GetUtilization returns values as-is (no clamping) for valid requests
+//
+// This test demonstrates that if validation is bypassed, values pass through unchanged.
+// In production, always validate requests before processing.
+func TestUtilizationPassthrough(t *testing.T) {
 	mock := plugintesting.NewMockPlugin()
 	harness := plugintesting.NewTestHarness(mock)
 	harness.Start(t)
@@ -21,17 +31,22 @@ func TestUtilizationClamping(t *testing.T) {
 	tests := []struct {
 		name     string
 		val      float64
-		expected string
+		expected string // Expected value in billing detail (no clamping)
 	}{
 		{
-			name:     "Negative clamped to 0",
+			name:     "Negative passes through unchanged",
 			val:      -0.5,
-			expected: "util:0.00",
+			expected: "util:-0.50",
 		},
 		{
-			name:     "Above 1 clamped to 1",
+			name:     "Above 1 passes through unchanged",
 			val:      1.5,
-			expected: "util:1.00",
+			expected: "util:1.50",
+		},
+		{
+			name:     "Valid value passes through",
+			val:      0.75,
+			expected: "util:0.75",
 		},
 	}
 
@@ -47,6 +62,43 @@ func TestUtilizationClamping(t *testing.T) {
 
 			if !strings.Contains(resp.GetBillingDetail(), tt.expected) {
 				t.Errorf("Expected billing detail to contain %s, got %s", tt.expected, resp.GetBillingDetail())
+			}
+		})
+	}
+}
+
+// TestValidationRejectsOutOfRange verifies that ValidateProjectedCostRequest
+// properly rejects out-of-range utilization values with clear error messages.
+func TestValidationRejectsOutOfRange(t *testing.T) {
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+
+	tests := []struct {
+		name    string
+		val     float64
+		wantErr bool
+	}{
+		{"negative is rejected", -0.1, true},
+		{"above 1 is rejected", 1.1, true},
+		{"0 is valid", 0.0, false},
+		{"1 is valid", 1.0, false},
+		{"0.5 is valid", 0.5, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &pbc.GetProjectedCostRequest{
+				Resource:              resource,
+				UtilizationPercentage: tt.val,
+			}
+			err := pluginsdk.ValidateProjectedCostRequest(req)
+			if tt.wantErr {
+				if !errors.Is(err, pluginsdk.ErrUtilizationOutOfRange) {
+					t.Errorf("expected ErrUtilizationOutOfRange, got %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("expected no error, got %v", err)
+				}
 			}
 		})
 	}

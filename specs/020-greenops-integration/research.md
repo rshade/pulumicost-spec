@@ -18,7 +18,8 @@
 - **Placement**:
   - Global: `GetProjectedCostRequest.utilization_percentage`
   - Override: `ResourceDescriptor.utilization_percentage` (as `optional double`)
-- **Rationale**: Protobuf `double` is consistent with existing cost fields. The tiered approach (global + override) provides maximum flexibility as requested.
+- **Rationale**: Protobuf `double` is consistent with existing cost fields. The tiered approach
+  (global + override) provides maximum flexibility as requested.
 
 ### 3. Error Handling for Unsupported/Unavailable Metrics
 
@@ -30,7 +31,8 @@
 ### 1. Separate Service for GreenOps
 
 - **Evaluation**: Rejected.
-- **Reason**: GreenOps metrics are intrinsically linked to cost projections and resource discovery. Adding a new service would increase complexity without clear benefit.
+- **Reason**: GreenOps metrics are intrinsically linked to cost projections and resource discovery.
+  Adding a new service would increase complexity without clear benefit.
 
 ### 2. Use google.protobuf.FloatValue for Nullability
 

@@ -46,7 +46,8 @@
 
 **Goal**: Enable plugins to advertise supported GreenOps metrics.
 
-**Independent Test**: Call `Supports` RPC on a plugin and verify `supported_metrics` contains the expected `MetricKind` values.
+**Independent Test**: Call `Supports` RPC on a plugin and verify `supported_metrics` contains the
+expected `MetricKind` values.
 
 ### Tests for User Story 1
 
@@ -69,7 +70,8 @@
 
 **Goal**: Implement utilization precedence logic (Override > Global > Default).
 
-**Independent Test**: Call `GetProjectedCost` with various combinations of global and per-resource utilization and verify the correct value is used.
+**Independent Test**: Call `GetProjectedCost` with various combinations of global and per-resource
+utilization and verify the correct value is used.
 
 ### Tests for User Story 2
 
@@ -79,7 +81,8 @@
 
 ### Implementation for User Story 2
 
-- [X] T019 [US2] Implement `GetUtilization` helper in `sdk/go/pluginsdk/utilization.go` (extracts value following precedence rules)
+- [X] T019 [US2] Implement `GetUtilization` helper in `sdk/go/pluginsdk/utilization.go`
+  (extracts value following precedence rules)
 - [X] T020 [US2] Update mock plugin to use the `GetUtilization` helper in `sdk/go/testing/mock_plugin.go`
 - [X] T021 [US2] Verify US2 integration and edge case tests pass
 

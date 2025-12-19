@@ -288,6 +288,16 @@ func TestValidateSupportsResponse(t *testing.T) {
 			wantErr: nil,
 		},
 		{
+			name: "METRIC_KIND_UNSPECIFIED returns error",
+			res: &pbc.SupportsResponse{
+				Supported: true,
+				SupportedMetrics: []pbc.MetricKind{
+					pbc.MetricKind_METRIC_KIND_UNSPECIFIED,
+				},
+			},
+			wantErr: pluginsdk.ErrMetricKindInvalid,
+		},
+		{
 			name: "invalid metric kind returns error",
 			res: &pbc.SupportsResponse{
 				Supported: true,
@@ -414,5 +424,39 @@ func BenchmarkValidateActualCostRequest_Invalid_EmptyResourceID(b *testing.B) {
 	b.ReportAllocs()
 	for range b.N {
 		_ = pluginsdk.ValidateActualCostRequest(req)
+	}
+}
+
+// BenchmarkIsValidMetricKind validates the zero-allocation claim for metric kind validation.
+// This benchmark verifies that the validMetricKinds package-level slice optimization
+// achieves the documented performance: ~5-12 ns/op with 0 allocs/op.
+func BenchmarkIsValidMetricKind(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsValidMetricKind(pbc.MetricKind_METRIC_KIND_CARBON_FOOTPRINT)
+	}
+}
+
+// BenchmarkIsValidMetricKind_Invalid benchmarks validation of invalid metric kinds.
+func BenchmarkIsValidMetricKind_Invalid(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsValidMetricKind(pbc.MetricKind_METRIC_KIND_UNSPECIFIED)
+	}
+}
+
+// BenchmarkIsUtilizationValid validates the zero-allocation claim for utilization validation.
+func BenchmarkIsUtilizationValid(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsUtilizationValid(0.75)
+	}
+}
+
+// BenchmarkIsUtilizationValid_Invalid benchmarks validation of invalid utilization values.
+func BenchmarkIsUtilizationValid_Invalid(b *testing.B) {
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.IsUtilizationValid(1.5)
 	}
 }
