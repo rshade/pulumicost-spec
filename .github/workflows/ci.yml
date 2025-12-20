@@ -115,12 +115,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          version: '1.32.1'
+
       - name: Buf lint
-        run: make buf-lint
+        run: buf lint
 
       - name: Buf breaking change detection
         run: |
-          bin/buf breaking --against \
+          buf breaking --against \
             'https://github.com/rshade/pulumicost-spec.git#branch=main'
         if: github.event_name == 'pull_request'
 

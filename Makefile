@@ -10,8 +10,18 @@ generate: $(BUF_BIN)
 $(BUF_BIN):
 	@mkdir -p bin
 	@echo "Installing buf $(BUF_VERSION) locally..."
-	@curl -sSL "https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$$(uname -s)-$$(uname -m)" -o $(BUF_BIN)
+	@BUF_URL="https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$$(uname -s)-$$(uname -m)"; \
+	curl -fsSL "$$BUF_URL" -o $(BUF_BIN) || { \
+		echo "Failed to download buf from $$BUF_URL"; \
+		exit 1; \
+	}
 	@chmod +x $(BUF_BIN)
+	@if ! file $(BUF_BIN) | grep -q 'ELF\|Mach-O'; then \
+		echo "Error: Downloaded file is not a valid binary"; \
+		head -5 $(BUF_BIN); \
+		rm -f $(BUF_BIN); \
+		exit 1; \
+	fi
 	@echo "buf installed to $(BUF_BIN)"
 
 tidy:

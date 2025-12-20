@@ -1241,7 +1241,16 @@ type GetProjectedCostRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// resource contains the resource descriptor for cost projection
 	Resource *ResourceDescriptor `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
-	// utilization_percentage is the global default utilization for all resources in request (0.0 to 1.0)
+	// utilization_percentage is the global default utilization for all resources in request.
+	// Valid range: 0.0 to 1.0 (representing 0% to 100% utilization).
+	//
+	// NOTE: Due to proto3 semantics, 0.0 cannot be distinguished from "not set".
+	// When this field is 0.0 (proto3 default for unset double), the SDK applies
+	// a baseline default of 0.5 (50% utilization).
+	//
+	// To explicitly request 0% utilization, use the resource-level override:
+	//
+	//	resource.utilization_percentage = proto.Float64(0.0)
 	UtilizationPercentage float64 `protobuf:"fixed64,2,opt,name=utilization_percentage,json=utilizationPercentage,proto3" json:"utilization_percentage,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
