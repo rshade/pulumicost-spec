@@ -1,7 +1,7 @@
 # Implementation Plan: FOCUS 1.2 Column Audit
 
 **Branch**: `010-focus-column-audit` | **Date**: 2025-11-28 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/009-focus-column-audit/spec.md`
+**Input**: Feature specification from `/specs/010-focus-column-audit/spec.md`
 
 ## Summary
 

@@ -87,6 +87,12 @@ func TestServeReflection(t *testing.T) {
 	var lastErr error
 
 	for time.Now().Before(deadline) {
+		select {
+		case err := <-errCh:
+			t.Fatalf("Server exited unexpectedly: %v", err)
+		default:
+		}
+
 		if checkErr := checkReflection(ctx, conn); checkErr != nil {
 			lastErr = checkErr
 			time.Sleep(100 * time.Millisecond)
