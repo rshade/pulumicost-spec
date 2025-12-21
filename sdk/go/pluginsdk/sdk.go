@@ -14,6 +14,7 @@ import (
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -464,6 +465,7 @@ func Serve(ctx context.Context, config ServeConfig) error {
 	)
 	server := NewServerWithOptions(config.Plugin, config.Registry, config.Logger)
 	pbc.RegisterCostSourceServiceServer(grpcServer, server)
+	reflection.Register(grpcServer)
 
 	// Handle context cancellation
 	go func() {
