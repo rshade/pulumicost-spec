@@ -82,14 +82,21 @@ func TestServeReflection(t *testing.T) {
 	}
 	defer conn.Close()
 
+	// Check for immediate server startup failure before entering the loop
+	select {
+	case serveErr := <-errCh:
+		t.Fatalf("Server exited immediately: %v", serveErr)
+	default:
+	}
+
 	// Poll until success or timeout
 	deadline := time.Now().Add(5 * time.Second)
 	var lastErr error
 
 	for time.Now().Before(deadline) {
 		select {
-		case err := <-errCh:
-			t.Fatalf("Server exited unexpectedly: %v", err)
+		case serveErr := <-errCh:
+			t.Fatalf("Server exited unexpectedly: %v", serveErr)
 		default:
 		}
 
