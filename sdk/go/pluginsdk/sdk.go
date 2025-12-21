@@ -373,6 +373,9 @@ type ServeConfig struct {
 	Port     int             // If 0, will use PULUMICOST_PLUGIN_PORT env var or random port
 	Registry RegistryLookup  // Optional; if nil, DefaultRegistryLookup is used
 	Logger   *zerolog.Logger // Optional; if nil, a default logger is used
+	// Listener is an optional pre-configured listener.
+	// If provided, Port is ignored and this listener is used for serving.
+	Listener net.Listener
 	// UnaryInterceptors is an optional list of gRPC unary server interceptors
 	// to chain after the built-in TracingUnaryServerInterceptor.
 	// Interceptors execute in order: tracing first, then each interceptor
@@ -444,12 +447,25 @@ func announcePort(listener net.Listener, addr *net.TCPAddr) error {
 //
 // Returns an error if the listener cannot be created or if the gRPC server fails to serve.
 func Serve(ctx context.Context, config ServeConfig) error {
-	port := resolvePort(config.Port)
+	var listener net.Listener
+	var tcpAddr *net.TCPAddr
+	var err error
 
-	listener, tcpAddr, err := listenOnLoopback(ctx, port)
-	if err != nil {
-		return err
+	if config.Listener != nil {
+		listener = config.Listener
+		var ok bool
+		tcpAddr, ok = listener.Addr().(*net.TCPAddr)
+		if !ok {
+			return errors.New("provided listener address is not TCP")
+		}
+	} else {
+		port := resolvePort(config.Port)
+		listener, tcpAddr, err = listenOnLoopback(ctx, port)
+		if err != nil {
+			return err
+		}
 	}
+
 	if announceErr := announcePort(listener, tcpAddr); announceErr != nil {
 		return announceErr
 	}

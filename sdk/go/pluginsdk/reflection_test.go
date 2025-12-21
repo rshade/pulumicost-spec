@@ -2,6 +2,7 @@ package pluginsdk_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"testing"
@@ -10,7 +11,6 @@ import (
 	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
@@ -19,28 +19,43 @@ import (
 type mockPlugin struct{}
 
 func (p *mockPlugin) Name() string { return "mock-plugin" }
-func (p *mockPlugin) GetProjectedCost(ctx context.Context, req *pbc.GetProjectedCostRequest) (*pbc.GetProjectedCostResponse, error) {
-	return nil, nil
+
+func (p *mockPlugin) GetProjectedCost(
+	_ context.Context,
+	_ *pbc.GetProjectedCostRequest,
+) (*pbc.GetProjectedCostResponse, error) {
+	return &pbc.GetProjectedCostResponse{}, nil
 }
-func (p *mockPlugin) GetActualCost(ctx context.Context, req *pbc.GetActualCostRequest) (*pbc.GetActualCostResponse, error) {
-	return nil, nil
+
+func (p *mockPlugin) GetActualCost(
+	_ context.Context,
+	_ *pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+	return &pbc.GetActualCostResponse{}, nil
 }
-func (p *mockPlugin) GetPricingSpec(ctx context.Context, req *pbc.GetPricingSpecRequest) (*pbc.GetPricingSpecResponse, error) {
-	return nil, nil
+
+func (p *mockPlugin) GetPricingSpec(
+	_ context.Context,
+	_ *pbc.GetPricingSpecRequest,
+) (*pbc.GetPricingSpecResponse, error) {
+	return &pbc.GetPricingSpecResponse{}, nil
 }
-func (p *mockPlugin) EstimateCost(ctx context.Context, req *pbc.EstimateCostRequest) (*pbc.EstimateCostResponse, error) {
-	return nil, nil
+
+func (p *mockPlugin) EstimateCost(
+	_ context.Context,
+	_ *pbc.EstimateCostRequest,
+) (*pbc.EstimateCostResponse, error) {
+	return &pbc.EstimateCostResponse{}, nil
 }
 
 // TestServeReflection verifies that the gRPC server started by Serve supports reflection.
 func TestServeReflection(t *testing.T) {
-	// 1. Get a free port
+	// 1. Get a free port by listening (and keeping it open to pass to Serve)
 	l, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		t.Fatalf("Failed to listen: %v", err)
 	}
 	port := l.Addr().(*net.TCPAddr).Port
-	l.Close()
 
 	// 2. Start server in goroutine
 	ctx, cancel := context.WithCancel(context.Background())
@@ -48,16 +63,18 @@ func TestServeReflection(t *testing.T) {
 
 	errCh := make(chan error, 1)
 	go func() {
-		err := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
-			Plugin: &mockPlugin{},
-			Port:   port,
+		// Pass the listener directly to Serve to avoid race condition
+		serveErr := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   &mockPlugin{},
+			Listener: l,
 		})
-		if err != nil && ctx.Err() == nil {
-			errCh <- err
+		if serveErr != nil && !errors.Is(serveErr, context.Canceled) {
+			errCh <- serveErr
 		}
+		close(errCh)
 	}()
 
-	// 3. Wait for server to be ready (poll)
+	// 3. Connect and verify reflection service
 	address := fmt.Sprintf("localhost:%d", port)
 	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -65,53 +82,55 @@ func TestServeReflection(t *testing.T) {
 	}
 	defer conn.Close()
 
-	// Poll until connected
+	// Poll until success or timeout
 	deadline := time.Now().Add(5 * time.Second)
-	for {
-		if time.Now().After(deadline) {
-			t.Fatal("Timeout waiting for server to start")
+	var lastErr error
+
+	for time.Now().Before(deadline) {
+		if checkErr := checkReflection(ctx, conn); checkErr != nil {
+			lastErr = checkErr
+			time.Sleep(100 * time.Millisecond)
+			continue
 		}
-		state := conn.GetState()
-		if state == connectivity.Ready {
-			break
-		}
-		// Try to dial to check if it's accepting connections, 
-		// because GetState might not transition if we don't make a call?
-		// NewClient uses lazy connection. conn.Connect() triggers it.
-		conn.Connect() 
-		
-		// Actually, let's just try to create the reflection client and call it.
-		// If it fails with "Unavailable", we retry.
-		// If it fails with "Unimplemented", we know reflection is missing.
-		time.Sleep(100 * time.Millisecond)
+		return // Success
 	}
 
-	// 4. Check for reflection service
+	t.Fatalf("Reflection test failed after timeout. Last error: %v", lastErr)
+}
+
+//nolint:staticcheck // Validating legacy reflection API
+func checkReflection(ctx context.Context, conn grpc.ClientConnInterface) error {
 	refClient := grpc_reflection_v1alpha.NewServerReflectionClient(conn)
 	stream, err := refClient.ServerReflectionInfo(ctx)
 	if err != nil {
-		// This might happen if connection is not ready yet
-		t.Logf("Failed to create stream: %v", err)
+		return err
 	}
-	
-	// Try to send a request to list services
-	err = stream.Send(&grpc_reflection_v1alpha.ServerReflectionRequest{
+
+	if sendErr := stream.Send(&grpc_reflection_v1alpha.ServerReflectionRequest{
 		Host: "",
 		MessageRequest: &grpc_reflection_v1alpha.ServerReflectionRequest_ListServices{
 			ListServices: "*",
 		},
-	})
-	
-	// If the server doesn't support reflection, the stream might work but return error on Recv
-	// or Send might fail if the service is not found.
-	
-	if err == nil {
-		_, err = stream.Recv()
+	}); sendErr != nil {
+		return sendErr
 	}
 
+	resp, err := stream.Recv()
 	if err != nil {
-		t.Fatalf("Reflection failed: %v", err)
+		return err
 	}
-	
-	t.Log("Reflection works as expected")
+
+	// Verify response contains the expected service
+	listResp := resp.GetListServicesResponse()
+	if listResp == nil {
+		return errors.New("received nil ListServicesResponse")
+	}
+
+	for _, svc := range listResp.GetService() {
+		if svc.GetName() == "pulumicost.v1.CostSourceService" {
+			return nil
+		}
+	}
+
+	return errors.New("CostSourceService not found in reflection response")
 }
