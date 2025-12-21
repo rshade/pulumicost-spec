@@ -82,6 +82,7 @@ func TestServeReflection(t *testing.T) {
 	}
 	defer conn.Close()
 
+<<<<<<< HEAD
 	// Check for immediate server startup failure before entering the loop
 	select {
 	case serveErr := <-errCh:
@@ -108,6 +109,21 @@ func TestServeReflection(t *testing.T) {
 		return // Success
 	}
 
+=======
+	// Poll until success or timeout
+	deadline := time.Now().Add(5 * time.Second)
+	var lastErr error
+
+	for time.Now().Before(deadline) {
+		if checkErr := checkReflection(ctx, conn); checkErr != nil {
+			lastErr = checkErr
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
+		return // Success
+	}
+
+>>>>>>> 8739028 (chore: reorder specs/ directories by build date for incremental numbering)
 	t.Fatalf("Reflection test failed after timeout. Last error: %v", lastErr)
 }
 
@@ -146,4 +162,8 @@ func checkReflection(ctx context.Context, conn grpc.ClientConnInterface) error {
 	}
 
 	return errors.New("CostSourceService not found in reflection response")
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 8739028 (chore: reorder specs/ directories by build date for incremental numbering)

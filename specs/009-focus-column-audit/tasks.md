@@ -1,6 +1,6 @@
 # Tasks: FOCUS 1.2 Column Audit
 
-**Input**: Design documents from `/specs/010-focus-column-audit/`
+**Input**: Design documents from `/specs/009-focus-column-audit/`
 **Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, contracts/ ✅, quickstart.md ✅
 
 **Tests**: Tests ARE included as this is a spec/SDK project where conformance testing is required.
