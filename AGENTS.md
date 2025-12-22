@@ -36,3 +36,19 @@
 ## Recent Changes
 
 - 001-get-budgets-rpc: Added Go 1.24.10 (toolchain 1.25.4) + gRPC, protobuf, buf v1.32.1
+
+## Common Issues & Solutions
+
+- Issue: `make lint` and `make validate` may time out on this project.
+  Solution: Run `golangci-lint run` directly for faster Go linting results, or `make test` for unit tests.
+
+## Workflow Optimizations
+
+- For CodeRabbit fixes: Always verify `git log` and file content first; reviews may reference older
+  commits that have already been fixed by subsequent pushes.
+
+## Project-Specific Patterns
+
+- `pluginsdk.Serve`: Tests dealing with `Serve` should prefer injecting a `net.Listener` (via
+  `ServeConfig.Listener`) rather than relying on `Port` and `listenOnLoopback` to avoid race
+  conditions and ensure predictable port binding.
