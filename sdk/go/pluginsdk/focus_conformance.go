@@ -41,6 +41,8 @@ func ValidateFocusRecord(r *pbc.FocusCostRecord) error {
 // validateMandatoryFields checks all 14 mandatory FOCUS 1.2 fields.
 func validateMandatoryFields(r *pbc.FocusCostRecord) error {
 	// Identity fields (FOCUS 1.2 Section 2.1).
+	// Note: provider_name is deprecated in FOCUS 1.3 but still required for FOCUS 1.2 conformance.
+	//nolint:staticcheck // SA1019: Checking deprecated field for FOCUS 1.2 backward compatibility
 	if r.GetProviderName() == "" {
 		return errors.New("provider_name is required")
 	}
@@ -104,7 +106,7 @@ func validateCurrencyFields(r *pbc.FocusCostRecord) error {
 	return nil
 }
 
-// validateBusinessRules validates FOCUS 1.2 business rules.
+// validateBusinessRules validates FOCUS 1.2 and 1.3 business rules.
 func validateBusinessRules(r *pbc.FocusCostRecord) error {
 	// Rule: Usage records must have positive consumed quantity.
 	// FOCUS 1.2: If ChargeCategory=Usage, ConsumedQuantity must be > 0.
@@ -121,6 +123,41 @@ func validateBusinessRules(r *pbc.FocusCostRecord) error {
 		return err
 	}
 
+	// Validate FOCUS 1.3 specific rules (split cost allocation, etc.)
+	if err := validateFocus13Rules(r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// =============================================================================
+// FOCUS 1.3 Validation Rules
+// =============================================================================
+
+// validateFocus13Rules validates all FOCUS 1.3 specific business rules.
+// This includes split cost allocation constraints and provider field consistency.
+func validateFocus13Rules(r *pbc.FocusCostRecord) error {
+	// Rule: AllocatedMethodId requires AllocatedResourceId.
+	// FOCUS 1.3: If allocated_method_id is set, allocated_resource_id MUST also be set.
+	// This ensures allocation methodology is always tied to a target resource.
+	if err := validateAllocationRule(r); err != nil {
+		return err
+	}
+
+	// Future FOCUS 1.3 rules can be added here:
+	// - validateProviderConsistency(r) - ensure service/host provider logic
+	// - validateContractAppliedReference(r) - validate commitment references if needed
+
+	return nil
+}
+
+// validateAllocationRule verifies FOCUS 1.3 allocation field dependencies.
+// If allocated_method_id is set, allocated_resource_id MUST also be set.
+func validateAllocationRule(r *pbc.FocusCostRecord) error {
+	if r.GetAllocatedMethodId() != "" && r.GetAllocatedResourceId() == "" {
+		return errors.New("allocated_resource_id is required when allocated_method_id is set")
+	}
 	return nil
 }
 

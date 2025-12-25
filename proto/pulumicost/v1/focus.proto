@@ -7,8 +7,26 @@ import "pulumicost/v1/enums.proto";
 
 option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
 
+// =============================================================================
+// FOCUS 1.3 Contract Commitment Category Enum
+// =============================================================================
+
+// FocusContractCommitmentCategory represents the type of commitment in the
+// FOCUS 1.3 Contract Commitment Dataset.
+// Reference: FOCUS 1.3 Contract Commitment Category
+enum FocusContractCommitmentCategory {
+  // Default/unspecified value.
+  FOCUS_CONTRACT_COMMITMENT_CATEGORY_UNSPECIFIED = 0;
+  // Monetary spend commitment (e.g., $10,000/month minimum).
+  FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND = 1;
+  // Usage quantity commitment (e.g., 1000 compute hours).
+  FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE = 2;
+}
+
 // FocusCostRecord represents a single cost line item normalized to the
-// FinOps FOCUS 1.2 specification. All field names follow FOCUS naming conventions.
+// FinOps FOCUS specification (1.2 and 1.3). All field names follow FOCUS naming conventions.
+// Includes FOCUS 1.3 additions: allocation fields, contract commitment linking,
+// and service/host provider disambiguation.
 // Reference: https://focus.finops.org
 message FocusCostRecord {
   // ==========================================================================
@@ -16,7 +34,9 @@ message FocusCostRecord {
   // ==========================================================================
 
   // ProviderName: The name of the cloud provider (e.g., "AWS", "Azure", "GCP").
-  string provider_name = 1;
+  // DEPRECATED in FOCUS 1.3: Use service_provider_name instead.
+  // Will be removed in FOCUS 1.4.
+  string provider_name = 1 [deprecated = true];
 
   // BillingAccountId: The identifier for the billing account.
   string billing_account_id = 2;
@@ -128,7 +148,9 @@ message FocusCostRecord {
 
   // Publisher: Entity that published the service or product.
   // FOCUS 1.2 Section 3.39: Publisher (CONDITIONAL).
-  string publisher = 55;
+  // DEPRECATED in FOCUS 1.3: Use host_provider_name instead.
+  // Will be removed in FOCUS 1.4.
+  string publisher = 55 [deprecated = true];
 
   // ==========================================================================
   // Resource Details (FOCUS 1.2 Section 2.7)
@@ -270,4 +292,162 @@ message FocusCostRecord {
   // ExtendedColumns: The "Backpack" - supports future FOCUS columns or
   // provider-specific extensions without requiring a schema update.
   map<string, string> extended_columns = 23;
+
+  // ==========================================================================
+  // FOCUS 1.3 Additions (Field Numbers 59-66)
+  // ==========================================================================
+  //
+  // Field Numbering Strategy:
+  // - Fields 1-58: FOCUS 1.2 columns (established baseline)
+  // - Fields 59-66: Reserved for FOCUS 1.3 additions
+  //
+  // This separation enables clear version tracking - you can identify which
+  // FOCUS version introduced each field by its number. Future FOCUS versions
+  // should continue this pattern (e.g., FOCUS 1.4 could use 67+).
+  //
+  // ==========================================================================
+  // FOCUS 1.3 Provider Identification
+  // ==========================================================================
+
+  // ServiceProviderName: The entity that makes the service available for purchase.
+  // In reseller/marketplace scenarios, this is the ISV or reseller.
+  // Replaces deprecated provider_name field.
+  // FOCUS 1.3 Section: Service Provider Name (CONDITIONAL)
+  string service_provider_name = 59;
+
+  // HostProviderName: The entity that hosts the underlying resource or service.
+  // This is where the workload actually runs (e.g., AWS, Azure, GCP).
+  // Replaces deprecated publisher field.
+  // FOCUS 1.3 Section: Host Provider Name (CONDITIONAL)
+  string host_provider_name = 60;
+
+  // ==========================================================================
+  // FOCUS 1.3 Split Cost Allocation (NEW)
+  // ==========================================================================
+
+  // AllocatedMethodId: Identifier for the cost allocation methodology used.
+  // Links to a documented allocation method.
+  // Validation: If populated, allocated_resource_id MUST also be populated.
+  // FOCUS 1.3 Section: Allocated Method ID (CONDITIONAL)
+  string allocated_method_id = 61;
+
+  // AllocatedMethodDetails: Human-readable description of the allocation method.
+  // Provides transparency into how costs were split.
+  // FOCUS 1.3 Section: Allocated Method Details (RECOMMENDED)
+  string allocated_method_details = 62;
+
+  // AllocatedResourceId: Identifier of the resource receiving the allocated cost.
+  // This is the target of the cost allocation.
+  // FOCUS 1.3 Section: Allocated Resource ID (CONDITIONAL)
+  string allocated_resource_id = 63;
+
+  // AllocatedResourceName: Display name of the resource receiving allocated cost.
+  // FOCUS 1.3 Section: Allocated Resource Name (CONDITIONAL)
+  string allocated_resource_name = 64;
+
+  // AllocatedTags: Tags associated with the allocated resource.
+  // Follows same map<string, string> pattern as existing tags field.
+  // FOCUS 1.3 Section: Allocated Tags (CONDITIONAL)
+  map<string, string> allocated_tags = 65;
+
+  // ==========================================================================
+  // FOCUS 1.3 Contract Commitment Link (NEW)
+  // ==========================================================================
+
+  // ContractApplied: Reference to a ContractCommitmentId in the Contract
+  // Commitment dataset. Treated as opaque reference (no cross-dataset validation).
+  // FOCUS 1.3 Section: Contract Applied (CONDITIONAL)
+  string contract_applied = 66;
+}
+
+// =============================================================================
+// FOCUS 1.3 Contract Commitment Dataset
+// =============================================================================
+
+// ContractCommitment represents a contractual commitment record in the
+// FOCUS 1.3 Contract Commitment supplemental dataset.
+//
+// This is a separate dataset from Cost and Usage data, allowing practitioners
+// to query contract terms independently from individual cost line items.
+//
+// Reference: FOCUS 1.3 Contract Commitment Dataset
+message ContractCommitment {
+  // ==========================================================================
+  // Identity Fields
+  // ==========================================================================
+
+  // ContractCommitmentId: Unique identifier for this specific commitment.
+  // REQUIRED. Primary key for the commitment record.
+  // FOCUS 1.3 Section: Contract Commitment ID
+  string contract_commitment_id = 1;
+
+  // ContractId: Identifier of the parent contract containing this commitment.
+  // REQUIRED. Links to the broader contract agreement.
+  // FOCUS 1.3 Section: Contract ID
+  string contract_id = 2;
+
+  // ==========================================================================
+  // Classification Fields
+  // ==========================================================================
+
+  // ContractCommitmentCategory: Category of commitment (SPEND or USAGE).
+  // FOCUS 1.3 Contract Commitment Category (CONDITIONAL).
+  FocusContractCommitmentCategory contract_commitment_category = 3;
+
+  // ContractCommitmentType: Provider-specific type of commitment.
+  // Free-form string (e.g., "Reserved Instance", "Savings Plan", "CUD").
+  // FOCUS 1.3 Contract Commitment Type (CONDITIONAL).
+  string contract_commitment_type = 4;
+
+  // ==========================================================================
+  // Commitment Period Fields
+  // ==========================================================================
+
+  // ContractCommitmentPeriodStart: Start of the commitment period.
+  // When the specific commitment obligations begin.
+  // FOCUS 1.3 Contract Commitment Period Start (CONDITIONAL).
+  google.protobuf.Timestamp contract_commitment_period_start = 5;
+
+  // ContractCommitmentPeriodEnd: End of the commitment period.
+  // When the specific commitment obligations end.
+  // FOCUS 1.3 Contract Commitment Period End (CONDITIONAL).
+  google.protobuf.Timestamp contract_commitment_period_end = 6;
+
+  // ==========================================================================
+  // Contract Period Fields
+  // ==========================================================================
+
+  // ContractPeriodStart: Start of the overall contract.
+  // When the parent contract agreement begins.
+  // FOCUS 1.3 Contract Period Start (CONDITIONAL).
+  google.protobuf.Timestamp contract_period_start = 7;
+
+  // ContractPeriodEnd: End of the overall contract.
+  // When the parent contract agreement ends.
+  // FOCUS 1.3 Contract Period End (CONDITIONAL).
+  google.protobuf.Timestamp contract_period_end = 8;
+
+  // ==========================================================================
+  // Financial Fields
+  // ==========================================================================
+
+  // ContractCommitmentCost: Monetary amount of the commitment.
+  // For SPEND category, this is the dollar/currency amount committed.
+  // FOCUS 1.3 Contract Commitment Cost (CONDITIONAL).
+  double contract_commitment_cost = 9;
+
+  // ContractCommitmentQuantity: Quantity amount of the commitment.
+  // For USAGE category, this is the unit quantity committed.
+  // FOCUS 1.3 Contract Commitment Quantity (CONDITIONAL).
+  double contract_commitment_quantity = 10;
+
+  // ContractCommitmentUnit: Unit of measure for quantity.
+  // Examples: "Hours", "GB", "vCPU-Hours", "Requests".
+  // FOCUS 1.3 Contract Commitment Unit (CONDITIONAL).
+  string contract_commitment_unit = 11;
+
+  // BillingCurrency: ISO 4217 currency code for monetary values.
+  // REQUIRED. Format: 3-letter currency code (e.g., "USD", "EUR").
+  // FOCUS 1.3 Billing Currency
+  string billing_currency = 12;
 }

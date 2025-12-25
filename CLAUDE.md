@@ -82,7 +82,29 @@ See `specs/001-domain-enum-optimization/` for complete documentation and perform
 - `integration_test.go` - Comprehensive integration tests for all RPC methods
 - `benchmark_test.go` - Performance benchmarks with memory profiling
 - `conformance_test.go` - Multi-level plugin conformance testing (Basic/Standard/Advanced)
+- `focus13_conformance_test.go` - FOCUS 1.3 backward compatibility and feature tests
 - `README.md` - Complete testing guide for plugin developers
+
+**FOCUS 1.3 Support (`sdk/go/pluginsdk/`)**
+
+The pluginsdk implements FOCUS 1.3 FinOps specification extensions:
+
+- **New Columns (8 fields)**: AllocatedMethodId, AllocatedMethodDetails, AllocatedResourceId,
+  AllocatedResourceName, AllocatedTags, ServiceProviderName, HostProviderName, ContractApplied
+- **ContractCommitment Dataset**: Supplemental dataset for tracking contractual obligations
+- **Deprecated Fields**: `provider_name` → `service_provider_name`, `publisher` → `host_provider_name`
+
+Key files:
+
+- `focus_builder.go` - FocusRecordBuilder with FOCUS 1.3 methods (WithAllocation, WithServiceProvider, etc.)
+- `contract_commitment_builder.go` - ContractCommitmentBuilder for commitment records
+- `focus_conformance.go` - Validation rules including allocation consistency
+
+Performance (FOCUS 1.3 builder methods):
+
+- Simple setters: < 1 ns/op, 0 allocs/op
+- Allocation methods: 1.5-1.8 ns/op, 0 allocs/op
+- Tag operations: ~130 ns/op (map copy overhead)
 
 **Examples (`examples/`)**
 
@@ -325,6 +347,22 @@ Configuration: `lefthook.yml`, `commitlint.config.js`
 3. **Error Handling**: Use proper gRPC status codes with meaningful messages
 4. **Testing Support**: Design messages to support comprehensive testing scenarios
 
+### FOCUS 1.3 Development Patterns
+
+1. **Deprecation Handling**: Log warnings via zerolog when both deprecated and replacement fields set
+2. **Backward Compatibility**: New fields have zero/empty defaults that don't affect existing behavior
+3. **Builder Pattern**: Fluent API with method chaining (return `*Builder` from all methods)
+4. **Validation Rules**: AllocatedMethodId requires AllocatedResourceId (fail-fast at Build())
+5. **Cross-Dataset References**: ContractApplied is opaque reference (no validation against commitment dataset)
+6. **Variable Naming**: Use `ID` suffix per Go conventions (e.g., `commitmentID` not `commitmentId`)
+
+FOCUS 1.3 Migration:
+
+- `provider_name` → `WithServiceProvider()` (service_provider_name)
+- `publisher` → `WithHostProvider()` (host_provider_name)
+- New allocation fields via `WithAllocation()`, `WithAllocatedResource()`, `WithAllocatedTags()`
+- Contract commitment linking via `WithContractApplied()`
+
 ## Development Commands Reference
 
 ### Daily Development
@@ -550,6 +588,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1 (026-focus-1-3-migration)
+- N/A (stateless proto definitions and SDK) (026-focus-1-3-migration)
+
 - Go 1.25.5 (per go.mod) + Protocol Buffers v3 + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1 (019-target-resources)
 - Go 1.25.5 (per go.mod) + zerolog v1.34.0+ (already in go.mod), stdlib only for file operations (015-log-file)
 - File system (log file) - append mode with 0644 permissions (015-log-file)
@@ -569,3 +610,7 @@ cd schemas && /init            # JSON Schema validation
 - JSON Schema draft 2020-12 + AJV (validation)(004-plugin-registry-schema)
 - Go 1.25.5 (per go.mod) + Go stdlib only (`strings`) (016-pluginsdk-mapping)
 - N/A (stateless helper functions, no data persistence) (016-pluginsdk-mapping)
+
+## Recent Changes
+
+- 026-focus-1-3-migration: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1

@@ -1,6 +1,7 @@
 package pluginsdk_test
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -462,7 +463,9 @@ func TestFocusRecordBuilder_WithPublisher(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Build failed: %v", err)
 			}
+			//nolint:staticcheck // SA1019: Testing deprecated WithPublisher backward compatibility
 			if record.GetPublisher() != tt.expected {
+				//nolint:staticcheck // SA1019: Testing deprecated WithPublisher backward compatibility
 				t.Errorf("Expected Publisher %q, got %q", tt.expected, record.GetPublisher())
 			}
 		})
@@ -576,7 +579,9 @@ func TestFocusRecordBuilder_ChainNewMethods(t *testing.T) {
 	if record.GetPricingCurrency() != "EUR" {
 		t.Errorf("Expected PricingCurrency 'EUR', got %q", record.GetPricingCurrency())
 	}
+	//nolint:staticcheck // SA1019: Testing deprecated WithPublisher backward compatibility
 	if record.GetPublisher() != "Amazon Web Services" {
+		//nolint:staticcheck // SA1019: Testing deprecated WithPublisher backward compatibility
 		t.Errorf("Expected Publisher 'Amazon Web Services', got %q", record.GetPublisher())
 	}
 	if record.GetServiceSubcategory() != "Virtual Machine" {
@@ -700,5 +705,732 @@ func BenchmarkFocusRecordBuilder_FullRecord(b *testing.B) {
 		builder.WithExtension("custom", "value")
 
 		_, _ = builder.Build()
+	}
+}
+
+// =============================================================================
+// FOCUS 1.3 New Column Builder Tests
+// =============================================================================
+
+// TestFocusRecordBuilder_WithAllocation tests the WithAllocation builder method.
+func TestFocusRecordBuilder_WithAllocation(t *testing.T) {
+	tests := []struct {
+		name                  string
+		methodID              string
+		methodDetails         string
+		expectedMethodID      string
+		expectedMethodDetails string
+	}{
+		{"empty allocation", "", "", "", ""},
+		{
+			"cpu weighted",
+			"proportional-cpu",
+			"CPU-weighted proportional",
+			"proportional-cpu",
+			"CPU-weighted proportional",
+		},
+		{"memory based", "memory-split", "Memory usage based", "memory-split", "Memory usage based"},
+		{"even split", "even-divide", "Equal distribution", "even-divide", "Equal distribution"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			// Must also set resource ID to satisfy validation
+			builder.WithAllocation(tt.methodID, tt.methodDetails)
+			if tt.methodID != "" {
+				builder.WithAllocatedResource("resource-123", "Frontend Pod")
+			}
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			if record.GetAllocatedMethodId() != tt.expectedMethodID {
+				t.Errorf("Expected AllocatedMethodId %q, got %q", tt.expectedMethodID, record.GetAllocatedMethodId())
+			}
+			if record.GetAllocatedMethodDetails() != tt.expectedMethodDetails {
+				t.Errorf(
+					"Expected AllocatedMethodDetails %q, got %q",
+					tt.expectedMethodDetails,
+					record.GetAllocatedMethodDetails(),
+				)
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_WithAllocatedResource tests the WithAllocatedResource builder method.
+func TestFocusRecordBuilder_WithAllocatedResource(t *testing.T) {
+	tests := []struct {
+		name                 string
+		resourceID           string
+		resourceName         string
+		expectedResourceID   string
+		expectedResourceName string
+	}{
+		{"empty resource", "", "", "", ""},
+		{"k8s pod", "pod-frontend-abc123", "frontend-service", "pod-frontend-abc123", "frontend-service"},
+		{"database instance", "db-instance-xyz", "production-db", "db-instance-xyz", "production-db"},
+		{"compute instance", "vm-123", "web-server", "vm-123", "web-server"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			builder.WithAllocatedResource(tt.resourceID, tt.resourceName)
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			if record.GetAllocatedResourceId() != tt.expectedResourceID {
+				t.Errorf(
+					"Expected AllocatedResourceId %q, got %q",
+					tt.expectedResourceID,
+					record.GetAllocatedResourceId(),
+				)
+			}
+			if record.GetAllocatedResourceName() != tt.expectedResourceName {
+				t.Errorf(
+					"Expected AllocatedResourceName %q, got %q",
+					tt.expectedResourceName,
+					record.GetAllocatedResourceName(),
+				)
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_WithAllocatedTags tests the WithAllocatedTags builder method.
+func TestFocusRecordBuilder_WithAllocatedTags(t *testing.T) {
+	tests := []struct {
+		name         string
+		tags         map[string]string
+		expectedTags map[string]string
+	}{
+		{"nil tags", nil, nil},
+		{"empty tags", map[string]string{}, map[string]string{}},
+		{"single tag", map[string]string{"team": "platform"}, map[string]string{"team": "platform"}},
+		{
+			"multiple tags",
+			map[string]string{"team": "platform", "env": "production", "cost-center": "123"},
+			map[string]string{"team": "platform", "env": "production", "cost-center": "123"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			builder.WithAllocatedTags(tt.tags)
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			allocatedTags := record.GetAllocatedTags()
+			if tt.expectedTags == nil {
+				if len(allocatedTags) != 0 {
+					t.Errorf("Expected nil/empty AllocatedTags, got %v", allocatedTags)
+				}
+			} else {
+				for k, v := range tt.expectedTags {
+					if allocatedTags[k] != v {
+						t.Errorf("Expected AllocatedTags[%q]=%q, got %q", k, v, allocatedTags[k])
+					}
+				}
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_AllocationValidation tests that AllocatedMethodId requires AllocatedResourceId.
+func TestFocusRecordBuilder_AllocationValidation(t *testing.T) {
+	tests := []struct {
+		name          string
+		methodID      string
+		resourceID    string
+		expectError   bool
+		errorContains string
+	}{
+		{"no allocation - valid", "", "", false, ""},
+		{
+			"method only - invalid", "method-123", "", true,
+			"allocated_resource_id is required when allocated_method_id is set",
+		},
+		{"resource only - valid", "", "resource-123", false, ""},
+		{"both set - valid", "method-123", "resource-123", false, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			if tt.methodID != "" {
+				builder.WithAllocation(tt.methodID, "Some method details")
+			}
+			if tt.resourceID != "" {
+				builder.WithAllocatedResource(tt.resourceID, "Some resource")
+			}
+
+			_, err := builder.Build()
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tt.errorContains)
+				} else if !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error containing %q, got %q", tt.errorContains, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error, got %v", err)
+				}
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_ChainFocus13Allocation tests chaining FOCUS 1.3 allocation methods.
+func TestFocusRecordBuilder_ChainFocus13Allocation(t *testing.T) {
+	tags := map[string]string{"team": "platform", "environment": "production"}
+
+	record, err := createValidBuilder().
+		WithAllocation("proportional-cpu", "CPU-weighted proportional allocation").
+		WithAllocatedResource("pod-frontend-abc123", "frontend-service").
+		WithAllocatedTags(tags).
+		Build()
+
+	if err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
+
+	if record.GetAllocatedMethodId() != "proportional-cpu" {
+		t.Errorf("Expected AllocatedMethodId 'proportional-cpu', got %q", record.GetAllocatedMethodId())
+	}
+	if record.GetAllocatedMethodDetails() != "CPU-weighted proportional allocation" {
+		t.Errorf("Expected AllocatedMethodDetails, got %q", record.GetAllocatedMethodDetails())
+	}
+	if record.GetAllocatedResourceId() != "pod-frontend-abc123" {
+		t.Errorf("Expected AllocatedResourceId 'pod-frontend-abc123', got %q", record.GetAllocatedResourceId())
+	}
+	if record.GetAllocatedResourceName() != "frontend-service" {
+		t.Errorf("Expected AllocatedResourceName 'frontend-service', got %q", record.GetAllocatedResourceName())
+	}
+	if record.GetAllocatedTags()["team"] != "platform" {
+		t.Errorf("Expected AllocatedTags[team]='platform', got %q", record.GetAllocatedTags()["team"])
+	}
+}
+
+// =============================================================================
+// FOCUS 1.3 Allocation Benchmarks
+// =============================================================================
+
+// BenchmarkFocusRecordBuilder_WithAllocation measures allocation method performance.
+func BenchmarkFocusRecordBuilder_WithAllocation(b *testing.B) {
+	builder := createValidBuilder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		builder.WithAllocation("method-id", "method details")
+	}
+}
+
+// BenchmarkFocusRecordBuilder_WithAllocatedResource measures allocated resource method performance.
+func BenchmarkFocusRecordBuilder_WithAllocatedResource(b *testing.B) {
+	builder := createValidBuilder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		builder.WithAllocatedResource("resource-id", "resource name")
+	}
+}
+
+// BenchmarkFocusRecordBuilder_WithAllocatedTags measures allocated tags method performance.
+func BenchmarkFocusRecordBuilder_WithAllocatedTags(b *testing.B) {
+	tags := map[string]string{"team": "platform", "env": "prod"}
+	builder := createValidBuilder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		builder.WithAllocatedTags(tags)
+	}
+}
+
+// =============================================================================
+// FOCUS 1.3 Service/Host Provider Tests (Phase 4 - User Story 2)
+// =============================================================================
+
+// TestFocusRecordBuilder_WithServiceProvider tests the WithServiceProvider builder method.
+func TestFocusRecordBuilder_WithServiceProvider(t *testing.T) {
+	tests := []struct {
+		name     string
+		provider string
+	}{
+		{"empty provider", ""},
+		{"aws", "Amazon Web Services"},
+		{"azure marketplace isv", "Datadog Inc"},
+		{"gcp marketplace isv", "MongoDB Atlas"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			builder.WithServiceProvider(tt.provider)
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			if record.GetServiceProviderName() != tt.provider {
+				t.Errorf("Expected ServiceProviderName %q, got %q", tt.provider, record.GetServiceProviderName())
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_WithHostProvider tests the WithHostProvider builder method.
+func TestFocusRecordBuilder_WithHostProvider(t *testing.T) {
+	tests := []struct {
+		name     string
+		provider string
+	}{
+		{"empty provider", ""},
+		{"aws", "Amazon Web Services"},
+		{"azure", "Microsoft Azure"},
+		{"gcp", "Google Cloud Platform"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			builder.WithHostProvider(tt.provider)
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			if record.GetHostProviderName() != tt.provider {
+				t.Errorf("Expected HostProviderName %q, got %q", tt.provider, record.GetHostProviderName())
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_ProviderDeprecation tests deprecation warning behavior
+// when both old (provider_name) and new (service_provider_name) fields are set.
+func TestFocusRecordBuilder_ProviderDeprecation(t *testing.T) {
+	tests := []struct {
+		name                string
+		providerName        string // deprecated field via WithIdentity
+		serviceProviderName string // new field via WithServiceProvider
+		expectedProvider    string // what should be in service_provider_name
+	}{
+		{
+			name:                "only deprecated provider_name set",
+			providerName:        "AWS",
+			serviceProviderName: "",
+			expectedProvider:    "", // service_provider_name stays empty (backward compat)
+		},
+		{
+			name:                "only new service_provider_name set",
+			providerName:        "AWS",
+			serviceProviderName: "Amazon Web Services",
+			expectedProvider:    "Amazon Web Services",
+		},
+		{
+			name:                "both set - new field takes precedence",
+			providerName:        "AWS",
+			serviceProviderName: "Amazon Web Services Inc",
+			expectedProvider:    "Amazon Web Services Inc",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			// WithIdentity sets the deprecated provider_name
+			builder.WithIdentity(tt.providerName, "billing-123", "Test Account")
+			if tt.serviceProviderName != "" {
+				builder.WithServiceProvider(tt.serviceProviderName)
+			}
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			if record.GetServiceProviderName() != tt.expectedProvider {
+				t.Errorf(
+					"Expected ServiceProviderName %q, got %q",
+					tt.expectedProvider,
+					record.GetServiceProviderName(),
+				)
+			}
+			// deprecated field should still be set for backward compatibility
+			//nolint:staticcheck // SA1019: Testing deprecated provider_name backward compatibility
+			if record.GetProviderName() != tt.providerName {
+				//nolint:staticcheck // SA1019: Testing deprecated provider_name backward compatibility
+				t.Errorf("Expected ProviderName (deprecated) %q, got %q", tt.providerName, record.GetProviderName())
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_PublisherDeprecation tests deprecation warning behavior
+// when both old (publisher) and new (host_provider_name) fields are set.
+func TestFocusRecordBuilder_PublisherDeprecation(t *testing.T) {
+	tests := []struct {
+		name             string
+		publisher        string // deprecated field via WithPublisher
+		hostProviderName string // new field via WithHostProvider
+		expectedHost     string // what should be in host_provider_name
+	}{
+		{
+			name:             "only deprecated publisher set",
+			publisher:        "AWS",
+			hostProviderName: "",
+			expectedHost:     "", // host_provider_name stays empty (backward compat)
+		},
+		{
+			name:             "only new host_provider_name set",
+			publisher:        "",
+			hostProviderName: "Amazon Web Services",
+			expectedHost:     "Amazon Web Services",
+		},
+		{
+			name:             "both set - new field takes precedence",
+			publisher:        "AWS",
+			hostProviderName: "Amazon Web Services",
+			expectedHost:     "Amazon Web Services",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			if tt.publisher != "" {
+				builder.WithPublisher(tt.publisher)
+			}
+			if tt.hostProviderName != "" {
+				builder.WithHostProvider(tt.hostProviderName)
+			}
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			if record.GetHostProviderName() != tt.expectedHost {
+				t.Errorf("Expected HostProviderName %q, got %q", tt.expectedHost, record.GetHostProviderName())
+			}
+			//nolint:staticcheck // SA1019: Testing deprecated publisher backward compatibility
+			if record.GetPublisher() != tt.publisher {
+				//nolint:staticcheck // SA1019: Testing deprecated publisher backward compatibility
+				t.Errorf("Expected Publisher (deprecated) %q, got %q", tt.publisher, record.GetPublisher())
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_ChainFocus13Providers tests method chaining for provider fields.
+func TestFocusRecordBuilder_ChainFocus13Providers(t *testing.T) {
+	builder := createValidBuilder()
+	record, err := builder.
+		WithServiceProvider("Datadog Inc").
+		WithHostProvider("Amazon Web Services").
+		Build()
+
+	if err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
+	if record.GetServiceProviderName() != "Datadog Inc" {
+		t.Errorf("Expected ServiceProviderName %q, got %q", "Datadog Inc", record.GetServiceProviderName())
+	}
+	if record.GetHostProviderName() != "Amazon Web Services" {
+		t.Errorf("Expected HostProviderName %q, got %q", "Amazon Web Services", record.GetHostProviderName())
+	}
+}
+
+// =============================================================================
+// FOCUS 1.3 Provider Benchmarks
+// =============================================================================
+
+// BenchmarkFocusRecordBuilder_WithServiceProvider measures service provider method performance.
+func BenchmarkFocusRecordBuilder_WithServiceProvider(b *testing.B) {
+	builder := createValidBuilder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		builder.WithServiceProvider("Amazon Web Services")
+	}
+}
+
+// BenchmarkFocusRecordBuilder_WithHostProvider measures host provider method performance.
+func BenchmarkFocusRecordBuilder_WithHostProvider(b *testing.B) {
+	builder := createValidBuilder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		builder.WithHostProvider("Amazon Web Services")
+	}
+}
+
+// =============================================================================
+// FOCUS 1.3 Contract Applied Tests (Phase 6 - User Story 4)
+// =============================================================================
+
+// TestFocusRecordBuilder_WithContractApplied tests the WithContractApplied builder method.
+func TestFocusRecordBuilder_WithContractApplied(t *testing.T) {
+	tests := []struct {
+		name         string
+		commitmentID string
+	}{
+		{"empty commitment id", ""},
+		{"reserved instance", "commitment-ri-123456"},
+		{"savings plan", "commitment-sp-789"},
+		{"enterprise agreement", "contract-ea-2024-001"},
+		{"arbitrary string", "any-opaque-reference-value"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			builder.WithContractApplied(tt.commitmentID)
+			record, err := builder.Build()
+			if err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+			if record.GetContractApplied() != tt.commitmentID {
+				t.Errorf("Expected ContractApplied %q, got %q", tt.commitmentID, record.GetContractApplied())
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_ContractApplied_NoValidation verifies no cross-dataset validation.
+// ContractApplied accepts any string value without verifying it exists in the
+// ContractCommitment dataset (it's an opaque reference).
+func TestFocusRecordBuilder_ContractApplied_NoValidation(t *testing.T) {
+	tests := []struct {
+		name         string
+		commitmentID string
+	}{
+		{"non-existent commitment", "does-not-exist-in-any-dataset"},
+		{"garbage string", "🚀💰📊"},
+		{"uuid format", "550e8400-e29b-41d4-a716-446655440000"},
+		{"numeric", "12345678901234567890"},
+		{"empty", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := createValidBuilder()
+			builder.WithContractApplied(tt.commitmentID)
+			record, err := builder.Build()
+			// No validation error should occur - any string is accepted
+			if err != nil {
+				t.Errorf("Unexpected error for ContractApplied %q: %v", tt.commitmentID, err)
+			}
+			if record.GetContractApplied() != tt.commitmentID {
+				t.Errorf("Expected ContractApplied %q, got %q", tt.commitmentID, record.GetContractApplied())
+			}
+		})
+	}
+}
+
+// TestFocusRecordBuilder_ChainFocus13ContractApplied tests method chaining with contract applied.
+func TestFocusRecordBuilder_ChainFocus13ContractApplied(t *testing.T) {
+	builder := createValidBuilder()
+	record, err := builder.
+		WithContractApplied("commitment-enterprise-2024").
+		WithServiceProvider("AWS").
+		WithHostProvider("Amazon Web Services").
+		Build()
+
+	if err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
+	if record.GetContractApplied() != "commitment-enterprise-2024" {
+		t.Errorf("Expected ContractApplied %q, got %q", "commitment-enterprise-2024", record.GetContractApplied())
+	}
+}
+
+// BenchmarkFocusRecordBuilder_WithContractApplied measures contract applied method performance.
+func BenchmarkFocusRecordBuilder_WithContractApplied(b *testing.B) {
+	builder := createValidBuilder()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		builder.WithContractApplied("commitment-ri-123456")
+	}
+}
+
+// =============================================================================
+// FOCUS 1.3 Backward Compatibility Tests (Phase 7 - User Story 5)
+// =============================================================================
+
+// TestFocusRecordBuilder_BackwardCompatibility_Focus12Only verifies that
+// FOCUS 1.2-only records (without any FOCUS 1.3 fields) still validate and work correctly.
+func TestFocusRecordBuilder_BackwardCompatibility_Focus12Only(t *testing.T) {
+	now := time.Now()
+	billingStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+	billingEnd := billingStart.AddDate(0, 1, 0)
+	chargeStart := now.Add(-24 * time.Hour)
+	chargeEnd := now
+
+	// Build a pure FOCUS 1.2 record - no new FOCUS 1.3 fields
+	record, err := pluginsdk.NewFocusRecordBuilder().
+		WithIdentity("AWS", "123456789012", "Production").
+		WithBillingPeriod(billingStart, billingEnd, "USD").
+		WithChargePeriod(chargeStart, chargeEnd).
+		WithService(pbc.FocusServiceCategory_FOCUS_SERVICE_CATEGORY_COMPUTE, "Amazon EC2").
+		WithChargeDetails(
+			pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+		).
+		WithChargeClassification(
+			pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			"EC2 m5.large usage",
+			pbc.FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_USAGE_BASED,
+		).
+		WithUsage(100, "Hours").
+		WithFinancials(100.00, 100.00, 95.00, "USD", "INV-2024-001").
+		WithContractedCost(95.00).
+		Build()
+
+	if err != nil {
+		t.Fatalf("FOCUS 1.2-only record should validate successfully: %v", err)
+	}
+
+	// Verify FOCUS 1.3 fields are empty/zero (default values)
+	if record.GetServiceProviderName() != "" {
+		t.Errorf("Expected empty ServiceProviderName for FOCUS 1.2 record, got %q", record.GetServiceProviderName())
+	}
+	if record.GetHostProviderName() != "" {
+		t.Errorf("Expected empty HostProviderName for FOCUS 1.2 record, got %q", record.GetHostProviderName())
+	}
+	if record.GetAllocatedMethodId() != "" {
+		t.Errorf("Expected empty AllocatedMethodId for FOCUS 1.2 record, got %q", record.GetAllocatedMethodId())
+	}
+	if record.GetContractApplied() != "" {
+		t.Errorf("Expected empty ContractApplied for FOCUS 1.2 record, got %q", record.GetContractApplied())
+	}
+
+	// Verify FOCUS 1.2 fields are correctly set
+	//nolint:staticcheck // SA1019: Testing deprecated provider_name backward compatibility
+	if record.GetProviderName() != "AWS" {
+		//nolint:staticcheck // SA1019: Testing deprecated provider_name backward compatibility
+		t.Errorf("Expected ProviderName %q, got %q", "AWS", record.GetProviderName())
+	}
+	if record.GetBilledCost() != 100.00 {
+		t.Errorf("Expected BilledCost 100.00, got %f", record.GetBilledCost())
+	}
+}
+
+// TestFocusRecordBuilder_BackwardCompatibility_DeprecatedFieldsWork verifies
+// that deprecated fields (provider_name, publisher) continue to work.
+func TestFocusRecordBuilder_BackwardCompatibility_DeprecatedFieldsWork(t *testing.T) {
+	// Test that WithIdentity still sets provider_name
+	builder := createValidBuilder()
+	builder.WithIdentity("AWS", "123", "Test")
+	record, err := builder.Build()
+	if err != nil {
+		t.Fatalf("Build with deprecated provider_name failed: %v", err)
+	}
+	//nolint:staticcheck // SA1019: Testing deprecated provider_name backward compatibility
+	if record.GetProviderName() != "AWS" {
+		//nolint:staticcheck // SA1019: Testing deprecated provider_name backward compatibility
+		t.Errorf("Expected ProviderName (deprecated) %q, got %q", "AWS", record.GetProviderName())
+	}
+
+	// Test that WithPublisher still sets publisher
+	builder2 := createValidBuilder()
+	builder2.WithPublisher("Microsoft")
+	record2, err := builder2.Build()
+	if err != nil {
+		t.Fatalf("Build with deprecated publisher failed: %v", err)
+	}
+	//nolint:staticcheck // SA1019: Testing deprecated publisher backward compatibility
+	if record2.GetPublisher() != "Microsoft" {
+		//nolint:staticcheck // SA1019: Testing deprecated publisher backward compatibility
+		t.Errorf("Expected Publisher (deprecated) %q, got %q", "Microsoft", record2.GetPublisher())
+	}
+}
+
+// TestFocusRecordBuilder_BackwardCompatibility_MixedFocus12And13 verifies
+// that records can use both FOCUS 1.2 and 1.3 fields together.
+func TestFocusRecordBuilder_BackwardCompatibility_MixedFocus12And13(t *testing.T) {
+	now := time.Now()
+	billingStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+	billingEnd := billingStart.AddDate(0, 1, 0)
+	chargeStart := now.Add(-24 * time.Hour)
+	chargeEnd := now
+
+	// Build a record with both FOCUS 1.2 and 1.3 fields
+	record, err := pluginsdk.NewFocusRecordBuilder().
+		// FOCUS 1.2 fields
+		WithIdentity("AWS", "123456789012", "Production").
+		WithBillingPeriod(billingStart, billingEnd, "USD").
+		WithChargePeriod(chargeStart, chargeEnd).
+		WithService(pbc.FocusServiceCategory_FOCUS_SERVICE_CATEGORY_COMPUTE, "Amazon EC2").
+		WithChargeDetails(
+			pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+		).
+		WithChargeClassification(
+			pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			"EC2 m5.large usage",
+			pbc.FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_USAGE_BASED,
+		).
+		WithUsage(100, "Hours").
+		WithFinancials(100.00, 100.00, 95.00, "USD", "INV-2024-001").
+		WithContractedCost(95.00).
+		// FOCUS 1.3 fields
+		WithServiceProvider("Amazon Web Services").
+		WithHostProvider("Amazon Web Services").
+		WithAllocation("proportional-cpu", "CPU-weighted").
+		WithAllocatedResource("pod-123", "frontend").
+		WithContractApplied("commitment-ri-123").
+		Build()
+
+	if err != nil {
+		t.Fatalf("Mixed FOCUS 1.2/1.3 record should validate: %v", err)
+	}
+
+	// Verify both FOCUS 1.2 and 1.3 fields are set
+	//nolint:staticcheck // SA1019: Testing deprecated provider_name backward compatibility
+	if record.GetProviderName() != "AWS" {
+		t.Errorf("FOCUS 1.2 ProviderName missing")
+	}
+	if record.GetServiceProviderName() != "Amazon Web Services" {
+		t.Errorf("FOCUS 1.3 ServiceProviderName missing")
+	}
+	if record.GetAllocatedMethodId() != "proportional-cpu" {
+		t.Errorf("FOCUS 1.3 AllocatedMethodId missing")
+	}
+}
+
+// TestFocusRecordBuilder_BackwardCompatibility_NewFieldsDefaultValues verifies
+// that all new FOCUS 1.3 fields have sensible default/zero values.
+func TestFocusRecordBuilder_BackwardCompatibility_NewFieldsDefaultValues(t *testing.T) {
+	builder := createValidBuilder()
+	record, err := builder.Build()
+	if err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
+
+	// All FOCUS 1.3 fields should have zero/empty values by default
+	tests := []struct {
+		name  string
+		value string
+	}{
+		{"ServiceProviderName", record.GetServiceProviderName()},
+		{"HostProviderName", record.GetHostProviderName()},
+		{"AllocatedMethodId", record.GetAllocatedMethodId()},
+		{"AllocatedMethodDetails", record.GetAllocatedMethodDetails()},
+		{"AllocatedResourceId", record.GetAllocatedResourceId()},
+		{"AllocatedResourceName", record.GetAllocatedResourceName()},
+		{"ContractApplied", record.GetContractApplied()},
+	}
+
+	for _, tt := range tests {
+		if tt.value != "" {
+			t.Errorf("%s should be empty by default, got %q", tt.name, tt.value)
+		}
+	}
+
+	// AllocatedTags should be nil or empty map
+	if len(record.GetAllocatedTags()) != 0 {
+		t.Errorf("AllocatedTags should be empty by default, got %v", record.GetAllocatedTags())
 	}
 }

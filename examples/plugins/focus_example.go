@@ -40,6 +40,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	//nolint:staticcheck // SA1019: Demonstrating deprecated provider_name access for backward compatibility example
 	logger.Info("Generated Complete FOCUS 1.2 Record",
 		"provider", record.GetProviderName(),
 		"service", record.GetServiceName(),
@@ -132,6 +133,7 @@ func setConditionalColumns(builder *pluginsdk.FocusRecordBuilder) {
 	builder.WithUsage(exampleConsumedQuantity, "Hours")
 
 	// Service - Conditional Fields
+	//nolint:staticcheck // SA1019: Demonstrating deprecated WithPublisher for backward compatibility example
 	builder.WithPublisher("Amazon Web Services")
 	builder.WithServiceSubcategory("Virtual Machine")
 

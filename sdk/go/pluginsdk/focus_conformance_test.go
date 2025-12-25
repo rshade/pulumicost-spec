@@ -237,7 +237,7 @@ func TestFOCUS12NewFieldsAccessible(t *testing.T) {
 		"PricingCurrencyContractedUnitPrice": record.GetPricingCurrencyContractedUnitPrice(),
 		"PricingCurrencyEffectiveCost":       record.GetPricingCurrencyEffectiveCost(),
 		"PricingCurrencyListUnitPrice":       record.GetPricingCurrencyListUnitPrice(),
-		"Publisher":                          record.GetPublisher(),
+		"Publisher":                          record.GetPublisher(), //nolint:staticcheck // SA1019: deprecated field test
 		"ServiceSubcategory":                 record.GetServiceSubcategory(),
 		"SkuMeter":                           record.GetSkuMeter(),
 		"SkuPriceDetails":                    record.GetSkuPriceDetails(),
@@ -342,7 +342,8 @@ func TestValidateFocusRecord_MandatoryFields(t *testing.T) {
 		expectedErr string
 	}{
 		{
-			name:        "missing provider_name",
+			name: "missing provider_name",
+			//nolint:staticcheck // SA1019: Testing validation of deprecated provider_name field
 			modifyFunc:  func(r *pbc.FocusCostRecord) { r.ProviderName = "" },
 			expectedErr: "provider_name is required",
 		},
@@ -634,6 +635,70 @@ func createValidFocusRecord() *pbc.FocusCostRecord {
 		ContractedCost:     10.0,
 		ConsumedQuantity:   1.0,
 		ConsumedUnit:       "Hours",
+	}
+}
+
+// =============================================================================
+// FOCUS 1.3 Validation Tests
+// =============================================================================
+
+// TestValidateFocusRecord_FOCUS13AllocationRule tests the allocation field dependency rules.
+// FOCUS 1.3: allocated_method_id requires allocated_resource_id, but NOT vice versa.
+func TestValidateFocusRecord_FOCUS13AllocationRule(t *testing.T) {
+	tests := []struct {
+		name                string
+		allocatedMethodID   string
+		allocatedResourceID string
+		expectError         bool
+		errorContains       string
+	}{
+		{
+			name:                "valid: both method and resource set",
+			allocatedMethodID:   "proportional-cpu",
+			allocatedResourceID: "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0",
+			expectError:         false,
+		},
+		{
+			name:                "valid: neither method nor resource set",
+			allocatedMethodID:   "",
+			allocatedResourceID: "",
+			expectError:         false,
+		},
+		{
+			name:                "valid: resource set without method (resource tagged for allocation, method TBD)",
+			allocatedMethodID:   "",
+			allocatedResourceID: "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0",
+			expectError:         false,
+		},
+		{
+			name:                "invalid: method set without resource",
+			allocatedMethodID:   "proportional-cpu",
+			allocatedResourceID: "",
+			expectError:         true,
+			errorContains:       "allocated_resource_id is required when allocated_method_id is set",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			record := createValidFocusRecord()
+			record.AllocatedMethodId = tt.allocatedMethodID
+			record.AllocatedResourceId = tt.allocatedResourceID
+
+			err := pluginsdk.ValidateFocusRecord(record)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tt.errorContains)
+					return
+				}
+				if !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error containing %q, got %q", tt.errorContains, err.Error())
+				}
+			} else if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+		})
 	}
 }
 
