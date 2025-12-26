@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.11](https://github.com/rshade/pulumicost-spec/compare/v0.4.10...v0.4.11) (2025-12-26)
+
+
+### Added
+
+* **pluginsdk:** Enable gRPC server reflection by default ([#181](https://github.com/rshade/pulumicost-spec/issues/181)) ([c058c6e](https://github.com/rshade/pulumicost-spec/commit/c058c6e57f2f8e0c983ebe092f6084fc3b3f513a))
+* **pluginsdk:** implement contextual finops validation ([#201](https://github.com/rshade/pulumicost-spec/issues/201)) ([4a9b808](https://github.com/rshade/pulumicost-spec/commit/4a9b80805180b261708a87d02ea1fec41b371d7b)), closes [#184](https://github.com/rshade/pulumicost-spec/issues/184)
+* **proto:** add focus 1.3 columns and contract commitment dataset ([#199](https://github.com/rshade/pulumicost-spec/issues/199)) ([25fcf65](https://github.com/rshade/pulumicost-spec/commit/25fcf65591c96435fa3e71e159e42b0f43d5cd6d)), closes [#183](https://github.com/rshade/pulumicost-spec/issues/183)
+* **proto:** Add id and arn fields to ResourceDescriptor ([#202](https://github.com/rshade/pulumicost-spec/issues/202)) ([962db4f](https://github.com/rshade/pulumicost-spec/commit/962db4f17621d134eac1a64f1675574ab47b2859)), closes [#200](https://github.com/rshade/pulumicost-spec/issues/200)
+
 ## [0.4.10](https://github.com/rshade/pulumicost-spec/compare/v0.4.9...v0.4.10) (2025-12-19)
 
 
