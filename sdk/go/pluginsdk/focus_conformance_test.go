@@ -1,6 +1,7 @@
 package pluginsdk_test
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -550,6 +551,10 @@ func TestValidateFocusRecord_ContractedCostRule(t *testing.T) {
 			record.ContractedUnitPrice = tt.contractedUnitPrice
 			record.PricingQuantity = tt.pricingQuantity
 			record.ChargeClass = tt.chargeClass
+			// Set PricingUnit when PricingQuantity > 0 to satisfy FR-006 validation
+			if tt.pricingQuantity > 0 {
+				record.PricingUnit = "Hours"
+			}
 
 			err := pluginsdk.ValidateFocusRecord(record)
 
@@ -822,4 +827,390 @@ func TestFOCUS12EnumCompleteness(t *testing.T) {
 				len(expectedValues), len(pbc.FocusCapacityReservationStatus_name))
 		}
 	})
+}
+
+// =============================================================================
+// Contextual FinOps Validation Tests (Feature 027-finops-validation)
+// =============================================================================
+
+// TestValidateFocusRecord_CostHierarchy tests the cost relationship validation (FR-001, FR-002).
+// Cost hierarchy: ListCost >= BilledCost >= EffectiveCost (when all positive, non-correction).
+func TestValidateFocusRecord_CostHierarchy(t *testing.T) {
+	tests := []struct {
+		name          string
+		billedCost    float64
+		effectiveCost float64
+		listCost      float64
+		chargeClass   pbc.FocusChargeClass
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:          "valid: all costs equal",
+			billedCost:    100.0,
+			effectiveCost: 100.0,
+			listCost:      100.0,
+			chargeClass:   pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			expectError:   false,
+		},
+		{
+			name:          "valid: proper hierarchy with discounts",
+			billedCost:    100.0,
+			effectiveCost: 80.0,
+			listCost:      120.0,
+			chargeClass:   pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			expectError:   false,
+		},
+		{
+			name:          "valid: zero costs (free tier)",
+			billedCost:    0.0,
+			effectiveCost: 0.0,
+			listCost:      0.0,
+			chargeClass:   pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			expectError:   false,
+		},
+		{
+			name:          "valid: negative effectiveCost (credits exempt)",
+			billedCost:    100.0,
+			effectiveCost: -50.0,
+			listCost:      100.0,
+			chargeClass:   pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			expectError:   false,
+		},
+		{
+			name:          "valid: correction charge exempt from hierarchy",
+			billedCost:    50.0,
+			effectiveCost: 150.0, // Would fail without CORRECTION exemption
+			listCost:      100.0,
+			chargeClass:   pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_CORRECTION,
+			expectError:   false,
+		},
+		{
+			name:          "invalid: effectiveCost exceeds billedCost (FR-001)",
+			billedCost:    100.0,
+			effectiveCost: 150.0,
+			listCost:      200.0,
+			chargeClass:   pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			expectError:   true,
+			errorContains: "effective_cost must not exceed billed_cost",
+		},
+		{
+			name:          "invalid: listCost less than effectiveCost (FR-002)",
+			billedCost:    100.0,
+			effectiveCost: 100.0,
+			listCost:      50.0,
+			chargeClass:   pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_REGULAR,
+			expectError:   true,
+			errorContains: "list_cost must be >= effective_cost",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			record := createValidFocusRecord()
+			record.BilledCost = tt.billedCost
+			record.EffectiveCost = tt.effectiveCost
+			record.ListCost = tt.listCost
+			record.ChargeClass = tt.chargeClass
+
+			err := pluginsdk.ValidateFocusRecord(record)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tt.errorContains)
+					return
+				}
+				if !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error containing %q, got %q", tt.errorContains, err.Error())
+				}
+			} else if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+		})
+	}
+}
+
+// TestValidateFocusRecord_CommitmentDiscountConsistency tests FR-003 and FR-004.
+func TestValidateFocusRecord_CommitmentDiscountConsistency(t *testing.T) {
+	tests := []struct {
+		name                     string
+		commitmentDiscountID     string
+		commitmentDiscountStatus pbc.FocusCommitmentDiscountStatus
+		chargeCategory           pbc.FocusChargeCategory
+		expectError              bool
+		errorContains            string
+	}{
+		{
+			name:                     "valid: no commitment discount",
+			commitmentDiscountID:     "",
+			commitmentDiscountStatus: pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED,
+			chargeCategory:           pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:              false,
+		},
+		{
+			name:                     "valid: commitment with status for usage",
+			commitmentDiscountID:     "ri-12345",
+			commitmentDiscountStatus: pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_USED,
+			chargeCategory:           pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:              false,
+		},
+		{
+			name:                     "valid: commitment ID without status for purchase (FR-003 exception)",
+			commitmentDiscountID:     "ri-12345",
+			commitmentDiscountStatus: pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED,
+			chargeCategory:           pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_PURCHASE,
+			expectError:              false,
+		},
+		{
+			name:                     "invalid: commitment ID set + Usage but no status (FR-003)",
+			commitmentDiscountID:     "ri-12345",
+			commitmentDiscountStatus: pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED,
+			chargeCategory:           pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:              true,
+			errorContains:            "commitment_discount_status required",
+		},
+		{
+			name:                     "invalid: status set without ID (FR-004)",
+			commitmentDiscountID:     "",
+			commitmentDiscountStatus: pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_USED,
+			chargeCategory:           pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:              true,
+			errorContains:            "commitment_discount_id required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			record := createValidFocusRecord()
+			record.CommitmentDiscountId = tt.commitmentDiscountID
+			record.CommitmentDiscountStatus = tt.commitmentDiscountStatus
+			record.ChargeCategory = tt.chargeCategory
+
+			err := pluginsdk.ValidateFocusRecord(record)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tt.errorContains)
+					return
+				}
+				if !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error containing %q, got %q", tt.errorContains, err.Error())
+				}
+			} else if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+		})
+	}
+}
+
+// TestValidateFocusRecord_PricingConsistency tests FR-006.
+func TestValidateFocusRecord_PricingConsistency(t *testing.T) {
+	tests := []struct {
+		name            string
+		pricingQuantity float64
+		pricingUnit     string
+		expectError     bool
+		errorContains   string
+	}{
+		{
+			name:            "valid: quantity with unit",
+			pricingQuantity: 10.0,
+			pricingUnit:     "Hours",
+			expectError:     false,
+		},
+		{
+			name:            "valid: zero quantity without unit",
+			pricingQuantity: 0.0,
+			pricingUnit:     "",
+			expectError:     false,
+		},
+		{
+			name:            "valid: zero quantity with unit",
+			pricingQuantity: 0.0,
+			pricingUnit:     "Hours",
+			expectError:     false,
+		},
+		{
+			name:            "invalid: quantity > 0 without unit (FR-006)",
+			pricingQuantity: 10.0,
+			pricingUnit:     "",
+			expectError:     true,
+			errorContains:   "pricing_unit required when pricing_quantity > 0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			record := createValidFocusRecord()
+			record.PricingQuantity = tt.pricingQuantity
+			record.PricingUnit = tt.pricingUnit
+
+			err := pluginsdk.ValidateFocusRecord(record)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tt.errorContains)
+					return
+				}
+				if !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error containing %q, got %q", tt.errorContains, err.Error())
+				}
+			} else if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+		})
+	}
+}
+
+// TestValidateFocusRecord_CapacityReservationConsistency tests FR-005.
+func TestValidateFocusRecord_CapacityReservationConsistency(t *testing.T) {
+	tests := []struct {
+		name                      string
+		capacityReservationID     string
+		capacityReservationStatus pbc.FocusCapacityReservationStatus
+		chargeCategory            pbc.FocusChargeCategory
+		expectError               bool
+		errorContains             string
+	}{
+		{
+			name:                      "valid: no capacity reservation",
+			capacityReservationID:     "",
+			capacityReservationStatus: pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED,
+			chargeCategory:            pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:               false,
+		},
+		{
+			name:                      "valid: capacity reservation with status for usage",
+			capacityReservationID:     "cr-12345",
+			capacityReservationStatus: pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_USED,
+			chargeCategory:            pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:               false,
+		},
+		{
+			name:                      "valid: capacity ID for purchase without status",
+			capacityReservationID:     "cr-12345",
+			capacityReservationStatus: pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED,
+			chargeCategory:            pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_PURCHASE,
+			expectError:               false,
+		},
+		{
+			name:                      "invalid: capacity ID + Usage but no status (FR-005)",
+			capacityReservationID:     "cr-12345",
+			capacityReservationStatus: pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED,
+			chargeCategory:            pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:               true,
+			errorContains:             "capacity_reservation_status required",
+		},
+		{
+			name:                      "invalid: status set without ID (FR-005 bidirectional)",
+			capacityReservationID:     "",
+			capacityReservationStatus: pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_USED,
+			chargeCategory:            pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE,
+			expectError:               true,
+			errorContains:             "capacity_reservation_id required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			record := createValidFocusRecord()
+			record.CapacityReservationId = tt.capacityReservationID
+			record.CapacityReservationStatus = tt.capacityReservationStatus
+			record.ChargeCategory = tt.chargeCategory
+
+			err := pluginsdk.ValidateFocusRecord(record)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tt.errorContains)
+					return
+				}
+				if !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error containing %q, got %q", tt.errorContains, err.Error())
+				}
+			} else if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			}
+		})
+	}
+}
+
+// TestValidateFocusRecordWithOptions_AggregateMode tests FR-009 aggregate error collection.
+func TestValidateFocusRecordWithOptions_AggregateMode(t *testing.T) {
+	t.Run("aggregate mode returns all errors", func(t *testing.T) {
+		record := createValidFocusRecord()
+		// Set up multiple validation failures
+		record.EffectiveCost = 150.0 // Exceeds BilledCost (10.0) - FR-001
+		record.CommitmentDiscountStatus = pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_USED
+		// No CommitmentDiscountId - FR-004
+		record.PricingQuantity = 10.0
+		record.PricingUnit = "" // FR-006
+
+		opts := pluginsdk.ValidationOptions{Mode: pluginsdk.ValidationModeAggregate}
+		errs := pluginsdk.ValidateFocusRecordWithOptions(record, opts)
+
+		// Should have exactly 3 errors: cost hierarchy (FR-001) + commitment ID missing (FR-004) + pricing unit missing (FR-006)
+		if len(errs) != 3 {
+			t.Errorf("Expected 3 errors in aggregate mode, got %d: %v", len(errs), errs)
+		}
+	})
+
+	t.Run("fail-fast mode returns first error only", func(t *testing.T) {
+		record := createValidFocusRecord()
+		// Set up multiple validation failures
+		record.EffectiveCost = 150.0 // Exceeds BilledCost
+		record.PricingQuantity = 10.0
+		record.PricingUnit = ""
+
+		opts := pluginsdk.ValidationOptions{Mode: pluginsdk.ValidationModeFailFast}
+		errs := pluginsdk.ValidateFocusRecordWithOptions(record, opts)
+
+		if len(errs) != 1 {
+			t.Errorf("Expected exactly 1 error in fail-fast mode, got %d: %v", len(errs), errs)
+		}
+	})
+
+	t.Run("aggregate mode with valid record returns empty slice", func(t *testing.T) {
+		record := createValidFocusRecord()
+
+		opts := pluginsdk.ValidationOptions{Mode: pluginsdk.ValidationModeAggregate}
+		errs := pluginsdk.ValidateFocusRecordWithOptions(record, opts)
+
+		if len(errs) != 0 {
+			t.Errorf("Expected no errors for valid record, got %d: %v", len(errs), errs)
+		}
+	})
+}
+
+// TestSentinelErrors verifies sentinel errors can be checked with errors.Is.
+func TestSentinelErrors(t *testing.T) {
+	tests := []struct {
+		name     string
+		sentinel error
+	}{
+		{"ErrEffectiveCostExceedsBilledCost", pluginsdk.ErrEffectiveCostExceedsBilledCost},
+		{"ErrListCostLessThanEffectiveCost", pluginsdk.ErrListCostLessThanEffectiveCost},
+		{"ErrCommitmentStatusMissing", pluginsdk.ErrCommitmentStatusMissing},
+		{"ErrCommitmentIDMissingForStatus", pluginsdk.ErrCommitmentIDMissingForStatus},
+		{"ErrCapacityReservationStatusMissing", pluginsdk.ErrCapacityReservationStatusMissing},
+		{"ErrCapacityReservationIDMissing", pluginsdk.ErrCapacityReservationIDMissing},
+		{"ErrPricingUnitMissing", pluginsdk.ErrPricingUnitMissing},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Verify sentinel error is not nil
+			if tt.sentinel == nil {
+				t.Errorf("Sentinel error %s is nil", tt.name)
+			}
+			// Verify error message is not empty
+			if tt.sentinel.Error() == "" {
+				t.Errorf("Sentinel error %s has empty message", tt.name)
+			}
+			// Verify errors.Is works with sentinel (primary use case)
+			if !errors.Is(tt.sentinel, tt.sentinel) {
+				t.Errorf("errors.Is failed for sentinel %s", tt.name)
+			}
+		})
+	}
 }

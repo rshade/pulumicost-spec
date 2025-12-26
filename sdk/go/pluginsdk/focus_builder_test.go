@@ -299,6 +299,14 @@ func TestFocusRecordBuilder_WithCommitmentDiscountDetails(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			builder := createValidBuilder()
+			// When setting a non-UNSPECIFIED status, also set CommitmentDiscountId (FR-004)
+			if tt.status != pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED {
+				builder.WithCommitmentDiscount(
+					pbc.FocusCommitmentDiscountCategory_FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND,
+					"test-commitment-id",
+					"TestDiscount",
+				)
+			}
 			builder.WithCommitmentDiscountDetails(tt.quantity, tt.status, tt.discountType, tt.unit)
 			record, err := builder.Build()
 			if err != nil {
@@ -539,11 +547,13 @@ func TestFocusRecordBuilder_ChainNewMethods(t *testing.T) {
 	builder := createValidBuilder()
 
 	// Chain all new methods
+	// Note: WithCommitmentDiscount must be called before WithCommitmentDiscountDetails (FR-004)
 	record, err := builder.
 		WithContractedCost(100.50).
 		WithBillingAccountType("Enterprise").
 		WithSubAccountType("Subscription").
 		WithCapacityReservation("cr-123", pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_USED).
+		WithCommitmentDiscount(pbc.FocusCommitmentDiscountCategory_FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND, "cd-123", "TestDiscount").
 		WithCommitmentDiscountDetails(50.0, pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_USED, "SavingsPlan", "USD/Hour").
 		WithContractedUnitPrice(0.05).
 		WithPricingCurrency("EUR").
