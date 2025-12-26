@@ -1540,3 +1540,234 @@ func TestSortRecommendationsStrictWeakOrdering(t *testing.T) {
 		}
 	}
 }
+
+// =============================================================================
+// ResourceDescriptor Helper Tests
+// =============================================================================
+
+func TestNewResourceDescriptor_Basic(t *testing.T) {
+	t.Parallel()
+
+	desc := pluginsdk.NewResourceDescriptor("aws", "ec2")
+
+	if desc.GetProvider() != "aws" {
+		t.Errorf("expected provider 'aws', got %q", desc.GetProvider())
+	}
+	if desc.GetResourceType() != "ec2" {
+		t.Errorf("expected resource_type 'ec2', got %q", desc.GetResourceType())
+	}
+	// Optional fields should be empty
+	if desc.GetId() != "" {
+		t.Errorf("expected empty id, got %q", desc.GetId())
+	}
+	if desc.GetArn() != "" {
+		t.Errorf("expected empty arn, got %q", desc.GetArn())
+	}
+}
+
+func TestNewResourceDescriptor_WithIDOption(t *testing.T) {
+	t.Parallel()
+
+	desc := pluginsdk.NewResourceDescriptor(
+		"aws", "ec2",
+		pluginsdk.WithID("urn:pulumi:prod::myapp::aws:ec2/instance:Instance::web"),
+	)
+
+	if desc.GetId() != "urn:pulumi:prod::myapp::aws:ec2/instance:Instance::web" {
+		t.Errorf("ID not set correctly: %q", desc.GetId())
+	}
+}
+
+func TestNewResourceDescriptor_WithARNOption(t *testing.T) {
+	t.Parallel()
+
+	desc := pluginsdk.NewResourceDescriptor(
+		"aws", "ec2",
+		pluginsdk.WithARN("arn:aws:ec2:us-east-1:123456789012:instance/i-abc123"),
+	)
+
+	if desc.GetArn() != "arn:aws:ec2:us-east-1:123456789012:instance/i-abc123" {
+		t.Errorf("ARN not set correctly: %q", desc.GetArn())
+	}
+}
+
+func TestNewResourceDescriptor_WithAllOptions(t *testing.T) {
+	t.Parallel()
+
+	desc := pluginsdk.NewResourceDescriptor(
+		"aws", "ec2",
+		pluginsdk.WithID("batch-001"),
+		pluginsdk.WithARN("arn:aws:ec2:us-east-1:123456789012:instance/i-abc123"),
+		pluginsdk.WithSKU("t3.micro"),
+		pluginsdk.WithRegion("us-east-1"),
+		pluginsdk.WithTags(map[string]string{"env": "prod", "team": "platform"}),
+	)
+
+	if desc.GetProvider() != "aws" {
+		t.Errorf("expected provider 'aws', got %q", desc.GetProvider())
+	}
+	if desc.GetResourceType() != "ec2" {
+		t.Errorf("expected resource_type 'ec2', got %q", desc.GetResourceType())
+	}
+	if desc.GetId() != "batch-001" {
+		t.Errorf("expected id 'batch-001', got %q", desc.GetId())
+	}
+	if desc.GetArn() != "arn:aws:ec2:us-east-1:123456789012:instance/i-abc123" {
+		t.Errorf("ARN not set correctly: %q", desc.GetArn())
+	}
+	if desc.GetSku() != "t3.micro" {
+		t.Errorf("expected sku 't3.micro', got %q", desc.GetSku())
+	}
+	if desc.GetRegion() != "us-east-1" {
+		t.Errorf("expected region 'us-east-1', got %q", desc.GetRegion())
+	}
+	if len(desc.GetTags()) != 2 {
+		t.Errorf("expected 2 tags, got %d", len(desc.GetTags()))
+	}
+	if desc.GetTags()["env"] != "prod" {
+		t.Errorf("expected tag env=prod, got %q", desc.GetTags()["env"])
+	}
+}
+
+func TestWithID(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		id   string
+	}{
+		{
+			name: "Pulumi URN",
+			id:   "urn:pulumi:prod::myapp::aws:ec2/instance:Instance::webserver",
+		},
+		{
+			name: "UUID",
+			id:   "550e8400-e29b-41d4-a716-446655440000",
+		},
+		{
+			name: "simple tracking ID",
+			id:   "batch-001",
+		},
+		{
+			name: "empty string",
+			id:   "",
+		},
+		{
+			name: "special characters",
+			id:   "resource@domain.com:path/to/item#section?query=value",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			desc := pluginsdk.NewResourceDescriptor("aws", "ec2", pluginsdk.WithID(tc.id))
+			if desc.GetId() != tc.id {
+				t.Errorf("expected id %q, got %q", tc.id, desc.GetId())
+			}
+		})
+	}
+}
+
+func TestWithARN(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+		arn  string
+	}{
+		{
+			name: "AWS ARN",
+			arn:  "arn:aws:ec2:us-east-1:123456789012:instance/i-abc123",
+		},
+		{
+			name: "Azure Resource ID",
+			arn:  "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1",
+		},
+		{
+			name: "GCP Full Resource Name",
+			arn:  "//compute.googleapis.com/projects/my-project/zones/us-central1-a/instances/vm-1",
+		},
+		{
+			name: "Kubernetes Resource Path",
+			arn:  "prod-cluster/default/Deployment/nginx",
+		},
+		{
+			name: "empty string",
+			arn:  "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			desc := pluginsdk.NewResourceDescriptor("custom", "resource", pluginsdk.WithARN(tc.arn))
+			if desc.GetArn() != tc.arn {
+				t.Errorf("expected arn %q, got %q", tc.arn, desc.GetArn())
+			}
+		})
+	}
+}
+
+func TestResourceDescriptorOptions_Composability(t *testing.T) {
+	t.Parallel()
+
+	// Test that options can be applied in any order
+	t.Run("ID then ARN", func(t *testing.T) {
+		t.Parallel()
+		desc := pluginsdk.NewResourceDescriptor(
+			"aws", "ec2",
+			pluginsdk.WithID("id-first"),
+			pluginsdk.WithARN("arn-second"),
+		)
+		if desc.GetId() != "id-first" || desc.GetArn() != "arn-second" {
+			t.Errorf("options not composed correctly")
+		}
+	})
+
+	t.Run("ARN then ID", func(t *testing.T) {
+		t.Parallel()
+		desc := pluginsdk.NewResourceDescriptor(
+			"aws", "ec2",
+			pluginsdk.WithARN("arn-first"),
+			pluginsdk.WithID("id-second"),
+		)
+		if desc.GetId() != "id-second" || desc.GetArn() != "arn-first" {
+			t.Errorf("options not composed correctly")
+		}
+	})
+
+	t.Run("all options together", func(t *testing.T) {
+		t.Parallel()
+		desc := pluginsdk.NewResourceDescriptor(
+			"gcp", "compute_engine",
+			pluginsdk.WithSKU("e2-micro"),
+			pluginsdk.WithRegion("us-central1"),
+			pluginsdk.WithID("gcp-resource-001"),
+			pluginsdk.WithARN("//compute.googleapis.com/projects/myproj/zones/us-central1-a/instances/vm1"),
+			pluginsdk.WithTags(map[string]string{"owner": "team-a"}),
+		)
+
+		if desc.GetProvider() != "gcp" {
+			t.Errorf("provider mismatch")
+		}
+		if desc.GetResourceType() != "compute_engine" {
+			t.Errorf("resource_type mismatch")
+		}
+		if desc.GetSku() != "e2-micro" {
+			t.Errorf("sku mismatch")
+		}
+		if desc.GetRegion() != "us-central1" {
+			t.Errorf("region mismatch")
+		}
+		if desc.GetId() != "gcp-resource-001" {
+			t.Errorf("id mismatch")
+		}
+		if desc.GetArn() != "//compute.googleapis.com/projects/myproj/zones/us-central1-a/instances/vm1" {
+			t.Errorf("arn mismatch")
+		}
+		if desc.GetTags()["owner"] != "team-a" {
+			t.Errorf("tags mismatch")
+		}
+	})
+}

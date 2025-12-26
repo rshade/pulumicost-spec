@@ -1524,8 +1524,60 @@ type ResourceDescriptor struct {
 	// utilization_percentage is a per-resource utilization override (0.0 to 1.0).
 	// OPTIONAL. If provided, overrides the global request default.
 	UtilizationPercentage *float64 `protobuf:"fixed64,6,opt,name=utilization_percentage,json=utilizationPercentage,proto3,oneof" json:"utilization_percentage,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// id is a client-specified identifier for request/response correlation.
+	// OPTIONAL. When provided, plugins MUST include this ID in any
+	// recommendations or responses related to this resource, enabling
+	// clients to match responses to their original requests in batch operations.
+	//
+	// The ID is treated as an opaque string - plugins MUST NOT validate or
+	// transform this value. Common formats include Pulumi URNs, UUIDs, or
+	// application-specific identifiers.
+	//
+	// Example: "urn:pulumi:prod::myapp::aws:ec2/instance:Instance::webserver"
+	//
+	// Correlation pattern:
+	//  1. Client sets id in ResourceDescriptor
+	//  2. Plugin copies id to ResourceRecommendationInfo.resource_id
+	//  3. Client matches response to request using id
+	Id string `protobuf:"bytes,7,opt,name=id,proto3" json:"id,omitempty"`
+	// arn is the canonical cloud resource identifier for exact matching.
+	// OPTIONAL. When provided, plugins SHOULD use this for precise resource
+	// lookup instead of matching by type/sku/region/tags.
+	//
+	// This field uses "arn" as the name for consistency with GetActualCostRequest,
+	// but accepts canonical identifiers from any cloud provider:
+	//
+	// AWS ARN:
+	//
+	//	arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0
+	//
+	// Azure Resource ID:
+	//
+	//	/subscriptions/{sub-id}/resourceGroups/{rg}/providers/
+	//	Microsoft.Compute/virtualMachines/{vm-name}
+	//
+	// GCP Full Resource Name:
+	//
+	//	//compute.googleapis.com/projects/{project}/zones/{zone}/instances/{name}
+	//
+	// Kubernetes Resource:
+	//
+	//	{cluster}/{namespace}/{kind}/{name} or UID
+	//
+	// Cloudflare:
+	//
+	//	{zone-id}/{resource-type}/{resource-id}
+	//
+	// Matching behavior:
+	//   - If arn is provided and valid: Use for exact resource lookup
+	//   - If arn is empty or invalid: Fall back to type/sku/region/tags matching
+	//   - If arn format is unrecognized: Log warning, use fallback matching
+	//
+	// Plugins MAY validate the arn format for their provider and SHOULD log
+	// a warning if the format is invalid before falling back.
+	Arn           string `protobuf:"bytes,8,opt,name=arn,proto3" json:"arn,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ResourceDescriptor) Reset() {
@@ -1598,6 +1650,20 @@ func (x *ResourceDescriptor) GetUtilizationPercentage() float64 {
 		return *x.UtilizationPercentage
 	}
 	return 0
+}
+
+func (x *ResourceDescriptor) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ResourceDescriptor) GetArn() string {
+	if x != nil {
+		return x.Arn
+	}
+	return ""
 }
 
 // ActualCostResult represents a single cost data point.
@@ -4871,14 +4937,16 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x15GetPricingSpecRequest\x12=\n" +
 	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"H\n" +
 	"\x16GetPricingSpecResponse\x12.\n" +
-	"\x04spec\x18\x01 \x01(\v2\x1a.pulumicost.v1.PricingSpecR\x04spec\"\xd0\x02\n" +
+	"\x04spec\x18\x01 \x01(\v2\x1a.pulumicost.v1.PricingSpecR\x04spec\"\xf2\x02\n" +
 	"\x12ResourceDescriptor\x12\x1a\n" +
 	"\bprovider\x18\x01 \x01(\tR\bprovider\x12#\n" +
 	"\rresource_type\x18\x02 \x01(\tR\fresourceType\x12\x10\n" +
 	"\x03sku\x18\x03 \x01(\tR\x03sku\x12\x16\n" +
 	"\x06region\x18\x04 \x01(\tR\x06region\x12?\n" +
 	"\x04tags\x18\x05 \x03(\v2+.pulumicost.v1.ResourceDescriptor.TagsEntryR\x04tags\x12:\n" +
-	"\x16utilization_percentage\x18\x06 \x01(\x01H\x00R\x15utilizationPercentage\x88\x01\x01\x1a7\n" +
+	"\x16utilization_percentage\x18\x06 \x01(\x01H\x00R\x15utilizationPercentage\x88\x01\x01\x12\x0e\n" +
+	"\x02id\x18\a \x01(\tR\x02id\x12\x10\n" +
+	"\x03arn\x18\b \x01(\tR\x03arn\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x19\n" +
