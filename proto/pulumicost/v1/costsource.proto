@@ -254,6 +254,55 @@ message ResourceDescriptor {
   // utilization_percentage is a per-resource utilization override (0.0 to 1.0).
   // OPTIONAL. If provided, overrides the global request default.
   optional double utilization_percentage = 6;
+
+  // id is a client-specified identifier for request/response correlation.
+  // OPTIONAL. When provided, plugins MUST include this ID in any
+  // recommendations or responses related to this resource, enabling
+  // clients to match responses to their original requests in batch operations.
+  //
+  // The ID is treated as an opaque string - plugins MUST NOT validate or
+  // transform this value. Common formats include Pulumi URNs, UUIDs, or
+  // application-specific identifiers.
+  //
+  // Example: "urn:pulumi:prod::myapp::aws:ec2/instance:Instance::webserver"
+  //
+  // Correlation pattern:
+  //   1. Client sets id in ResourceDescriptor
+  //   2. Plugin copies id to ResourceRecommendationInfo.resource_id
+  //   3. Client matches response to request using id
+  string id = 7;
+
+  // arn is the canonical cloud resource identifier for exact matching.
+  // OPTIONAL. When provided, plugins SHOULD use this for precise resource
+  // lookup instead of matching by type/sku/region/tags.
+  //
+  // This field uses "arn" as the name for consistency with GetActualCostRequest,
+  // but accepts canonical identifiers from any cloud provider:
+  //
+  // AWS ARN:
+  //   arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0
+  //
+  // Azure Resource ID:
+  //   /subscriptions/{sub-id}/resourceGroups/{rg}/providers/
+  //   Microsoft.Compute/virtualMachines/{vm-name}
+  //
+  // GCP Full Resource Name:
+  //   //compute.googleapis.com/projects/{project}/zones/{zone}/instances/{name}
+  //
+  // Kubernetes Resource:
+  //   {cluster}/{namespace}/{kind}/{name} or UID
+  //
+  // Cloudflare:
+  //   {zone-id}/{resource-type}/{resource-id}
+  //
+  // Matching behavior:
+  //   - If arn is provided and valid: Use for exact resource lookup
+  //   - If arn is empty or invalid: Fall back to type/sku/region/tags matching
+  //   - If arn format is unrecognized: Log warning, use fallback matching
+  //
+  // Plugins MAY validate the arn format for their provider and SHOULD log
+  // a warning if the format is invalid before falling back.
+  string arn = 8;
 }
 
 // ActualCostResult represents a single cost data point.

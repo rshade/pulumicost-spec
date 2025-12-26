@@ -261,6 +261,156 @@ func ValidateActualCostResponse(resp *pbc.GetActualCostResponse) error {
 	return nil
 }
 
+// =============================================================================
+// ResourceDescriptor Helper Functions
+// =============================================================================
+
+// ResourceDescriptorOption is a functional option for configuring ResourceDescriptor.
+// Use these options with NewResourceDescriptor to create descriptors with ID and ARN fields.
+type ResourceDescriptorOption func(*pbc.ResourceDescriptor)
+
+// WithID sets the client correlation identifier on the ResourceDescriptor.
+//
+// The id field is used for request/response correlation in batch operations.
+// When provided, plugins MUST include this ID in any recommendations or responses
+// related to this resource, enabling clients to match responses to their original
+// requests.
+//
+// The ID is treated as an opaque string - plugins MUST NOT validate or
+// transform this value. Common formats include Pulumi URNs, UUIDs, or
+// application-specific identifiers.
+//
+// Example - Setting a Pulumi URN as correlation ID:
+//
+//	desc := pluginsdk.NewResourceDescriptor(
+//	    "aws", "ec2",
+//	    pluginsdk.WithID("urn:pulumi:prod::myapp::aws:ec2/instance:Instance::web"),
+//	)
+//
+// Example - Using with GetRecommendationsRequest:
+//
+//	req := &pbc.GetRecommendationsRequest{
+//	    TargetResources: []*pbc.ResourceDescriptor{
+//	        pluginsdk.NewResourceDescriptor(
+//	            "aws", "ec2",
+//	            pluginsdk.WithID("batch-001"),
+//	            pluginsdk.WithARN("arn:aws:ec2:us-east-1:123456789012:instance/i-abc123"),
+//	        ),
+//	    },
+//	}
+func WithID(id string) ResourceDescriptorOption {
+	return func(desc *pbc.ResourceDescriptor) {
+		desc.Id = id
+	}
+}
+
+// WithARN sets the canonical cloud resource identifier on the ResourceDescriptor.
+//
+// The arn field is used for exact resource matching instead of fuzzy
+// type/sku/region/tags matching. When provided, plugins SHOULD use this
+// for precise resource lookup.
+//
+// This field uses "arn" as the name for consistency with GetActualCostRequest,
+// but accepts canonical identifiers from any cloud provider:
+//
+//   - AWS ARN: arn:aws:ec2:us-east-1:123456789012:instance/i-abc123
+//   - Azure Resource ID: /subscriptions/{sub}/resourceGroups/{rg}/providers/...
+//   - GCP Full Resource Name: //compute.googleapis.com/projects/{project}/zones/{zone}/instances/{name}
+//   - Kubernetes: {cluster}/{namespace}/{kind}/{name} or UID
+//   - Cloudflare: {zone-id}/{resource-type}/{resource-id}
+//
+// Example - AWS resource with exact ARN matching:
+//
+//	desc := pluginsdk.NewResourceDescriptor(
+//	    "aws", "ec2",
+//	    pluginsdk.WithARN("arn:aws:ec2:us-east-1:123456789012:instance/i-abc123"),
+//	)
+//
+// Example - Azure resource:
+//
+//	desc := pluginsdk.NewResourceDescriptor(
+//	    "azure", "virtualMachines",
+//	    pluginsdk.WithARN("/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1"),
+//	)
+func WithARN(arn string) ResourceDescriptorOption {
+	return func(desc *pbc.ResourceDescriptor) {
+		desc.Arn = arn
+	}
+}
+
+// WithSKU sets the provider-specific SKU or instance size on the ResourceDescriptor.
+//
+// Example:
+//
+//	desc := pluginsdk.NewResourceDescriptor(
+//	    "aws", "ec2",
+//	    pluginsdk.WithSKU("t3.micro"),
+//	)
+func WithSKU(sku string) ResourceDescriptorOption {
+	return func(desc *pbc.ResourceDescriptor) {
+		desc.Sku = sku
+	}
+}
+
+// WithRegion sets the deployment region on the ResourceDescriptor.
+//
+// Example:
+//
+//	desc := pluginsdk.NewResourceDescriptor(
+//	    "aws", "ec2",
+//	    pluginsdk.WithRegion("us-east-1"),
+//	)
+func WithRegion(region string) ResourceDescriptorOption {
+	return func(desc *pbc.ResourceDescriptor) {
+		desc.Region = region
+	}
+}
+
+// WithTags sets the resource tags on the ResourceDescriptor.
+//
+// Example:
+//
+//	desc := pluginsdk.NewResourceDescriptor(
+//	    "aws", "ec2",
+//	    pluginsdk.WithTags(map[string]string{"env": "prod", "team": "platform"}),
+//	)
+func WithTags(tags map[string]string) ResourceDescriptorOption {
+	return func(desc *pbc.ResourceDescriptor) {
+		desc.Tags = tags
+	}
+}
+
+// NewResourceDescriptor creates a new ResourceDescriptor with the given provider
+// and resource type, plus any additional options.
+//
+// Provider and resource_type are required fields per the proto specification.
+// Use functional options to set optional fields like id, arn, sku, region, and tags.
+//
+// Example - Basic descriptor:
+//
+//	desc := pluginsdk.NewResourceDescriptor("aws", "ec2")
+//
+// Example - Full descriptor with ID and ARN for batch correlation:
+//
+//	desc := pluginsdk.NewResourceDescriptor(
+//	    "aws", "ec2",
+//	    pluginsdk.WithID("urn:pulumi:prod::myapp::aws:ec2/instance:Instance::web"),
+//	    pluginsdk.WithARN("arn:aws:ec2:us-east-1:123456789012:instance/i-abc123"),
+//	    pluginsdk.WithSKU("t3.micro"),
+//	    pluginsdk.WithRegion("us-east-1"),
+//	    pluginsdk.WithTags(map[string]string{"env": "prod"}),
+//	)
+func NewResourceDescriptor(provider, resourceType string, opts ...ResourceDescriptorOption) *pbc.ResourceDescriptor {
+	desc := &pbc.ResourceDescriptor{
+		Provider:     provider,
+		ResourceType: resourceType,
+	}
+	for _, opt := range opts {
+		opt(desc)
+	}
+	return desc
+}
+
 // NotSupportedError returns an error indicating the specified resource type and provider are not supported.
 // The formatted message includes the resource's ResourceType and Provider.
 func NotSupportedError(resource *pbc.ResourceDescriptor) error {

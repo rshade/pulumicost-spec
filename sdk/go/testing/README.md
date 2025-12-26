@@ -973,6 +973,101 @@ test-performance:
 test-all: test-integration test-conformance test-performance
 ```
 
+## Resource Identifier Fields
+
+The `ResourceDescriptor` message supports two optional fields for resource identification:
+
+### ID Field (Batch Correlation)
+
+The `id` field enables request/response correlation in batch operations. When clients submit
+multiple resources for recommendations, they can assign unique IDs to each resource and use
+those IDs to match responses back to their original requests.
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+// Create descriptors with unique IDs for batch correlation
+descriptors := []*pbc.ResourceDescriptor{
+    pluginsdk.NewResourceDescriptor(
+        "aws", "ec2",
+        pluginsdk.WithID("urn:pulumi:prod::myapp::aws:ec2/instance:Instance::web"),
+        pluginsdk.WithSKU("t3.micro"),
+        pluginsdk.WithRegion("us-east-1"),
+    ),
+    pluginsdk.NewResourceDescriptor(
+        "aws", "ec2",
+        pluginsdk.WithID("urn:pulumi:prod::myapp::aws:ec2/instance:Instance::api"),
+        pluginsdk.WithSKU("t3.small"),
+        pluginsdk.WithRegion("us-east-1"),
+    ),
+}
+
+// Submit batch request
+req := &pbc.GetRecommendationsRequest{TargetResources: descriptors}
+resp, _ := client.GetRecommendations(ctx, req)
+
+// Correlate responses by ID
+for _, rec := range resp.GetRecommendations() {
+    resourceID := rec.GetResource().GetId()  // Matches input ID
+    // Match back to original request...
+}
+```
+
+**Key points:**
+
+- IDs are opaque strings - plugins MUST NOT validate or transform them
+- Common formats: Pulumi URNs, UUIDs, application-specific identifiers
+- Empty ID is valid and maintains backward compatibility
+
+### ARN Field (Exact Matching)
+
+The `arn` field enables exact resource lookup using canonical cloud identifiers.
+When provided, plugins can use this for precise matching instead of fuzzy
+type/sku/region/tags matching.
+
+```go
+// AWS resource with ARN for exact matching
+desc := pluginsdk.NewResourceDescriptor(
+    "aws", "ec2",
+    pluginsdk.WithID("batch-001"),  // For correlation
+    pluginsdk.WithARN("arn:aws:ec2:us-east-1:123456789012:instance/i-abc123"),  // For exact matching
+)
+
+// Azure resource with Resource ID
+desc := pluginsdk.NewResourceDescriptor(
+    "azure", "virtualMachines",
+    pluginsdk.WithARN("/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1"),
+)
+
+// GCP resource with Full Resource Name
+desc := pluginsdk.NewResourceDescriptor(
+    "gcp", "compute_engine",
+    pluginsdk.WithARN("//compute.googleapis.com/projects/myproj/zones/us-central1-a/instances/vm1"),
+)
+
+// Kubernetes resource
+desc := pluginsdk.NewResourceDescriptor(
+    "kubernetes", "deployment",
+    pluginsdk.WithARN("prod-cluster/default/Deployment/nginx"),
+)
+```
+
+**Supported ARN formats:**
+
+| Provider   | Format                                                           |
+| ---------- | ---------------------------------------------------------------- |
+| AWS        | `arn:aws:service:region:account:resource`                        |
+| Azure      | `/subscriptions/{sub}/resourceGroups/{rg}/providers/...`         |
+| GCP        | `//service.googleapis.com/projects/{project}/zones/{zone}/...`   |
+| Kubernetes | `{cluster}/{namespace}/{kind}/{name}` or UID                     |
+| Cloudflare | `{zone-id}/{resource-type}/{resource-id}`                        |
+
+**Matching behavior:**
+
+- ARN provided and valid → Use for exact resource lookup
+- ARN empty or invalid → Fall back to type/sku/region/tags matching
+- ARN format unrecognized → Log warning, use fallback matching
+
 ## Best Practices
 
 ### Plugin Implementation
@@ -983,6 +1078,7 @@ test-all: test-integration test-conformance test-performance
 4. **Use timeouts** for external service calls
 5. **Implement caching** for frequently requested data
 6. **Provide meaningful error messages** to help users debug issues
+7. **Preserve ID fields** - Copy `ResourceDescriptor.Id` to response fields for correlation
 
 ### Testing Implementation
 
