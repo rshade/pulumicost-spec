@@ -1,19 +1,39 @@
-# FOCUS 1.2 Column Reference
+# FOCUS 1.2/1.3 Column Reference
 
-This document provides a comprehensive reference for all 57 columns defined in the
-FinOps FOCUS 1.2 (FinOps Open Cost and Usage Specification) as implemented in
-PulumiCost.
+This document provides a comprehensive reference for columns defined in the
+FinOps FOCUS (FinOps Open Cost and Usage Specification) as implemented in
+PulumiCost, covering FOCUS 1.2 and 1.3 additions.
 
-Reference: <https://focus.finops.org/focus-specification/v1-2/>
+References:
+
+- FOCUS 1.2: <https://focus.finops.org/focus-specification/v1-2/>
+- FOCUS 1.3: <https://focus.finops.org/focus-specification/v1-3/>
 
 ## Column Summary
 
-| Level       | Count  | Description                                 |
-| ----------- | ------ | ------------------------------------------- |
-| Mandatory   | 14     | Required for all cost records               |
-| Recommended | 1      | Strongly suggested for completeness         |
-| Conditional | 42     | Required when applicable conditions are met |
-| **Total**   | **57** | Complete FOCUS 1.2 coverage                 |
+### FocusCostRecord Columns
+
+| Level       | FOCUS 1.2 | FOCUS 1.3 Additions | Total  | Description                                 |
+| ----------- | --------- | ------------------- | ------ | ------------------------------------------- |
+| Mandatory   | 14        | 0                   | 14     | Required for all cost records               |
+| Recommended | 1         | 1                   | 2      | Strongly suggested for completeness         |
+| Conditional | 42        | 7                   | 49     | Required when applicable conditions are met |
+| **Total**   | **57**    | **8**               | **65** | Complete FOCUS 1.3 coverage                 |
+
+### ContractCommitment Dataset (FOCUS 1.3)
+
+| Level       | Count  | Description                          |
+| ----------- | ------ | ------------------------------------ |
+| Required    | 2      | Identity fields for commitments      |
+| Conditional | 10     | Classification, periods, and amounts |
+| **Total**   | **12** | Complete commitment dataset          |
+
+### Deprecated Columns (FOCUS 1.3)
+
+| Column          | Replacement         | Notes                        |
+| --------------- | ------------------- | ---------------------------- |
+| `ProviderName`  | `ServiceProviderName` | Supports marketplace scenarios |
+| `Publisher`     | `HostProviderName`    | Clarifies hosting vs service |
 
 ## Mandatory Columns (14)
 
@@ -177,52 +197,203 @@ These columns are required when specific conditions apply.
 | -------- | -------------------- | ---------------------- | ---------------------------- |
 | **Tags** | map\<string,string\> | When resource has tags | User-defined key-value pairs |
 
+---
+
+## FOCUS 1.3 Columns (8 New)
+
+FOCUS 1.3 introduces 8 new columns for enhanced provider disambiguation,
+split cost allocation, and contract commitment tracking.
+
+### Provider Disambiguation (2 columns)
+
+These columns replace deprecated fields to better support marketplace and
+reseller scenarios.
+
+| Column                  | Type   | Level       | Description                              | Provider Mapping                      |
+| ----------------------- | ------ | ----------- | ---------------------------------------- | ------------------------------------- |
+| **ServiceProviderName** | string | Conditional | Entity providing the service             | AWS, Azure, GCP, or ISV/Reseller name |
+| **HostProviderName**    | string | Conditional | Entity hosting the underlying resource   | AWS, Azure, GCP (infrastructure host) |
+
+**Deprecation Note**: `ProviderName` (field 1) and `Publisher` (field 55) are
+deprecated in FOCUS 1.3. Use `ServiceProviderName` and `HostProviderName` instead.
+
+#### Provider Disambiguation Example
+
+```go
+// Direct provider usage (traditional scenario)
+builder.WithServiceProvider("AWS")
+builder.WithHostProvider("AWS")
+
+// Marketplace/Reseller scenario
+builder.WithServiceProvider("Datadog")   // ISV providing the service
+builder.WithHostProvider("AWS")          // AWS hosting the infrastructure
+```
+
+### Split Cost Allocation (5 columns)
+
+These columns enable tracking of how shared resource costs are distributed
+across workloads using organizational allocation methodologies.
+
+| Column                     | Type                 | Level       | Description                              | Provider Mapping           |
+| -------------------------- | -------------------- | ----------- | ---------------------------------------- | -------------------------- |
+| **AllocatedMethodId**      | string               | Conditional | Identifier for allocation methodology    | Organization-defined ID    |
+| **AllocatedMethodDetails** | string               | Recommended | Human-readable allocation description    | Free-text description      |
+| **AllocatedResourceId**    | string               | Conditional | Resource receiving the allocated cost    | Target resource identifier |
+| **AllocatedResourceName**  | string               | Conditional | Display name of target resource          | Target resource name       |
+| **AllocatedTags**          | map\<string,string\> | Conditional | Tags associated with allocated resource  | Allocation metadata        |
+
+**Validation Rule**: If `AllocatedMethodId` is populated, `AllocatedResourceId` MUST also be populated.
+
+#### Allocation Example
+
+```go
+builder.WithAllocation("ALLOC-001", "CPU-weighted by namespace utilization")
+builder.WithAllocatedResource("ns/payments-service", "Payments Service")
+builder.WithAllocatedTags(map[string]string{
+    "cost_center": "CC-1001",
+    "team":        "payments",
+})
+```
+
+### Contract Commitment Link (1 column)
+
+This column links cost records to the ContractCommitment supplemental dataset.
+
+| Column              | Type   | Level       | Description                            | Provider Mapping             |
+| ------------------- | ------ | ----------- | -------------------------------------- | ---------------------------- |
+| **ContractApplied** | string | Conditional | Reference to ContractCommitmentId      | Opaque commitment identifier |
+
+#### Contract Link Example
+
+```go
+builder.WithContractApplied("ri-123456789")  // Links to ContractCommitment dataset
+```
+
+---
+
+## ContractCommitment Supplemental Dataset (FOCUS 1.3)
+
+FOCUS 1.3 introduces the ContractCommitment dataset for tracking commitment-based
+discount programs separately from cost records.
+
+### Identity Fields (2 Required)
+
+| Column                     | Type   | Level    | Description                           |
+| -------------------------- | ------ | -------- | ------------------------------------- |
+| **ContractCommitmentId**   | string | Required | Unique identifier for this commitment |
+| **ContractId**             | string | Required | Parent contract identifier            |
+
+### Classification Fields
+
+| Column                         | Type   | Level       | Description                     |
+| ------------------------------ | ------ | ----------- | ------------------------------- |
+| **ContractCommitmentCategory** | Enum   | Conditional | SPEND or USAGE                  |
+| **ContractCommitmentType**     | string | Conditional | Provider-specific type          |
+
+### Commitment Period Fields
+
+| Column                            | Type     | Level       | Description                   |
+| --------------------------------- | -------- | ----------- | ----------------------------- |
+| **ContractCommitmentPeriodStart** | DateTime | Conditional | Start of commitment period    |
+| **ContractCommitmentPeriodEnd**   | DateTime | Conditional | End of commitment period      |
+
+### Contract Period Fields
+
+| Column                  | Type     | Level       | Description              |
+| ----------------------- | -------- | ----------- | ------------------------ |
+| **ContractPeriodStart** | DateTime | Conditional | Start of parent contract |
+| **ContractPeriodEnd**   | DateTime | Conditional | End of parent contract   |
+
+### Financial Fields
+
+| Column                         | Type    | Level       | Description                     |
+| ------------------------------ | ------- | ----------- | ------------------------------- |
+| **ContractCommitmentCost**     | Decimal | Conditional | Monetary amount (SPEND)         |
+| **ContractCommitmentQuantity** | Decimal | Conditional | Unit quantity (USAGE)           |
+| **ContractCommitmentUnit**     | string  | Conditional | Unit of measure (Hours, GB)     |
+| **BillingCurrency**            | string  | Required    | ISO 4217 currency code          |
+
+### ContractCommitment Example
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+commitment := pluginsdk.NewContractCommitmentBuilder().
+    WithIdentity("ri-123456789", "contract-2024-001").
+    WithCategory(pbc.FocusContractCommitmentCategory_FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE).
+    WithType("Standard Reserved Instance").
+    WithCommitmentPeriod(
+        time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+        time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+    ).
+    WithFinancials(0, 8760, "Hours", "USD").  // USAGE: quantity=8760 hours, cost=0
+    Build()
+```
+
+---
+
 ## Provider Mapping Examples
 
 ### AWS
 
 ```text
-ProviderName:           "AWS"
+ServiceProviderName:    "AWS"              // FOCUS 1.3
+HostProviderName:       "AWS"              // FOCUS 1.3
 BillingAccountId:       "123456789012"
 ServiceName:            "Amazon EC2"
 ResourceId:             "arn:aws:ec2:us-east-1:123456789012:instance/i-0abc123"
 RegionId:               "us-east-1"
 CommitmentDiscountType: "Standard Reserved Instance"
+ContractApplied:        "ri-123456789"     // FOCUS 1.3
 ```
 
 ### Azure
 
 ```text
-ProviderName:           "Azure"
+ServiceProviderName:    "Azure"            // FOCUS 1.3
+HostProviderName:       "Azure"            // FOCUS 1.3
 BillingAccountId:       "ea12345678"
 SubAccountId:           "00000000-0000-0000-0000-000000000000"
 ServiceName:            "Virtual Machines"
 ResourceId:             "/subscriptions/.../resourceGroups/.../providers/Microsoft.Compute/virtualMachines/vm-name"
 RegionId:               "eastus"
 CommitmentDiscountType: "Reservation"
+ContractApplied:        "reservation-2024-001"  // FOCUS 1.3
 ```
 
 ### GCP
 
 ```text
-ProviderName:           "GCP"
+ServiceProviderName:    "GCP"              // FOCUS 1.3
+HostProviderName:       "GCP"              // FOCUS 1.3
 BillingAccountId:       "012345-ABCDEF-678901"
 SubAccountId:           "my-project-id"
 ServiceName:            "Compute Engine"
 ResourceId:             "projects/my-project/zones/us-central1-a/instances/instance-1"
 RegionId:               "us-central1"
 CommitmentDiscountType: "Committed Use Discount"
+ContractApplied:        "cud-n1-standard-1"  // FOCUS 1.3
 ```
 
 ### Kubernetes (via Kubecost)
 
 ```text
-ProviderName:           "Kubernetes"
+ServiceProviderName:    "Kubernetes"       // FOCUS 1.3
+HostProviderName:       "AWS"              // FOCUS 1.3 - underlying infrastructure
 BillingAccountId:       "cluster-name"
 SubAccountId:           "namespace-name"
 ServiceName:            "Kubernetes Workload"
 ResourceId:             "namespace/pod-name"
 ServiceCategory:        FOCUS_SERVICE_CATEGORY_COMPUTE
+```
+
+### Marketplace/Reseller Scenario (FOCUS 1.3)
+
+```text
+ServiceProviderName:    "Datadog"          // ISV providing the service
+HostProviderName:       "AWS"              // Cloud hosting infrastructure
+BillingAccountId:       "123456789012"
+ServiceName:            "Datadog APM"
 ```
 
 ## Common Use Cases
@@ -282,6 +453,35 @@ builder.WithCapacityReservation(
 )
 ```
 
+### Split Cost Allocation (FOCUS 1.3)
+
+Allocate shared resource costs to specific workloads:
+
+```go
+builder.WithAllocation("ALLOC-001", "CPU-weighted by namespace utilization")
+builder.WithAllocatedResource("ns/payments-service", "Payments Service")
+builder.WithAllocatedTags(map[string]string{
+    "team":        "payments",
+    "cost_center": "CC-1001",
+})
+```
+
+### Contract Commitment Tracking (FOCUS 1.3)
+
+Link cost records to commitment discount programs:
+
+```go
+// In FocusCostRecord: link to commitment
+costBuilder.WithContractApplied("ri-123456789")
+
+// Separate ContractCommitment record for commitment details
+commitmentBuilder := pluginsdk.NewContractCommitmentBuilder().
+    WithIdentity("ri-123456789", "contract-2024-001").
+    WithCategory(pbc.FocusContractCommitmentCategory_FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE).
+    WithType("Standard Reserved Instance").
+    WithFinancials(0, 8760, "Hours", "USD")
+```
+
 ## Query Patterns
 
 ### Total Cost by Service
@@ -320,10 +520,36 @@ GROUP BY Tags['team']
 
 ```sql
 SELECT
-    ProviderName,
+    ServiceProviderName,    -- FOCUS 1.3
     RegionId,
     SUM(BilledCost) as TotalCost
 FROM focus_records
-GROUP BY ProviderName, RegionId
-ORDER BY ProviderName, TotalCost DESC
+GROUP BY ServiceProviderName, RegionId
+ORDER BY ServiceProviderName, TotalCost DESC
+```
+
+### Allocated Cost by Team (FOCUS 1.3)
+
+```sql
+SELECT
+    AllocatedTags['team'] as Team,
+    AllocatedResourceName,
+    SUM(BilledCost) as AllocatedCost
+FROM focus_records
+WHERE AllocatedResourceId IS NOT NULL
+GROUP BY AllocatedTags['team'], AllocatedResourceName
+ORDER BY AllocatedCost DESC
+```
+
+### Contract Commitment Utilization (FOCUS 1.3)
+
+```sql
+SELECT
+    cc.ContractCommitmentId,
+    cc.ContractCommitmentType,
+    cc.ContractCommitmentCost as CommittedAmount,
+    SUM(f.BilledCost) as ActualSpend
+FROM contract_commitments cc
+LEFT JOIN focus_records f ON f.ContractApplied = cc.ContractCommitmentId
+GROUP BY cc.ContractCommitmentId, cc.ContractCommitmentType, cc.ContractCommitmentCost
 ```

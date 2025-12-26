@@ -16,6 +16,8 @@ utilities for plugin development.
 - [Testing Utilities](#testing-utilities)
 - [Error Helpers](#error-helpers)
 - [FOCUS 1.2 Cost Records](#focus-12-cost-records)
+- [FOCUS 1.3 Extensions](#focus-13-extensions)
+- [Contract Commitment Dataset](#contract-commitment-dataset-focus-13)
 - [Manifest Management](#manifest-management)
 - [Migration](#migration-from-pulumicost-core)
 - [API Reference](#api-reference)
@@ -946,6 +948,208 @@ builder.WithContractedCost(65.0)
 ### Complete Example
 
 See `examples/plugins/focus_example.go` for a comprehensive example demonstrating all 57 FOCUS 1.2 columns.
+
+## FOCUS 1.3 Extensions
+
+The SDK extends FOCUS 1.2 support with new FOCUS 1.3 columns for split cost allocation,
+provider identification, and contract commitment tracking.
+
+### New FOCUS 1.3 Columns
+
+| Column                 | Builder Method                              | Purpose                                    |
+| ---------------------- | ------------------------------------------- | ------------------------------------------ |
+| AllocatedMethodId      | `WithAllocation(methodId, details)`         | Allocation methodology identifier          |
+| AllocatedMethodDetails | `WithAllocation(methodId, details)`         | Human-readable allocation description      |
+| AllocatedResourceId    | `WithAllocatedResource(id, name)`           | Target resource receiving allocated cost   |
+| AllocatedResourceName  | `WithAllocatedResource(id, name)`           | Display name of allocated resource         |
+| AllocatedTags          | `WithAllocatedTags(tags)`                   | Tags for the allocated resource            |
+| ServiceProviderName    | `WithServiceProvider(name)`                 | Entity providing the service (ISV/reseller)|
+| HostProviderName       | `WithHostProvider(name)`                    | Entity hosting the resource (cloud vendor) |
+| ContractApplied        | `WithContractApplied(commitmentId)`         | Link to ContractCommitment record          |
+
+### Deprecated Fields (FOCUS 1.3)
+
+| Deprecated Field | Replacement           | Migration                                     |
+| ---------------- | --------------------- | --------------------------------------------- |
+| `provider_name`  | `service_provider_name` | Use `WithServiceProvider()` instead of `WithIdentity()` for provider |
+| `publisher`      | `host_provider_name`  | Use `WithHostProvider()` instead of `WithPublisher()` |
+
+When both deprecated and replacement fields are set, a warning is logged and the FOCUS 1.3
+field takes precedence.
+
+### FOCUS 1.3 Usage Examples
+
+**Split Cost Allocation**:
+
+```go
+// Allocate shared infrastructure costs to workloads
+builder := pluginsdk.NewFocusRecordBuilder()
+builder.
+    WithIdentity("AWS", "123456789012", "Shared Services").
+    WithAllocation("proportional-cpu", "Costs split by CPU utilization percentage").
+    WithAllocatedResource("workload-123", "Frontend Application").
+    WithAllocatedTags(map[string]string{
+        "team":        "frontend",
+        "environment": "production",
+    })
+
+record, err := builder.Build()
+```
+
+**Marketplace Provider Identification**:
+
+```go
+// Distinguish ISV from hosting provider in marketplace scenarios
+builder := pluginsdk.NewFocusRecordBuilder()
+builder.
+    WithServiceProvider("Datadog").      // ISV selling via marketplace
+    WithHostProvider("AWS").             // Cloud platform hosting the service
+    WithService(pbc.FocusServiceCategory_FOCUS_SERVICE_CATEGORY_OBSERVABILITY, "Datadog APM")
+
+record, err := builder.Build()
+```
+
+**Contract Commitment Link**:
+
+```go
+// Link cost record to a contract commitment
+builder := pluginsdk.NewFocusRecordBuilder()
+builder.
+    WithContractApplied("commit-2025-ri-001")  // References ContractCommitment.ContractCommitmentId
+
+record, err := builder.Build()
+```
+
+### Validation Rules
+
+- **Allocation**: If `AllocatedMethodId` is set, `AllocatedResourceId` must also be set
+- **Deprecation**: Warnings logged when deprecated + replacement fields both present
+- **ContractApplied**: Treated as opaque reference (no cross-dataset validation)
+
+## Contract Commitment Dataset (FOCUS 1.3)
+
+FOCUS 1.3 introduces a supplemental dataset for tracking contractual obligations separately
+from cost line items. The `ContractCommitmentBuilder` creates these records.
+
+### Quick Start
+
+```go
+import (
+    "time"
+    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+)
+
+builder := pluginsdk.NewContractCommitmentBuilder()
+
+commitment, err := builder.
+    WithIdentity("commit-2025-ri-001", "contract-ea-2025").
+    WithCategory(pbc.FocusContractCommitmentCategory_FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND).
+    WithType("Reserved Instance").
+    WithCommitmentPeriod(
+        time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+        time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC),
+    ).
+    WithContractPeriod(
+        time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+        time.Date(2027, 12, 31, 23, 59, 59, 0, time.UTC),
+    ).
+    WithFinancials(10000.00, 0, "", "USD").
+    Build()
+```
+
+### ContractCommitment Fields
+
+| Field                        | Builder Method                     | Required | Description                                |
+| ---------------------------- | ---------------------------------- | -------- | ------------------------------------------ |
+| ContractCommitmentId         | `WithIdentity(commitmentId, ...)`  | Yes      | Unique commitment identifier               |
+| ContractId                   | `WithIdentity(..., contractId)`    | Yes      | Parent contract identifier                 |
+| ContractCommitmentCategory   | `WithCategory(category)`           | No       | SPEND or USAGE commitment type             |
+| ContractCommitmentType       | `WithType(type)`                   | No       | Provider-specific type (e.g., "RI", "SP")  |
+| ContractCommitmentPeriodStart| `WithCommitmentPeriod(start, end)` | No       | Commitment period start                    |
+| ContractCommitmentPeriodEnd  | `WithCommitmentPeriod(start, end)` | No       | Commitment period end                      |
+| ContractPeriodStart          | `WithContractPeriod(start, end)`   | No       | Overall contract period start              |
+| ContractPeriodEnd            | `WithContractPeriod(start, end)`   | No       | Overall contract period end                |
+| ContractCommitmentCost       | `WithFinancials(cost, ...)`        | No       | Monetary commitment amount (SPEND)         |
+| ContractCommitmentQuantity   | `WithFinancials(..., qty, ...)`    | No       | Quantity commitment (USAGE)                |
+| ContractCommitmentUnit       | `WithFinancials(..., unit, ...)`   | No       | Unit of measure for quantity               |
+| BillingCurrency              | `WithFinancials(..., currency)`    | Yes      | ISO 4217 currency code                     |
+
+### Commitment Categories
+
+| Category   | Enum Value                                               | Use Case                                    |
+| ---------- | -------------------------------------------------------- | ------------------------------------------- |
+| SPEND      | `FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND`               | Dollar-based commitments (e.g., $10K/month) |
+| USAGE      | `FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE`               | Usage-based commitments (e.g., 1000 hours)  |
+
+### Example: SPEND Commitment (Reserved Instance)
+
+```go
+commitment, err := pluginsdk.NewContractCommitmentBuilder().
+    WithIdentity("ri-ec2-2025-001", "aws-ea-2025").
+    WithCategory(pbc.FocusContractCommitmentCategory_FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND).
+    WithType("Reserved Instance").
+    WithCommitmentPeriod(commitStart, commitEnd).
+    WithFinancials(50000.00, 0, "", "USD").  // $50,000 commitment
+    Build()
+```
+
+### Example: USAGE Commitment (Committed Use Discount)
+
+```go
+commitment, err := pluginsdk.NewContractCommitmentBuilder().
+    WithIdentity("cud-gce-2025-001", "gcp-cud-2025").
+    WithCategory(pbc.FocusContractCommitmentCategory_FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE).
+    WithType("Committed Use Discount").
+    WithCommitmentPeriod(commitStart, commitEnd).
+    WithFinancials(0, 1000, "vCPU-Hours", "USD").  // 1000 vCPU-Hours commitment
+    Build()
+```
+
+### Linking Cost Records to Commitments
+
+Use `WithContractApplied()` on `FocusRecordBuilder` to link cost records to commitments:
+
+```go
+// Create the commitment
+commitment, _ := pluginsdk.NewContractCommitmentBuilder().
+    WithIdentity("commit-001", "contract-2025").
+    WithFinancials(10000.00, 0, "", "USD").
+    Build()
+
+// Link cost records to the commitment
+costRecord, _ := pluginsdk.NewFocusRecordBuilder().
+    WithContractApplied(commitment.ContractCommitmentId).  // "commit-001"
+    // ... other fields
+    Build()
+```
+
+### Validation Rules
+
+| Rule                          | Description                                              |
+| ----------------------------- | -------------------------------------------------------- |
+| Required: ContractCommitmentId| Must be non-empty                                        |
+| Required: ContractId          | Must be non-empty                                        |
+| Required: BillingCurrency     | Must be valid ISO 4217 code (validated via currency pkg) |
+| Period Consistency            | commitment_period_end >= commitment_period_start         |
+| Period Consistency            | contract_period_end >= contract_period_start             |
+| Non-negative Values           | cost >= 0, quantity >= 0                                 |
+
+### Error Handling
+
+```go
+commitment, err := builder.Build()
+if err != nil {
+    switch {
+    case strings.Contains(err.Error(), "contract_commitment_id is required"):
+        // Missing commitment ID
+    case strings.Contains(err.Error(), "billing_currency"):
+        // Invalid or missing currency
+    case strings.Contains(err.Error(), "period_end must be >="):
+        // Invalid period range
+    }
+}
+```
 
 ## Manifest Management
 

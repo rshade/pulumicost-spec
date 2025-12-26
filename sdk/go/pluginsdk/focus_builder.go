@@ -1,13 +1,95 @@
 package pluginsdk
 
 import (
+	"sync"
 	"time"
+
+	"github.com/rs/zerolog/log"
 
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// FocusRecordBuilder handles the construction of FOCUS 1.2 cost records.
+// Deprecation warning rate-limiters to prevent log spam in high-volume plugins.
+// Each warning fires at most once per process lifetime.
+//
+//nolint:gochecknoglobals // Intentional: rate-limiting requires package-level state
+var (
+	providerNameWarningOnce sync.Once
+	publisherWarningOnce    sync.Once
+)
+
+// FocusRecordBuilder handles the construction of FOCUS cost records.
+//
+// # FOCUS Version Compatibility
+//
+// This builder supports both FOCUS 1.2 and FOCUS 1.3 specifications:
+//   - FOCUS 1.2: Original columns (all existing methods)
+//   - FOCUS 1.3: New columns for split cost allocation, provider identification, and contract commitments
+//
+// # Migration Guide: FOCUS 1.2 to FOCUS 1.3
+//
+// ## Deprecated Fields (FOCUS 1.3)
+//
+// The following fields are deprecated in FOCUS 1.3 but remain functional for backward compatibility:
+//
+//   - provider_name (field 1) → Use service_provider_name via WithServiceProvider()
+//   - publisher (field 55) → Use host_provider_name via WithHostProvider()
+//
+// When both deprecated and replacement fields are set, a warning is logged and the
+// FOCUS 1.3 field takes precedence. Existing code using WithIdentity() continues to work
+// unchanged - it sets provider_name for backward compatibility.
+//
+// ## Migration Steps
+//
+//  1. Replace direct provider_name usage with WithServiceProvider(name)
+//  2. Replace direct publisher usage with WithHostProvider(name)
+//  3. For marketplace scenarios, set both service_provider_name (ISV/reseller) and
+//     host_provider_name (underlying cloud platform)
+//  4. Adopt new allocation methods (WithAllocation, WithAllocatedResource, WithAllocatedTags)
+//     for split cost allocation scenarios
+//  5. Link to contract commitments using WithContractApplied(commitmentId)
+//
+// ## Example Migration
+//
+//	// FOCUS 1.2 (still works - no changes required)
+//	builder.WithIdentity("AWS", billingAccountID, billingAccountName)
+//
+//	// FOCUS 1.3 (preferred for new code)
+//	builder.WithIdentity("AWS", billingAccountID, billingAccountName).
+//	    WithServiceProvider("AWS").   // New FOCUS 1.3 field
+//	    WithHostProvider("AWS")       // New FOCUS 1.3 field
+//
+// ## Marketplace Scenario Examples
+//
+// Before (FOCUS 1.2) - Limited provider visibility:
+//
+//	builder.WithIdentity("AWS", billingAccountID, billingAccountName).
+//	    WithPublisher("Datadog")  // Only publisher, no service/host distinction
+//
+// After (FOCUS 1.3) - Clear provider chain:
+//
+//	builder.WithIdentity("AWS", billingAccountID, billingAccountName).
+//	    WithServiceProvider("Datadog").  // ISV selling on AWS Marketplace
+//	    WithHostProvider("AWS")          // Cloud platform hosting the service
+//
+// Azure Marketplace Example:
+//
+//	builder.WithIdentity("Azure", subscriptionID, subscriptionName).
+//	    WithServiceProvider("Confluent"). // Kafka vendor on Azure Marketplace
+//	    WithHostProvider("Azure")         // Azure hosts the underlying resources
+//
+// GCP Marketplace Example:
+//
+//	builder.WithIdentity("GCP", billingAccountID, projectName).
+//	    WithServiceProvider("MongoDB").   // MongoDB Atlas via GCP Marketplace
+//	    WithHostProvider("GCP")           // GCP hosts the infrastructure
+//
+// Direct Cloud Usage (no marketplace):
+//
+//	builder.WithIdentity("AWS", billingAccountID, billingAccountName).
+//	    WithServiceProvider("AWS").       // AWS is both service provider
+//	    WithHostProvider("AWS")           // and host provider
 type FocusRecordBuilder struct {
 	record *pbc.FocusCostRecord
 }
@@ -23,9 +105,16 @@ func NewFocusRecordBuilder() *FocusRecordBuilder {
 }
 
 // WithIdentity sets the identity and hierarchy fields per FOCUS 1.2 Section 2.1.
+//
+// FOCUS 1.3 Migration Note: The providerName parameter sets the deprecated provider_name field.
+// For new FOCUS 1.3 code, prefer using WithServiceProvider() and WithHostProvider() instead.
+// Existing code using this method continues to work for backward compatibility.
+//
+// See FocusRecordBuilder documentation for complete migration guidance.
 func (b *FocusRecordBuilder) WithIdentity(
 	providerName, billingAccountID, billingAccountName string,
 ) *FocusRecordBuilder {
+	//nolint:staticcheck // SA1019: Intentionally setting deprecated field for backward compatibility
 	b.record.ProviderName = providerName
 	b.record.BillingAccountId = billingAccountID
 	b.record.BillingAccountName = billingAccountName
@@ -270,6 +359,10 @@ func (b *FocusRecordBuilder) WithPricingCurrencyPrices(
 // WithPublisher sets the publisher per FOCUS 1.2 Section 3.39.
 // This is a CONDITIONAL field representing the entity that published the
 // service or product.
+//
+// Deprecated: FOCUS 1.3 deprecates publisher in favor of host_provider_name.
+// Use WithHostProvider() for new code. This method remains for backward compatibility.
+// If both publisher and host_provider_name are set, a warning is logged during Build().
 func (b *FocusRecordBuilder) WithPublisher(publisher string) *FocusRecordBuilder {
 	b.record.Publisher = publisher
 	return b
@@ -292,10 +385,141 @@ func (b *FocusRecordBuilder) WithSkuDetails(meter, priceDetails string) *FocusRe
 	return b
 }
 
+// =============================================================================
+// FOCUS 1.3 Split Cost Allocation Builder Methods
+// =============================================================================
+
+// WithAllocation sets the cost allocation methodology per FOCUS 1.3.
+// AllocatedMethodId identifies the allocation methodology used (e.g., "proportional-cpu").
+// AllocatedMethodDetails provides a human-readable description of how costs were split.
+// Validation: If methodId is set, WithAllocatedResource MUST also be called.
+// FOCUS 1.3 Section: Allocated Method ID, Allocated Method Details.
+func (b *FocusRecordBuilder) WithAllocation(
+	methodID, methodDetails string,
+) *FocusRecordBuilder {
+	b.record.AllocatedMethodId = methodID
+	b.record.AllocatedMethodDetails = methodDetails
+	return b
+}
+
+// WithAllocatedResource sets the target resource receiving allocated cost per FOCUS 1.3.
+// AllocatedResourceId is the identifier of the resource receiving the allocated cost.
+// AllocatedResourceName is the display name of that resource.
+// FOCUS 1.3 Section: Allocated Resource ID, Allocated Resource Name.
+func (b *FocusRecordBuilder) WithAllocatedResource(
+	resourceID, resourceName string,
+) *FocusRecordBuilder {
+	b.record.AllocatedResourceId = resourceID
+	b.record.AllocatedResourceName = resourceName
+	return b
+}
+
+// WithAllocatedTags sets tags associated with the allocated resource per FOCUS 1.3.
+// Copies tags to avoid external modification of builder state.
+// Follows the same map<string, string> pattern as the existing WithTags method.
+// FOCUS 1.3 Section: Allocated Tags.
+//
+// Performance note: This method copies the input map (~130 ns/op overhead).
+// For high-volume plugins processing thousands of records/second, consider
+// pre-allocating tags or using WithAllocatedResource for simpler cases.
+func (b *FocusRecordBuilder) WithAllocatedTags(
+	tags map[string]string,
+) *FocusRecordBuilder {
+	if len(tags) == 0 {
+		return b // No-op for nil/empty
+	}
+	if b.record.AllocatedTags == nil {
+		b.record.AllocatedTags = make(map[string]string, len(tags)) // Pre-size
+	}
+	// Copy to avoid external mutation
+	for k, v := range tags {
+		b.record.AllocatedTags[k] = v
+	}
+	return b
+}
+
+// =============================================================================
+// FOCUS 1.3 Provider Identification Builder Methods
+// =============================================================================
+
+// WithServiceProvider sets the service provider name per FOCUS 1.3.
+// This identifies the entity that makes the service available for purchase.
+// In reseller/marketplace scenarios, this is the ISV or reseller.
+// Replaces deprecated provider_name field.
+// FOCUS 1.3 Section: Service Provider Name.
+func (b *FocusRecordBuilder) WithServiceProvider(
+	name string,
+) *FocusRecordBuilder {
+	b.record.ServiceProviderName = name
+	return b
+}
+
+// WithHostProvider sets the host provider name per FOCUS 1.3.
+// This identifies the entity that hosts the underlying resource or service.
+// This is where the workload actually runs (e.g., AWS, Azure, GCP).
+// Replaces deprecated publisher field.
+// FOCUS 1.3 Section: Host Provider Name.
+func (b *FocusRecordBuilder) WithHostProvider(
+	name string,
+) *FocusRecordBuilder {
+	b.record.HostProviderName = name
+	return b
+}
+
+// =============================================================================
+// FOCUS 1.3 Contract Commitment Link Builder Method
+// =============================================================================
+
+// WithContractApplied sets the contract commitment reference per FOCUS 1.3.
+// This links the cost record to a ContractCommitmentId in the Contract
+// Commitment supplemental dataset. Treated as an opaque reference (no
+// cross-dataset validation is performed).
+// FOCUS 1.3 Section: Contract Applied.
+func (b *FocusRecordBuilder) WithContractApplied(
+	commitmentID string,
+) *FocusRecordBuilder {
+	b.record.ContractApplied = commitmentID
+	return b
+}
+
 // Build validates and returns the constructed FocusCostRecord.
+// FOCUS 1.3 deprecation warnings are logged when deprecated fields are used
+// alongside their replacement fields.
 func (b *FocusRecordBuilder) Build() (*pbc.FocusCostRecord, error) {
+	// Log deprecation warnings for FOCUS 1.3 field migrations.
+	b.logDeprecationWarnings()
+
 	if err := ValidateFocusRecord(b.record); err != nil {
 		return nil, err
 	}
 	return b.record, nil
+}
+
+// logDeprecationWarnings logs warnings when deprecated fields are used alongside
+// their FOCUS 1.3 replacement fields. The new fields take precedence.
+//
+// Rate-limiting: Each warning type fires at most once per process lifetime to
+// prevent log spam in high-volume plugins (thousands of records/second).
+func (b *FocusRecordBuilder) logDeprecationWarnings() {
+	// provider_name (deprecated) -> service_provider_name (FOCUS 1.3)
+	//nolint:staticcheck // SA1019: Intentionally accessing deprecated field to detect and warn about dual usage
+	if b.record.GetProviderName() != "" && b.record.GetServiceProviderName() != "" {
+		providerNameWarningOnce.Do(func() {
+			log.Warn().
+				Str("deprecated_field", "provider_name").
+				Str("replacement_field", "service_provider_name").
+				Msg("FOCUS 1.3: provider_name is deprecated, using service_provider_name (this warning shown once)")
+		})
+	}
+
+	// publisher (deprecated) -> host_provider_name (FOCUS 1.3)
+	//nolint:staticcheck // SA1019: Intentionally accessing deprecated field to detect and warn about dual usage
+	if b.record.GetPublisher() != "" && b.record.GetHostProviderName() != "" {
+		publisherWarningOnce.Do(func() {
+			log.Warn().
+				Str("deprecated_field", "publisher").
+				Str("replacement_field", "host_provider_name").
+				Msg("FOCUS 1.3: publisher is deprecated, using host_provider_name (this warning shown once)")
+		})
+	}
 }

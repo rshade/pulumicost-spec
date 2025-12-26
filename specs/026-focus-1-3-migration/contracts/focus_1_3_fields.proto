@@ -1,0 +1,72 @@
+// FOCUS 1.3 Field Extensions Contract
+// This file documents the proto field additions to FocusCostRecord.
+// Actual implementation goes in proto/pulumicost/v1/focus.proto
+
+syntax = "proto3";
+
+package pulumicost.v1;
+
+// NOTE: This is a CONTRACT DEFINITION showing the new fields.
+// These fields will be ADDED to the existing FocusCostRecord message.
+
+// =============================================================================
+// NEW FOCUS 1.3 FIELDS TO ADD TO FocusCostRecord
+// =============================================================================
+
+// Provider Identification (replacing deprecated ProviderName/Publisher)
+//
+// ServiceProviderName: The entity that makes the service available for purchase.
+// In reseller/marketplace scenarios, this is the ISV or reseller.
+// FOCUS 1.3 Section: Service Provider Name (CONDITIONAL)
+// string service_provider_name = 59;
+//
+// HostProviderName: The entity that hosts the underlying resource or service.
+// This is where the workload actually runs (e.g., AWS, Azure, GCP).
+// FOCUS 1.3 Section: Host Provider Name (CONDITIONAL)
+// string host_provider_name = 60;
+
+// Split Cost Allocation
+//
+// AllocatedMethodId: Identifier for the cost allocation methodology used.
+// Links to a documented allocation method.
+// FOCUS 1.3 Section: Allocated Method ID (CONDITIONAL)
+// Validation: If populated, allocated_resource_id MUST also be populated.
+// string allocated_method_id = 61;
+//
+// AllocatedMethodDetails: Human-readable description of the allocation method.
+// Provides transparency into how costs were split.
+// FOCUS 1.3 Section: Allocated Method Details (RECOMMENDED)
+// string allocated_method_details = 62;
+//
+// AllocatedResourceId: Identifier of the resource receiving the allocated cost.
+// This is the target of the cost allocation.
+// FOCUS 1.3 Section: Allocated Resource ID (CONDITIONAL)
+// string allocated_resource_id = 63;
+//
+// AllocatedResourceName: Display name of the resource receiving allocated cost.
+// FOCUS 1.3 Section: Allocated Resource Name (CONDITIONAL)
+// string allocated_resource_name = 64;
+//
+// AllocatedTags: Tags associated with the allocated resource.
+// Follows same map<string, string> pattern as existing tags field.
+// FOCUS 1.3 Section: Allocated Tags (CONDITIONAL)
+// map<string, string> allocated_tags = 65;
+
+// Contract Commitment Link
+//
+// ContractApplied: Reference to a ContractCommitmentId in the Contract
+// Commitment dataset. Treated as opaque reference (no cross-dataset validation).
+// FOCUS 1.3 Section: Contract Applied (CONDITIONAL)
+// string contract_applied = 66;
+
+// =============================================================================
+// DEPRECATED FIELDS (mark with deprecated option)
+// =============================================================================
+
+// The following existing fields should be marked deprecated:
+//
+// string provider_name = 1 [deprecated = true];
+//   Deprecated: Use service_provider_name instead. Will be removed in FOCUS 1.4.
+//
+// string publisher = 55 [deprecated = true];
+//   Deprecated: Use host_provider_name instead. Will be removed in FOCUS 1.4.
