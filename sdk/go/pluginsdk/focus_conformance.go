@@ -13,29 +13,89 @@ import (
 // Allows for floating-point precision differences up to 0.01%.
 const contractedCostTolerance = 0.0001
 
+// Sentinel errors for contextual FinOps validation rules.
+// These are package-level variables to enable zero-allocation validation on the error path.
+var (
+	// ErrEffectiveCostExceedsBilledCost indicates EffectiveCost > BilledCost violation.
+	ErrEffectiveCostExceedsBilledCost = errors.New("effective_cost must not exceed billed_cost")
+
+	// ErrListCostLessThanEffectiveCost indicates ListCost < EffectiveCost violation.
+	ErrListCostLessThanEffectiveCost = errors.New("list_cost must be >= effective_cost")
+
+	// ErrCommitmentStatusMissing indicates CommitmentDiscountStatus is required.
+	ErrCommitmentStatusMissing = errors.New(
+		"commitment_discount_status required when commitment_discount_id set for usage charges",
+	)
+
+	// ErrCommitmentIDMissingForStatus indicates CommitmentDiscountId is required when status is set.
+	ErrCommitmentIDMissingForStatus = errors.New(
+		"commitment_discount_id required when commitment_discount_status is set",
+	)
+
+	// ErrCapacityReservationStatusMissing indicates CapacityReservationStatus is required.
+	ErrCapacityReservationStatusMissing = errors.New(
+		"capacity_reservation_status required when capacity_reservation_id set for usage charges",
+	)
+
+	// ErrCapacityReservationIDMissing indicates CapacityReservationId is required when status is set.
+	ErrCapacityReservationIDMissing = errors.New(
+		"capacity_reservation_id required when capacity_reservation_status is set",
+	)
+
+	// ErrPricingUnitMissing indicates PricingUnit is required when PricingQuantity > 0.
+	ErrPricingUnitMissing = errors.New("pricing_unit required when pricing_quantity > 0")
+)
+
 // ValidateFocusRecord checks if a record complies with FOCUS 1.2 mandatory fields and business rules.
+// This is a convenience wrapper that uses fail-fast validation mode.
+// For aggregate mode or other options, use ValidateFocusRecordWithOptions.
 // Reference: https://focus.finops.org
 func ValidateFocusRecord(r *pbc.FocusCostRecord) error {
+	errs := ValidateFocusRecordWithOptions(r, ValidationOptions{Mode: ValidationModeFailFast})
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
+}
+
+// ValidateFocusRecordWithOptions validates a FocusCostRecord with configurable options.
+// In FailFast mode (default), returns a slice with at most one error.
+// In Aggregate mode, returns all validation errors found.
+// Returns an empty slice if the record is valid.
+// Reference: https://focus.finops.org
+func ValidateFocusRecordWithOptions(r *pbc.FocusCostRecord, opts ValidationOptions) []error {
+	var errs []error
+
 	if r == nil {
-		return errors.New("record is nil")
+		return []error{errors.New("record is nil")}
 	}
 
 	// Validate mandatory fields (FOCUS 1.2).
 	if err := validateMandatoryFields(r); err != nil {
-		return err
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
 	}
 
 	// Validate currency codes (ISO 4217).
 	if err := validateCurrencyFields(r); err != nil {
-		return err
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
 	}
 
-	// Validate business rules.
-	if err := validateBusinessRules(r); err != nil {
-		return err
+	// Validate business rules including contextual FinOps validation.
+	businessErrs := validateBusinessRulesWithOptions(r, opts)
+	if len(businessErrs) > 0 {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{businessErrs[0]}
+		}
+		errs = append(errs, businessErrs...)
 	}
 
-	return nil
+	return errs
 }
 
 // validateMandatoryFields checks all 14 mandatory FOCUS 1.2 fields.
@@ -106,13 +166,19 @@ func validateCurrencyFields(r *pbc.FocusCostRecord) error {
 	return nil
 }
 
-// validateBusinessRules validates FOCUS 1.2 and 1.3 business rules.
-func validateBusinessRules(r *pbc.FocusCostRecord) error {
+// validateBusinessRulesWithOptions validates FOCUS 1.2/1.3 business rules with options support.
+func validateBusinessRulesWithOptions(r *pbc.FocusCostRecord, opts ValidationOptions) []error {
+	var errs []error
+
 	// Rule: Usage records must have positive consumed quantity.
 	// FOCUS 1.2: If ChargeCategory=Usage, ConsumedQuantity must be > 0.
 	if r.GetChargeCategory() == pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE {
 		if r.GetConsumedQuantity() <= 0 {
-			return errors.New("consumed_quantity must be positive for usage charge category")
+			err := errors.New("consumed_quantity must be positive for usage charge category")
+			if opts.Mode == ValidationModeFailFast {
+				return []error{err}
+			}
+			errs = append(errs, err)
 		}
 	}
 
@@ -120,15 +186,72 @@ func validateBusinessRules(r *pbc.FocusCostRecord) error {
 	// FOCUS 1.2 Section 3.20: When ContractedUnitPrice and PricingQuantity are present
 	// and ChargeClass is not "Correction", this relationship must hold.
 	if err := validateContractedCostRule(r); err != nil {
-		return err
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
 	}
 
 	// Validate FOCUS 1.3 specific rules (split cost allocation, etc.)
 	if err := validateFocus13Rules(r); err != nil {
-		return err
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
 	}
 
-	return nil
+	// Validate contextual FinOps rules (cost hierarchy, commitment discounts, etc.)
+	contextualErrs := validateContextualFinOpsRules(r, opts)
+	if len(contextualErrs) > 0 {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{contextualErrs[0]}
+		}
+		errs = append(errs, contextualErrs...)
+	}
+
+	return errs
+}
+
+// validateContextualFinOpsRules validates contextual business logic for FinOps cost records.
+// This includes cost hierarchy validation, commitment discount consistency,
+// capacity reservation consistency, and pricing model validation.
+func validateContextualFinOpsRules(r *pbc.FocusCostRecord, opts ValidationOptions) []error {
+	var errs []error
+
+	// Cost hierarchy validation (FR-001, FR-002)
+	if err := validateCostHierarchy(r); err != nil {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
+	}
+
+	// Commitment discount consistency (FR-003, FR-004)
+	commitmentErrs := validateCommitmentDiscountConsistency(r, opts)
+	if len(commitmentErrs) > 0 {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{commitmentErrs[0]}
+		}
+		errs = append(errs, commitmentErrs...)
+	}
+
+	// Pricing consistency (FR-006)
+	if err := validatePricingConsistency(r); err != nil {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
+	}
+
+	// Capacity reservation consistency (FR-005)
+	if err := validateCapacityReservationConsistency(r); err != nil {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
+	}
+
+	return errs
 }
 
 // =============================================================================
@@ -208,4 +331,124 @@ func floatEquals(a, b, tolerance float64) bool {
 	diff := math.Abs(a - b)
 	largest := math.Max(math.Abs(a), math.Abs(b))
 	return diff <= largest*tolerance
+}
+
+// =============================================================================
+// Contextual FinOps Validation Rules
+// =============================================================================
+
+// validateCostHierarchy validates the cost relationship: ListCost >= BilledCost >= EffectiveCost.
+// FR-001: EffectiveCost must not exceed BilledCost (when both positive, non-correction).
+// FR-002: ListCost must be >= EffectiveCost (when both positive, non-correction).
+//
+// Exemptions:
+// - ChargeClass CORRECTION is exempt from all cost hierarchy rules.
+// - Negative costs (credits/refunds) are exempt from hierarchy validation.
+// - Zero costs (free tier) pass validation without error.
+func validateCostHierarchy(r *pbc.FocusCostRecord) error {
+	// Skip validation for correction charges (per FOCUS spec).
+	if r.GetChargeClass() == pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_CORRECTION {
+		return nil
+	}
+
+	billedCost := r.GetBilledCost()
+	effectiveCost := r.GetEffectiveCost()
+	listCost := r.GetListCost()
+
+	// FR-001: EffectiveCost must not exceed BilledCost.
+	// Only validate when both are positive (excludes credits/refunds and free tier).
+	if billedCost > 0 && effectiveCost > 0 {
+		if effectiveCost > billedCost && !floatEquals(effectiveCost, billedCost, contractedCostTolerance) {
+			return ErrEffectiveCostExceedsBilledCost
+		}
+	}
+
+	// FR-002: ListCost must be >= EffectiveCost.
+	// Only validate when both are positive.
+	if listCost > 0 && effectiveCost > 0 {
+		if listCost < effectiveCost && !floatEquals(listCost, effectiveCost, contractedCostTolerance) {
+			return ErrListCostLessThanEffectiveCost
+		}
+	}
+
+	return nil
+}
+
+// validateCommitmentDiscountConsistency validates commitment discount field dependencies.
+// FR-003: CommitmentDiscountStatus required when CommitmentDiscountId set + ChargeCategory=Usage.
+// FR-004: CommitmentDiscountId required when CommitmentDiscountStatus is set (non-UNSPECIFIED).
+func validateCommitmentDiscountConsistency(
+	r *pbc.FocusCostRecord,
+	opts ValidationOptions,
+) []error {
+	var errs []error
+
+	commitmentID := r.GetCommitmentDiscountId()
+	commitmentStatus := r.GetCommitmentDiscountStatus()
+	isUsageCharge := r.GetChargeCategory() == pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE
+
+	// FR-003: If CommitmentDiscountId is set AND ChargeCategory is Usage,
+	// CommitmentDiscountStatus must be set (not UNSPECIFIED).
+	if commitmentID != "" && isUsageCharge {
+		if commitmentStatus == pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED {
+			if opts.Mode == ValidationModeFailFast {
+				return []error{ErrCommitmentStatusMissing}
+			}
+			errs = append(errs, ErrCommitmentStatusMissing)
+		}
+	}
+
+	// FR-004: If CommitmentDiscountStatus is set (not UNSPECIFIED),
+	// CommitmentDiscountId must also be set.
+	if commitmentStatus != pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_UNSPECIFIED {
+		if commitmentID == "" {
+			if opts.Mode == ValidationModeFailFast {
+				return []error{ErrCommitmentIDMissingForStatus}
+			}
+			errs = append(errs, ErrCommitmentIDMissingForStatus)
+		}
+	}
+
+	return errs
+}
+
+// validatePricingConsistency validates pricing field dependencies.
+// FR-006: PricingUnit is required when PricingQuantity > 0.
+func validatePricingConsistency(r *pbc.FocusCostRecord) error {
+	pricingQuantity := r.GetPricingQuantity()
+	pricingUnit := r.GetPricingUnit()
+
+	// If PricingQuantity > 0, PricingUnit must be specified.
+	if pricingQuantity > 0 && pricingUnit == "" {
+		return ErrPricingUnitMissing
+	}
+
+	return nil
+}
+
+// validateCapacityReservationConsistency validates capacity reservation field dependencies.
+// FR-005: CapacityReservationStatus required when CapacityReservationId set + ChargeCategory=Usage.
+// FR-005 (bidirectional): CapacityReservationId required when CapacityReservationStatus is set.
+func validateCapacityReservationConsistency(r *pbc.FocusCostRecord) error {
+	capacityID := r.GetCapacityReservationId()
+	capacityStatus := r.GetCapacityReservationStatus()
+	isUsageCharge := r.GetChargeCategory() == pbc.FocusChargeCategory_FOCUS_CHARGE_CATEGORY_USAGE
+
+	// If CapacityReservationId is set AND ChargeCategory is Usage,
+	// CapacityReservationStatus must be set (not UNSPECIFIED).
+	if capacityID != "" && isUsageCharge {
+		if capacityStatus == pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED {
+			return ErrCapacityReservationStatusMissing
+		}
+	}
+
+	// FR-005 (bidirectional): If CapacityReservationStatus is set (not UNSPECIFIED),
+	// CapacityReservationId must also be set.
+	if capacityStatus != pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED {
+		if capacityID == "" {
+			return ErrCapacityReservationIDMissing
+		}
+	}
+
+	return nil
 }

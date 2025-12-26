@@ -234,6 +234,62 @@ err := plugintesting.ValidatePricingSpec(spec)
 err := plugintesting.ValidateActualCostResult(result)
 ```
 
+### FOCUS Record Validation (Contextual FinOps)
+
+The `pluginsdk` package provides comprehensive FOCUS 1.2/1.3 validation for cost records:
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+// Basic validation (fail-fast mode)
+err := pluginsdk.ValidateFocusRecord(record)
+
+// Aggregate mode - collect all validation errors
+opts := pluginsdk.ValidationOptions{Mode: pluginsdk.ValidationModeAggregate}
+errs := pluginsdk.ValidateFocusRecordWithOptions(record, opts)
+for _, err := range errs {
+    log.Printf("Validation error: %v", err)
+}
+```
+
+**Validation Rules Enforced:**
+
+| Rule   | Severity | Description                                                   | Sentinel Error                         |
+| ------ | -------- | ------------------------------------------------------------- | -------------------------------------- |
+| FR-001 | Critical | EffectiveCost must not exceed BilledCost                      | `ErrEffectiveCostExceedsBilledCost`    |
+| FR-002 | Critical | ListCost must be >= EffectiveCost                             | `ErrListCostLessThanEffectiveCost`     |
+| FR-003 | Major    | CommitmentDiscountStatus required when ID set + Usage charges | `ErrCommitmentStatusMissing`           |
+| FR-004 | Major    | CommitmentDiscountId required when Status is set              | `ErrCommitmentIDMissingForStatus`      |
+| FR-005 | Major    | CapacityReservationStatus required when ID set + Usage        | `ErrCapacityReservationStatusMissing`  |
+| FR-005 | Major    | CapacityReservationId required when Status is set             | `ErrCapacityReservationIDMissing`      |
+| FR-006 | Minor    | PricingUnit required when PricingQuantity > 0                 | `ErrPricingUnitMissing`                |
+
+**Error Checking with Sentinel Errors:**
+
+```go
+import "errors"
+
+err := pluginsdk.ValidateFocusRecord(record)
+if errors.Is(err, pluginsdk.ErrEffectiveCostExceedsBilledCost) {
+    // Handle cost hierarchy violation
+}
+if errors.Is(err, pluginsdk.ErrCommitmentStatusMissing) {
+    // Handle commitment discount consistency issue
+}
+```
+
+**Exemptions:**
+
+- ChargeClass `CORRECTION` is exempt from cost hierarchy rules (FR-001, FR-002) and contracted cost validation
+- Negative costs (credits/refunds) are exempt from hierarchy validation (FR-001, FR-002)
+- Zero costs (free tier) pass validation without error
+- ChargeCategory `PURCHASE` does not require CommitmentDiscountStatus (FR-003) or CapacityReservationStatus (FR-005)
+
+**Performance:**
+
+- Zero allocations on valid records (sentinel error pattern)
+- Benchmarks: ~1000 ns/op for full validation, 0 B/op, 0 allocs/op
+
 ### Conformance Result
 
 The `ConformanceResult` contains detailed test execution information:

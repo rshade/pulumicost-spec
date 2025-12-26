@@ -589,6 +589,8 @@ cd schemas && /init            # JSON Schema validation
 ## Active Technologies
 
 - N/A (stateless proto definitions) (028-resource-id)
+- Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc (existing) (027-finops-validation)
+- N/A (stateless validation functions) (027-finops-validation)
 
 - Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1 (026-focus-1-3-migration)
 - N/A (stateless proto definitions and SDK) (026-focus-1-3-migration)

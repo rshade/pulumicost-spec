@@ -6,6 +6,7 @@ import (
 
 	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/stretchr/testify/require"
 )
 
 // =============================================================================
@@ -451,5 +452,169 @@ func TestFocus13_MixedVersionRecords(t *testing.T) {
 		if record.GetContractApplied() != "commit-ri-backend-001" {
 			t.Error("FOCUS 1.3 contract_applied not set")
 		}
+	})
+}
+
+// =============================================================================
+// Contextual FinOps Validation Conformance Tests (Feature 027-finops-validation)
+// =============================================================================
+//
+// These tests verify the contextual FinOps validation rules are correctly
+// enforced for FOCUS cost records. They test the validation API from the
+// pluginsdk package.
+
+// TestContextualValidation_CostHierarchy validates FR-001 and FR-002.
+func TestContextualValidation_CostHierarchy(t *testing.T) {
+	t.Run("valid cost hierarchy passes", func(t *testing.T) {
+		record, err := buildValidFocusRecord().
+			WithFinancials(100.0, 120.0, 80.0, "USD", "INV-001"). // ListCost >= BilledCost >= EffectiveCost
+			Build()
+		require.NoError(t, err, "Record creation failed")
+		require.NoError(t, pluginsdk.ValidateFocusRecord(record), "Valid cost hierarchy should pass")
+	})
+
+	t.Run("invalid cost hierarchies fail", func(t *testing.T) {
+		tests := []struct {
+			name          string
+			billedCost    float64
+			effectiveCost float64
+			listCost      float64
+		}{
+			{"effectiveCost > billedCost", 100.0, 120.0, 150.0},
+			{"listCost < effectiveCost", 100.0, 80.0, 50.0},
+			{"listCost < billedCost < effectiveCost", 100.0, 120.0, 50.0},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				record, err := buildValidFocusRecord().Build()
+				require.NoError(t, err, "Record creation failed")
+				record.BilledCost = tt.billedCost
+				record.EffectiveCost = tt.effectiveCost
+				record.ListCost = tt.listCost
+				require.Error(t, pluginsdk.ValidateFocusRecord(record), "Invalid hierarchy should fail validation")
+			})
+		}
+	})
+
+	t.Run("correction charges exempt from hierarchy", func(t *testing.T) {
+		record, err := buildValidFocusRecord().
+			WithChargeClassification(
+				pbc.FocusChargeClass_FOCUS_CHARGE_CLASS_CORRECTION,
+				"Billing correction",
+				pbc.FocusChargeFrequency_FOCUS_CHARGE_FREQUENCY_ONE_TIME,
+			).
+			WithFinancials(50.0, 100.0, 200.0, "USD", "INV-001"). // Would fail without CORRECTION
+			Build()
+		require.NoError(t, err, "Record creation failed")
+		require.NoError(t, pluginsdk.ValidateFocusRecord(record), "Correction charges should be exempt")
+	})
+}
+
+// TestContextualValidation_CommitmentDiscountConsistency validates FR-003 and FR-004.
+func TestContextualValidation_CommitmentDiscountConsistency(t *testing.T) {
+	t.Run("commitment ID with status passes for usage", func(t *testing.T) {
+		record, err := buildValidFocusRecord().
+			WithCommitmentDiscount(
+				pbc.FocusCommitmentDiscountCategory_FOCUS_COMMITMENT_DISCOUNT_CATEGORY_SPEND,
+				"ri-12345",
+				"Reserved Instance",
+			).
+			WithCommitmentDiscountDetails(
+				100.0, // quantity
+				pbc.FocusCommitmentDiscountStatus_FOCUS_COMMITMENT_DISCOUNT_STATUS_USED,
+				"EC2 1yr RI", // discountType
+				"Hours",      // unit
+			).
+			Build()
+		require.NoError(t, err, "Record creation failed")
+		require.NoError(t, pluginsdk.ValidateFocusRecord(record), "Valid commitment discount should pass")
+	})
+
+	t.Run("commitment ID without status fails for usage", func(t *testing.T) {
+		// Build valid record first, then modify to create invalid state
+		record, err := buildValidFocusRecord().Build()
+		require.NoError(t, err, "Record creation failed")
+		// Set CommitmentDiscountId without status (status stays UNSPECIFIED)
+		record.CommitmentDiscountId = "ri-12345"
+
+		require.Error(t, pluginsdk.ValidateFocusRecord(record),
+			"Commitment ID without status should fail for usage charges")
+	})
+}
+
+// TestContextualValidation_PricingConsistency validates FR-006.
+func TestContextualValidation_PricingConsistency(t *testing.T) {
+	t.Run("pricing quantity with unit passes", func(t *testing.T) {
+		record, err := buildValidFocusRecord().
+			WithPricing(10.0, "Hours", 100.0). // quantity, unit, listUnitPrice
+			Build()
+		require.NoError(t, err, "Record creation failed")
+		require.NoError(t, pluginsdk.ValidateFocusRecord(record), "Valid pricing should pass")
+	})
+
+	t.Run("pricing quantity without unit fails", func(t *testing.T) {
+		// Build valid record first, then modify to create invalid state
+		record, err := buildValidFocusRecord().Build()
+		require.NoError(t, err, "Record creation failed")
+		// Set pricing quantity > 0 without unit
+		record.PricingQuantity = 10.0
+		record.PricingUnit = ""
+
+		require.Error(t, pluginsdk.ValidateFocusRecord(record), "Pricing quantity > 0 without unit should fail")
+	})
+}
+
+// TestContextualValidation_CapacityReservationConsistency validates FR-005.
+func TestContextualValidation_CapacityReservationConsistency(t *testing.T) {
+	t.Run("capacity reservation with status passes", func(t *testing.T) {
+		record, err := buildValidFocusRecord().
+			WithCapacityReservation(
+				"cr-12345",
+				pbc.FocusCapacityReservationStatus_FOCUS_CAPACITY_RESERVATION_STATUS_USED,
+			).
+			Build()
+		require.NoError(t, err, "Record creation failed")
+		require.NoError(t, pluginsdk.ValidateFocusRecord(record), "Valid capacity reservation should pass")
+	})
+
+	t.Run("capacity reservation without status fails for usage", func(t *testing.T) {
+		record, err := buildValidFocusRecord().Build()
+		require.NoError(t, err, "Record creation failed")
+		// Set capacity ID but not status
+		record.CapacityReservationId = "cr-12345"
+		// Status remains UNSPECIFIED
+
+		require.Error(t, pluginsdk.ValidateFocusRecord(record),
+			"Capacity ID without status should fail for usage charges")
+	})
+}
+
+// TestContextualValidation_AggregateMode validates aggregate error collection.
+func TestContextualValidation_AggregateMode(t *testing.T) {
+	t.Run("aggregate mode collects all errors", func(t *testing.T) {
+		// Build valid record first, then modify to create multiple violations
+		record, err := buildValidFocusRecord().Build()
+		require.NoError(t, err, "Record creation failed")
+		// Add FR-001 violation: EffectiveCost > BilledCost
+		record.BilledCost = 100.0
+		record.EffectiveCost = 120.0
+		// Add FR-006 violation: PricingQuantity > 0 without unit
+		record.PricingQuantity = 10.0
+		record.PricingUnit = ""
+
+		opts := pluginsdk.ValidationOptions{Mode: pluginsdk.ValidationModeAggregate}
+		errs := pluginsdk.ValidateFocusRecordWithOptions(record, opts)
+
+		require.GreaterOrEqual(t, len(errs), 2, "Expected multiple errors in aggregate mode")
+	})
+
+	t.Run("valid record returns empty slice", func(t *testing.T) {
+		record, err := buildValidFocusRecord().Build()
+		require.NoError(t, err, "Record creation failed")
+
+		opts := pluginsdk.ValidationOptions{Mode: pluginsdk.ValidationModeAggregate}
+		errs := pluginsdk.ValidateFocusRecordWithOptions(record, opts)
+
+		require.Empty(t, errs, "Valid record should return no errors")
 	})
 }
