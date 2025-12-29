@@ -74,6 +74,14 @@ centered around the FinOps Foundation's FOCUS standard.
   Implementation examples for complex tiered pricing and multi-provider mapping.
 - [ ] **SDK Documentation Overhaul** -
   Comprehensive Godoc and implementation examples for the new `mapping` and `validation` packages.
+- [ ] **Forecasting Primitives** ([#215](https://github.com/rshade/pulumicost-spec/issues/215))
+  - Define `GrowthType` enum (Linear, Exponential) and `GrowthRate` fields in `CostResult`
+- [ ] **Pricing Tier Intelligence** ([#217](https://github.com/rshade/pulumicost-spec/issues/217))
+  - Define `PricingTier` enum (`STANDARD`, `SPOT`, `RESERVED`)
+  - Define `SpotRisk` enum (`LOW`, `MEDIUM`, `HIGH`) for interruption probability
+- [ ] **Usage Profiles** ([#218](https://github.com/rshade/pulumicost-spec/issues/218))
+  - Add `UsageProfile` context to requests to allow plugins to adjust recommendations
+    based on environment (e.g., Dev vs Prod)
 
 ### In Progress
 
@@ -111,6 +119,8 @@ centered around the FinOps Foundation's FOCUS standard.
 - [ ] **Standardized Recommendation Reasoning** ([#188](https://github.com/rshade/pulumicost-spec/issues/188))
 - [ ] **gRPC-Web support (Pulumi Insights)** ([#189](https://github.com/rshade/pulumicost-spec/issues/189))
 - [ ] **Multi-Currency Segregation Pattern** ([#190](https://github.com/rshade/pulumicost-spec/issues/190))
+- [ ] **Validation Bypass Protocol** ([#216](https://github.com/rshade/pulumicost-spec/issues/216)) -
+  Add `BypassReason` and `OverrideMetadata` to `ValidationResult` for governance auditing.
 
 ---
 
