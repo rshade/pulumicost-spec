@@ -43,10 +43,13 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gh-pages-branch: 'benchmark-data'
           auto-push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '110%'  # 10% tolerance
+          # CI environments have high variance (2x+ for sub-microsecond ops)
+          # See issue #224 for analysis
+          alert-threshold: '200%'  # 100% tolerance for CI variability
           comment-on-alert: true
-          fail-on-alert: true
+          # Don't fail builds on benchmark variance - informational only
+          # CI runners have inherent variability that causes false positives
+          fail-on-alert: false
           summary-always: true
 
       - name: Upload benchmark results

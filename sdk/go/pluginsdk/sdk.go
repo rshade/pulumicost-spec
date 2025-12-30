@@ -7,11 +7,18 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
+	"connectrpc.com/connect"
+	"connectrpc.com/grpchealth"
 	"github.com/rs/zerolog"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1/pbcconnect"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -53,6 +60,87 @@ func ParsePortFlag() int {
 // a plugin does not implement the SupportsProvider interface.
 const DefaultSupportsNotImplementedReason = "Supports capability not implemented by this plugin"
 
+// DefaultReadHeaderTimeout is the timeout for reading HTTP headers.
+// This prevents Slowloris-style attacks on the HTTP server.
+const DefaultReadHeaderTimeout = 10 * time.Second
+
+// DefaultReadTimeout is the timeout for reading the entire request including body.
+// This prevents slow-read attacks where clients send data very slowly.
+const DefaultReadTimeout = 60 * time.Second
+
+// DefaultWriteTimeout is the timeout for writing the response.
+// This prevents slow-write attacks and ensures resources are released.
+const DefaultWriteTimeout = 30 * time.Second
+
+// DefaultIdleTimeout is the maximum time to wait for the next request on a keep-alive connection.
+// This prevents resource exhaustion from long-lived idle connections.
+const DefaultIdleTimeout = 120 * time.Second
+
+// DefaultShutdownTimeout is the timeout for graceful server shutdown.
+// This prevents the server from blocking indefinitely during shutdown.
+const DefaultShutdownTimeout = 30 * time.Second
+
+// DefaultMaxHeaderBytes is the maximum size of request headers.
+// This prevents header bomb attacks where clients send extremely large headers
+// to exhaust server memory. Set to 1MB which is generous for normal use.
+const DefaultMaxHeaderBytes = 1 << 20 // 1 MB
+
+// ServerTimeouts configures HTTP server timeouts for the plugin server.
+// All timeouts are optional - if not specified, sensible defaults are used.
+// Consider increasing WriteTimeout for plugins with long-running operations
+// like GetActualCost with large time ranges.
+type ServerTimeouts struct {
+	// ReadHeaderTimeout is the timeout for reading HTTP headers (default: 10s).
+	// Prevents Slowloris-style attacks.
+	ReadHeaderTimeout time.Duration
+
+	// ReadTimeout is the timeout for reading the entire request (default: 60s).
+	// Prevents slow-read attacks where clients send data very slowly.
+	ReadTimeout time.Duration
+
+	// WriteTimeout is the timeout for writing the response (default: 30s).
+	// Consider increasing for long-running operations.
+	WriteTimeout time.Duration
+
+	// IdleTimeout is the max time for the next request on keep-alive (default: 120s).
+	// Prevents resource exhaustion from long-lived idle connections.
+	IdleTimeout time.Duration
+
+	// ShutdownTimeout is the timeout for graceful server shutdown (default: 30s).
+	ShutdownTimeout time.Duration
+}
+
+// DefaultServerTimeouts returns the default server timeout configuration.
+func DefaultServerTimeouts() ServerTimeouts {
+	return ServerTimeouts{
+		ReadHeaderTimeout: DefaultReadHeaderTimeout,
+		ReadTimeout:       DefaultReadTimeout,
+		WriteTimeout:      DefaultWriteTimeout,
+		IdleTimeout:       DefaultIdleTimeout,
+		ShutdownTimeout:   DefaultShutdownTimeout,
+	}
+}
+
+// applyDefaults fills in any zero values with defaults.
+func (t ServerTimeouts) applyDefaults() ServerTimeouts {
+	if t.ReadHeaderTimeout == 0 {
+		t.ReadHeaderTimeout = DefaultReadHeaderTimeout
+	}
+	if t.ReadTimeout == 0 {
+		t.ReadTimeout = DefaultReadTimeout
+	}
+	if t.WriteTimeout == 0 {
+		t.WriteTimeout = DefaultWriteTimeout
+	}
+	if t.IdleTimeout == 0 {
+		t.IdleTimeout = DefaultIdleTimeout
+	}
+	if t.ShutdownTimeout == 0 {
+		t.ShutdownTimeout = DefaultShutdownTimeout
+	}
+	return t
+}
+
 // Plugin represents a PulumiCost plugin implementation.
 type Plugin interface {
 	// Name returns the plugin name identifier.
@@ -92,6 +180,15 @@ type BudgetsProvider interface {
 	// GetBudgets retrieves budget information from the cost management service.
 	GetBudgets(ctx context.Context, req *pbc.GetBudgetsRequest) (
 		*pbc.GetBudgetsResponse, error)
+}
+
+// DismissProvider is an optional interface that plugins can implement
+// to allow dismissing cost optimization recommendations. Plugins that do not
+// implement this interface will return Unimplemented when DismissRecommendation is called.
+type DismissProvider interface {
+	// DismissRecommendation marks a recommendation as dismissed/ignored.
+	DismissRecommendation(ctx context.Context, req *pbc.DismissRecommendationRequest) (
+		*pbc.DismissRecommendationResponse, error)
 }
 
 // RegistryLookup defines the interface for looking up plugins by provider and region.
@@ -367,6 +464,51 @@ func (s *Server) GetBudgets(
 	return resp, nil
 }
 
+// DismissRecommendation implements the gRPC DismissRecommendation method.
+// If the plugin implements DismissProvider, delegates to it.
+// Otherwise returns Unimplemented error per specification.
+func (s *Server) DismissRecommendation(
+	ctx context.Context,
+	req *pbc.DismissRecommendationRequest,
+) (*pbc.DismissRecommendationResponse, error) {
+	// Log incoming request
+	s.logger.Debug().
+		Str("recommendation_id", req.GetRecommendationId()).
+		Msg("DismissRecommendation request received")
+
+	// Check if plugin implements DismissProvider
+	dismissProvider, ok := s.plugin.(DismissProvider)
+	if !ok {
+		// Plugin does not implement dismiss - return Unimplemented per spec
+		s.logger.Debug().Msg("DismissRecommendation returning Unimplemented (not supported by plugin)")
+		return nil, status.Error(codes.Unimplemented, "plugin does not support DismissRecommendation")
+	}
+
+	// Delegate to plugin's DismissRecommendation method
+	resp, err := dismissProvider.DismissRecommendation(ctx, req)
+	if err != nil {
+		s.logger.Error().
+			Str("recommendation_id", req.GetRecommendationId()).
+			Err(err).
+			Msg("DismissRecommendation handler error")
+		return nil, status.Error(codes.Internal, "plugin failed to execute DismissRecommendation")
+	}
+
+	// Guard against nil response from plugin
+	if resp == nil {
+		s.logger.Error().Msg("DismissRecommendation handler returned a nil response")
+		return nil, status.Error(codes.Internal, "plugin returned a nil response")
+	}
+
+	// Log successful response
+	s.logger.Info().
+		Str("recommendation_id", req.GetRecommendationId()).
+		Bool("success", resp.GetSuccess()).
+		Msg("DismissRecommendation completed")
+
+	return resp, nil
+}
+
 // ServeConfig holds configuration for serving a plugin.
 type ServeConfig struct {
 	Plugin   Plugin
@@ -382,6 +524,14 @@ type ServeConfig struct {
 	// in the order provided. If nil or empty, only the tracing interceptor runs.
 	// Note: Passing nil elements in the slice will cause a panic (standard gRPC behavior).
 	UnaryInterceptors []grpc.UnaryServerInterceptor
+	// Web holds configuration for gRPC-Web and CORS support.
+	// When Web.Enabled is true, the server accepts both native gRPC and
+	// gRPC-Web requests on the same port.
+	Web WebConfig
+	// Timeouts configures HTTP server timeouts.
+	// If nil, sensible defaults are used (see DefaultServerTimeouts).
+	// Consider increasing WriteTimeout for plugins with long-running operations.
+	Timeouts *ServerTimeouts
 }
 
 // resolvePort determines the port to use with the following priority:
@@ -439,13 +589,51 @@ func announcePort(listener net.Listener, addr *net.TCPAddr) error {
 	return nil
 }
 
-// Serve starts the gRPC server for the provided plugin and prints the chosen port as PORT=<port> to stdout.
+// validateCORSConfig checks WebConfig for invalid CORS configurations.
+// Returns an error if wildcard is mixed with specific origins or if AllowCredentials
+// is used with wildcard origin (which is a security risk per MDN documentation).
+func validateCORSConfig(web WebConfig) error {
+	if !web.Enabled || len(web.AllowedOrigins) == 0 {
+		return nil
+	}
+
+	// Check for wildcard mixed with specific origins (undefined behavior)
+	hasWildcard := false
+	hasSpecific := false
+	for _, origin := range web.AllowedOrigins {
+		if origin == "*" {
+			hasWildcard = true
+		} else {
+			hasSpecific = true
+		}
+		// Early exit: once we've found both types, no need to continue scanning
+		if hasWildcard && hasSpecific {
+			return errors.New("AllowedOrigins cannot mix wildcard '*' with specific origins; " +
+				"use either '*' alone or a list of specific origins")
+		}
+	}
+
+	// AllowCredentials with wildcard origin is a security risk
+	// See: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials
+	if web.AllowCredentials && hasWildcard {
+		return errors.New("AllowCredentials cannot be used with wildcard origin '*'; " +
+			"specify explicit origins instead for security")
+	}
+
+	return nil
+}
+
+// Serve starts the server for the provided plugin and prints the chosen port as PORT=<port> to stdout.
+//
+// When config.Web.Enabled is false (default), it starts a standard gRPC server.
+// When config.Web.Enabled is true, it starts a connect-go server that supports
+// gRPC, gRPC-Web, and Connect protocols simultaneously on the same port.
 //
 // It uses config.Port when > 0; if config.Port is 0 it reads the PULUMICOST_PLUGIN_PORT environment variable
 // and falls back to an ephemeral port when none is provided. The function registers the plugin's service, begins
 // serving on the selected port, and performs a graceful stop when the context is cancelled.
 //
-// Returns an error if the listener cannot be created or if the gRPC server fails to serve.
+// Returns an error if the listener cannot be created or if the server fails to serve.
 func Serve(ctx context.Context, config ServeConfig) error {
 	var listener net.Listener
 	var tcpAddr *net.TCPAddr
@@ -470,6 +658,23 @@ func Serve(ctx context.Context, config ServeConfig) error {
 		return announceErr
 	}
 
+	// Create the core server that wraps the plugin
+	server := NewServerWithOptions(config.Plugin, config.Registry, config.Logger)
+
+	// Validate CORS configuration
+	if corsErr := validateCORSConfig(config.Web); corsErr != nil {
+		return corsErr
+	}
+
+	// Choose serving mode based on WebConfig
+	if config.Web.Enabled {
+		return serveConnect(ctx, listener, server, config)
+	}
+	return serveGRPC(ctx, listener, server, config)
+}
+
+// serveGRPC starts a standard gRPC server (legacy mode).
+func serveGRPC(ctx context.Context, listener net.Listener, server *Server, config ServeConfig) error {
 	// Build interceptor chain: tracing first, then user interceptors
 	interceptors := make([]grpc.UnaryServerInterceptor, 0, 1+len(config.UnaryInterceptors))
 	interceptors = append(interceptors, TracingUnaryServerInterceptor())
@@ -479,18 +684,32 @@ func Serve(ctx context.Context, config ServeConfig) error {
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(interceptors...),
 	)
-	server := NewServerWithOptions(config.Plugin, config.Registry, config.Logger)
 	pbc.RegisterCostSourceServiceServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
-	// Handle context cancellation
+	// Create channels for goroutine coordination
+	shutdownComplete := make(chan struct{})
+	serverDone := make(chan struct{})
+
+	// Handle context cancellation with proper synchronization
 	go func() {
-		<-ctx.Done()
-		grpcServer.GracefulStop()
+		defer close(shutdownComplete)
+		select {
+		case <-ctx.Done():
+			grpcServer.GracefulStop()
+		case <-serverDone:
+			// Server already stopped, no need to shut down
+			return
+		}
 	}()
 
 	// Start serving
-	err = grpcServer.Serve(listener)
+	err := grpcServer.Serve(listener)
+	close(serverDone)
+
+	// Wait for shutdown goroutine to complete (prevents goroutine leak)
+	<-shutdownComplete
+
 	if err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -498,4 +717,144 @@ func Serve(ctx context.Context, config ServeConfig) error {
 		return err
 	}
 	return nil
+}
+
+// serveConnect starts a connect-go server supporting gRPC, gRPC-Web, and Connect protocols.
+func serveConnect(ctx context.Context, listener net.Listener, server *Server, config ServeConfig) error {
+	// Create HTTP mux for routing
+	mux := http.NewServeMux()
+
+	// Build connect handler options (currently none; CORS is applied via middleware below)
+	var handlerOpts []connect.HandlerOption
+
+	// Create connect handler from our server
+	connectHandler := NewConnectHandler(server)
+	path, handler := pbcconnect.NewCostSourceServiceHandler(connectHandler, handlerOpts...)
+	mux.Handle(path, handler)
+
+	// Register gRPC health check service (grpc.health.v1.Health/Check)
+	// This provides standard gRPC health checking protocol support
+	healthChecker := grpchealth.NewStaticChecker(
+		// Report CostSourceService as serving
+		pbcconnect.CostSourceServiceName,
+	)
+	healthPath, healthHandler := grpchealth.NewHandler(healthChecker, handlerOpts...)
+	mux.Handle(healthPath, healthHandler)
+
+	// Add simple HTTP health endpoint if enabled
+	if config.Web.EnableHealthEndpoint {
+		mux.Handle("/healthz", HealthHandler())
+	}
+
+	// Wrap with h2c for HTTP/2 cleartext support (required for gRPC protocol)
+	h2cHandler := h2c.NewHandler(mux, &http2.Server{})
+
+	// Apply CORS if configured
+	finalHandler := h2cHandler
+	if len(config.Web.AllowedOrigins) > 0 {
+		finalHandler = corsMiddleware(h2cHandler, config.Web)
+	}
+
+	// Resolve timeouts with defaults
+	timeouts := DefaultServerTimeouts()
+	if config.Timeouts != nil {
+		timeouts = config.Timeouts.applyDefaults()
+	}
+
+	// Create HTTP server with timeouts and limits to prevent DoS attacks
+	httpServer := &http.Server{
+		Handler:           finalHandler,
+		ReadHeaderTimeout: timeouts.ReadHeaderTimeout,
+		ReadTimeout:       timeouts.ReadTimeout,
+		WriteTimeout:      timeouts.WriteTimeout,
+		IdleTimeout:       timeouts.IdleTimeout,
+		MaxHeaderBytes:    DefaultMaxHeaderBytes,
+	}
+
+	// Create channels for goroutine coordination
+	shutdownComplete := make(chan struct{})
+	serverDone := make(chan struct{})
+
+	// Handle context cancellation with proper synchronization
+	go func() {
+		defer close(shutdownComplete)
+		select {
+		case <-ctx.Done():
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), timeouts.ShutdownTimeout)
+			defer cancel()
+			_ = httpServer.Shutdown(shutdownCtx)
+		case <-serverDone:
+			// Server already stopped, no need to shut down
+			return
+		}
+	}()
+
+	// Start serving
+	err := httpServer.Serve(listener)
+	close(serverDone)
+
+	// Wait for shutdown goroutine to complete (prevents goroutine leak)
+	<-shutdownComplete
+
+	if err != nil && err != http.ErrServerClosed {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		return err
+	}
+	return nil
+}
+
+// corsMiddleware wraps an http.Handler with CORS support.
+func corsMiddleware(next http.Handler, webConfig WebConfig) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Always set Vary: Origin when CORS is configured to prevent cache pollution.
+		// This tells caches that the response varies based on the Origin header,
+		// even when no CORS headers are added (e.g., when origin is not allowed).
+		w.Header().Set("Vary", "Origin")
+
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Check if origin is allowed
+		allowed := false
+		for _, o := range webConfig.AllowedOrigins {
+			if o == "*" || o == origin {
+				allowed = true
+				break
+			}
+		}
+
+		if !allowed {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, "+
+				"X-CSRF-Token, X-Requested-With, Connect-Protocol-Version, Connect-Timeout-Ms, "+
+				"Grpc-Timeout, X-Grpc-Web, X-User-Agent")
+		w.Header().Set("Access-Control-Expose-Headers",
+			"Grpc-Status, Grpc-Message, Grpc-Status-Details-Bin, Connect-Content-Encoding, "+
+				"Connect-Content-Type")
+
+		if webConfig.AllowCredentials {
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+
+		// Handle preflight
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

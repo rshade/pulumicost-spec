@@ -3265,7 +3265,7 @@ const file_pulumicost_v1_registry_proto_rawDesc = "" +
 	"\fUpdatePlugin\x12\".pulumicost.v1.UpdatePluginRequest\x1a#.pulumicost.v1.UpdatePluginResponse\x12W\n" +
 	"\fRemovePlugin\x12\".pulumicost.v1.RemovePluginRequest\x1a#.pulumicost.v1.RemovePluginResponse\x12o\n" +
 	"\x14ListInstalledPlugins\x12*.pulumicost.v1.ListInstalledPluginsRequest\x1a+.pulumicost.v1.ListInstalledPluginsResponse\x12f\n" +
-	"\x11CheckPluginHealth\x12'.pulumicost.v1.CheckPluginHealthRequest\x1a(.pulumicost.v1.CheckPluginHealthResponseB4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
+	"\x11CheckPluginHealth\x12'.pulumicost.v1.CheckPluginHealthRequest\x1a(.pulumicost.v1.CheckPluginHealthResponseBBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
 
 var (
 	file_pulumicost_v1_registry_proto_rawDescOnce sync.Once

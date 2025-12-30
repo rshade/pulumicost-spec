@@ -47,6 +47,10 @@ centered around the FinOps Foundation's FOCUS standard.
   [#143](https://github.com/rshade/pulumicost-spec/issues/143),
   [#126](https://github.com/rshade/pulumicost-spec/issues/126)) -
   Added reflection, `--port` flags, and `fallback-hints`.
+- [x] **Multi-Protocol Support (gRPC-Web/Connect)**
+  ([#189](https://github.com/rshade/pulumicost-spec/issues/189),
+  [#223](https://github.com/rshade/pulumicost-spec/pull/223)) -
+  Added connect-go integration enabling gRPC, gRPC-Web, and Connect protocols for browser compatibility.
 
 ---
 
@@ -90,6 +94,18 @@ centered around the FinOps Foundation's FOCUS standard.
   [#142](https://github.com/rshade/pulumicost-spec/issues/142)) -
   Formalizing "Time to First Byte" and memory allocation benchmarks for plugins.
 
+### Connect Protocol Enhancements
+
+- [ ] **DismissRecommendation Consistency** ([#225](https://github.com/rshade/pulumicost-spec/issues/225)) -
+  Make DismissRecommendation follow the same pattern as other RPC methods.
+- [ ] **Configurable Client Timeouts** ([#226](https://github.com/rshade/pulumicost-spec/issues/226)) -
+  Add per-request timeout configuration for client operations.
+- [ ] **Connect Protocol Test Coverage** ([#227](https://github.com/rshade/pulumicost-spec/issues/227)) -
+  Expand test coverage for edge cases (concurrent requests, large payloads, shutdown).
+- [ ] **CORS Configuration** ([#228](https://github.com/rshade/pulumicost-spec/issues/228),
+  [#229](https://github.com/rshade/pulumicost-spec/issues/229)) -
+  Make CORS headers and max-age configurable.
+
 ---
 
 ## [Future Vision] (Long-Term)
@@ -112,12 +128,22 @@ centered around the FinOps Foundation's FOCUS standard.
   ([#197](https://github.com/rshade/pulumicost-spec/issues/197)) -
   Evaluating the need for `StreamActualCost` for real-time anomaly detection.
 
+### SDK Developer Experience
+
+- [ ] **Custom Health Checker Interface** ([#230](https://github.com/rshade/pulumicost-spec/issues/230)) -
+  Allow plugins to implement custom health check logic beyond simple "ok" responses.
+- [ ] **Thread Safety Documentation** ([#231](https://github.com/rshade/pulumicost-spec/issues/231)) -
+  Explicitly document concurrency guarantees for Server, Client, and configuration types.
+- [ ] **Context Validation Helpers** ([#232](https://github.com/rshade/pulumicost-spec/issues/232)) -
+  Add utilities for validating context deadlines and detecting already-expired contexts.
+- [ ] **Rate Limiting Patterns** ([#233](https://github.com/rshade/pulumicost-spec/issues/233)) -
+  Document best practices for implementing rate limiting in plugins.
+
 ### Proposed for Discussion (Discovery)
 
 - [ ] **Plugin Capability Dry Run Mode** ([#186](https://github.com/rshade/pulumicost-spec/issues/186))
 - [ ] **JSON-LD / Schema.org Serialization** ([#187](https://github.com/rshade/pulumicost-spec/issues/187))
 - [ ] **Standardized Recommendation Reasoning** ([#188](https://github.com/rshade/pulumicost-spec/issues/188))
-- [ ] **gRPC-Web support (Pulumi Insights)** ([#189](https://github.com/rshade/pulumicost-spec/issues/189))
 - [ ] **Multi-Currency Segregation Pattern** ([#190](https://github.com/rshade/pulumicost-spec/issues/190))
 - [ ] **Validation Bypass Protocol** ([#216](https://github.com/rshade/pulumicost-spec/issues/216)) -
   Add `BypassReason` and `OverrideMetadata` to `ValidationResult` for governance auditing.

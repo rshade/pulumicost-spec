@@ -16,12 +16,8 @@ package currency
 //	currency.IsValid("XYZ") // false
 //	currency.IsValid("usd") // false (case-sensitive)
 func IsValid(code string) bool {
-	// Linear scan for zero-allocation validation
-	// This is faster than map lookup for ~180 items due to cache locality
-	for i := range allCurrencies {
-		if allCurrencies[i].Code == code {
-			return true
-		}
-	}
-	return false
+	// Map lookup for O(1) validation with zero allocations
+	// The currencyByCode map is built once at package init
+	_, ok := currencyByCode[code]
+	return ok
 }
