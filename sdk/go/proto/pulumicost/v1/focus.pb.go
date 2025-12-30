@@ -1045,7 +1045,7 @@ const file_pulumicost_v1_focus_proto_rawDesc = "" +
 	"\x1fFocusContractCommitmentCategory\x122\n" +
 	".FOCUS_CONTRACT_COMMITMENT_CATEGORY_UNSPECIFIED\x10\x00\x12,\n" +
 	"(FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND\x10\x01\x12,\n" +
-	"(FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE\x10\x02B4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
+	"(FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE\x10\x02BBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
 
 var (
 	file_pulumicost_v1_focus_proto_rawDescOnce sync.Once

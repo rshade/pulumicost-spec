@@ -9,6 +9,10 @@ lint:
 breaking:
   use:
     - FILE
+  except:
+    # go_package path changes are not wire-breaking - they only affect Go import paths.
+    # Existing gRPC clients continue to work. Ignored for connect-go support (PR #223).
+    - FILE_SAME_GO_PACKAGE
   # Ignore FOCUS 1.2 alignment renames introduced in PR #99.
   # These are intentional breaking changes to align with FinOps FOCUS 1.2 spec:
   #   - currency → billing_currency (field 18)

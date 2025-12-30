@@ -9,6 +9,8 @@ utilities for plugin development.
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Server Configuration](#server-configuration)
+- [Multi-Protocol Support](#multi-protocol-support-grpc-grpc-web-connect)
+- [Go Client SDK](#go-client-sdk)
 - [Environment Variables](#environment-variables)
 - [Core Components](#core-components)
 - [Structured Logging](#structured-logging)
@@ -242,6 +244,189 @@ The `Serve()` function monitors the provided `context.Context`. When the context
 4. The function returns `context.Canceled` (or the cancellation error).
 
 This behavior ensures no in-flight requests are dropped during rolling updates or shutdown.
+
+## Multi-Protocol Support (gRPC, gRPC-Web, Connect)
+
+The SDK supports serving plugins over multiple protocols simultaneously using the
+[Connect](https://connectrpc.com/) framework:
+
+| Protocol | Use Case | Client Support |
+| -------- | -------- | -------------- |
+| **gRPC** | Server-to-server (HTTP/2) | All gRPC clients |
+| **gRPC-Web** | Browser clients (HTTP/1.1) | grpc-web, @connectrpc/connect-web |
+| **Connect** | Simple JSON over HTTP | fetch(), curl, any HTTP client |
+
+### Enabling Web Support
+
+To enable browser access (gRPC-Web and Connect protocols), set `Web.Enabled = true` in your server config:
+
+```go
+err := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+    Plugin: &MyPlugin{},
+    Port:   8080,
+    Web: pluginsdk.WebConfig{
+        Enabled:              true,              // Enable web protocols
+        AllowedOrigins:       []string{"*"},     // CORS origins (use specific domains in production)
+        AllowCredentials:     true,              // Allow cookies/auth headers
+        EnableHealthEndpoint: true,              // Add /healthz endpoint
+    },
+})
+```
+
+### WebConfig Options
+
+| Field | Type | Default | Description |
+| ----- | ---- | ------- | ----------- |
+| `Enabled` | `bool` | `false` | Enable Connect/gRPC-Web protocols |
+| `AllowedOrigins` | `[]string` | `nil` | CORS allowed origins (empty = no CORS headers) |
+| `AllowCredentials` | `bool` | `false` | Include credentials in CORS |
+| `EnableHealthEndpoint` | `bool` | `false` | Add `/healthz` health check endpoint |
+
+### Builder Pattern
+
+Use the fluent builder for configuration:
+
+```go
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"https://app.example.com"}).
+    WithAllowCredentials(true).
+    WithHealthEndpoint(true)
+```
+
+### Calling from Browsers
+
+With `Web.Enabled = true`, you can call your plugin using simple `fetch()`:
+
+```javascript
+// Get plugin name
+const response = await fetch('http://localhost:8080/pulumicost.v1.CostSourceService/Name', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+});
+const data = await response.json();
+console.log(data.name); // "my-cost-plugin"
+```
+
+### Calling with curl
+
+```bash
+# Get plugin name
+curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# Estimate cost
+curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/EstimateCost \
+  -H "Content-Type: application/json" \
+  -d '{"resource_type": "aws:ec2/instance:Instance"}'
+```
+
+### Legacy Mode
+
+When `Web.Enabled = false` (default), the server uses pure gRPC over HTTP/2. This is suitable for:
+
+- Server-to-server communication with gRPC clients
+- Environments requiring binary protobuf only
+- Maximum performance (no HTTP/1.1 overhead)
+
+## Go Client SDK
+
+The SDK provides a convenient Go client for communicating with PulumiCost plugins:
+
+### Quick Start
+
+```go
+import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+
+// Create client using Connect protocol (recommended)
+client := pluginsdk.NewConnectClient("http://localhost:8080")
+
+// Get plugin name
+name, err := client.Name(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println("Plugin:", name)
+
+// Estimate cost
+resp, err := client.EstimateCost(ctx, &pbc.EstimateCostRequest{
+    ResourceType: "aws:ec2/instance:Instance",
+})
+fmt.Printf("Monthly cost: %s %.2f\n", resp.Currency, resp.CostMonthly)
+```
+
+### Protocol Selection
+
+Create clients using different protocols:
+
+```go
+// Connect protocol (JSON over HTTP, best browser compatibility)
+client := pluginsdk.NewConnectClient("http://localhost:8080")
+
+// gRPC protocol (HTTP/2, best for server-to-server)
+client := pluginsdk.NewGRPCClient("http://localhost:8080")
+
+// gRPC-Web protocol (HTTP/1.1 compatible gRPC)
+client := pluginsdk.NewGRPCWebClient("http://localhost:8080")
+```
+
+### Client Configuration
+
+For advanced configuration:
+
+```go
+import (
+    "net/http"
+    "time"
+    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+)
+
+cfg := pluginsdk.ClientConfig{
+    BaseURL:  "http://localhost:8080",
+    Protocol: pluginsdk.ProtocolConnect,
+    HTTPClient: &http.Client{
+        Timeout: 60 * time.Second,
+    },
+}
+client := pluginsdk.NewClient(cfg)
+```
+
+### Available Methods
+
+| Method | Description |
+| ------ | ----------- |
+| `Name(ctx)` | Get plugin name |
+| `Supports(ctx, resource)` | Check resource support |
+| `SupportsResourceType(ctx, resourceType)` | Convenience for checking by type string |
+| `EstimateCost(ctx, req)` | Estimate monthly cost |
+| `GetActualCost(ctx, req)` | Get historical cost data |
+| `GetProjectedCost(ctx, req)` | Get projected cost |
+| `GetPricingSpec(ctx, req)` | Get pricing specification |
+| `GetRecommendations(ctx, req)` | Get cost recommendations |
+| `DismissRecommendation(ctx, req)` | Dismiss a recommendation |
+| `GetBudgets(ctx, req)` | Get budget information |
+| `Inner()` | Access underlying connect client |
+
+### Using the Raw Connect Client
+
+For advanced use cases, access the underlying connect-generated client:
+
+```go
+import (
+    "connectrpc.com/connect"
+    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+)
+
+inner := client.Inner()
+resp, err := inner.EstimateCost(ctx, connect.NewRequest(&pbc.EstimateCostRequest{
+    ResourceType: "aws:ec2/instance:Instance",
+    Attributes: map[string]string{
+        "instance_type": "t3.micro",
+    },
+}))
+```
 
 #### Example: Signal Handling
 
@@ -1335,6 +1520,30 @@ Key changes:
 3. **HoursPerMonth**: Now exported (was `hoursPerMonth`)
 4. **ServeConfig.Logger**: New field for custom logger injection
 5. **TracingUnaryServerInterceptor**: Now automatically integrated in `Serve()`
+
+### Proto Package Path Change (v0.5.0+)
+
+The proto `go_package` path has changed to support connect-go code generation:
+
+```diff
+// Before
+-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+
+// After
++option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbc";
+```
+
+**Impact**: If you import proto types directly, update your imports:
+
+```go
+// Before
+import pbc "github.com/rshade/pulumicost-spec/sdk/go/proto"
+
+// After
+import pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+```
+
+The `pbc` alias remains the same, so no other code changes are required.
 
 ## API Reference
 

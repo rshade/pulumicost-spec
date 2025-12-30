@@ -529,7 +529,7 @@ const file_pulumicost_v1_enums_proto_rawDesc = "" +
 	"\x1eFocusCapacityReservationStatus\x121\n" +
 	"-FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED\x10\x00\x12*\n" +
 	"&FOCUS_CAPACITY_RESERVATION_STATUS_USED\x10\x01\x12,\n" +
-	"(FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED\x10\x02B4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
+	"(FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED\x10\x02BBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
 
 var (
 	file_pulumicost_v1_enums_proto_rawDescOnce sync.Once

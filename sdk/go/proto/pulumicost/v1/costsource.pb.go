@@ -5372,7 +5372,7 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\vHealthCheck\x12!.pulumicost.v1.HealthCheckRequest\x1a\".pulumicost.v1.HealthCheckResponse\x12Q\n" +
 	"\n" +
 	"GetMetrics\x12 .pulumicost.v1.GetMetricsRequest\x1a!.pulumicost.v1.GetMetricsResponse\x12~\n" +
-	"\x19GetServiceLevelIndicators\x12/.pulumicost.v1.GetServiceLevelIndicatorsRequest\x1a0.pulumicost.v1.GetServiceLevelIndicatorsResponseB4Z2github.com/rshade/pulumicost-spec/sdk/go/proto;pbcb\x06proto3"
+	"\x19GetServiceLevelIndicators\x12/.pulumicost.v1.GetServiceLevelIndicatorsRequest\x1a0.pulumicost.v1.GetServiceLevelIndicatorsResponseBBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
 
 var (
 	file_pulumicost_v1_costsource_proto_rawDescOnce sync.Once
