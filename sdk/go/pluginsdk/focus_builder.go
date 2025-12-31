@@ -256,7 +256,15 @@ func (b *FocusRecordBuilder) WithTag(key, value string) *FocusRecordBuilder {
 	return b
 }
 
-// WithTags sets multiple tags at once per FOCUS 1.2 Section 2.14.
+// WithTags merges the provided tags into the record's tag map per FOCUS 1.2 Section 2.14.
+//
+// Copy Semantics (Zero-Allocation Pattern):
+//   - Tags are copied into the builder's internal map, NOT assigned by reference.
+//   - The input map can be safely modified after this call without affecting the record.
+//   - For performance-critical code processing thousands of records, consider using
+//     WithTag(key, value) to avoid map iteration overhead.
+//
+// Thread Safety: NOT thread-safe. Do not call from multiple goroutines.
 func (b *FocusRecordBuilder) WithTags(tags map[string]string) *FocusRecordBuilder {
 	for k, v := range tags {
 		b.record.Tags[k] = v

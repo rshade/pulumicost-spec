@@ -153,6 +153,14 @@ func wrapRPCError(ctx context.Context, operation string, err error) error {
 
 // NewClient creates a new PulumiCost client with the given configuration.
 // If an invalid protocol is specified, it defaults to ProtocolConnect for backward compatibility.
+//
+// HTTP Client Ownership:
+//   - If HTTPClient is nil, an internal HTTP client is created and owned by this Client.
+//     Call Close() when done to release connection pool resources.
+//   - If HTTPClient is provided, the caller retains ownership. Close() is a no-op;
+//     the caller is responsible for closing the HTTP client.
+//
+// Thread Safety: Client is safe for concurrent use from multiple goroutines.
 func NewClient(cfg ClientConfig) *Client {
 	// Validate protocol - default to Connect for invalid values
 	if !IsValidProtocol(cfg.Protocol) {
@@ -187,26 +195,47 @@ func NewClient(cfg ClientConfig) *Client {
 
 // NewConnectClient creates a client using the Connect protocol (JSON over HTTP).
 // This is the recommended protocol for browser clients.
+//
+// The SDK owns the created HTTP client. Call Close() when done to release
+// connection pool resources.
 func NewConnectClient(baseURL string) *Client {
 	cfg := DefaultClientConfig(baseURL)
 	cfg.Protocol = ProtocolConnect
-	return NewClient(cfg)
+	client := NewClient(cfg)
+	// Clients created via convenience constructors are SDK-owned:
+	// Close() should release connection pool resources.
+	client.ownsClient = true
+	return client
 }
 
 // NewGRPCClient creates a client using the gRPC protocol.
 // Requires HTTP/2 support on both client and server.
+//
+// The SDK owns the created HTTP client. Call Close() when done to release
+// connection pool resources.
 func NewGRPCClient(baseURL string) *Client {
 	cfg := DefaultClientConfig(baseURL)
 	cfg.Protocol = ProtocolGRPC
-	return NewClient(cfg)
+	client := NewClient(cfg)
+	// Clients created via convenience constructors are SDK-owned:
+	// Close() should release connection pool resources.
+	client.ownsClient = true
+	return client
 }
 
 // NewGRPCWebClient creates a client using the gRPC-Web protocol.
 // Useful for browser clients that need gRPC compatibility.
+//
+// The SDK owns the created HTTP client. Call Close() when done to release
+// connection pool resources.
 func NewGRPCWebClient(baseURL string) *Client {
 	cfg := DefaultClientConfig(baseURL)
 	cfg.Protocol = ProtocolGRPCWeb
-	return NewClient(cfg)
+	client := NewClient(cfg)
+	// Clients created via convenience constructors are SDK-owned:
+	// Close() should release connection pool resources.
+	client.ownsClient = true
+	return client
 }
 
 // Name returns the display name of the cost source plugin.
