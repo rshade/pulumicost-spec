@@ -106,6 +106,44 @@ Performance (FOCUS 1.3 builder methods):
 - Allocation methods: 1.5-1.8 ns/op, 0 allocs/op
 - Tag operations: ~130 ns/op (map copy overhead)
 
+**Forecasting Primitives (`sdk/go/pricing/growth.go`)**
+
+The pricing package provides growth projection helpers for cost forecasting:
+
+- **GrowthType Enum**: NONE, LINEAR, EXPONENTIAL (UNSPECIFIED treated as NONE)
+- **Growth Formulas**:
+  - Linear: `cost = baseCost * (1 + rate * periods)`
+  - Exponential: `cost = baseCost * (1 + rate)^periods`
+- **Validation**: `ValidateGrowthParams()` validates growth type and rate combinations
+- **Warnings**: `CheckGrowthWarnings()` detects unrealistic assumptions
+
+Key files:
+
+- `growth.go` - Growth calculation and validation functions
+- `growth_test.go` - Comprehensive tests including overflow edge cases
+
+Constants:
+
+- `HighGrowthRateThreshold = 1.0` (100% per period triggers warning)
+- `LongProjectionThreshold = 36` (months for exponential projection warning)
+- `MinValidGrowthRate = -1.0` (minimum allowed rate)
+
+Usage patterns:
+
+```go
+// Apply growth projection
+cost := pricing.ApplyGrowth(baseCost, pbc.GrowthType_GROWTH_TYPE_LINEAR, &rate, periods)
+
+// Validate parameters
+err := pricing.ValidateGrowthParams(growthType, &rate)
+
+// Check for warnings
+warnings := pricing.CheckGrowthWarnings(growthType, &rate, periods)
+```
+
+See `specs/030-forecasting-primitives/` for complete specification and `sdk/go/pricing/README.md`
+for detailed documentation.
+
 **Examples (`examples/`)**
 
 - `examples/specs/` - 8 comprehensive cross-vendor JSON examples

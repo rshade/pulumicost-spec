@@ -1,0 +1,14 @@
+{
+  "$comment": "GetProjectedCostRequest with request-level override of resource defaults",
+  "resource": {
+    "provider": "aws",
+    "resource_type": "ec2",
+    "sku": "t3.medium",
+    "region": "us-east-1",
+    "growth_type": "GROWTH_TYPE_LINEAR",
+    "growth_rate": 0.10
+  },
+  "utilization_percentage": 0.5,
+  "growth_type": "GROWTH_TYPE_EXPONENTIAL",
+  "growth_rate": 0.05
+}
