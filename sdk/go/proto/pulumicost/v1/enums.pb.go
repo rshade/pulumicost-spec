@@ -477,6 +477,70 @@ func (FocusCapacityReservationStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{7}
 }
 
+// GrowthType represents the mathematical model used for projecting cost growth.
+// Used in ResourceDescriptor and GetProjectedCostRequest for forward-looking projections.
+type GrowthType int32
+
+const (
+	// Default value - treated identically to GROWTH_TYPE_NONE.
+	// When unset, no growth is applied to projections.
+	GrowthType_GROWTH_TYPE_UNSPECIFIED GrowthType = 0
+	// No growth applied to projections.
+	// Cost projections remain constant at the base cost.
+	GrowthType_GROWTH_TYPE_NONE GrowthType = 1
+	// Linear (additive) growth per projection period.
+	// Formula: cost_at_n = base_cost * (1 + rate * n)
+	// Requires growth_rate to be set.
+	GrowthType_GROWTH_TYPE_LINEAR GrowthType = 2
+	// Exponential (compounding) growth per projection period.
+	// Formula: cost_at_n = base_cost * (1 + rate)^n
+	// Requires growth_rate to be set.
+	GrowthType_GROWTH_TYPE_EXPONENTIAL GrowthType = 3
+)
+
+// Enum value maps for GrowthType.
+var (
+	GrowthType_name = map[int32]string{
+		0: "GROWTH_TYPE_UNSPECIFIED",
+		1: "GROWTH_TYPE_NONE",
+		2: "GROWTH_TYPE_LINEAR",
+		3: "GROWTH_TYPE_EXPONENTIAL",
+	}
+	GrowthType_value = map[string]int32{
+		"GROWTH_TYPE_UNSPECIFIED": 0,
+		"GROWTH_TYPE_NONE":        1,
+		"GROWTH_TYPE_LINEAR":      2,
+		"GROWTH_TYPE_EXPONENTIAL": 3,
+	}
+)
+
+func (x GrowthType) Enum() *GrowthType {
+	p := new(GrowthType)
+	*p = x
+	return p
+}
+
+func (x GrowthType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (GrowthType) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_enums_proto_enumTypes[8].Descriptor()
+}
+
+func (GrowthType) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_enums_proto_enumTypes[8]
+}
+
+func (x GrowthType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use GrowthType.Descriptor instead.
+func (GrowthType) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{8}
+}
+
 var File_pulumicost_v1_enums_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_enums_proto_rawDesc = "" +
@@ -529,7 +593,13 @@ const file_pulumicost_v1_enums_proto_rawDesc = "" +
 	"\x1eFocusCapacityReservationStatus\x121\n" +
 	"-FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED\x10\x00\x12*\n" +
 	"&FOCUS_CAPACITY_RESERVATION_STATUS_USED\x10\x01\x12,\n" +
-	"(FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED\x10\x02BBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
+	"(FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED\x10\x02*t\n" +
+	"\n" +
+	"GrowthType\x12\x1b\n" +
+	"\x17GROWTH_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10GROWTH_TYPE_NONE\x10\x01\x12\x16\n" +
+	"\x12GROWTH_TYPE_LINEAR\x10\x02\x12\x1b\n" +
+	"\x17GROWTH_TYPE_EXPONENTIAL\x10\x03BBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
 
 var (
 	file_pulumicost_v1_enums_proto_rawDescOnce sync.Once
@@ -543,7 +613,7 @@ func file_pulumicost_v1_enums_proto_rawDescGZIP() []byte {
 	return file_pulumicost_v1_enums_proto_rawDescData
 }
 
-var file_pulumicost_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
+var file_pulumicost_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
 var file_pulumicost_v1_enums_proto_goTypes = []any{
 	(FocusServiceCategory)(0),            // 0: pulumicost.v1.FocusServiceCategory
 	(FocusChargeCategory)(0),             // 1: pulumicost.v1.FocusChargeCategory
@@ -553,6 +623,7 @@ var file_pulumicost_v1_enums_proto_goTypes = []any{
 	(FocusCommitmentDiscountCategory)(0), // 5: pulumicost.v1.FocusCommitmentDiscountCategory
 	(FocusCommitmentDiscountStatus)(0),   // 6: pulumicost.v1.FocusCommitmentDiscountStatus
 	(FocusCapacityReservationStatus)(0),  // 7: pulumicost.v1.FocusCapacityReservationStatus
+	(GrowthType)(0),                      // 8: pulumicost.v1.GrowthType
 }
 var file_pulumicost_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -572,7 +643,7 @@ func file_pulumicost_v1_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_enums_proto_rawDesc), len(file_pulumicost_v1_enums_proto_rawDesc)),
-			NumEnums:      8,
+			NumEnums:      9,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

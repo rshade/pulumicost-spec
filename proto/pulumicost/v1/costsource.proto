@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 import "pulumicost/v1/focus.proto";
 import "pulumicost/v1/budget.proto";
+import "pulumicost/v1/enums.proto";
 
 // CostSourceService provides gRPC interface for cost source plugins to implement.
 // This service defines the contract for retrieving actual costs, projected costs,
@@ -172,6 +173,33 @@ message GetProjectedCostRequest {
   // To explicitly request 0% utilization, use the resource-level override:
   //   resource.utilization_percentage = proto.Float64(0.0)
   double utilization_percentage = 2;
+
+  // growth_type overrides ResourceDescriptor.growth_type for this request.
+  // OPTIONAL. When set, takes precedence over the resource-level default.
+  //
+  // Use case: Project different growth scenarios for the same resource
+  // without modifying the resource descriptor.
+  //
+  // When LINEAR or EXPONENTIAL, growth_rate MUST also be provided
+  // (either here or in ResourceDescriptor).
+  GrowthType growth_type = 3;
+
+  // growth_rate overrides ResourceDescriptor.growth_rate for this request.
+  // OPTIONAL. When set (even to 0.0), takes precedence over resource-level default.
+  //
+  // Valid range: >= -1.0 (no upper bound)
+  //
+  // Proto3 optional field semantics:
+  //   - Not set (nil): Use resource-level growth_rate from ResourceDescriptor
+  //   - Explicitly set to 0.0: Apply 0% growth (overrides resource default)
+  //   - Set to any other value: Use the specified rate
+  //
+  // In generated Go code, check presence with:
+  //   if req.GrowthRate != nil { rate := *req.GrowthRate }
+  //
+  // Override semantics: If this field is set, it fully replaces
+  // ResourceDescriptor.growth_rate for this request.
+  optional double growth_rate = 4;
 }
 
 // GetProjectedCostResponse contains projected cost information.
@@ -303,6 +331,39 @@ message ResourceDescriptor {
   // Plugins MAY validate the arn format for their provider and SHOULD log
   // a warning if the format is invalid before falling back.
   string arn = 8;
+
+  // growth_type specifies the default growth model for cost projections.
+  // OPTIONAL. When set, defines how projected costs should grow over time.
+  // Can be overridden by GetProjectedCostRequest.growth_type.
+  //
+  // Values:
+  //   - GROWTH_TYPE_UNSPECIFIED/NONE: No growth (constant projections)
+  //   - GROWTH_TYPE_LINEAR: Additive growth (cost * (1 + rate * periods))
+  //   - GROWTH_TYPE_EXPONENTIAL: Compounding growth (cost * (1 + rate)^periods)
+  //
+  // When LINEAR or EXPONENTIAL, growth_rate MUST also be provided.
+  GrowthType growth_type = 9;
+
+  // growth_rate specifies the default growth rate per projection period.
+  // OPTIONAL. Required when growth_type is LINEAR or EXPONENTIAL.
+  //
+  // Valid range: >= -1.0 (no upper bound)
+  //   - Positive values: growth (e.g., 0.10 = 10% growth per period)
+  //   - Zero: no growth (equivalent to GROWTH_TYPE_NONE)
+  //   - Negative values: decline (e.g., -0.10 = 10% decline per period)
+  //   - -1.0: complete decline to zero cost
+  //
+  // Values below -1.0 are invalid (would produce negative costs).
+  // Can be overridden by GetProjectedCostRequest.growth_rate.
+  //
+  // Proto3 optional field semantics:
+  //   - Not set (nil): No default rate (caller must provide in request if needed)
+  //   - Explicitly set to 0.0: Resource has 0% growth rate as default
+  //   - Set to any other value: Use as resource-level default rate
+  //
+  // In generated Go code, check presence with:
+  //   if desc.GrowthRate != nil { rate := *desc.GrowthRate }
+  optional double growth_rate = 10;
 }
 
 // ActualCostResult represents a single cost data point.

@@ -1,0 +1,12 @@
+{
+  "$comment": "GetProjectedCostRequest with EXPONENTIAL growth - 5% compounding per month",
+  "resource": {
+    "provider": "aws",
+    "resource_type": "s3",
+    "sku": "standard",
+    "region": "us-east-1",
+    "growth_type": "GROWTH_TYPE_EXPONENTIAL",
+    "growth_rate": 0.05
+  },
+  "utilization_percentage": 0.75
+}

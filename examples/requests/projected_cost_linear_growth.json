@@ -1,0 +1,12 @@
+{
+  "$comment": "GetProjectedCostRequest with LINEAR growth - 10% per month",
+  "resource": {
+    "provider": "aws",
+    "resource_type": "ec2",
+    "sku": "t3.medium",
+    "region": "us-east-1",
+    "growth_type": "GROWTH_TYPE_LINEAR",
+    "growth_rate": 0.10
+  },
+  "utilization_percentage": 0.5
+}

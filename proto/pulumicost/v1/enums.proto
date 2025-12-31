@@ -85,3 +85,25 @@ enum FocusCapacityReservationStatus {
   // Unused: Charges representing the unused portion of a capacity reservation.
   FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED = 2;
 }
+
+// GrowthType represents the mathematical model used for projecting cost growth.
+// Used in ResourceDescriptor and GetProjectedCostRequest for forward-looking projections.
+enum GrowthType {
+  // Default value - treated identically to GROWTH_TYPE_NONE.
+  // When unset, no growth is applied to projections.
+  GROWTH_TYPE_UNSPECIFIED = 0;
+
+  // No growth applied to projections.
+  // Cost projections remain constant at the base cost.
+  GROWTH_TYPE_NONE = 1;
+
+  // Linear (additive) growth per projection period.
+  // Formula: cost_at_n = base_cost * (1 + rate * n)
+  // Requires growth_rate to be set.
+  GROWTH_TYPE_LINEAR = 2;
+
+  // Exponential (compounding) growth per projection period.
+  // Formula: cost_at_n = base_cost * (1 + rate)^n
+  // Requires growth_rate to be set.
+  GROWTH_TYPE_EXPONENTIAL = 3;
+}
