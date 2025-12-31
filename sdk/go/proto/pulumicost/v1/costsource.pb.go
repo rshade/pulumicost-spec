@@ -1577,7 +1577,7 @@ type ResourceDescriptor struct {
 	//
 	// Correlation pattern:
 	//  1. Client sets id in ResourceDescriptor
-	//  2. Plugin copies id to ResourceRecommendationInfo.resource_id
+	//  2. Plugin copies id to ResourceRecommendationInfo.id
 	//  3. Client matches response to request using id
 	Id string `protobuf:"bytes,7,opt,name=id,proto3" json:"id,omitempty"`
 	// arn is the canonical cloud resource identifier for exact matching.

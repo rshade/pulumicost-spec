@@ -626,6 +626,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod) + markdown documentation + pluginsdk package, testing package, zerolog (logging examples) (031-sdk-docs-consolidation)
+- N/A (pure documentation) (031-sdk-docs-consolidation)
+
 - N/A (stateless proto definitions) (028-resource-id)
 - Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc (existing) (027-finops-validation)
 - N/A (stateless validation functions) (027-finops-validation)

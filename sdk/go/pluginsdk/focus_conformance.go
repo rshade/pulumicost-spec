@@ -9,8 +9,23 @@ import (
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
-// contractedCostTolerance is the relative tolerance for ContractedCost validation.
-// Allows for floating-point precision differences up to 0.01%.
+// contractedCostTolerance defines the relative tolerance for ContractedCost validation.
+//
+// The tolerance is set to 0.0001 (1 basis point, or 0.01%) to account for
+// IEEE 754 floating-point precision limitations in cost calculations.
+//
+// Why 1 basis point?
+//   - Floating-point arithmetic can introduce small errors (e.g., 0.1 + 0.2 ≠ 0.3)
+//   - 1 basis point (0.01%) is the standard financial tolerance for rounding
+//   - Example: $1,000,000 contracted cost allows $100 variance (0.01%)
+//
+// Usage in validation:
+//
+//	expected := contractedUnitPrice * pricingQuantity
+//	diff := abs(contractedCost - expected)
+//	valid := diff <= max(abs(contractedCost), abs(expected)) * contractedCostTolerance
+//
+// Reference: FOCUS 1.2 Section 3.20 (ContractedCost).
 const contractedCostTolerance = 0.0001
 
 // Sentinel errors for contextual FinOps validation rules.

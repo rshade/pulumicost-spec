@@ -21,6 +21,11 @@ utilities for plugin development.
 - [FOCUS 1.3 Extensions](#focus-13-extensions)
 - [Contract Commitment Dataset](#contract-commitment-dataset-focus-13)
 - [Manifest Management](#manifest-management)
+- [Property Mapping](#property-mapping-mapping-subpackage)
+- [Thread Safety](#thread-safety)
+- [Rate Limiting](#rate-limiting)
+- [Performance Tuning](#performance-tuning)
+- [CORS Configuration](#cors-configuration)
 - [Migration](#migration-from-pulumicost-core)
 - [API Reference](#api-reference)
 
@@ -417,14 +422,20 @@ For advanced use cases, access the underlying connect-generated client:
 import (
     "connectrpc.com/connect"
     pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "google.golang.org/protobuf/types/known/structpb"
 )
 
 inner := client.Inner()
+
+// Attributes is a protobuf Struct, not a Go map
+attrs, _ := structpb.NewStruct(map[string]any{
+    "instanceType": "t3.micro",
+    "region":       "us-east-1",
+})
+
 resp, err := inner.EstimateCost(ctx, connect.NewRequest(&pbc.EstimateCostRequest{
     ResourceType: "aws:ec2/instance:Instance",
-    Attributes: map[string]string{
-        "instance_type": "t3.micro",
-    },
+    Attributes:   attrs,
 }))
 ```
 
@@ -1500,6 +1511,323 @@ if v, ok := props["instanceType"]; ok {
 // After: use mapping package
 sku := mapping.ExtractAWSSKU(props)
 ```
+
+## Thread Safety
+
+This section documents thread safety guarantees for SDK components.
+
+### Component Thread Safety Summary
+
+| Component | Thread-Safe | Notes |
+| --------- | ----------- | ----- |
+| **Client** | ✅ YES | Safe for concurrent RPC calls from multiple goroutines |
+| **Server** | ✅ YES | Assumes Plugin implementation is thread-safe |
+| **WebConfig** | ✅ YES | Read-only after construction (value semantics) |
+| **PluginMetrics** | ✅ YES | Uses Prometheus internal atomics |
+| **ResourceMatcher** | ❌ NO | Configure before Serve(), then read-only |
+| **FocusRecordBuilder** | ❌ NO | Single-threaded builder pattern |
+
+### Client Thread Safety
+
+The `Client` struct wraps `http.Client` which is explicitly designed for concurrent use.
+All methods are stateless request/response operations.
+
+```go
+// Create once, use from multiple goroutines
+client := pluginsdk.NewConnectClient("http://localhost:8080")
+defer client.Close()
+
+var wg sync.WaitGroup
+for i := 0; i < 10; i++ {
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        name, err := client.Name(ctx) // Safe concurrent call
+        // ...
+    }()
+}
+wg.Wait()
+```
+
+### Server Thread Safety
+
+The `Server` struct is thread-safe for concurrent RPC handling. However, it
+delegates all business logic to the `Plugin` interface implementation.
+
+**Plugin Implementation Requirements**:
+
+- Plugin methods (`Name`, `Supports`, `GetActualCost`, etc.) MUST be thread-safe
+- The gRPC framework calls plugin methods from multiple goroutines concurrently
+- Plugin state (if any) must use appropriate synchronization (mutexes, atomic operations, etc.)
+
+**Best Practice**: Design plugins to be stateless where possible. For stateful plugins,
+use `sync.RWMutex` for cache-like state or `sync.Mutex` for mutable configuration.
+
+### ResourceMatcher Thread Safety
+
+**NOT thread-safe** - Must be configured before `Serve()` is called:
+
+```go
+// CORRECT: Configure during initialization
+matcher := pluginsdk.NewResourceMatcher()
+matcher.AddProvider("aws")
+matcher.AddResourceType("aws:ec2/instance:Instance")
+// ... complete all configuration ...
+
+// After Serve() is called, matcher becomes effectively read-only
+pluginsdk.Serve(ctx, config)
+```
+
+### FocusRecordBuilder Thread Safety
+
+**NOT thread-safe** - Each goroutine should create its own builder:
+
+```go
+// CORRECT: One builder per goroutine
+go func() {
+    builder := pluginsdk.NewFocusRecordBuilder()
+    builder.WithIdentity("AWS", "123456789012", "Production")
+    // ...
+    record, err := builder.Build()
+}()
+```
+
+## Rate Limiting
+
+When calling cloud provider APIs, implement rate limiting to avoid throttling.
+
+### Token Bucket Pattern
+
+Use `golang.org/x/time/rate` for efficient rate limiting:
+
+```go
+import "golang.org/x/time/rate"
+
+// Create rate limiter: 100 requests per second, burst of 200
+limiter := rate.NewLimiter(rate.Limit(100), 200)
+
+func (p *MyPlugin) GetActualCost(
+    ctx context.Context,
+    req *pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+    // Check rate limit
+    if !limiter.Allow() {
+        return nil, status.Error(codes.ResourceExhausted, "rate limit exceeded")
+    }
+    // Proceed with request...
+}
+```
+
+### Cloud Provider Rate Limits (Reference - Verify Current Values)
+
+**Note**: These limits were accurate as of December 2024. Always verify current
+limits in provider documentation as they change frequently.
+
+| Provider | Service | Default Limit (2024) | Suggested Local Limit | Source |
+| -------- | ------- | -------------------- | --------------------- | ------ |
+| AWS | Cost Explorer | 5 req/sec | 3 req/sec (60% headroom) | [AWS Docs](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/ce-api.html#ce-api-limits) |
+| Azure | Cost Management | 100 req/5min | 15 req/min | [Azure Docs](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/scalability-limits) |
+| GCP | Billing API | 1000 req/min | 800 req/min | [GCP Docs](https://cloud.google.com/billing/docs/reference/rest/v1/billingAccounts/get#authorization-and-quotas) |
+| Kubernetes | Metrics API | Varies | 50 req/sec | [K8s Docs](https://kubernetes.io/docs/reference/using-api/api-concepts/#rate-limiting) |
+
+### Backoff Strategies
+
+Implement exponential backoff with jitter for retry logic:
+
+```go
+func backoff(attempt int) time.Duration {
+    base := 100 * time.Millisecond
+    max := 30 * time.Second
+
+    // Exponential: 100ms, 200ms, 400ms, 800ms, ...
+    delay := base * time.Duration(1<<attempt)
+    if delay > max {
+        delay = max
+    }
+
+    // Add jitter (±25%)
+    jitter := time.Duration((rand.Float64() - 0.5) * 0.5 * float64(delay))
+    return delay + jitter
+}
+```
+
+### gRPC Status Codes for Rate Limiting
+
+| Situation | Status Code | Description |
+| --------- | ----------- | ----------- |
+| Local rate limit | `ResourceExhausted` | Plugin's internal limit reached |
+| Upstream throttling | `Unavailable` | Backend API returned 429 |
+| Retry recommended | `Unavailable` | Include Retry-After header |
+
+## Performance Tuning
+
+### Connection Pool Configuration
+
+For high-throughput scenarios, use `HighThroughputClientConfig`:
+
+```go
+cfg := pluginsdk.HighThroughputClientConfig("http://localhost:8080")
+client := pluginsdk.NewClient(cfg)
+defer client.Close()
+```
+
+Default connection pool settings:
+
+| Setting | Default Value | Description |
+| ------- | ------------- | ----------- |
+| `MaxIdleConns` | 100 | Max idle connections across all hosts |
+| `MaxIdleConnsPerHost` | 10 | Max idle connections per host |
+| `IdleConnTimeout` | 90s | How long idle connections are kept |
+| `Timeout` | 30s | HTTP client timeout |
+
+### Server Timeouts
+
+Configure server timeouts for DoS protection:
+
+```go
+type ServerTimeouts struct {
+    ReadHeaderTimeout time.Duration // Time to read request headers
+    ReadTimeout       time.Duration // Time to read entire request
+    WriteTimeout      time.Duration // Time to write response
+    IdleTimeout       time.Duration // Keep-alive timeout
+}
+```
+
+Recommended production values:
+
+| Timeout | Recommended | Rationale |
+| ------- | ----------- | --------- |
+| ReadHeaderTimeout | 5s | Prevent slow loris attacks |
+| ReadTimeout | 30s | Allow time for large requests |
+| WriteTimeout | 60s | Allow time for cost calculations |
+| IdleTimeout | 120s | Balance connection reuse vs resources |
+
+### Protocol Performance Trade-offs
+
+| Protocol | Transport | Performance | Use Case |
+| -------- | --------- | ----------- | -------- |
+| **gRPC** | HTTP/2 only | Best (binary protobuf) | Server-to-server, native clients |
+| **Connect** | HTTP/1.1+ | Good (JSON) | Web dashboards, REST clients |
+| **gRPC-Web** | HTTP/1.1+ | Good (binary) | Browser clients needing binary |
+
+### Benchmark Reference Values
+
+Response time baselines from conformance tests.
+
+**Note**: These are proposed performance targets. Some conformance levels currently
+use shared thresholds (e.g., 100ms for simple RPCs) while these more granular
+targets are being phased into the testing suite.
+
+| Method | Standard | Advanced |
+| ------ | -------- | -------- |
+| Name() | < 100ms | < 50ms |
+| Supports() | < 50ms | < 25ms |
+| GetProjectedCost() | < 200ms | < 100ms |
+| GetPricingSpec() | < 200ms | < 100ms |
+| GetActualCost() | < 2s (24h) | < 10s (30d) |
+
+## CORS Configuration
+
+When enabling web support (`Web.Enabled = true`), configure CORS appropriately for your deployment scenario.
+
+### Deployment Scenarios
+
+#### 1. Local Development
+
+```go
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"http://localhost:3000", "http://127.0.0.1:3000"}).
+    WithHealthEndpoint(true)
+```
+
+- Multiple localhost aliases handled
+- No credentials needed for local CORS
+- Health endpoint useful for testing
+
+#### 2. Single-Origin Production
+
+```go
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"https://app.example.com"}).
+    WithAllowCredentials(true)
+```
+
+- Specific origin prevents unauthorized access
+- HTTPS required before sending credentials
+- Most restrictive and secure option
+
+#### 3. Multi-Origin (Trusted Partners)
+
+```go
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{
+        "https://app.example.com",
+        "https://dashboard.example.com",
+        "https://partner.trusted.com",
+    }).
+    WithAllowCredentials(true)
+```
+
+- Explicit whitelist for partner integrations
+- If origin list > 10, consider API gateway pattern
+
+**Security Warning**: With `AllowCredentials(true)`, every origin in the list can
+send authenticated requests. Carefully audit all origins - a compromised or malicious
+origin can access user credentials. Consider these alternatives:
+
+1. **Single-Origin per deployment**: Deploy separate plugin instances per origin
+2. **Dynamic origin validation**: Implement custom middleware to validate origins
+   against a database rather than static config
+3. **API Gateway pattern**: Handle CORS at the gateway level (see scenario #4)
+
+#### 4. API Gateway Pattern
+
+When plugins run behind an API gateway:
+
+- Plugins don't need CORS (gateway handles it)
+- Gateway provides centralized authentication
+- Better observability and rate limiting
+- Recommended for production deployments
+
+#### 5. Multi-Tenant SaaS
+
+For multi-tenant deployments:
+
+- Each tenant gets own plugin server instance
+- Complete isolation between tenant origins
+- Per-tenant rate limiting possible
+
+### Security Guidelines
+
+**When to Avoid Wildcard Origin (`*`)**:
+
+- Cannot send credentials (browser blocks it)
+- No protection against CSRF-like attacks
+- Only legitimate for public APIs with no sensitive data
+
+**Credentials Handling**:
+
+- HTTPS required (browser enforces)
+- Enable credentials ONLY for trusted origins
+- Prefer Authorization headers over cookies for cross-origin
+
+### Debugging CORS Issues
+
+1. **Browser DevTools**: Check Network tab for CORS headers
+2. **curl Testing**: Simulate browser with Origin header:
+
+   ```bash
+   curl -X OPTIONS http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+     -H "Origin: http://localhost:3000" \
+     -H "Access-Control-Request-Method: POST" \
+     -v
+   ```
+
+3. **Server-side Logging**: Log origin, method, allowed status
+4. **Integration Tests**: Test preflight and actual requests
 
 ## Migration from pulumicost-core
 

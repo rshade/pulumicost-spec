@@ -296,7 +296,7 @@ message ResourceDescriptor {
   //
   // Correlation pattern:
   //   1. Client sets id in ResourceDescriptor
-  //   2. Plugin copies id to ResourceRecommendationInfo.resource_id
+  //   2. Plugin copies id to ResourceRecommendationInfo.id
   //   3. Client matches response to request using id
   string id = 7;
 
