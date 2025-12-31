@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/rshade/pulumicost-spec/sdk/go/internal/semver"
 	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
 )
 
@@ -241,6 +242,18 @@ func ValidateNameResponse(response *pbc.NameResponse) error {
 		return fmt.Errorf("plugin name too long: %d characters", len(response.GetName()))
 	}
 	return nil
+}
+
+// IsValidSemVer validates that a version string is a valid semantic version.
+// The version must be in the format vMAJOR.MINOR.PATCH where MAJOR, MINOR, and PATCH
+// are non-negative integers without leading zeros (except for 0 itself).
+//
+// Valid examples: "v0.4.11", "v1.0.0", "v2.15.3"
+// Invalid examples: "0.4.11" (no v prefix), "v1.2" (missing patch), "v01.2.3" (leading zero).
+//
+// This function delegates to the internal/semver package to avoid regex duplication.
+func IsValidSemVer(version string) bool {
+	return semver.IsValid(version)
 }
 
 // ValidateSupportsResponse validates a Supports RPC response.

@@ -128,6 +128,15 @@ type MockPlugin struct {
 	// requests. Use SetFallbackHint() for configuration, which documents the
 	// thread safety constraints.
 	FallbackHint pbc.FallbackHint
+
+	// GetPluginInfo configuration
+	PluginVersion string            // Plugin version (e.g., "v1.0.0")
+	SpecVersion   string            // Spec version this plugin implements (e.g., "v0.4.11")
+	Metadata      map[string]string // Optional key-value metadata
+
+	// Behavior configuration for GetPluginInfo
+	ShouldErrorOnGetPluginInfo bool
+	GetPluginInfoDelay         time.Duration
 }
 
 // NewMockPlugin creates a new mock plugin with default configuration.
@@ -148,6 +157,9 @@ func NewMockPlugin() *MockPlugin {
 		RecommendationsConfig: RecommendationsConfig{
 			Recommendations: GenerateSampleRecommendations(defaultRecommendationCount),
 		},
+		// GetPluginInfo defaults
+		PluginVersion: "v1.0.0",
+		SpecVersion:   "v0.4.11",
 	}
 }
 
@@ -195,6 +207,29 @@ func (m *MockPlugin) Name(_ context.Context, _ *pbc.NameRequest) (*pbc.NameRespo
 
 	return &pbc.NameResponse{
 		Name: m.PluginName,
+	}, nil
+}
+
+// GetPluginInfo returns metadata about the plugin including name, version, and spec version.
+// This RPC enables compatibility verification by reporting which spec version the plugin implements.
+func (m *MockPlugin) GetPluginInfo(
+	_ context.Context,
+	_ *pbc.GetPluginInfoRequest,
+) (*pbc.GetPluginInfoResponse, error) {
+	if m.GetPluginInfoDelay > 0 {
+		time.Sleep(m.GetPluginInfoDelay)
+	}
+
+	if m.ShouldErrorOnGetPluginInfo {
+		return nil, status.Error(codes.Internal, "mock error: get plugin info operation failed")
+	}
+
+	return &pbc.GetPluginInfoResponse{
+		Name:        m.PluginName,
+		Version:     m.PluginVersion,
+		SpecVersion: m.SpecVersion,
+		Providers:   m.SupportedProviders,
+		Metadata:    m.Metadata,
 	}, nil
 }
 

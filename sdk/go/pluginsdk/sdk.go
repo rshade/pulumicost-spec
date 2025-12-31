@@ -191,6 +191,20 @@ type DismissProvider interface {
 		*pbc.DismissRecommendationResponse, error)
 }
 
+// PluginInfoProvider is an optional interface that plugins can implement
+// to provide custom metadata via GetPluginInfo RPC. Plugins that do not
+// implement this interface will return metadata from ServeConfig.PluginInfo
+// if configured, or Unimplemented if no PluginInfo is provided.
+//
+// This interface is useful when plugins need dynamic metadata that can't
+// be determined at startup, such as runtime-computed values.
+type PluginInfoProvider interface {
+	// GetPluginInfo returns metadata about the plugin including name, version,
+	// spec version, supported providers, and optional key-value metadata.
+	GetPluginInfo(ctx context.Context, req *pbc.GetPluginInfoRequest) (
+		*pbc.GetPluginInfoResponse, error)
+}
+
 // RegistryLookup defines the interface for looking up plugins by provider and region.
 // This is used to validate incoming Supports requests against registered plugins.
 type RegistryLookup interface {
@@ -216,6 +230,15 @@ type Server struct {
 	plugin   Plugin
 	registry RegistryLookup
 	logger   zerolog.Logger
+	// pluginInfo is optional plugin metadata for GetPluginInfo RPC.
+	//
+	// Thread Safety: This field is set during NewServerWithOptions() construction
+	// before the server accepts any requests. The happens-before relationship
+	// established by the construction pattern (caller creates Server, then passes
+	// it to gRPC registration) ensures all subsequent reads by concurrent
+	// GetPluginInfo handlers see the initialized value without additional
+	// synchronization required.
+	pluginInfo *PluginInfo
 }
 
 // NewServer creates a Server that exposes the provided Plugin over gRPC.
@@ -232,14 +255,19 @@ func NewServer(plugin Plugin) *Server {
 
 // NewServerWithRegistry creates a Server with a custom registry lookup.
 // If registry is nil, DefaultRegistryLookup is used.
+// GetPluginInfo will return Unimplemented (legacy plugin behavior).
 func NewServerWithRegistry(plugin Plugin, registry RegistryLookup) *Server {
-	return NewServerWithOptions(plugin, registry, nil)
+	return NewServerWithOptions(plugin, registry, nil, nil)
 }
 
-// NewServerWithOptions creates a Server with custom registry and logger.
+// NewServerWithOptions creates a Server with custom registry, logger, and plugin info.
 // If registry is nil, DefaultRegistryLookup is used.
 // If logger is nil, a default logger is used.
-func NewServerWithOptions(plugin Plugin, registry RegistryLookup, logger *zerolog.Logger) *Server {
+// If info is nil, GetPluginInfo will return Unimplemented (legacy plugin behavior).
+//
+// Thread Safety: pluginInfo is set during construction before the server accepts
+// requests. The happens-before relationship ensures safe concurrent access.
+func NewServerWithOptions(plugin Plugin, registry RegistryLookup, logger *zerolog.Logger, info *PluginInfo) *Server {
 	if registry == nil {
 		registry = &DefaultRegistryLookup{}
 	}
@@ -250,15 +278,115 @@ func NewServerWithOptions(plugin Plugin, registry RegistryLookup, logger *zerolo
 		log = newDefaultLogger()
 	}
 	return &Server{
-		plugin:   plugin,
-		registry: registry,
-		logger:   log,
+		plugin:     plugin,
+		registry:   registry,
+		logger:     log,
+		pluginInfo: info, // Set atomically during construction
 	}
 }
 
 // Name implements the gRPC Name method.
 func (s *Server) Name(_ context.Context, _ *pbc.NameRequest) (*pbc.NameResponse, error) {
 	return &pbc.NameResponse{Name: s.plugin.Name()}, nil
+}
+
+// GetPluginInfo implements the gRPC GetPluginInfo method.
+// Returns plugin metadata including name, version, spec version, providers, and optional metadata.
+//
+// Priority order for response:
+// 1. If the plugin implements PluginInfoProvider, delegate to it
+// 2. If PluginInfo was configured via ServeConfig, return it
+// 3. Return Unimplemented error (enables graceful degradation for legacy plugins).
+//
+// Error Handling for Consumers:
+//
+// When calling GetPluginInfo on potentially legacy plugins, consumers should handle
+// the Unimplemented error gracefully:
+//
+//	resp, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
+//	if err != nil {
+//	    if status.Code(err) == codes.Unimplemented {
+//	        // Legacy plugin - use fallback values
+//	        log.Info("Plugin does not implement GetPluginInfo")
+//	        return &PluginMetadata{Name: "unknown", Version: "unknown"}
+//	    }
+//	    return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+//	}
+//	return &PluginMetadata{
+//	    Name:        resp.GetName(),
+//	    Version:     resp.GetVersion(),
+//	    SpecVersion: resp.GetSpecVersion(),
+//	}, nil
+func (s *Server) GetPluginInfo(
+	ctx context.Context,
+	req *pbc.GetPluginInfoRequest,
+) (*pbc.GetPluginInfoResponse, error) {
+	// Check if plugin implements PluginInfoProvider interface
+	if provider, ok := s.plugin.(PluginInfoProvider); ok {
+		resp, err := provider.GetPluginInfo(ctx, req)
+		if err != nil {
+			// Log the detailed error server-side for debugging
+			s.logger.Error().
+				Err(err).
+				Msg("GetPluginInfo handler error")
+			// Return generic message to client (internal error details not exposed)
+			return nil, status.Error(codes.Internal, "plugin failed to retrieve metadata")
+		}
+
+		// Validate response before returning (defense against buggy/malicious plugins)
+		if resp == nil {
+			s.logger.Error().Msg("GetPluginInfo returned nil response")
+			return nil, status.Error(codes.Internal, "plugin returned nil response")
+		}
+		if resp.GetName() == "" || resp.GetVersion() == "" || resp.GetSpecVersion() == "" {
+			s.logger.Error().
+				Str("name", resp.GetName()).
+				Str("version", resp.GetVersion()).
+				Str("spec_version", resp.GetSpecVersion()).
+				Msg("GetPluginInfo returned incomplete response")
+			return nil, status.Error(codes.Internal, "plugin returned incomplete metadata")
+		}
+		if specErr := ValidateSpecVersion(resp.GetSpecVersion()); specErr != nil {
+			s.logger.Error().
+				Str("spec_version", resp.GetSpecVersion()).
+				Err(specErr).
+				Msg("GetPluginInfo returned invalid spec_version")
+			return nil, status.Error(codes.Internal, "plugin returned invalid spec_version format")
+		}
+		return resp, nil
+	}
+
+	// Use configured PluginInfo if available
+	if s.pluginInfo != nil {
+		// Create defensive copies to prevent concurrent modification
+		// if the caller mutates the returned slices/maps
+		providers := make([]string, len(s.pluginInfo.Providers))
+		copy(providers, s.pluginInfo.Providers)
+
+		var metadata map[string]string
+		if s.pluginInfo.Metadata != nil {
+			metadata = make(map[string]string, len(s.pluginInfo.Metadata))
+			for k, v := range s.pluginInfo.Metadata {
+				metadata[k] = v
+			}
+		}
+
+		return &pbc.GetPluginInfoResponse{
+			Name:        s.pluginInfo.Name,
+			Version:     s.pluginInfo.Version,
+			SpecVersion: s.pluginInfo.SpecVersion,
+			Providers:   providers,
+			Metadata:    metadata,
+		}, nil
+	}
+
+	// Log at debug level to aid debugging while maintaining graceful degradation
+	s.logger.Debug().
+		Str("plugin", s.plugin.Name()).
+		Msg("GetPluginInfo not implemented (legacy plugin)")
+
+	// Return Unimplemented for legacy plugins (enables graceful degradation)
+	return nil, status.Error(codes.Unimplemented, "GetPluginInfo not implemented")
 }
 
 // GetProjectedCost implements the gRPC GetProjectedCost method.
@@ -532,6 +660,11 @@ type ServeConfig struct {
 	// If nil, sensible defaults are used (see DefaultServerTimeouts).
 	// Consider increasing WriteTimeout for plugins with long-running operations.
 	Timeouts *ServerTimeouts
+	// PluginInfo is optional plugin metadata returned by GetPluginInfo RPC.
+	// If set, the Server will return this information when GetPluginInfo is called.
+	// If the Plugin implements PluginInfoProvider interface, that takes precedence.
+	// If neither is set, GetPluginInfo returns Unimplemented (graceful degradation).
+	PluginInfo *PluginInfo
 }
 
 // resolvePort determines the port to use with the following priority:
@@ -635,6 +768,14 @@ func validateCORSConfig(web WebConfig) error {
 //
 // Returns an error if the listener cannot be created or if the server fails to serve.
 func Serve(ctx context.Context, config ServeConfig) error {
+	// Validate PluginInfo early (before acquiring resources like listeners)
+	// This prevents resource leaks if validation fails (T020)
+	if config.PluginInfo != nil {
+		if valErr := config.PluginInfo.Validate(); valErr != nil {
+			return fmt.Errorf("invalid PluginInfo in ServeConfig: %w", valErr)
+		}
+	}
+
 	var listener net.Listener
 	var tcpAddr *net.TCPAddr
 	var err error
@@ -658,8 +799,8 @@ func Serve(ctx context.Context, config ServeConfig) error {
 		return announceErr
 	}
 
-	// Create the core server that wraps the plugin
-	server := NewServerWithOptions(config.Plugin, config.Registry, config.Logger)
+	// Create the core server that wraps the plugin (pluginInfo set at construction)
+	server := NewServerWithOptions(config.Plugin, config.Registry, config.Logger, config.PluginInfo)
 
 	// Validate CORS configuration
 	if corsErr := validateCORSConfig(config.Web); corsErr != nil {

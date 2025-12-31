@@ -28,6 +28,7 @@ const (
 	CostSourceService_GetRecommendations_FullMethodName    = "/pulumicost.v1.CostSourceService/GetRecommendations"
 	CostSourceService_DismissRecommendation_FullMethodName = "/pulumicost.v1.CostSourceService/DismissRecommendation"
 	CostSourceService_GetBudgets_FullMethodName            = "/pulumicost.v1.CostSourceService/GetBudgets"
+	CostSourceService_GetPluginInfo_FullMethodName         = "/pulumicost.v1.CostSourceService/GetPluginInfo"
 )
 
 // CostSourceServiceClient is the client API for CostSourceService service.
@@ -102,6 +103,40 @@ type CostSourceServiceClient interface {
 	//   - Unavailable: Budget service temporarily unavailable
 	//   - Unimplemented: Plugin does not support budget functionality
 	GetBudgets(ctx context.Context, in *GetBudgetsRequest, opts ...grpc.CallOption) (*GetBudgetsResponse, error)
+	// GetPluginInfo returns metadata about the plugin for compatibility verification,
+	// diagnostics, and graceful degradation handling.
+	//
+	// This RPC enables the core system to:
+	//  1. Verify plugin compatibility by checking spec_version against supported ranges
+	//  2. Display plugin information in diagnostic tools (plugin list commands)
+	//  3. Handle legacy plugins gracefully (Unimplemented error = legacy plugin)
+	//
+	// The SDK provides a default implementation that returns compile-time constants.
+	// Plugins may override this to provide dynamic metadata if needed.
+	//
+	// Response time should be <100ms (metadata retrieval should be instant).
+	//
+	// Error cases:
+	//   - Unimplemented: Plugin is too old to support this RPC (legacy plugin)
+	//   - Internal: Plugin failed to retrieve its own metadata (unexpected)
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.GetPluginInfo(ctx, &GetPluginInfoRequest{})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        // Legacy plugin - use fallback values
+	//	        log.Info("Plugin does not implement GetPluginInfo")
+	//	        return &PluginMetadata{Name: "unknown", Version: "unknown"}
+	//	    }
+	//	    return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+	//	}
+	//	return &PluginMetadata{
+	//	    Name:        resp.GetName(),
+	//	    Version:     resp.GetVersion(),
+	//	    SpecVersion: resp.GetSpecVersion(),
+	//	}
+	GetPluginInfo(ctx context.Context, in *GetPluginInfoRequest, opts ...grpc.CallOption) (*GetPluginInfoResponse, error)
 }
 
 type costSourceServiceClient struct {
@@ -202,6 +237,16 @@ func (c *costSourceServiceClient) GetBudgets(ctx context.Context, in *GetBudgets
 	return out, nil
 }
 
+func (c *costSourceServiceClient) GetPluginInfo(ctx context.Context, in *GetPluginInfoRequest, opts ...grpc.CallOption) (*GetPluginInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPluginInfoResponse)
+	err := c.cc.Invoke(ctx, CostSourceService_GetPluginInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CostSourceServiceServer is the server API for CostSourceService service.
 // All implementations must embed UnimplementedCostSourceServiceServer
 // for forward compatibility.
@@ -274,6 +319,40 @@ type CostSourceServiceServer interface {
 	//   - Unavailable: Budget service temporarily unavailable
 	//   - Unimplemented: Plugin does not support budget functionality
 	GetBudgets(context.Context, *GetBudgetsRequest) (*GetBudgetsResponse, error)
+	// GetPluginInfo returns metadata about the plugin for compatibility verification,
+	// diagnostics, and graceful degradation handling.
+	//
+	// This RPC enables the core system to:
+	//  1. Verify plugin compatibility by checking spec_version against supported ranges
+	//  2. Display plugin information in diagnostic tools (plugin list commands)
+	//  3. Handle legacy plugins gracefully (Unimplemented error = legacy plugin)
+	//
+	// The SDK provides a default implementation that returns compile-time constants.
+	// Plugins may override this to provide dynamic metadata if needed.
+	//
+	// Response time should be <100ms (metadata retrieval should be instant).
+	//
+	// Error cases:
+	//   - Unimplemented: Plugin is too old to support this RPC (legacy plugin)
+	//   - Internal: Plugin failed to retrieve its own metadata (unexpected)
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.GetPluginInfo(ctx, &GetPluginInfoRequest{})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        // Legacy plugin - use fallback values
+	//	        log.Info("Plugin does not implement GetPluginInfo")
+	//	        return &PluginMetadata{Name: "unknown", Version: "unknown"}
+	//	    }
+	//	    return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+	//	}
+	//	return &PluginMetadata{
+	//	    Name:        resp.GetName(),
+	//	    Version:     resp.GetVersion(),
+	//	    SpecVersion: resp.GetSpecVersion(),
+	//	}
+	GetPluginInfo(context.Context, *GetPluginInfoRequest) (*GetPluginInfoResponse, error)
 	mustEmbedUnimplementedCostSourceServiceServer()
 }
 
@@ -310,6 +389,9 @@ func (UnimplementedCostSourceServiceServer) DismissRecommendation(context.Contex
 }
 func (UnimplementedCostSourceServiceServer) GetBudgets(context.Context, *GetBudgetsRequest) (*GetBudgetsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetBudgets not implemented")
+}
+func (UnimplementedCostSourceServiceServer) GetPluginInfo(context.Context, *GetPluginInfoRequest) (*GetPluginInfoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPluginInfo not implemented")
 }
 func (UnimplementedCostSourceServiceServer) mustEmbedUnimplementedCostSourceServiceServer() {}
 func (UnimplementedCostSourceServiceServer) testEmbeddedByValue()                           {}
@@ -494,6 +576,24 @@ func _CostSourceService_GetBudgets_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CostSourceService_GetPluginInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPluginInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CostSourceServiceServer).GetPluginInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CostSourceService_GetPluginInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CostSourceServiceServer).GetPluginInfo(ctx, req.(*GetPluginInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CostSourceService_ServiceDesc is the grpc.ServiceDesc for CostSourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -536,6 +636,10 @@ var CostSourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBudgets",
 			Handler:    _CostSourceService_GetBudgets_Handler,
+		},
+		{
+			MethodName: "GetPluginInfo",
+			Handler:    _CostSourceService_GetPluginInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

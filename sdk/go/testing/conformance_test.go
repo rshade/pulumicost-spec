@@ -85,6 +85,13 @@ func addBasicConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 		TestFunc:    NameValidationTest,
 	})
 
+	// GetPluginInfo conformance test (FR-001 to FR-004)
+	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetPluginInfoReturnsValidResponse",
+		Description: "Plugin must return valid metadata including name, version, and spec_version",
+		TestFunc:    createGetPluginInfoValidResponseTest(),
+	})
+
 	suite.AddTest(plugintesting.ConformanceTest{
 		Name:        "SupportsHandlesValidInput",
 		Description: "Plugin must handle Supports requests correctly",
@@ -2364,6 +2371,98 @@ func createGetRecommendationsCommitmentActionTest() func(*plugintesting.TestHarn
 			Success:  true,
 			Duration: duration,
 			Details:  "No commitment recommendations available (filter returned 0 results)",
+		}
+	}
+}
+
+// =============================================================================
+// GetPluginInfo Conformance Tests
+// =============================================================================
+
+// createGetPluginInfoValidResponseTest validates that GetPluginInfo returns valid metadata.
+// This test verifies FR-001 (RPC exists), FR-002 (response fields), FR-003 (SDK default),
+// and FR-007 (SemVer validation for spec_version).
+
+//nolint:gocognit
+func createGetPluginInfoValidResponseTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		resp, err := harness.Client().
+			GetPluginInfo(context.Background(), &pbc.GetPluginInfoRequest{})
+		duration := time.Since(start)
+
+		if err != nil {
+			// Check if it's an Unimplemented error (legacy plugin - US3)
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.Unimplemented {
+				return plugintesting.TestResult{
+					Method:   "GetPluginInfo",
+					Success:  true, // Unimplemented is acceptable for legacy plugins
+					Duration: duration,
+					Details:  "Legacy plugin: GetPluginInfo not implemented (graceful degradation)",
+				}
+			}
+			return plugintesting.TestResult{
+				Method:   "GetPluginInfo",
+				Success:  false,
+				Error:    err,
+				Duration: duration,
+				Details:  "RPC call failed",
+			}
+		}
+
+		// Validate required fields (FR-008)
+		var issues []string
+
+		if resp.GetName() == "" {
+			issues = append(issues, "name is empty (required)")
+		}
+		if resp.GetVersion() == "" {
+			issues = append(issues, "version is empty (required)")
+		}
+		if resp.GetSpecVersion() == "" {
+			issues = append(issues, "spec_version is empty (required)")
+		}
+
+		// Validate spec_version is a valid SemVer (FR-007)
+		if resp.GetSpecVersion() != "" {
+			if !plugintesting.IsValidSemVer(resp.GetSpecVersion()) {
+				issues = append(issues, fmt.Sprintf(
+					"spec_version %q is not a valid SemVer (expected format: vMAJOR.MINOR.PATCH)",
+					resp.GetSpecVersion(),
+				))
+			}
+		}
+
+		// Validate response time (< 100ms per plan.md)
+		if duration > 100*time.Millisecond {
+			issues = append(issues, fmt.Sprintf(
+				"response time %v exceeds 100ms requirement",
+				duration,
+			))
+		}
+
+		if len(issues) > 0 {
+			return plugintesting.TestResult{
+				Method:   "GetPluginInfo",
+				Success:  false,
+				Error:    fmt.Errorf("validation issues: %s", strings.Join(issues, "; ")),
+				Duration: duration,
+				Details:  "GetPluginInfo validation failed",
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetPluginInfo",
+			Success:  true,
+			Duration: duration,
+			Details: fmt.Sprintf(
+				"name=%s, version=%s, spec_version=%s, providers=%v",
+				resp.GetName(),
+				resp.GetVersion(),
+				resp.GetSpecVersion(),
+				resp.GetProviders(),
+			),
 		}
 	}
 }

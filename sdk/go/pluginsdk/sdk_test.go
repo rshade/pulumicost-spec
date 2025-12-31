@@ -534,7 +534,7 @@ func TestNewServerWithOptions_WithCustomLogger(t *testing.T) {
 	}
 	logger := newDefaultLogger()
 
-	server := NewServerWithOptions(plugin, registry, &logger)
+	server := NewServerWithOptions(plugin, registry, &logger, nil)
 
 	// Verify the server was created successfully
 	resp, err := server.Name(context.Background(), &pbc.NameRequest{})
@@ -546,8 +546,8 @@ func TestNewServerWithOptions_WithCustomLogger(t *testing.T) {
 func TestNewServerWithOptions_NilRegistryAndLogger(t *testing.T) {
 	plugin := &mockPlugin{name: "test-plugin"}
 
-	// Both nil - should use defaults
-	server := NewServerWithOptions(plugin, nil, nil)
+	// All nil except plugin - should use defaults
+	server := NewServerWithOptions(plugin, nil, nil, nil)
 
 	resp, err := server.Name(context.Background(), &pbc.NameRequest{})
 	require.NoError(t, err)
@@ -968,6 +968,35 @@ func TestResolvePort_IgnoresGenericPORT(t *testing.T) {
 
 	// PORT should be IGNORED - we should get 0 (ephemeral), not 5000
 	assert.Equal(t, 0, got, "PORT env var should be ignored; only PULUMICOST_PLUGIN_PORT is read")
+}
+
+// TestServe_InvalidPluginInfoReturnsError tests T020: Serve returns error for invalid PluginInfo.
+func TestServe_InvalidPluginInfoReturnsError(t *testing.T) {
+	plugin := &mockPlugin{name: "test-plugin"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Create listener but we expect it to be closed or not used for serving
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer ln.Close()
+
+	// Invalid PluginInfo (missing version)
+	config := ServeConfig{
+		Plugin:   plugin,
+		Listener: ln,
+		PluginInfo: &PluginInfo{
+			Name: "test-plugin",
+			// Version: "", // Missing
+			SpecVersion: SpecVersion,
+		},
+	}
+
+	err = Serve(ctx, config)
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid PluginInfo")
+	assert.Contains(t, err.Error(), "version is required")
 }
 
 // TestParsePortFlag tests the ParsePortFlag function.

@@ -61,6 +61,9 @@ const (
 	// CostSourceServiceGetBudgetsProcedure is the fully-qualified name of the CostSourceService's
 	// GetBudgets RPC.
 	CostSourceServiceGetBudgetsProcedure = "/pulumicost.v1.CostSourceService/GetBudgets"
+	// CostSourceServiceGetPluginInfoProcedure is the fully-qualified name of the CostSourceService's
+	// GetPluginInfo RPC.
+	CostSourceServiceGetPluginInfoProcedure = "/pulumicost.v1.CostSourceService/GetPluginInfo"
 	// ObservabilityServiceHealthCheckProcedure is the fully-qualified name of the
 	// ObservabilityService's HealthCheck RPC.
 	ObservabilityServiceHealthCheckProcedure = "/pulumicost.v1.ObservabilityService/HealthCheck"
@@ -138,6 +141,40 @@ type CostSourceServiceClient interface {
 	//   - Unavailable: Budget service temporarily unavailable
 	//   - Unimplemented: Plugin does not support budget functionality
 	GetBudgets(context.Context, *connect.Request[v1.GetBudgetsRequest]) (*connect.Response[v1.GetBudgetsResponse], error)
+	// GetPluginInfo returns metadata about the plugin for compatibility verification,
+	// diagnostics, and graceful degradation handling.
+	//
+	// This RPC enables the core system to:
+	//  1. Verify plugin compatibility by checking spec_version against supported ranges
+	//  2. Display plugin information in diagnostic tools (plugin list commands)
+	//  3. Handle legacy plugins gracefully (Unimplemented error = legacy plugin)
+	//
+	// The SDK provides a default implementation that returns compile-time constants.
+	// Plugins may override this to provide dynamic metadata if needed.
+	//
+	// Response time should be <100ms (metadata retrieval should be instant).
+	//
+	// Error cases:
+	//   - Unimplemented: Plugin is too old to support this RPC (legacy plugin)
+	//   - Internal: Plugin failed to retrieve its own metadata (unexpected)
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.GetPluginInfo(ctx, &GetPluginInfoRequest{})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        // Legacy plugin - use fallback values
+	//	        log.Info("Plugin does not implement GetPluginInfo")
+	//	        return &PluginMetadata{Name: "unknown", Version: "unknown"}
+	//	    }
+	//	    return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+	//	}
+	//	return &PluginMetadata{
+	//	    Name:        resp.GetName(),
+	//	    Version:     resp.GetVersion(),
+	//	    SpecVersion: resp.GetSpecVersion(),
+	//	}
+	GetPluginInfo(context.Context, *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error)
 }
 
 // NewCostSourceServiceClient constructs a client for the pulumicost.v1.CostSourceService service.
@@ -205,6 +242,12 @@ func NewCostSourceServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(costSourceServiceMethods.ByName("GetBudgets")),
 			connect.WithClientOptions(opts...),
 		),
+		getPluginInfo: connect.NewClient[v1.GetPluginInfoRequest, v1.GetPluginInfoResponse](
+			httpClient,
+			baseURL+CostSourceServiceGetPluginInfoProcedure,
+			connect.WithSchema(costSourceServiceMethods.ByName("GetPluginInfo")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -219,6 +262,7 @@ type costSourceServiceClient struct {
 	getRecommendations    *connect.Client[v1.GetRecommendationsRequest, v1.GetRecommendationsResponse]
 	dismissRecommendation *connect.Client[v1.DismissRecommendationRequest, v1.DismissRecommendationResponse]
 	getBudgets            *connect.Client[v1.GetBudgetsRequest, v1.GetBudgetsResponse]
+	getPluginInfo         *connect.Client[v1.GetPluginInfoRequest, v1.GetPluginInfoResponse]
 }
 
 // Name calls pulumicost.v1.CostSourceService.Name.
@@ -264,6 +308,11 @@ func (c *costSourceServiceClient) DismissRecommendation(ctx context.Context, req
 // GetBudgets calls pulumicost.v1.CostSourceService.GetBudgets.
 func (c *costSourceServiceClient) GetBudgets(ctx context.Context, req *connect.Request[v1.GetBudgetsRequest]) (*connect.Response[v1.GetBudgetsResponse], error) {
 	return c.getBudgets.CallUnary(ctx, req)
+}
+
+// GetPluginInfo calls pulumicost.v1.CostSourceService.GetPluginInfo.
+func (c *costSourceServiceClient) GetPluginInfo(ctx context.Context, req *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error) {
+	return c.getPluginInfo.CallUnary(ctx, req)
 }
 
 // CostSourceServiceHandler is an implementation of the pulumicost.v1.CostSourceService service.
@@ -332,6 +381,40 @@ type CostSourceServiceHandler interface {
 	//   - Unavailable: Budget service temporarily unavailable
 	//   - Unimplemented: Plugin does not support budget functionality
 	GetBudgets(context.Context, *connect.Request[v1.GetBudgetsRequest]) (*connect.Response[v1.GetBudgetsResponse], error)
+	// GetPluginInfo returns metadata about the plugin for compatibility verification,
+	// diagnostics, and graceful degradation handling.
+	//
+	// This RPC enables the core system to:
+	//  1. Verify plugin compatibility by checking spec_version against supported ranges
+	//  2. Display plugin information in diagnostic tools (plugin list commands)
+	//  3. Handle legacy plugins gracefully (Unimplemented error = legacy plugin)
+	//
+	// The SDK provides a default implementation that returns compile-time constants.
+	// Plugins may override this to provide dynamic metadata if needed.
+	//
+	// Response time should be <100ms (metadata retrieval should be instant).
+	//
+	// Error cases:
+	//   - Unimplemented: Plugin is too old to support this RPC (legacy plugin)
+	//   - Internal: Plugin failed to retrieve its own metadata (unexpected)
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.GetPluginInfo(ctx, &GetPluginInfoRequest{})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        // Legacy plugin - use fallback values
+	//	        log.Info("Plugin does not implement GetPluginInfo")
+	//	        return &PluginMetadata{Name: "unknown", Version: "unknown"}
+	//	    }
+	//	    return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+	//	}
+	//	return &PluginMetadata{
+	//	    Name:        resp.GetName(),
+	//	    Version:     resp.GetVersion(),
+	//	    SpecVersion: resp.GetSpecVersion(),
+	//	}
+	GetPluginInfo(context.Context, *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error)
 }
 
 // NewCostSourceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -395,6 +478,12 @@ func NewCostSourceServiceHandler(svc CostSourceServiceHandler, opts ...connect.H
 		connect.WithSchema(costSourceServiceMethods.ByName("GetBudgets")),
 		connect.WithHandlerOptions(opts...),
 	)
+	costSourceServiceGetPluginInfoHandler := connect.NewUnaryHandler(
+		CostSourceServiceGetPluginInfoProcedure,
+		svc.GetPluginInfo,
+		connect.WithSchema(costSourceServiceMethods.ByName("GetPluginInfo")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/pulumicost.v1.CostSourceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CostSourceServiceNameProcedure:
@@ -415,6 +504,8 @@ func NewCostSourceServiceHandler(svc CostSourceServiceHandler, opts ...connect.H
 			costSourceServiceDismissRecommendationHandler.ServeHTTP(w, r)
 		case CostSourceServiceGetBudgetsProcedure:
 			costSourceServiceGetBudgetsHandler.ServeHTTP(w, r)
+		case CostSourceServiceGetPluginInfoProcedure:
+			costSourceServiceGetPluginInfoHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -458,6 +549,10 @@ func (UnimplementedCostSourceServiceHandler) DismissRecommendation(context.Conte
 
 func (UnimplementedCostSourceServiceHandler) GetBudgets(context.Context, *connect.Request[v1.GetBudgetsRequest]) (*connect.Response[v1.GetBudgetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pulumicost.v1.CostSourceService.GetBudgets is not implemented"))
+}
+
+func (UnimplementedCostSourceServiceHandler) GetPluginInfo(context.Context, *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pulumicost.v1.CostSourceService.GetPluginInfo is not implemented"))
 }
 
 // ObservabilityServiceClient is a client for the pulumicost.v1.ObservabilityService service.
