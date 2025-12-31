@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.12](https://github.com/rshade/pulumicost-spec/compare/v0.4.11...v0.4.12) (2025-12-31)
+
+
+### Added
+
+* **pluginsdk:** Add GetPluginInfo RPC for spec version compatibility ([#242](https://github.com/rshade/pulumicost-spec/issues/242)) ([d8f4c53](https://github.com/rshade/pulumicost-spec/commit/d8f4c539a3f778e323263a531dd08ade274f350d)), closes [#222](https://github.com/rshade/pulumicost-spec/issues/222)
+* **pluginsdk:** add multi-protocol support with connect-go ([#223](https://github.com/rshade/pulumicost-spec/issues/223)) ([26f7549](https://github.com/rshade/pulumicost-spec/commit/26f7549da00515932949d8b2503d4ce5166684eb)), closes [#189](https://github.com/rshade/pulumicost-spec/issues/189)
+* **proto:** add forecasting primitives for cost projections ([#241](https://github.com/rshade/pulumicost-spec/issues/241)) ([0e2ab7c](https://github.com/rshade/pulumicost-spec/commit/0e2ab7cc84689ae0bf2677e48c8e8e3a788250ed)), closes [#215](https://github.com/rshade/pulumicost-spec/issues/215)
+
+
+### Documentation
+
+* **pluginsdk:** Add thread safety, rate limiting, CORS, and perf docs ([#243](https://github.com/rshade/pulumicost-spec/issues/243)) ([91b2ae1](https://github.com/rshade/pulumicost-spec/commit/91b2ae1cad4d5209dbfe6236d3dc0ff353e161b0)), closes [#206](https://github.com/rshade/pulumicost-spec/issues/206) [#207](https://github.com/rshade/pulumicost-spec/issues/207) [#211](https://github.com/rshade/pulumicost-spec/issues/211) [#231](https://github.com/rshade/pulumicost-spec/issues/231) [#233](https://github.com/rshade/pulumicost-spec/issues/233) [#235](https://github.com/rshade/pulumicost-spec/issues/235) [#236](https://github.com/rshade/pulumicost-spec/issues/236) [#237](https://github.com/rshade/pulumicost-spec/issues/237) [#238](https://github.com/rshade/pulumicost-spec/issues/238) [#240](https://github.com/rshade/pulumicost-spec/issues/240)
+* **sdk:** add advanced implementation patterns and examples ([#213](https://github.com/rshade/pulumicost-spec/issues/213)) ([922422c](https://github.com/rshade/pulumicost-spec/commit/922422c6ccb2d65ff4bfd503c8e543ff3f29dc6a)), closes [#185](https://github.com/rshade/pulumicost-spec/issues/185)
+
 ## [0.4.11](https://github.com/rshade/pulumicost-spec/compare/v0.4.10...v0.4.11) (2025-12-26)
 
 
