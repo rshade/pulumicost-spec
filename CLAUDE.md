@@ -127,10 +127,11 @@ if err != nil {
 **Testing Framework (`sdk/go/testing/`)**
 
 - `harness.go` - In-memory gRPC test harness with bufconn
-- `mock_plugin.go` - Configurable mock plugin implementation
+- `mock_plugin.go` - Configurable mock plugin implementation with DryRun support
 - `integration_test.go` - Comprehensive integration tests for all RPC methods
-- `benchmark_test.go` - Performance benchmarks with memory profiling
+- `benchmark_test.go` - Performance benchmarks with memory profiling (including DryRun)
 - `conformance_test.go` - Multi-level plugin conformance testing (Basic/Standard/Advanced)
+- `dry_run_conformance_test.go` - DryRun capability conformance tests
 - `focus13_conformance_test.go` - FOCUS 1.3 backward compatibility and feature tests
 - `README.md` - Complete testing guide for plugin developers
 
@@ -192,6 +193,45 @@ warnings := pricing.CheckGrowthWarnings(growthType, &rate, periods)
 
 See `specs/030-forecasting-primitives/` for complete specification and `sdk/go/pricing/README.md`
 for detailed documentation.
+
+**DryRun Capability (`sdk/go/pluginsdk/dry_run.go`)**
+
+The DryRun feature enables hosts to query plugin field mapping capabilities without cost data retrieval:
+
+- **DryRun RPC**: Standalone RPC for capability introspection
+- **dry_run flag**: Optional flag on GetActualCost/GetProjectedCost RPCs
+- **FieldSupportStatus enum**: SUPPORTED, UNSUPPORTED, CONDITIONAL, DYNAMIC
+- **Performance**: <100ms p99 latency requirement (no external API calls)
+
+Key helpers:
+
+- `FocusFieldNames()` - Returns all ~66 FOCUS 1.2/1.3 field names
+- `NewFieldMapping()` - Creates field mapping with status and optional description
+- `AllFieldsWithStatus()` - Creates mappings for all fields with given status
+- `SetFieldStatus()` - Updates specific field status in mapping slice
+- `NewDryRunResponse()` - Builder for DryRunResponse with functional options
+
+Usage patterns:
+
+```go
+// Create field mappings for supported resource type
+mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+
+// Customize specific fields
+mappings = pluginsdk.SetFieldStatus(mappings, "availability_zone",
+    pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+    pluginsdk.WithConditionDescription("Only for multi-AZ resources"))
+
+// Build response
+resp := pluginsdk.NewDryRunResponse(
+    pluginsdk.WithFieldMappings(mappings),
+    pluginsdk.WithResourceTypeSupported(true),
+    pluginsdk.WithConfigurationValid(true),
+)
+```
+
+See `specs/032-plugin-dry-run/` for complete specification and `sdk/go/pluginsdk/README.md`
+for implementation guide.
 
 **Examples (`examples/`)**
 
@@ -674,6 +714,9 @@ cd schemas && /init            # JSON Schema validation
   conditions and ensure predictable port binding.
 
 ## Active Technologies
+
+- Go 1.25.5 (per go.mod) + Protocol Buffers v3 (032-plugin-dry-run)
+- N/A (stateless RPC introspection, no data persistence) (032-plugin-dry-run)
 
 - Go 1.25.5 (per go.mod) + markdown documentation + pluginsdk package, testing package, zerolog (logging examples) (031-sdk-docs-consolidation)
 - N/A (pure documentation) (031-sdk-docs-consolidation)

@@ -953,6 +953,168 @@ func generateMockBudgets(n int) []*pbc.Budget {
 }
 
 // =============================================================================
+// DryRun Performance Benchmarks - T055
+// =============================================================================
+
+// BenchmarkDryRun benchmarks the DryRun RPC method.
+// Validates <100ms p99 latency requirement for dry-run introspection.
+func BenchmarkDryRun(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		_, err := client.DryRun(ctx, &pbc.DryRunRequest{Resource: resource})
+		if err != nil {
+			b.Fatalf("DryRun() failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkDryRun_WithSimulationParameters benchmarks DryRun with simulation parameters.
+func BenchmarkDryRun_WithSimulationParameters(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		_, err := client.DryRun(ctx, &pbc.DryRunRequest{
+			Resource: resource,
+			SimulationParameters: map[string]string{
+				"deployment_mode": "multi-az",
+				"pricing_tier":    "reserved",
+			},
+		})
+		if err != nil {
+			b.Fatalf("DryRun() failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkDryRun_Concurrent benchmarks concurrent DryRun requests.
+// Validates thread safety and performance under load.
+func BenchmarkDryRun_Concurrent(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.DryRun(ctx, &pbc.DryRunRequest{Resource: resource})
+			if err != nil {
+				b.Fatalf("DryRun() failed: %v", err)
+			}
+		}
+	})
+}
+
+// BenchmarkDryRun_DifferentProviders benchmarks DryRun across different providers.
+func BenchmarkDryRun_DifferentProviders(b *testing.B) {
+	providers := []struct {
+		name         string
+		provider     string
+		resourceType string
+	}{
+		{"AWS", "aws", "ec2"},
+		{"Azure", "azure", "vm"},
+		{"GCP", "gcp", "compute_engine"},
+		{"Kubernetes", "kubernetes", "namespace"},
+	}
+
+	for _, p := range providers {
+		b.Run(p.name, func(b *testing.B) {
+			plugin := plugintesting.NewMockPlugin()
+			harness := plugintesting.NewTestHarness(plugin)
+			harness.Start(&testing.T{})
+			defer harness.Stop()
+
+			client := harness.Client()
+			ctx := context.Background()
+			resource := plugintesting.CreateResourceDescriptor(
+				p.provider,
+				p.resourceType,
+				"",
+				"us-east-1",
+			)
+
+			b.ReportAllocs()
+			b.ResetTimer()
+			for range b.N {
+				_, err := client.DryRun(ctx, &pbc.DryRunRequest{Resource: resource})
+				if err != nil {
+					b.Fatalf("DryRun() failed: %v", err)
+				}
+			}
+		})
+	}
+}
+
+// TestDryRunLatency validates <100ms p99 latency requirement.
+func TestDryRunLatency(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+
+	const iterations = 1000
+	latencies := make([]time.Duration, iterations)
+
+	for i := range iterations {
+		start := time.Now()
+		_, err := client.DryRun(ctx, &pbc.DryRunRequest{Resource: resource})
+		latencies[i] = time.Since(start)
+
+		if err != nil {
+			t.Fatalf("DryRun() failed: %v", err)
+		}
+	}
+
+	// Calculate p99 latency
+	var total time.Duration
+	var maxLatency time.Duration
+	for _, l := range latencies {
+		total += l
+		if l > maxLatency {
+			maxLatency = l
+		}
+	}
+	avgLatency := total / iterations
+
+	// Verify p99 < 100ms (in practice, in-memory gRPC is much faster)
+	const maxP99 = 100 * time.Millisecond
+	if maxLatency > maxP99 {
+		t.Errorf("DryRun p99 latency %v exceeds %v requirement", maxLatency, maxP99)
+	}
+
+	t.Logf("DryRun latency stats: avg=%v, max=%v (iterations=%d)", avgLatency, maxLatency, iterations)
+}
+
+// =============================================================================
 // GetPluginInfo Performance Benchmarks - T034
 // =============================================================================
 

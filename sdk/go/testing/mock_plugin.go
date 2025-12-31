@@ -137,6 +137,14 @@ type MockPlugin struct {
 	// Behavior configuration for GetPluginInfo
 	ShouldErrorOnGetPluginInfo bool
 	GetPluginInfoDelay         time.Duration
+
+	// DryRun configuration
+	DryRunFieldMappings      []*pbc.FieldMapping // Custom field mappings to return
+	DryRunConfigValid        bool                // Whether configuration is valid
+	DryRunConfigErrors       []string            // Configuration errors if invalid
+	ShouldErrorOnDryRun      bool                // Whether DryRun should return an error
+	DryRunDelay              time.Duration       // Delay before responding
+	UnsupportedResourceTypes []string            // Resource types that return resource_type_supported=false
 }
 
 // NewMockPlugin creates a new mock plugin with default configuration.
@@ -160,6 +168,8 @@ func NewMockPlugin() *MockPlugin {
 		// GetPluginInfo defaults
 		PluginVersion: "v1.0.0",
 		SpecVersion:   "v0.4.11",
+		// DryRun defaults - configuration valid by default
+		DryRunConfigValid: true,
 	}
 }
 
@@ -233,6 +243,159 @@ func (m *MockPlugin) GetPluginInfo(
 	}, nil
 }
 
+// DryRun returns field mapping information for introspection without actual cost retrieval.
+// This implements the dry-run capability allowing hosts to query plugin field support.
+func (m *MockPlugin) DryRun(
+	_ context.Context,
+	req *pbc.DryRunRequest,
+) (*pbc.DryRunResponse, error) {
+	if m.DryRunDelay > 0 {
+		time.Sleep(m.DryRunDelay)
+	}
+
+	if m.ShouldErrorOnDryRun {
+		return nil, status.Error(codes.Internal, "mock error: dry run operation failed")
+	}
+
+	resource := req.GetResource()
+	if resource == nil {
+		return &pbc.DryRunResponse{
+			ResourceTypeSupported: false,
+			ConfigurationValid:    false,
+			ConfigurationErrors:   []string{"resource descriptor is required"},
+		}, nil
+	}
+
+	// Check if resource type is in the unsupported list
+	resourceType := resource.GetResourceType()
+	for _, unsupported := range m.UnsupportedResourceTypes {
+		if resourceType == unsupported {
+			return &pbc.DryRunResponse{
+				ResourceTypeSupported: false,
+				ConfigurationValid:    m.DryRunConfigValid,
+				ConfigurationErrors:   m.DryRunConfigErrors,
+			}, nil
+		}
+	}
+
+	// Check if provider/resource type is supported
+	provider := resource.GetProvider()
+	providerSupported := false
+	for _, supportedProvider := range m.SupportedProviders {
+		if provider == supportedProvider {
+			providerSupported = true
+			break
+		}
+	}
+
+	if !providerSupported {
+		return &pbc.DryRunResponse{
+			ResourceTypeSupported: false,
+			ConfigurationValid:    m.DryRunConfigValid,
+			ConfigurationErrors:   m.DryRunConfigErrors,
+		}, nil
+	}
+
+	// Check if resource type is supported for this provider
+	supportedResources, exists := m.SupportedResources[provider]
+	if !exists {
+		return &pbc.DryRunResponse{
+			ResourceTypeSupported: false,
+			ConfigurationValid:    m.DryRunConfigValid,
+			ConfigurationErrors:   m.DryRunConfigErrors,
+		}, nil
+	}
+
+	resourceSupported := false
+	for _, sr := range supportedResources {
+		if resourceType == sr {
+			resourceSupported = true
+			break
+		}
+	}
+
+	if !resourceSupported {
+		return &pbc.DryRunResponse{
+			ResourceTypeSupported: false,
+			ConfigurationValid:    m.DryRunConfigValid,
+			ConfigurationErrors:   m.DryRunConfigErrors,
+		}, nil
+	}
+
+	// Return configured field mappings or generate default ones
+	fieldMappings := m.DryRunFieldMappings
+	if len(fieldMappings) == 0 {
+		// Generate default field mappings for all FOCUS fields
+		fieldMappings = generateDefaultFieldMappings()
+	}
+
+	return &pbc.DryRunResponse{
+		FieldMappings:         fieldMappings,
+		ResourceTypeSupported: true,
+		ConfigurationValid:    m.DryRunConfigValid,
+		ConfigurationErrors:   m.DryRunConfigErrors,
+	}, nil
+}
+
+// generateDefaultFieldMappings creates default field mappings for all FOCUS fields.
+// This is used when no custom field mappings are configured.
+func generateDefaultFieldMappings() []*pbc.FieldMapping {
+	// FOCUS 1.2/1.3 field names matching FocusCostRecord
+	fieldNames := []string{
+		// Identity & Hierarchy
+		"provider_name", "billing_account_id", "billing_account_name",
+		"sub_account_id", "sub_account_name", "billing_account_type", "sub_account_type",
+		// Billing Period
+		"billing_period_start", "billing_period_end", "billing_currency",
+		// Charge Period
+		"charge_period_start", "charge_period_end",
+		// Charge Details
+		"charge_category", "charge_class", "charge_description", "charge_frequency",
+		// Pricing Details
+		"pricing_category", "pricing_quantity", "pricing_unit", "list_unit_price",
+		"pricing_currency", "pricing_currency_contracted_unit_price",
+		"pricing_currency_effective_cost", "pricing_currency_list_unit_price",
+		// Service & Product
+		"service_category", "service_name", "service_subcategory", "publisher",
+		// Resource Details
+		"resource_id", "resource_name", "resource_type",
+		// SKU Details
+		"sku_id", "sku_price_id", "sku_meter", "sku_price_details",
+		// Location
+		"region_id", "region_name", "availability_zone",
+		// Financial Amounts
+		"billed_cost", "list_cost", "effective_cost", "contracted_cost", "contracted_unit_price",
+		// Consumption/Usage
+		"consumed_quantity", "consumed_unit",
+		// Commitment Discounts
+		"commitment_discount_category", "commitment_discount_id", "commitment_discount_name",
+		"commitment_discount_quantity", "commitment_discount_status", "commitment_discount_type",
+		"commitment_discount_unit",
+		// Capacity Reservation
+		"capacity_reservation_id", "capacity_reservation_status",
+		// Invoice Details
+		"invoice_id", "invoice_issuer",
+		// Metadata & Extension
+		"tags", "extended_columns",
+		// FOCUS 1.3 Provider Identification
+		"service_provider_name", "host_provider_name",
+		// FOCUS 1.3 Split Cost Allocation
+		"allocated_method_id", "allocated_method_details", "allocated_resource_id",
+		"allocated_resource_name", "allocated_tags",
+		// FOCUS 1.3 Contract Commitment Link
+		"contract_applied",
+	}
+
+	mappings := make([]*pbc.FieldMapping, len(fieldNames))
+	for i, name := range fieldNames {
+		mappings[i] = &pbc.FieldMapping{
+			FieldName:     name,
+			SupportStatus: pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED,
+		}
+	}
+	return mappings
+}
+
 // Supports checks if a resource type is supported by this mock plugin.
 func (m *MockPlugin) Supports(_ context.Context, req *pbc.SupportsRequest) (*pbc.SupportsResponse, error) {
 	if m.SupportsDelay > 0 {
@@ -285,6 +448,9 @@ func (m *MockPlugin) Supports(_ context.Context, req *pbc.SupportsRequest) (*pbc
 				Supported:        true,
 				Reason:           "",
 				SupportedMetrics: m.SupportedMetrics,
+				Capabilities: map[string]bool{
+					"dry_run": true, // T027: MockPlugin supports DryRun capability
+				},
 			}, nil
 		}
 	}
@@ -306,6 +472,26 @@ func (m *MockPlugin) GetActualCost(
 
 	if m.ShouldErrorOnActualCost {
 		return nil, status.Error(codes.NotFound, "mock error: actual cost data not available")
+	}
+
+	// T045: Check dry_run flag - return DryRunResponse if true
+	// Note: GetActualCostRequest uses resource_id instead of ResourceDescriptor.
+	// For dry-run mode, we return default field mappings since we can't determine
+	// resource type from resource_id (format is plugin-specific).
+	if req.GetDryRun() {
+		fieldMappings := m.DryRunFieldMappings
+		if len(fieldMappings) == 0 {
+			fieldMappings = generateDefaultFieldMappings()
+		}
+
+		return &pbc.GetActualCostResponse{
+			DryRunResult: &pbc.DryRunResponse{
+				FieldMappings:         fieldMappings,
+				ResourceTypeSupported: true,
+				ConfigurationValid:    m.DryRunConfigValid,
+				ConfigurationErrors:   m.DryRunConfigErrors,
+			},
+		}, nil
 	}
 
 	start := req.GetStart()
@@ -408,7 +594,7 @@ func getImpactMetricValue(kind pbc.MetricKind, utilization float64) (float64, st
 
 // GetProjectedCost returns mock projected cost data.
 func (m *MockPlugin) GetProjectedCost(
-	_ context.Context,
+	ctx context.Context,
 	req *pbc.GetProjectedCostRequest,
 ) (*pbc.GetProjectedCostResponse, error) {
 	if m.ProjectedCostDelay > 0 {
@@ -417,6 +603,20 @@ func (m *MockPlugin) GetProjectedCost(
 
 	if m.ShouldErrorOnProjectedCost {
 		return nil, status.Error(codes.Unavailable, "mock error: projected cost service unavailable")
+	}
+
+	// T046: Check dry_run flag - return DryRunResponse if true
+	if req.GetDryRun() {
+		dryRunResp, err := m.DryRun(ctx, &pbc.DryRunRequest{
+			Resource: req.GetResource(),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return &pbc.GetProjectedCostResponse{
+			DryRunResult: dryRunResp,
+		}, nil
 	}
 
 	resource := req.GetResource()

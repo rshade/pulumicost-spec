@@ -23,6 +23,7 @@ utilities for plugin development.
 - [Contract Commitment Dataset](#contract-commitment-dataset-focus-13)
 - [Manifest Management](#manifest-management)
 - [Property Mapping](#property-mapping-mapping-subpackage)
+- [Dry Run Mode](#dry-run-mode)
 - [Thread Safety](#thread-safety)
 - [Rate Limiting](#rate-limiting)
 - [Performance Tuning](#performance-tuning)
@@ -1563,6 +1564,271 @@ if v, ok := props["instanceType"]; ok {
 
 // After: use mapping package
 sku := mapping.ExtractAWSSKU(props)
+```
+
+## Dry Run Mode
+
+The DryRun feature allows hosts to query a plugin for its FOCUS field mapping capabilities
+without triggering actual cost data retrieval. This is useful for:
+
+- **Debugging**: Understand which fields a plugin populates for a resource type
+- **Validation**: Verify plugin configuration before production deployment
+- **Comparison**: Compare capabilities across different plugins
+
+### Quick Start
+
+```go
+import (
+    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+)
+
+// Create field mappings for a supported resource type
+mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+
+// Customize specific field statuses
+mappings = pluginsdk.SetFieldStatus(mappings, "availability_zone",
+    pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+    pluginsdk.WithConditionDescription("Only for regional resources"))
+
+// Build the response
+resp := pluginsdk.NewDryRunResponse(
+    pluginsdk.WithFieldMappings(mappings),
+    pluginsdk.WithResourceTypeSupported(true),
+    pluginsdk.WithConfigurationValid(true),
+)
+```
+
+### DryRun RPC
+
+The `DryRun` RPC allows hosts to query a plugin's field mapping capabilities:
+
+```go
+// Implement the DryRun RPC on your plugin
+func (p *MyPlugin) DryRun(
+    ctx context.Context,
+    req *pbc.DryRunRequest,
+) (*pbc.DryRunResponse, error) {
+    resource := req.GetResource()
+
+    // Check if resource type is supported
+    if !p.supports(resource.GetType()) {
+        return pluginsdk.NewDryRunResponse(
+            pluginsdk.WithResourceTypeSupported(false),
+        ), nil
+    }
+
+    // Return field mappings for supported resource
+    mappings := pluginsdk.AllFieldsWithStatus(
+        pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED,
+    )
+
+    return pluginsdk.NewDryRunResponse(
+        pluginsdk.WithFieldMappings(mappings),
+        pluginsdk.WithResourceTypeSupported(true),
+        pluginsdk.WithConfigurationValid(true),
+    ), nil
+}
+```
+
+### FieldSupportStatus Enum
+
+Each FOCUS field can have one of the following support statuses:
+
+| Status | Value | Description |
+| ------ | ----- | ----------- |
+| `UNSPECIFIED` | 0 | Status not specified (default) |
+| `SUPPORTED` | 1 | Field is always populated by the plugin |
+| `UNSUPPORTED` | 2 | Field is never populated by the plugin |
+| `CONDITIONAL` | 3 | Field is populated under certain conditions (use `condition_description`) |
+| `DYNAMIC` | 4 | Field population depends on runtime data or simulation parameters |
+
+### Field Mapping Helpers
+
+**FocusFieldNames()** - Returns all ~66 FOCUS 1.2/1.3 field names:
+
+```go
+fields := pluginsdk.FocusFieldNames()
+// Returns: ["provider_name", "billing_account_id", "billing_account_name", ...]
+```
+
+**NewFieldMapping()** - Creates a single field mapping:
+
+```go
+fm := pluginsdk.NewFieldMapping(
+    "availability_zone",
+    pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+    pluginsdk.WithConditionDescription("Only for multi-AZ resources"),
+    pluginsdk.WithExpectedType("string"),
+)
+```
+
+**AllFieldsWithStatus()** - Creates mappings for all FOCUS fields:
+
+```go
+// All fields supported
+mappings := pluginsdk.AllFieldsWithStatus(
+    pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED,
+)
+```
+
+**SetFieldStatus()** - Updates a specific field's status:
+
+```go
+mappings = pluginsdk.SetFieldStatus(
+    mappings,
+    "commitment_discount_id",
+    pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSUPPORTED,
+)
+```
+
+### DryRunResponse Builder Options
+
+| Option | Description |
+| ------ | ----------- |
+| `WithFieldMappings(mappings)` | Sets the field_mappings array |
+| `WithResourceTypeSupported(bool)` | Sets whether the resource type is supported |
+| `WithConfigurationValid(bool)` | Sets whether plugin configuration is valid |
+| `WithConfigurationErrors([]string)` | Sets configuration error messages |
+
+### dry_run Flag on Cost RPCs
+
+The `dry_run` flag can also be set on `GetActualCostRequest` and `GetProjectedCostRequest`
+to get field mapping information embedded in the response:
+
+```go
+// Request with dry_run=true
+req := &pbc.GetActualCostRequest{
+    ResourceId: "i-1234567890abcdef0",
+    Start:      timestamppb.New(start),
+    End:        timestamppb.New(end),
+    DryRun:     true, // Enable dry-run mode
+}
+
+resp, err := client.GetActualCost(ctx, req)
+if err != nil {
+    return err
+}
+
+// When dry_run=true, dry_run_result is populated instead of actual costs
+dryRunResult := resp.GetDryRunResult()
+if dryRunResult != nil {
+    for _, mapping := range dryRunResult.GetFieldMappings() {
+        fmt.Printf("Field: %s, Status: %v\n",
+            mapping.GetFieldName(),
+            mapping.GetSupportStatus(),
+        )
+    }
+}
+```
+
+### Implementing Configuration Validation
+
+Plugins can optionally implement the `ConfigValidator` interface:
+
+```go
+type ConfigValidator interface {
+    ValidateConfiguration() []string
+}
+
+// Example implementation
+func (p *MyPlugin) ValidateConfiguration() []string {
+    var errors []string
+
+    if p.apiKey == "" {
+        errors = append(errors, "API key is required")
+    }
+
+    if p.region == "" {
+        errors = append(errors, "Region must be specified")
+    }
+
+    return errors
+}
+
+// In DryRun handler, call validation
+func (p *MyPlugin) DryRun(ctx context.Context, req *pbc.DryRunRequest) (
+    *pbc.DryRunResponse, error,
+) {
+    configErrors := p.ValidateConfiguration()
+
+    return pluginsdk.NewDryRunResponse(
+        pluginsdk.WithFieldMappings(p.getFieldMappings(req.GetResource())),
+        pluginsdk.WithResourceTypeSupported(true),
+        pluginsdk.WithConfigurationValid(len(configErrors) == 0),
+        pluginsdk.WithConfigurationErrors(configErrors),
+    ), nil
+}
+```
+
+### Simulation Parameters
+
+The DryRunRequest includes a `simulation_parameters` map for parameterized dry-runs:
+
+```go
+// Request with simulation parameters
+req := &pbc.DryRunRequest{
+    Resource: resource,
+    SimulationParameters: map[string]string{
+        "pricing_tier": "enterprise",
+        "region":       "us-east-1",
+    },
+}
+
+// In handler, check simulation parameters
+func (p *MyPlugin) DryRun(ctx context.Context, req *pbc.DryRunRequest) (
+    *pbc.DryRunResponse, error,
+) {
+    params := req.GetSimulationParameters()
+
+    mappings := pluginsdk.AllFieldsWithStatus(
+        pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED,
+    )
+
+    // Adjust field status based on simulation parameters
+    if params["pricing_tier"] == "basic" {
+        mappings = pluginsdk.SetFieldStatus(
+            mappings,
+            "commitment_discount_id",
+            pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_DYNAMIC,
+            pluginsdk.WithConditionDescription("Only available on enterprise tier"),
+        )
+    }
+
+    return pluginsdk.NewDryRunResponse(
+        pluginsdk.WithFieldMappings(mappings),
+        pluginsdk.WithResourceTypeSupported(true),
+        pluginsdk.WithConfigurationValid(true),
+    ), nil
+}
+```
+
+### Performance Requirements
+
+DryRun operations should be fast and not make external API calls:
+
+| Metric | Requirement |
+| ------ | ----------- |
+| Response time | < 100ms (p99) |
+| External API calls | None |
+| Memory allocation | Minimal |
+
+### Capability Discovery
+
+Advertise DryRun support via the `Supports` RPC:
+
+```go
+func (p *MyPlugin) Supports(
+    ctx context.Context,
+    req *pbc.SupportsRequest,
+) (*pbc.SupportsResponse, error) {
+    return &pbc.SupportsResponse{
+        IsSupported: true,
+        Capabilities: map[string]bool{
+            "dry_run": true, // Advertise DryRun support
+        },
+    }, nil
+}
 ```
 
 ## Thread Safety

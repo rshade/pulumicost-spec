@@ -64,6 +64,9 @@ const (
 	// CostSourceServiceGetPluginInfoProcedure is the fully-qualified name of the CostSourceService's
 	// GetPluginInfo RPC.
 	CostSourceServiceGetPluginInfoProcedure = "/pulumicost.v1.CostSourceService/GetPluginInfo"
+	// CostSourceServiceDryRunProcedure is the fully-qualified name of the CostSourceService's DryRun
+	// RPC.
+	CostSourceServiceDryRunProcedure = "/pulumicost.v1.CostSourceService/DryRun"
 	// ObservabilityServiceHealthCheckProcedure is the fully-qualified name of the
 	// ObservabilityService's HealthCheck RPC.
 	ObservabilityServiceHealthCheckProcedure = "/pulumicost.v1.ObservabilityService/HealthCheck"
@@ -175,6 +178,38 @@ type CostSourceServiceClient interface {
 	//	    SpecVersion: resp.GetSpecVersion(),
 	//	}
 	GetPluginInfo(context.Context, *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error)
+	// DryRun returns field mapping information for a resource type without
+	// performing actual cost data retrieval. Useful for debugging plugin
+	// configurations and comparing plugin capabilities.
+	//
+	// This RPC is optional - plugins that do not support dry-run introspection
+	// should return Unimplemented. Check SupportsResponse.capabilities["dry_run"]
+	// to detect support before calling.
+	//
+	// Response time requirement: <100ms (no external network calls).
+	// The response should be generated entirely from local configuration/logic.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid resource descriptor (empty provider/resource_type)
+	//   - Unimplemented: Plugin does not support dry-run introspection
+	//   - Internal: Unexpected error during introspection
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.DryRun(ctx, &DryRunRequest{...})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        log.Info("Plugin does not implement DryRun RPC")
+	//	        // Fall back to inferring capabilities from Supports RPC
+	//	        return nil
+	//	    }
+	//	    return nil, fmt.Errorf("DryRun failed: %w", err)
+	//	}
+	//	// Process field mappings
+	//	for _, fm := range resp.GetFieldMappings() {
+	//	    log.Printf("%s: %v", fm.GetFieldName(), fm.GetSupportStatus())
+	//	}
+	DryRun(context.Context, *connect.Request[v1.DryRunRequest]) (*connect.Response[v1.DryRunResponse], error)
 }
 
 // NewCostSourceServiceClient constructs a client for the pulumicost.v1.CostSourceService service.
@@ -248,6 +283,12 @@ func NewCostSourceServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(costSourceServiceMethods.ByName("GetPluginInfo")),
 			connect.WithClientOptions(opts...),
 		),
+		dryRun: connect.NewClient[v1.DryRunRequest, v1.DryRunResponse](
+			httpClient,
+			baseURL+CostSourceServiceDryRunProcedure,
+			connect.WithSchema(costSourceServiceMethods.ByName("DryRun")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -263,6 +304,7 @@ type costSourceServiceClient struct {
 	dismissRecommendation *connect.Client[v1.DismissRecommendationRequest, v1.DismissRecommendationResponse]
 	getBudgets            *connect.Client[v1.GetBudgetsRequest, v1.GetBudgetsResponse]
 	getPluginInfo         *connect.Client[v1.GetPluginInfoRequest, v1.GetPluginInfoResponse]
+	dryRun                *connect.Client[v1.DryRunRequest, v1.DryRunResponse]
 }
 
 // Name calls pulumicost.v1.CostSourceService.Name.
@@ -313,6 +355,11 @@ func (c *costSourceServiceClient) GetBudgets(ctx context.Context, req *connect.R
 // GetPluginInfo calls pulumicost.v1.CostSourceService.GetPluginInfo.
 func (c *costSourceServiceClient) GetPluginInfo(ctx context.Context, req *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error) {
 	return c.getPluginInfo.CallUnary(ctx, req)
+}
+
+// DryRun calls pulumicost.v1.CostSourceService.DryRun.
+func (c *costSourceServiceClient) DryRun(ctx context.Context, req *connect.Request[v1.DryRunRequest]) (*connect.Response[v1.DryRunResponse], error) {
+	return c.dryRun.CallUnary(ctx, req)
 }
 
 // CostSourceServiceHandler is an implementation of the pulumicost.v1.CostSourceService service.
@@ -415,6 +462,38 @@ type CostSourceServiceHandler interface {
 	//	    SpecVersion: resp.GetSpecVersion(),
 	//	}
 	GetPluginInfo(context.Context, *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error)
+	// DryRun returns field mapping information for a resource type without
+	// performing actual cost data retrieval. Useful for debugging plugin
+	// configurations and comparing plugin capabilities.
+	//
+	// This RPC is optional - plugins that do not support dry-run introspection
+	// should return Unimplemented. Check SupportsResponse.capabilities["dry_run"]
+	// to detect support before calling.
+	//
+	// Response time requirement: <100ms (no external network calls).
+	// The response should be generated entirely from local configuration/logic.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid resource descriptor (empty provider/resource_type)
+	//   - Unimplemented: Plugin does not support dry-run introspection
+	//   - Internal: Unexpected error during introspection
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.DryRun(ctx, &DryRunRequest{...})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        log.Info("Plugin does not implement DryRun RPC")
+	//	        // Fall back to inferring capabilities from Supports RPC
+	//	        return nil
+	//	    }
+	//	    return nil, fmt.Errorf("DryRun failed: %w", err)
+	//	}
+	//	// Process field mappings
+	//	for _, fm := range resp.GetFieldMappings() {
+	//	    log.Printf("%s: %v", fm.GetFieldName(), fm.GetSupportStatus())
+	//	}
+	DryRun(context.Context, *connect.Request[v1.DryRunRequest]) (*connect.Response[v1.DryRunResponse], error)
 }
 
 // NewCostSourceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -484,6 +563,12 @@ func NewCostSourceServiceHandler(svc CostSourceServiceHandler, opts ...connect.H
 		connect.WithSchema(costSourceServiceMethods.ByName("GetPluginInfo")),
 		connect.WithHandlerOptions(opts...),
 	)
+	costSourceServiceDryRunHandler := connect.NewUnaryHandler(
+		CostSourceServiceDryRunProcedure,
+		svc.DryRun,
+		connect.WithSchema(costSourceServiceMethods.ByName("DryRun")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/pulumicost.v1.CostSourceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CostSourceServiceNameProcedure:
@@ -506,6 +591,8 @@ func NewCostSourceServiceHandler(svc CostSourceServiceHandler, opts ...connect.H
 			costSourceServiceGetBudgetsHandler.ServeHTTP(w, r)
 		case CostSourceServiceGetPluginInfoProcedure:
 			costSourceServiceGetPluginInfoHandler.ServeHTTP(w, r)
+		case CostSourceServiceDryRunProcedure:
+			costSourceServiceDryRunHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -553,6 +640,10 @@ func (UnimplementedCostSourceServiceHandler) GetBudgets(context.Context, *connec
 
 func (UnimplementedCostSourceServiceHandler) GetPluginInfo(context.Context, *connect.Request[v1.GetPluginInfoRequest]) (*connect.Response[v1.GetPluginInfoResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pulumicost.v1.CostSourceService.GetPluginInfo is not implemented"))
+}
+
+func (UnimplementedCostSourceServiceHandler) DryRun(context.Context, *connect.Request[v1.DryRunRequest]) (*connect.Response[v1.DryRunResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pulumicost.v1.CostSourceService.DryRun is not implemented"))
 }
 
 // ObservabilityServiceClient is a client for the pulumicost.v1.ObservabilityService service.

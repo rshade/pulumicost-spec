@@ -122,6 +122,40 @@ service CostSourceService {
   //   }
   //
   rpc GetPluginInfo(GetPluginInfoRequest) returns (GetPluginInfoResponse);
+
+  // DryRun returns field mapping information for a resource type without
+  // performing actual cost data retrieval. Useful for debugging plugin
+  // configurations and comparing plugin capabilities.
+  //
+  // This RPC is optional - plugins that do not support dry-run introspection
+  // should return Unimplemented. Check SupportsResponse.capabilities["dry_run"]
+  // to detect support before calling.
+  //
+  // Response time requirement: <100ms (no external network calls).
+  // The response should be generated entirely from local configuration/logic.
+  //
+  // Error cases:
+  //   - InvalidArgument: Invalid resource descriptor (empty provider/resource_type)
+  //   - Unimplemented: Plugin does not support dry-run introspection
+  //   - Internal: Unexpected error during introspection
+  //
+  // Client-side error handling example (Go):
+  //
+  //   resp, err := client.DryRun(ctx, &DryRunRequest{...})
+  //   if err != nil {
+  //       if status.Code(err) == codes.Unimplemented {
+  //           log.Info("Plugin does not implement DryRun RPC")
+  //           // Fall back to inferring capabilities from Supports RPC
+  //           return nil
+  //       }
+  //       return nil, fmt.Errorf("DryRun failed: %w", err)
+  //   }
+  //   // Process field mappings
+  //   for _, fm := range resp.GetFieldMappings() {
+  //       log.Printf("%s: %v", fm.GetFieldName(), fm.GetSupportStatus())
+  //   }
+  //
+  rpc DryRun(DryRunRequest) returns (DryRunResponse);
 }
 
 // NameRequest is used for the Name RPC call (empty request).
@@ -166,8 +200,12 @@ message SupportsResponse {
   bool supported = 1;
   // reason provides optional explanation if supported is false
   string reason = 2;
-  // capabilities declares optional capabilities the plugin supports
-  // Example: {"recommendations": true}
+  // capabilities declares optional capabilities the plugin supports.
+  // Standard capability keys:
+  //   - "recommendations": Plugin supports GetRecommendations RPC
+  //   - "dry_run": Plugin supports DryRun RPC and dry_run flag on cost RPCs
+  //   - "budgets": Plugin supports GetBudgets RPC
+  // Example: {"recommendations": true, "dry_run": true}
   map<string, bool> capabilities = 3;
   // supported_metrics declares optional sustainability metrics the plugin supports
   repeated MetricKind supported_metrics = 4;
@@ -185,6 +223,11 @@ message GetActualCostRequest {
   map<string, string> tags = 4;
   // New field: Canonical Cloud Identifier (e.g. AWS ARN, Azure Resource ID, GCP Full Resource Name)
   string arn = 5;
+  // dry_run when true, returns DryRunResponse in dry_run_result field
+  // instead of performing actual cost data retrieval.
+  // Default: false (normal cost retrieval behavior).
+  // When true, the response will contain dry_run_result instead of results.
+  bool dry_run = 6;
 }
 
 // GetActualCostResponse contains the list of actual cost results.
@@ -193,6 +236,10 @@ message GetActualCostResponse {
   repeated ActualCostResult results = 1;
   // fallback_hint indicates whether the core should attempt to query other plugins
   FallbackHint fallback_hint = 2;
+  // dry_run_result contains field mapping information when request.dry_run
+  // was true. Empty/nil when dry_run was false or not set.
+  // When populated, results field will be empty.
+  DryRunResponse dry_run_result = 3;
 }
 
 // GetProjectedCostRequest contains the resource descriptor for projected cost calculation.
@@ -236,6 +283,12 @@ message GetProjectedCostRequest {
   // Override semantics: If this field is set, it fully replaces
   // ResourceDescriptor.growth_rate for this request.
   optional double growth_rate = 4;
+
+  // dry_run when true, returns DryRunResponse in dry_run_result field
+  // instead of performing projected cost calculation.
+  // Default: false (normal projection behavior).
+  // When true, the response will contain dry_run_result instead of cost data.
+  bool dry_run = 5;
 }
 
 // GetProjectedCostResponse contains projected cost information.
@@ -266,6 +319,11 @@ message GetProjectedCostResponse {
   // This field is OPTIONAL. When unset (UNSPECIFIED), Core should treat
   // the resource as consumption-based (no growth assumption).
   GrowthType growth_type = 6;
+
+  // dry_run_result contains field mapping information when request.dry_run
+  // was true. Empty/nil when dry_run was false or not set.
+  // When populated, cost fields will be empty/zero.
+  DryRunResponse dry_run_result = 7;
 }
 
 // GetPricingSpecRequest contains the resource descriptor for pricing specification.
@@ -1294,4 +1352,76 @@ message GetPluginInfoResponse {
   // such as build hash, commit ID, or plugin-specific configuration.
   // Free-form; no key restrictions or size limits enforced by SDK.
   map<string, string> metadata = 5;
+}
+
+// =============================================================================
+// DryRun RPC - Plugin Capability Introspection
+// =============================================================================
+
+// FieldMapping represents the support status for a single FOCUS field.
+// Used in DryRunResponse to report which fields a plugin would populate
+// for a given resource type.
+message FieldMapping {
+  // field_name is the FOCUS field identifier (e.g., "service_category", "billed_cost").
+  // Must match a field name in FocusCostRecord message.
+  // Required field.
+  string field_name = 1;
+
+  // support_status indicates how this field is supported for the queried resource type.
+  // See FieldSupportStatus enum for detailed semantics.
+  // Required field - should never be UNSPECIFIED in well-formed responses.
+  FieldSupportStatus support_status = 2;
+
+  // condition_description provides human-readable explanation when status is
+  // CONDITIONAL or DYNAMIC. Optional for SUPPORTED/UNSUPPORTED status.
+  // Example: "Only populated for regional resources in multi-AZ providers"
+  // Maximum recommended length: 256 characters.
+  string condition_description = 3;
+
+  // expected_type indicates the data type of the field value.
+  // Values: "string", "double", "timestamp", "enum", "map", "bool"
+  // Optional but recommended for documentation purposes.
+  string expected_type = 4;
+}
+
+// DryRunRequest contains parameters for querying plugin field mapping capabilities.
+// Sent to the DryRun RPC for standalone capability discovery.
+message DryRunRequest {
+  // resource contains the resource descriptor to query field mappings for.
+  // Required. Must have valid provider and resource_type fields.
+  // Region, SKU, and tags are optional but may influence field support status.
+  ResourceDescriptor resource = 1;
+
+  // simulation_parameters provides optional key-value pairs to simulate
+  // different scenarios (e.g., {"region": "us-west-2"} to see region-specific behavior).
+  // Unknown keys are ignored by plugins.
+  // Maximum recommended size: 20 key-value pairs.
+  map<string, string> simulation_parameters = 2;
+}
+
+// DryRunResponse contains the field mapping information returned by a plugin.
+// Includes per-field support status and configuration validation results.
+//
+// Response time requirement: <100ms (no external API calls should be made).
+// This is a synchronous, stateless introspection operation.
+message DryRunResponse {
+  // field_mappings contains the support status for each known FOCUS field.
+  // Should include entries for all ~50-66 FocusCostRecord fields.
+  // Order is not significant.
+  repeated FieldMapping field_mappings = 1;
+
+  // configuration_valid indicates whether the plugin configuration is valid.
+  // When false, configuration_errors contains the error details.
+  // A plugin with valid configuration may still not support a resource type.
+  bool configuration_valid = 2;
+
+  // configuration_errors contains human-readable error messages when
+  // configuration_valid is false. Empty when configuration is valid.
+  // Examples: "Missing API key", "Invalid endpoint URL"
+  repeated string configuration_errors = 3;
+
+  // resource_type_supported indicates whether the queried resource type
+  // is supported by this plugin. When false, field_mappings may be empty
+  // or contain only UNSUPPORTED entries.
+  bool resource_type_supported = 4;
 }
