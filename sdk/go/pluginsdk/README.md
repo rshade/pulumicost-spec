@@ -11,6 +11,7 @@ utilities for plugin development.
 - [Server Configuration](#server-configuration)
 - [Multi-Protocol Support](#multi-protocol-support-grpc-grpc-web-connect)
 - [Go Client SDK](#go-client-sdk)
+- [Plugin Info (GetPluginInfo RPC)](#plugin-info-getplugininfo-rpc)
 - [Environment Variables](#environment-variables)
 - [Core Components](#core-components)
 - [Structured Logging](#structured-logging)
@@ -460,6 +461,58 @@ if err := pluginsdk.Serve(ctx, config); err != nil {
 
 **Common Mistake**: Calling `ParsePortFlag()` before `flag.Parse()` will always return 0,
 causing the server to use an ephemeral port (or env var) unexpectedly. Always call `flag.Parse()` first.
+
+## Plugin Info (GetPluginInfo RPC)
+
+The `GetPluginInfo` RPC allows the Core System to retrieve metadata about the plugin, including its
+version, the spec version it was compiled against, and supported providers.
+
+### Configuration via ServeConfig
+
+The simplest way to support `GetPluginInfo` is to provide the `PluginInfo` struct in your
+`ServeConfig`. The `Serve` function will automatically handle the RPC using this data.
+
+```go
+config := pluginsdk.ServeConfig{
+    Plugin: &MyPlugin{},
+    // Metadata for GetPluginInfo RPC
+    PluginInfo: &pluginsdk.PluginInfo{
+        Name:        "aws-cost-plugin",
+        Version:     "1.2.0",
+        SpecVersion: pluginsdk.SpecVersion,
+        Providers:   []string{"aws"},
+        Metadata: map[string]string{
+            "build_hash": "abc1234",
+        },
+    },
+}
+```
+
+### Dynamic Metadata (Advanced)
+
+If your plugin needs to determine metadata at runtime (e.g., list of providers depends on
+configuration), you can implement the `PluginInfoProvider` interface directly on your plugin struct.
+This takes precedence over `ServeConfig.PluginInfo`.
+
+```go
+// Implement PluginInfoProvider interface
+func (p *MyPlugin) GetPluginInfo(
+    ctx context.Context,
+    req *pbc.GetPluginInfoRequest,
+) (*pbc.GetPluginInfoResponse, error) {
+    return &pbc.GetPluginInfoResponse{
+        Name:        p.Name(),
+        Version:     "1.0.0",
+        SpecVersion: pluginsdk.SpecVersion,
+        Providers:   p.detectProviders(), // Dynamic
+    }, nil
+}
+```
+
+### Spec Version
+
+You should always use the `pluginsdk.SpecVersion` constant to ensure your plugin reports the
+correct SDK version it was compiled against.
 
 ## Environment Variables
 
@@ -1899,7 +1952,7 @@ The `pbc` alias remains the same, so no other code changes are required.
 | ------------------------------------------------ | ----------------------------------- |
 | `NewServer(plugin)`                              | Create server with default registry |
 | `NewServerWithRegistry(plugin, registry)`        | Create server with custom registry  |
-| `NewServerWithOptions(plugin, registry, logger)` | Create server with all options      |
+| `NewServerWithOptions(plugin, registry, logger, info)` | Create server with all options      |
 | `Serve(ctx, config)`                             | Start gRPC server                   |
 | `NewLogWriter()`                                 | Get log writer respecting env var   |
 | `NewPluginLogger(name, version, level, writer)`  | Create configured logger            |

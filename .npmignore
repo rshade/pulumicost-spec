@@ -1,0 +1,50 @@
+# NPM Ignore File
+# Standard Node.js patterns
+node_modules/
+dist/
+build/
+*.log
+.env*
+.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Development tools
+.git/
+.github/
+.vscode/
+.idea/
+.coderabbit.yaml
+.golangci.yml
+.markdownlint*
+.mcp.json
+.release-please*
+.yamllint
+commitlint.config.js
+lefthook.yml
+renovate.json
+
+# Project specific
+bin/
+docs/
+scripts/
+sdk/
+specs/
+test/
+src/
+contracts/
+checklists/
+.claude/
+.gemini/
+.opencode/
+.specify/
+
+# Go files
+go.mod
+go.sum
+Makefile
+
+# Temporary
+tmp/
+coverage/

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package pulumicost.v1;
+
+option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+
+// ... (existing imports and messages) ...
+
+// Request for plugin metadata.
+message GetPluginInfoRequest {}
+
+// Response containing plugin metadata.
+message GetPluginInfoResponse {
+  // Plugin name (e.g., "aws-cost-plugin").
+  string name = 1;
+  // Plugin implementation version (e.g., "v1.0.0").
+  string version = 2;
+  // Spec version the plugin was built against (e.g., "v0.4.11").
+  string spec_version = 3;
+  // List of supported cloud providers (e.g., ["aws", "azure"]).
+  repeated string providers = 4;
+  // Optional additional metadata.
+  map<string, string> metadata = 5;
+}
+
+service CostSourceService {
+  // ... (existing RPCs) ...
+
+  // GetPluginInfo returns metadata about the plugin, including the spec version
+  // it was built against. This allows the core system to verify compatibility.
+  rpc GetPluginInfo(GetPluginInfoRequest) returns (GetPluginInfoResponse);
+}

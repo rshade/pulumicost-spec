@@ -51,6 +51,8 @@ tools to create a robust ecosystem of cost-estimation plugins.
 
 ## Active Technologies
 
+- Go 1.25.5+, Protobuf 3 + `google.golang.org/grpc`, `google.golang.org/protobuf` (029-plugin-info-rpc)
+
 - Go 1.25.5+, Protobuf 3 + `google.golang.org/protobuf`, `google.golang.org/grpc` (018-proto-add-arn)
 - N/A (Proto definition) (018-proto-add-arn)
 

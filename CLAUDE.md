@@ -75,6 +75,55 @@ The registry package implements **zero-allocation enum validation** using packag
 
 See `specs/001-domain-enum-optimization/` for complete documentation and performance analysis.
 
+**Plugin Metadata (GetPluginInfo RPC):**
+
+The SDK implements `GetPluginInfo` RPC for retrieving plugin metadata:
+
+- **GetPluginInfo**: RPC returning Name, Version, SpecVersion, and Providers
+- **PluginInfo**: Struct for configuring metadata in `ServeConfig`
+- **PluginInfoProvider**: Optional interface for dynamic metadata
+- **SpecVersion**: Constant defining the compiled SDK spec version (validated at init)
+
+**GetPluginInfo Configuration Patterns:**
+
+```go
+// Pattern 1: Static configuration via ServeConfig (recommended for most plugins)
+info := pluginsdk.NewPluginInfo("my-plugin", "v1.0.0",
+    pluginsdk.WithProviders("aws", "azure"),
+    pluginsdk.WithMetadata("build_date", "2024-01-15"),
+)
+pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+    Plugin:     &MyPlugin{},
+    PluginInfo: info,
+})
+
+// Pattern 2: Dynamic metadata via PluginInfoProvider interface
+// Use when metadata must be computed at runtime
+type MyDynamicPlugin struct {
+    // ...
+}
+
+func (p *MyDynamicPlugin) GetPluginInfo(ctx context.Context, req *pbc.GetPluginInfoRequest) (
+    *pbc.GetPluginInfoResponse, error) {
+    return &pbc.GetPluginInfoResponse{
+        Name:        "my-plugin",
+        Version:     p.computeVersion(), // Dynamic
+        SpecVersion: pluginsdk.SpecVersion,
+        Providers:   p.discoverProviders(), // Dynamic
+    }, nil
+}
+
+// Client-side error handling for legacy plugins
+resp, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
+if err != nil {
+    if status.Code(err) == codes.Unimplemented {
+        // Legacy plugin - use fallback values
+        return &PluginMetadata{Name: "unknown", Version: "unknown"}
+    }
+    return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+}
+```
+
 **Testing Framework (`sdk/go/testing/`)**
 
 - `harness.go` - In-memory gRPC test harness with bufconn
@@ -628,7 +677,8 @@ cd schemas && /init            # JSON Schema validation
 
 - Go 1.25.5 (per go.mod) + markdown documentation + pluginsdk package, testing package, zerolog (logging examples) (031-sdk-docs-consolidation)
 - N/A (pure documentation) (031-sdk-docs-consolidation)
-
+- Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc (029-plugin-info-rpc)
+- N/A (stateless proto definitions) (029-plugin-info-rpc)
 - N/A (stateless proto definitions) (028-resource-id)
 - Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc (existing) (027-finops-validation)
 - N/A (stateless validation functions) (027-finops-validation)
@@ -658,4 +708,5 @@ cd schemas && /init            # JSON Schema validation
 
 ## Recent Changes
 
+- 029-plugin-info-rpc: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc
 - 026-focus-1-3-migration: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1

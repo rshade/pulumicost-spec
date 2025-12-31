@@ -951,3 +951,64 @@ func generateMockBudgets(n int) []*pbc.Budget {
 	}
 	return budgets
 }
+
+// =============================================================================
+// GetPluginInfo Performance Benchmarks - T034
+// =============================================================================
+
+// BenchmarkGetPluginInfo benchmarks the GetPluginInfo RPC method.
+// Measures the overhead of retrieving static metadata.
+func BenchmarkGetPluginInfo(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.PluginName = "benchmark-plugin"
+	plugin.PluginVersion = "1.0.0"
+	plugin.SpecVersion = pluginsdk.SpecVersion
+	plugin.SupportedProviders = []string{"aws", "gcp"}
+	plugin.Metadata = map[string]string{
+		"build": "release",
+	}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		_, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
+		if err != nil {
+			b.Fatalf("GetPluginInfo() failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkGetPluginInfo_Concurrent benchmarks concurrent GetPluginInfo requests.
+// Ensures metadata retrieval is thread-safe and performant under load.
+func BenchmarkGetPluginInfo_Concurrent(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.PluginName = "benchmark-plugin"
+	plugin.PluginVersion = "1.0.0"
+	plugin.SpecVersion = pluginsdk.SpecVersion
+	plugin.SupportedProviders = []string{"aws", "gcp"}
+
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
+			if err != nil {
+				b.Fatalf("GetPluginInfo() failed: %v", err)
+			}
+		}
+	})
+}

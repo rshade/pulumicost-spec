@@ -86,6 +86,42 @@ service CostSourceService {
   //   - Unavailable: Budget service temporarily unavailable
   //   - Unimplemented: Plugin does not support budget functionality
   rpc GetBudgets(GetBudgetsRequest) returns (GetBudgetsResponse);
+
+  // GetPluginInfo returns metadata about the plugin for compatibility verification,
+  // diagnostics, and graceful degradation handling.
+  //
+  // This RPC enables the core system to:
+  //   1. Verify plugin compatibility by checking spec_version against supported ranges
+  //   2. Display plugin information in diagnostic tools (plugin list commands)
+  //   3. Handle legacy plugins gracefully (Unimplemented error = legacy plugin)
+  //
+  // The SDK provides a default implementation that returns compile-time constants.
+  // Plugins may override this to provide dynamic metadata if needed.
+  //
+  // Response time should be <100ms (metadata retrieval should be instant).
+  //
+  // Error cases:
+  //   - Unimplemented: Plugin is too old to support this RPC (legacy plugin)
+  //   - Internal: Plugin failed to retrieve its own metadata (unexpected)
+  //
+  // Client-side error handling example (Go):
+  //
+  //   resp, err := client.GetPluginInfo(ctx, &GetPluginInfoRequest{})
+  //   if err != nil {
+  //       if status.Code(err) == codes.Unimplemented {
+  //           // Legacy plugin - use fallback values
+  //           log.Info("Plugin does not implement GetPluginInfo")
+  //           return &PluginMetadata{Name: "unknown", Version: "unknown"}
+  //       }
+  //       return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+  //   }
+  //   return &PluginMetadata{
+  //       Name:        resp.GetName(),
+  //       Version:     resp.GetVersion(),
+  //       SpecVersion: resp.GetSpecVersion(),
+  //   }
+  //
+  rpc GetPluginInfo(GetPluginInfoRequest) returns (GetPluginInfoResponse);
 }
 
 // NameRequest is used for the Name RPC call (empty request).
@@ -1212,4 +1248,34 @@ message DismissRecommendationResponse {
   optional google.protobuf.Timestamp expires_at = 4;
   // recommendation_id echoes back the dismissed recommendation ID for confirmation.
   string recommendation_id = 5;
+}
+
+// =============================================================================
+// GetPluginInfo RPC - Plugin Metadata and Compatibility
+// =============================================================================
+
+// GetPluginInfoRequest is used to request plugin metadata.
+// Currently empty but may be extended in the future.
+message GetPluginInfoRequest {}
+
+// GetPluginInfoResponse contains metadata about the plugin for compatibility
+// verification, diagnostics, and graceful degradation handling.
+message GetPluginInfoResponse {
+  // name is the display name of the plugin (e.g., "aws-cost-plugin").
+  // Required field - must be non-empty.
+  string name = 1;
+  // version is the semantic version of the plugin implementation (e.g., "v1.2.0").
+  // Required field - must be non-empty.
+  string version = 2;
+  // spec_version is the version of the pulumicost-spec protocol the plugin was
+  // compiled against (e.g., "v0.4.11"). Must be a valid SemVer string.
+  // Required field - used for compatibility verification.
+  string spec_version = 3;
+  // providers lists the cloud providers supported by this plugin (e.g., ["aws"]).
+  // At least one provider should be listed for functional plugins.
+  repeated string providers = 4;
+  // metadata contains optional key-value pairs for additional information
+  // such as build hash, commit ID, or plugin-specific configuration.
+  // Free-form; no key restrictions or size limits enforced by SDK.
+  map<string, string> metadata = 5;
 }

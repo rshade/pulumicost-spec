@@ -119,7 +119,7 @@ reviews:
         - Verify that commands and code snippets actually work
   finishing_touches:
     docstrings:
-      enabled: false  # We handle our own documentation standards
+      enabled: true  # We handle our own documentation standards
     unit_tests:
       enabled: false  # We write our own tests
 chat:
