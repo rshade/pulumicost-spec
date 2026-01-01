@@ -209,6 +209,7 @@ func AllFieldsWithStatus(status pbc.FieldSupportStatus) []*pbc.FieldMapping {
 
 // SetFieldStatus finds a field by name in the mappings slice and updates its status.
 // If the field is not found, the slice is returned unchanged.
+// If mappings is nil, nil is returned.
 // Options can be used to set condition_description or expected_type.
 func SetFieldStatus(
 	mappings []*pbc.FieldMapping,
@@ -216,6 +217,9 @@ func SetFieldStatus(
 	status pbc.FieldSupportStatus,
 	opts ...FieldMappingOption,
 ) []*pbc.FieldMapping {
+	if mappings == nil {
+		return nil
+	}
 	for _, fm := range mappings {
 		if fm.GetFieldName() == fieldName {
 			fm.SupportStatus = status

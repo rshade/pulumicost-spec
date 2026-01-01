@@ -225,6 +225,160 @@ func TestAllFieldsMapping(t *testing.T) {
 	}
 }
 
+// TestSetFieldStatusNilMappings validates SetFieldStatus handles nil safely.
+func TestSetFieldStatusNilMappings(t *testing.T) {
+	// SetFieldStatus should return nil when passed nil mappings
+	result := pluginsdk.SetFieldStatus(
+		nil,
+		"service_category",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+	)
+
+	if result != nil {
+		t.Errorf("Expected nil result for nil mappings, got %v", result)
+	}
+}
+
+// TestSetFieldStatusSuccess validates SetFieldStatus updates an existing field.
+func TestSetFieldStatusSuccess(t *testing.T) {
+	// Create mappings with all fields SUPPORTED
+	mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+
+	// Update availability_zone to CONDITIONAL
+	result := pluginsdk.SetFieldStatus(
+		mappings,
+		"availability_zone",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+	)
+
+	// Verify same slice is returned (in-place modification)
+	if len(result) != len(mappings) {
+		t.Errorf("Expected same slice length, got %d vs %d", len(result), len(mappings))
+	}
+
+	// Find and verify the updated field
+	var found bool
+	for _, fm := range result {
+		if fm.GetFieldName() == "availability_zone" {
+			found = true
+			if fm.GetSupportStatus() != pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL {
+				t.Errorf("Expected CONDITIONAL status, got %v", fm.GetSupportStatus())
+			}
+			break
+		}
+	}
+
+	if !found {
+		t.Error("availability_zone field not found in result")
+	}
+}
+
+// TestSetFieldStatusWithOptions validates SetFieldStatus applies functional options.
+func TestSetFieldStatusWithOptions(t *testing.T) {
+	mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+
+	// Update with options
+	result := pluginsdk.SetFieldStatus(
+		mappings,
+		"commitment_discount_id",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_DYNAMIC,
+		pluginsdk.WithConditionDescription("Populated when discount is applied"),
+		pluginsdk.WithExpectedType("string"),
+	)
+
+	// Verify options were applied
+	for _, fm := range result {
+		if fm.GetFieldName() == "commitment_discount_id" {
+			if fm.GetSupportStatus() != pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_DYNAMIC {
+				t.Errorf("Expected DYNAMIC status, got %v", fm.GetSupportStatus())
+			}
+			if fm.GetConditionDescription() != "Populated when discount is applied" {
+				t.Errorf("Expected condition description, got %q", fm.GetConditionDescription())
+			}
+			if fm.GetExpectedType() != "string" {
+				t.Errorf("Expected type 'string', got %q", fm.GetExpectedType())
+			}
+			return
+		}
+	}
+	t.Error("commitment_discount_id field not found")
+}
+
+// TestSetFieldStatusNotFound validates SetFieldStatus when field doesn't exist.
+func TestSetFieldStatusNotFound(t *testing.T) {
+	mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+	originalLen := len(mappings)
+
+	// Attempt to update a non-existent field
+	result := pluginsdk.SetFieldStatus(
+		mappings,
+		"nonexistent_field_xyz",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSUPPORTED,
+	)
+
+	// Verify slice is returned unchanged
+	if len(result) != originalLen {
+		t.Errorf("Expected unchanged slice length %d, got %d", originalLen, len(result))
+	}
+
+	// Verify no field was modified (all should still be SUPPORTED)
+	for _, fm := range result {
+		if fm.GetSupportStatus() != pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED {
+			t.Errorf("Field %q was unexpectedly modified to %v",
+				fm.GetFieldName(), fm.GetSupportStatus())
+		}
+	}
+}
+
+// TestSetFieldStatusEmptyMappings validates SetFieldStatus with empty slice.
+func TestSetFieldStatusEmptyMappings(t *testing.T) {
+	mappings := []*pbc.FieldMapping{}
+
+	result := pluginsdk.SetFieldStatus(
+		mappings,
+		"service_category",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+	)
+
+	if len(result) != 0 {
+		t.Errorf("Expected empty slice, got %d elements", len(result))
+	}
+}
+
+// TestSetFieldStatusMultipleUpdates validates chaining multiple SetFieldStatus calls.
+func TestSetFieldStatusMultipleUpdates(t *testing.T) {
+	mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSUPPORTED)
+
+	// Chain multiple updates
+	mappings = pluginsdk.SetFieldStatus(mappings, "service_category",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+	mappings = pluginsdk.SetFieldStatus(mappings, "billed_cost",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+	mappings = pluginsdk.SetFieldStatus(mappings, "availability_zone",
+		pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+		pluginsdk.WithConditionDescription("Only for multi-AZ resources"))
+
+	// Verify updates
+	fieldStatus := make(map[string]pbc.FieldSupportStatus)
+	for _, fm := range mappings {
+		fieldStatus[fm.GetFieldName()] = fm.GetSupportStatus()
+	}
+
+	if fieldStatus["service_category"] != pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED {
+		t.Error("service_category should be SUPPORTED")
+	}
+	if fieldStatus["billed_cost"] != pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED {
+		t.Error("billed_cost should be SUPPORTED")
+	}
+	if fieldStatus["availability_zone"] != pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL {
+		t.Error("availability_zone should be CONDITIONAL")
+	}
+	// Other fields should remain UNSUPPORTED
+	if fieldStatus["resource_id"] != pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSUPPORTED {
+		t.Error("resource_id should still be UNSUPPORTED")
+	}
+}
+
 // =============================================================================
 // Benchmark Tests
 // =============================================================================
@@ -247,5 +401,46 @@ func BenchmarkNewFieldMapping(b *testing.B) {
 func BenchmarkAllFieldsWithStatus(b *testing.B) {
 	for range b.N {
 		_ = pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+	}
+}
+
+// BenchmarkSetFieldStatus measures SetFieldStatus performance.
+func BenchmarkSetFieldStatus(b *testing.B) {
+	mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+	b.ResetTimer()
+	for range b.N {
+		_ = pluginsdk.SetFieldStatus(
+			mappings,
+			"availability_zone",
+			pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+		)
+	}
+}
+
+// BenchmarkSetFieldStatusWithOptions measures SetFieldStatus with options.
+func BenchmarkSetFieldStatusWithOptions(b *testing.B) {
+	mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+	b.ResetTimer()
+	for range b.N {
+		_ = pluginsdk.SetFieldStatus(
+			mappings,
+			"availability_zone",
+			pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL,
+			pluginsdk.WithConditionDescription("Only for multi-AZ resources"),
+			pluginsdk.WithExpectedType("string"),
+		)
+	}
+}
+
+// BenchmarkSetFieldStatusNotFound measures SetFieldStatus when field not found.
+func BenchmarkSetFieldStatusNotFound(b *testing.B) {
+	mappings := pluginsdk.AllFieldsWithStatus(pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED)
+	b.ResetTimer()
+	for range b.N {
+		_ = pluginsdk.SetFieldStatus(
+			mappings,
+			"nonexistent_field",
+			pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSUPPORTED,
+		)
 	}
 }
