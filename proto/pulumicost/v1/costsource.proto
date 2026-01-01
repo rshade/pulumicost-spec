@@ -250,6 +250,22 @@ message GetProjectedCostResponse {
   string billing_detail = 4;
   // impact_metrics contains sustainability metrics (Carbon, Energy, etc.)
   repeated ImpactMetric impact_metrics = 5;
+
+  // growth_type is the plugin-reported growth hint for forecasting.
+  // Indicates how the resource's cost is expected to grow over time,
+  // enabling Core to make smarter forecasts without hardcoded resource-type knowledge.
+  //
+  // Values:
+  //   - GROWTH_TYPE_UNSPECIFIED/NONE: Consumption-based (e.g., EC2, Lambda)
+  //     Cost is stable unless usage changes. No accumulation pattern.
+  //   - GROWTH_TYPE_LINEAR: Accumulation-based (e.g., S3, backups, logs)
+  //     Storage or data grows over time at a predictable rate.
+  //   - GROWTH_TYPE_EXPONENTIAL: Compounding growth pattern
+  //     Rare in practice; use for resources with exponential data growth.
+  //
+  // This field is OPTIONAL. When unset (UNSPECIFIED), Core should treat
+  // the resource as consumption-based (no growth assumption).
+  GrowthType growth_type = 6;
 }
 
 // GetPricingSpecRequest contains the resource descriptor for pricing specification.
