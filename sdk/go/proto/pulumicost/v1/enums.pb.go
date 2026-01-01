@@ -477,6 +477,82 @@ func (FocusCapacityReservationStatus) EnumDescriptor() ([]byte, []int) {
 	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{7}
 }
 
+// FieldSupportStatus represents the support status of a FOCUS field for a given
+// resource type in dry-run introspection. Used in DryRunResponse to indicate whether
+// a plugin can populate specific fields for a queried resource type.
+//
+// Usage in dry-run responses:
+//   - SUPPORTED: Field is always populated for this resource type
+//   - UNSUPPORTED: Field is never populated (e.g., K8s-specific fields on AWS)
+//   - CONDITIONAL: Field depends on resource configuration (provide condition_description)
+//   - DYNAMIC: Field requires runtime data to determine (provide condition_description)
+type FieldSupportStatus int32
+
+const (
+	// Default value - unknown or not determined.
+	// Should not be used in well-formed responses; indicates incomplete implementation.
+	FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSPECIFIED FieldSupportStatus = 0
+	// Field is always populated for this resource type.
+	// Example: service_category is always available for compute resources.
+	FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED FieldSupportStatus = 1
+	// Field is never populated for this resource type.
+	// Example: kubernetes-specific fields on AWS EC2 resources.
+	FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSUPPORTED FieldSupportStatus = 2
+	// Field is populated based on resource configuration or provider settings.
+	// When using this status, condition_description MUST explain the condition.
+	// Example: availability_zone only populated for regional resources in multi-AZ providers.
+	FieldSupportStatus_FIELD_SUPPORT_STATUS_CONDITIONAL FieldSupportStatus = 3
+	// Field requires runtime data to determine value; cannot be fully introspected.
+	// When using this status, condition_description SHOULD explain what data is needed.
+	// Example: actual billed_cost values require querying billing APIs.
+	FieldSupportStatus_FIELD_SUPPORT_STATUS_DYNAMIC FieldSupportStatus = 4
+)
+
+// Enum value maps for FieldSupportStatus.
+var (
+	FieldSupportStatus_name = map[int32]string{
+		0: "FIELD_SUPPORT_STATUS_UNSPECIFIED",
+		1: "FIELD_SUPPORT_STATUS_SUPPORTED",
+		2: "FIELD_SUPPORT_STATUS_UNSUPPORTED",
+		3: "FIELD_SUPPORT_STATUS_CONDITIONAL",
+		4: "FIELD_SUPPORT_STATUS_DYNAMIC",
+	}
+	FieldSupportStatus_value = map[string]int32{
+		"FIELD_SUPPORT_STATUS_UNSPECIFIED": 0,
+		"FIELD_SUPPORT_STATUS_SUPPORTED":   1,
+		"FIELD_SUPPORT_STATUS_UNSUPPORTED": 2,
+		"FIELD_SUPPORT_STATUS_CONDITIONAL": 3,
+		"FIELD_SUPPORT_STATUS_DYNAMIC":     4,
+	}
+)
+
+func (x FieldSupportStatus) Enum() *FieldSupportStatus {
+	p := new(FieldSupportStatus)
+	*p = x
+	return p
+}
+
+func (x FieldSupportStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FieldSupportStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_pulumicost_v1_enums_proto_enumTypes[8].Descriptor()
+}
+
+func (FieldSupportStatus) Type() protoreflect.EnumType {
+	return &file_pulumicost_v1_enums_proto_enumTypes[8]
+}
+
+func (x FieldSupportStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FieldSupportStatus.Descriptor instead.
+func (FieldSupportStatus) EnumDescriptor() ([]byte, []int) {
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{8}
+}
+
 // GrowthType represents the mathematical model used for projecting cost growth.
 // Used in ResourceDescriptor and GetProjectedCostRequest for forward-looking projections.
 type GrowthType int32
@@ -525,11 +601,11 @@ func (x GrowthType) String() string {
 }
 
 func (GrowthType) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[8].Descriptor()
+	return file_pulumicost_v1_enums_proto_enumTypes[9].Descriptor()
 }
 
 func (GrowthType) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[8]
+	return &file_pulumicost_v1_enums_proto_enumTypes[9]
 }
 
 func (x GrowthType) Number() protoreflect.EnumNumber {
@@ -538,7 +614,7 @@ func (x GrowthType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GrowthType.Descriptor instead.
 func (GrowthType) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{8}
+	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{9}
 }
 
 var File_pulumicost_v1_enums_proto protoreflect.FileDescriptor
@@ -593,7 +669,13 @@ const file_pulumicost_v1_enums_proto_rawDesc = "" +
 	"\x1eFocusCapacityReservationStatus\x121\n" +
 	"-FOCUS_CAPACITY_RESERVATION_STATUS_UNSPECIFIED\x10\x00\x12*\n" +
 	"&FOCUS_CAPACITY_RESERVATION_STATUS_USED\x10\x01\x12,\n" +
-	"(FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED\x10\x02*t\n" +
+	"(FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED\x10\x02*\xcc\x01\n" +
+	"\x12FieldSupportStatus\x12$\n" +
+	" FIELD_SUPPORT_STATUS_UNSPECIFIED\x10\x00\x12\"\n" +
+	"\x1eFIELD_SUPPORT_STATUS_SUPPORTED\x10\x01\x12$\n" +
+	" FIELD_SUPPORT_STATUS_UNSUPPORTED\x10\x02\x12$\n" +
+	" FIELD_SUPPORT_STATUS_CONDITIONAL\x10\x03\x12 \n" +
+	"\x1cFIELD_SUPPORT_STATUS_DYNAMIC\x10\x04*t\n" +
 	"\n" +
 	"GrowthType\x12\x1b\n" +
 	"\x17GROWTH_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
@@ -613,7 +695,7 @@ func file_pulumicost_v1_enums_proto_rawDescGZIP() []byte {
 	return file_pulumicost_v1_enums_proto_rawDescData
 }
 
-var file_pulumicost_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
+var file_pulumicost_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
 var file_pulumicost_v1_enums_proto_goTypes = []any{
 	(FocusServiceCategory)(0),            // 0: pulumicost.v1.FocusServiceCategory
 	(FocusChargeCategory)(0),             // 1: pulumicost.v1.FocusChargeCategory
@@ -623,7 +705,8 @@ var file_pulumicost_v1_enums_proto_goTypes = []any{
 	(FocusCommitmentDiscountCategory)(0), // 5: pulumicost.v1.FocusCommitmentDiscountCategory
 	(FocusCommitmentDiscountStatus)(0),   // 6: pulumicost.v1.FocusCommitmentDiscountStatus
 	(FocusCapacityReservationStatus)(0),  // 7: pulumicost.v1.FocusCapacityReservationStatus
-	(GrowthType)(0),                      // 8: pulumicost.v1.GrowthType
+	(FieldSupportStatus)(0),              // 8: pulumicost.v1.FieldSupportStatus
+	(GrowthType)(0),                      // 9: pulumicost.v1.GrowthType
 }
 var file_pulumicost_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -643,7 +726,7 @@ func file_pulumicost_v1_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_enums_proto_rawDesc), len(file_pulumicost_v1_enums_proto_rawDesc)),
-			NumEnums:      9,
+			NumEnums:      10,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

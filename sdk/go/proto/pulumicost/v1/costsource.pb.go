@@ -1032,8 +1032,13 @@ type SupportsResponse struct {
 	Supported bool `protobuf:"varint,1,opt,name=supported,proto3" json:"supported,omitempty"`
 	// reason provides optional explanation if supported is false
 	Reason string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
-	// capabilities declares optional capabilities the plugin supports
-	// Example: {"recommendations": true}
+	// capabilities declares optional capabilities the plugin supports.
+	// Standard capability keys:
+	//   - "recommendations": Plugin supports GetRecommendations RPC
+	//   - "dry_run": Plugin supports DryRun RPC and dry_run flag on cost RPCs
+	//   - "budgets": Plugin supports GetBudgets RPC
+	//
+	// Example: {"recommendations": true, "dry_run": true}
 	Capabilities map[string]bool `protobuf:"bytes,3,rep,name=capabilities,proto3" json:"capabilities,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	// supported_metrics declares optional sustainability metrics the plugin supports
 	SupportedMetrics []MetricKind `protobuf:"varint,4,rep,packed,name=supported_metrics,json=supportedMetrics,proto3,enum=pulumicost.v1.MetricKind" json:"supported_metrics,omitempty"`
@@ -1111,7 +1116,12 @@ type GetActualCostRequest struct {
 	// tags provide optional extra filters for cost retrieval
 	Tags map[string]string `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// New field: Canonical Cloud Identifier (e.g. AWS ARN, Azure Resource ID, GCP Full Resource Name)
-	Arn           string `protobuf:"bytes,5,opt,name=arn,proto3" json:"arn,omitempty"`
+	Arn string `protobuf:"bytes,5,opt,name=arn,proto3" json:"arn,omitempty"`
+	// dry_run when true, returns DryRunResponse in dry_run_result field
+	// instead of performing actual cost data retrieval.
+	// Default: false (normal cost retrieval behavior).
+	// When true, the response will contain dry_run_result instead of results.
+	DryRun        bool `protobuf:"varint,6,opt,name=dry_run,json=dryRun,proto3" json:"dry_run,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1181,13 +1191,24 @@ func (x *GetActualCostRequest) GetArn() string {
 	return ""
 }
 
+func (x *GetActualCostRequest) GetDryRun() bool {
+	if x != nil {
+		return x.DryRun
+	}
+	return false
+}
+
 // GetActualCostResponse contains the list of actual cost results.
 type GetActualCostResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// results contains the actual cost data points for the requested period
 	Results []*ActualCostResult `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
 	// fallback_hint indicates whether the core should attempt to query other plugins
-	FallbackHint  FallbackHint `protobuf:"varint,2,opt,name=fallback_hint,json=fallbackHint,proto3,enum=pulumicost.v1.FallbackHint" json:"fallback_hint,omitempty"`
+	FallbackHint FallbackHint `protobuf:"varint,2,opt,name=fallback_hint,json=fallbackHint,proto3,enum=pulumicost.v1.FallbackHint" json:"fallback_hint,omitempty"`
+	// dry_run_result contains field mapping information when request.dry_run
+	// was true. Empty/nil when dry_run was false or not set.
+	// When populated, results field will be empty.
+	DryRunResult  *DryRunResponse `protobuf:"bytes,3,opt,name=dry_run_result,json=dryRunResult,proto3" json:"dry_run_result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1236,6 +1257,13 @@ func (x *GetActualCostResponse) GetFallbackHint() FallbackHint {
 	return FallbackHint_FALLBACK_HINT_UNSPECIFIED
 }
 
+func (x *GetActualCostResponse) GetDryRunResult() *DryRunResponse {
+	if x != nil {
+		return x.DryRunResult
+	}
+	return nil
+}
+
 // GetProjectedCostRequest contains the resource descriptor for projected cost calculation.
 type GetProjectedCostRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1277,7 +1305,12 @@ type GetProjectedCostRequest struct {
 	//
 	// Override semantics: If this field is set, it fully replaces
 	// ResourceDescriptor.growth_rate for this request.
-	GrowthRate    *float64 `protobuf:"fixed64,4,opt,name=growth_rate,json=growthRate,proto3,oneof" json:"growth_rate,omitempty"`
+	GrowthRate *float64 `protobuf:"fixed64,4,opt,name=growth_rate,json=growthRate,proto3,oneof" json:"growth_rate,omitempty"`
+	// dry_run when true, returns DryRunResponse in dry_run_result field
+	// instead of performing projected cost calculation.
+	// Default: false (normal projection behavior).
+	// When true, the response will contain dry_run_result instead of cost data.
+	DryRun        bool `protobuf:"varint,5,opt,name=dry_run,json=dryRun,proto3" json:"dry_run,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1340,6 +1373,13 @@ func (x *GetProjectedCostRequest) GetGrowthRate() float64 {
 	return 0
 }
 
+func (x *GetProjectedCostRequest) GetDryRun() bool {
+	if x != nil {
+		return x.DryRun
+	}
+	return false
+}
+
 // GetProjectedCostResponse contains projected cost information.
 type GetProjectedCostResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1367,7 +1407,11 @@ type GetProjectedCostResponse struct {
 	//
 	// This field is OPTIONAL. When unset (UNSPECIFIED), Core should treat
 	// the resource as consumption-based (no growth assumption).
-	GrowthType    GrowthType `protobuf:"varint,6,opt,name=growth_type,json=growthType,proto3,enum=pulumicost.v1.GrowthType" json:"growth_type,omitempty"`
+	GrowthType GrowthType `protobuf:"varint,6,opt,name=growth_type,json=growthType,proto3,enum=pulumicost.v1.GrowthType" json:"growth_type,omitempty"`
+	// dry_run_result contains field mapping information when request.dry_run
+	// was true. Empty/nil when dry_run was false or not set.
+	// When populated, cost fields will be empty/zero.
+	DryRunResult  *DryRunResponse `protobuf:"bytes,7,opt,name=dry_run_result,json=dryRunResult,proto3" json:"dry_run_result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1442,6 +1486,13 @@ func (x *GetProjectedCostResponse) GetGrowthType() GrowthType {
 		return x.GrowthType
 	}
 	return GrowthType_GROWTH_TYPE_UNSPECIFIED
+}
+
+func (x *GetProjectedCostResponse) GetDryRunResult() *DryRunResponse {
+	if x != nil {
+		return x.DryRunResult
+	}
+	return nil
 }
 
 // GetPricingSpecRequest contains the resource descriptor for pricing specification.
@@ -5125,6 +5176,236 @@ func (x *GetPluginInfoResponse) GetMetadata() map[string]string {
 	return nil
 }
 
+// FieldMapping represents the support status for a single FOCUS field.
+// Used in DryRunResponse to report which fields a plugin would populate
+// for a given resource type.
+type FieldMapping struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// field_name is the FOCUS field identifier (e.g., "service_category", "billed_cost").
+	// Must match a field name in FocusCostRecord message.
+	// Required field.
+	FieldName string `protobuf:"bytes,1,opt,name=field_name,json=fieldName,proto3" json:"field_name,omitempty"`
+	// support_status indicates how this field is supported for the queried resource type.
+	// See FieldSupportStatus enum for detailed semantics.
+	// Required field - should never be UNSPECIFIED in well-formed responses.
+	SupportStatus FieldSupportStatus `protobuf:"varint,2,opt,name=support_status,json=supportStatus,proto3,enum=pulumicost.v1.FieldSupportStatus" json:"support_status,omitempty"`
+	// condition_description provides human-readable explanation when status is
+	// CONDITIONAL or DYNAMIC. Optional for SUPPORTED/UNSUPPORTED status.
+	// Example: "Only populated for regional resources in multi-AZ providers"
+	// Maximum recommended length: 256 characters.
+	ConditionDescription string `protobuf:"bytes,3,opt,name=condition_description,json=conditionDescription,proto3" json:"condition_description,omitempty"`
+	// expected_type indicates the data type of the field value.
+	// Values: "string", "double", "timestamp", "enum", "map", "bool"
+	// Optional but recommended for documentation purposes.
+	ExpectedType  string `protobuf:"bytes,4,opt,name=expected_type,json=expectedType,proto3" json:"expected_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FieldMapping) Reset() {
+	*x = FieldMapping{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FieldMapping) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FieldMapping) ProtoMessage() {}
+
+func (x *FieldMapping) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FieldMapping.ProtoReflect.Descriptor instead.
+func (*FieldMapping) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *FieldMapping) GetFieldName() string {
+	if x != nil {
+		return x.FieldName
+	}
+	return ""
+}
+
+func (x *FieldMapping) GetSupportStatus() FieldSupportStatus {
+	if x != nil {
+		return x.SupportStatus
+	}
+	return FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSPECIFIED
+}
+
+func (x *FieldMapping) GetConditionDescription() string {
+	if x != nil {
+		return x.ConditionDescription
+	}
+	return ""
+}
+
+func (x *FieldMapping) GetExpectedType() string {
+	if x != nil {
+		return x.ExpectedType
+	}
+	return ""
+}
+
+// DryRunRequest contains parameters for querying plugin field mapping capabilities.
+// Sent to the DryRun RPC for standalone capability discovery.
+type DryRunRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// resource contains the resource descriptor to query field mappings for.
+	// Required. Must have valid provider and resource_type fields.
+	// Region, SKU, and tags are optional but may influence field support status.
+	Resource *ResourceDescriptor `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	// simulation_parameters provides optional key-value pairs to simulate
+	// different scenarios (e.g., {"region": "us-west-2"} to see region-specific behavior).
+	// Unknown keys are ignored by plugins.
+	// Maximum recommended size: 20 key-value pairs.
+	SimulationParameters map[string]string `protobuf:"bytes,2,rep,name=simulation_parameters,json=simulationParameters,proto3" json:"simulation_parameters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *DryRunRequest) Reset() {
+	*x = DryRunRequest{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DryRunRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DryRunRequest) ProtoMessage() {}
+
+func (x *DryRunRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DryRunRequest.ProtoReflect.Descriptor instead.
+func (*DryRunRequest) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *DryRunRequest) GetResource() *ResourceDescriptor {
+	if x != nil {
+		return x.Resource
+	}
+	return nil
+}
+
+func (x *DryRunRequest) GetSimulationParameters() map[string]string {
+	if x != nil {
+		return x.SimulationParameters
+	}
+	return nil
+}
+
+// DryRunResponse contains the field mapping information returned by a plugin.
+// Includes per-field support status and configuration validation results.
+//
+// Response time requirement: <100ms (no external API calls should be made).
+// This is a synchronous, stateless introspection operation.
+type DryRunResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// field_mappings contains the support status for each known FOCUS field.
+	// Should include entries for all ~50-66 FocusCostRecord fields.
+	// Order is not significant.
+	FieldMappings []*FieldMapping `protobuf:"bytes,1,rep,name=field_mappings,json=fieldMappings,proto3" json:"field_mappings,omitempty"`
+	// configuration_valid indicates whether the plugin configuration is valid.
+	// When false, configuration_errors contains the error details.
+	// A plugin with valid configuration may still not support a resource type.
+	ConfigurationValid bool `protobuf:"varint,2,opt,name=configuration_valid,json=configurationValid,proto3" json:"configuration_valid,omitempty"`
+	// configuration_errors contains human-readable error messages when
+	// configuration_valid is false. Empty when configuration is valid.
+	// Examples: "Missing API key", "Invalid endpoint URL"
+	ConfigurationErrors []string `protobuf:"bytes,3,rep,name=configuration_errors,json=configurationErrors,proto3" json:"configuration_errors,omitempty"`
+	// resource_type_supported indicates whether the queried resource type
+	// is supported by this plugin. When false, field_mappings may be empty
+	// or contain only UNSUPPORTED entries.
+	ResourceTypeSupported bool `protobuf:"varint,4,opt,name=resource_type_supported,json=resourceTypeSupported,proto3" json:"resource_type_supported,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *DryRunResponse) Reset() {
+	*x = DryRunResponse{}
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DryRunResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DryRunResponse) ProtoMessage() {}
+
+func (x *DryRunResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pulumicost_v1_costsource_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DryRunResponse.ProtoReflect.Descriptor instead.
+func (*DryRunResponse) Descriptor() ([]byte, []int) {
+	return file_pulumicost_v1_costsource_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *DryRunResponse) GetFieldMappings() []*FieldMapping {
+	if x != nil {
+		return x.FieldMappings
+	}
+	return nil
+}
+
+func (x *DryRunResponse) GetConfigurationValid() bool {
+	if x != nil {
+		return x.ConfigurationValid
+	}
+	return false
+}
+
+func (x *DryRunResponse) GetConfigurationErrors() []string {
+	if x != nil {
+		return x.ConfigurationErrors
+	}
+	return nil
+}
+
+func (x *DryRunResponse) GetResourceTypeSupported() bool {
+	if x != nil {
+		return x.ResourceTypeSupported
+	}
+	return false
+}
+
 var File_pulumicost_v1_costsource_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_costsource_proto_rawDesc = "" +
@@ -5146,28 +5427,31 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x11supported_metrics\x18\x04 \x03(\x0e2\x19.pulumicost.v1.MetricKindR\x10supportedMetrics\x1a?\n" +
 	"\x11CapabilitiesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xa5\x02\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xbe\x02\n" +
 	"\x14GetActualCostRequest\x12\x1f\n" +
 	"\vresource_id\x18\x01 \x01(\tR\n" +
 	"resourceId\x120\n" +
 	"\x05start\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x05start\x12,\n" +
 	"\x03end\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x03end\x12A\n" +
 	"\x04tags\x18\x04 \x03(\v2-.pulumicost.v1.GetActualCostRequest.TagsEntryR\x04tags\x12\x10\n" +
-	"\x03arn\x18\x05 \x01(\tR\x03arn\x1a7\n" +
+	"\x03arn\x18\x05 \x01(\tR\x03arn\x12\x17\n" +
+	"\adry_run\x18\x06 \x01(\bR\x06dryRun\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x94\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd9\x01\n" +
 	"\x15GetActualCostResponse\x129\n" +
 	"\aresults\x18\x01 \x03(\v2\x1f.pulumicost.v1.ActualCostResultR\aresults\x12@\n" +
-	"\rfallback_hint\x18\x02 \x01(\x0e2\x1b.pulumicost.v1.FallbackHintR\ffallbackHint\"\x81\x02\n" +
+	"\rfallback_hint\x18\x02 \x01(\x0e2\x1b.pulumicost.v1.FallbackHintR\ffallbackHint\x12C\n" +
+	"\x0edry_run_result\x18\x03 \x01(\v2\x1d.pulumicost.v1.DryRunResponseR\fdryRunResult\"\x9a\x02\n" +
 	"\x17GetProjectedCostRequest\x12=\n" +
 	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\x125\n" +
 	"\x16utilization_percentage\x18\x02 \x01(\x01R\x15utilizationPercentage\x12:\n" +
 	"\vgrowth_type\x18\x03 \x01(\x0e2\x19.pulumicost.v1.GrowthTypeR\n" +
 	"growthType\x12$\n" +
 	"\vgrowth_rate\x18\x04 \x01(\x01H\x00R\n" +
-	"growthRate\x88\x01\x01B\x0e\n" +
-	"\f_growth_rate\"\xa2\x02\n" +
+	"growthRate\x88\x01\x01\x12\x17\n" +
+	"\adry_run\x18\x05 \x01(\bR\x06dryRunB\x0e\n" +
+	"\f_growth_rate\"\xe7\x02\n" +
 	"\x18GetProjectedCostResponse\x12\x1d\n" +
 	"\n" +
 	"unit_price\x18\x01 \x01(\x01R\tunitPrice\x12\x1a\n" +
@@ -5176,7 +5460,8 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x0ebilling_detail\x18\x04 \x01(\tR\rbillingDetail\x12B\n" +
 	"\x0eimpact_metrics\x18\x05 \x03(\v2\x1b.pulumicost.v1.ImpactMetricR\rimpactMetrics\x12:\n" +
 	"\vgrowth_type\x18\x06 \x01(\x0e2\x19.pulumicost.v1.GrowthTypeR\n" +
-	"growthType\"V\n" +
+	"growthType\x12C\n" +
+	"\x0edry_run_result\x18\a \x01(\v2\x1d.pulumicost.v1.DryRunResponseR\fdryRunResult\"V\n" +
 	"\x15GetPricingSpecRequest\x12=\n" +
 	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\"H\n" +
 	"\x16GetPricingSpecResponse\x12.\n" +
@@ -5523,7 +5808,24 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\bmetadata\x18\x05 \x03(\v22.pulumicost.v1.GetPluginInfoResponse.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\x8c\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd1\x01\n" +
+	"\fFieldMapping\x12\x1d\n" +
+	"\n" +
+	"field_name\x18\x01 \x01(\tR\tfieldName\x12H\n" +
+	"\x0esupport_status\x18\x02 \x01(\x0e2!.pulumicost.v1.FieldSupportStatusR\rsupportStatus\x123\n" +
+	"\x15condition_description\x18\x03 \x01(\tR\x14conditionDescription\x12#\n" +
+	"\rexpected_type\x18\x04 \x01(\tR\fexpectedType\"\x84\x02\n" +
+	"\rDryRunRequest\x12=\n" +
+	"\bresource\x18\x01 \x01(\v2!.pulumicost.v1.ResourceDescriptorR\bresource\x12k\n" +
+	"\x15simulation_parameters\x18\x02 \x03(\v26.pulumicost.v1.DryRunRequest.SimulationParametersEntryR\x14simulationParameters\x1aG\n" +
+	"\x19SimulationParametersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xf0\x01\n" +
+	"\x0eDryRunResponse\x12B\n" +
+	"\x0efield_mappings\x18\x01 \x03(\v2\x1b.pulumicost.v1.FieldMappingR\rfieldMappings\x12/\n" +
+	"\x13configuration_valid\x18\x02 \x01(\bR\x12configurationValid\x121\n" +
+	"\x14configuration_errors\x18\x03 \x03(\tR\x13configurationErrors\x126\n" +
+	"\x17resource_type_supported\x18\x04 \x01(\bR\x15resourceTypeSupported*\x8c\x01\n" +
 	"\n" +
 	"MetricKind\x12\x1b\n" +
 	"\x17METRIC_KIND_UNSPECIFIED\x10\x00\x12 \n" +
@@ -5615,7 +5917,7 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"%DISMISSAL_REASON_TECHNICAL_CONSTRAINT\x10\x04\x12\x1d\n" +
 	"\x19DISMISSAL_REASON_DEFERRED\x10\x05\x12\x1f\n" +
 	"\x1bDISMISSAL_REASON_INACCURATE\x10\x06\x12\x1a\n" +
-	"\x16DISMISSAL_REASON_OTHER\x10\a2\xa8\a\n" +
+	"\x16DISMISSAL_REASON_OTHER\x10\a2\xef\a\n" +
 	"\x11CostSourceService\x12?\n" +
 	"\x04Name\x12\x1a.pulumicost.v1.NameRequest\x1a\x1b.pulumicost.v1.NameResponse\x12K\n" +
 	"\bSupports\x12\x1e.pulumicost.v1.SupportsRequest\x1a\x1f.pulumicost.v1.SupportsResponse\x12Z\n" +
@@ -5627,7 +5929,8 @@ const file_pulumicost_v1_costsource_proto_rawDesc = "" +
 	"\x15DismissRecommendation\x12+.pulumicost.v1.DismissRecommendationRequest\x1a,.pulumicost.v1.DismissRecommendationResponse\x12Q\n" +
 	"\n" +
 	"GetBudgets\x12 .pulumicost.v1.GetBudgetsRequest\x1a!.pulumicost.v1.GetBudgetsResponse\x12Z\n" +
-	"\rGetPluginInfo\x12#.pulumicost.v1.GetPluginInfoRequest\x1a$.pulumicost.v1.GetPluginInfoResponse2\xbf\x02\n" +
+	"\rGetPluginInfo\x12#.pulumicost.v1.GetPluginInfoRequest\x1a$.pulumicost.v1.GetPluginInfoResponse\x12E\n" +
+	"\x06DryRun\x12\x1c.pulumicost.v1.DryRunRequest\x1a\x1d.pulumicost.v1.DryRunResponse2\xbf\x02\n" +
 	"\x14ObservabilityService\x12T\n" +
 	"\vHealthCheck\x12!.pulumicost.v1.HealthCheckRequest\x1a\".pulumicost.v1.HealthCheckResponse\x12Q\n" +
 	"\n" +
@@ -5647,7 +5950,7 @@ func file_pulumicost_v1_costsource_proto_rawDescGZIP() []byte {
 }
 
 var file_pulumicost_v1_costsource_proto_enumTypes = make([]protoimpl.EnumInfo, 13)
-var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 68)
+var file_pulumicost_v1_costsource_proto_msgTypes = make([]protoimpl.MessageInfo, 72)
 var file_pulumicost_v1_costsource_proto_goTypes = []any{
 	(MetricKind)(0),                           // 0: pulumicost.v1.MetricKind
 	(FallbackHint)(0),                         // 1: pulumicost.v1.FallbackHint
@@ -5712,149 +6015,162 @@ var file_pulumicost_v1_costsource_proto_goTypes = []any{
 	(*DismissRecommendationResponse)(nil),     // 60: pulumicost.v1.DismissRecommendationResponse
 	(*GetPluginInfoRequest)(nil),              // 61: pulumicost.v1.GetPluginInfoRequest
 	(*GetPluginInfoResponse)(nil),             // 62: pulumicost.v1.GetPluginInfoResponse
-	nil,                                       // 63: pulumicost.v1.SupportsResponse.CapabilitiesEntry
-	nil,                                       // 64: pulumicost.v1.GetActualCostRequest.TagsEntry
-	nil,                                       // 65: pulumicost.v1.ResourceDescriptor.TagsEntry
-	nil,                                       // 66: pulumicost.v1.PricingSpec.PluginMetadataEntry
-	nil,                                       // 67: pulumicost.v1.ErrorDetail.DetailsEntry
-	nil,                                       // 68: pulumicost.v1.MetricSample.LabelsEntry
-	nil,                                       // 69: pulumicost.v1.LogEntry.FieldsEntry
-	nil,                                       // 70: pulumicost.v1.RecommendationFilter.TagsEntry
-	nil,                                       // 71: pulumicost.v1.Recommendation.MetadataEntry
-	nil,                                       // 72: pulumicost.v1.ResourceRecommendationInfo.TagsEntry
-	nil,                                       // 73: pulumicost.v1.ResourceUtilization.CustomMetricsEntry
-	nil,                                       // 74: pulumicost.v1.ModifyAction.CurrentConfigEntry
-	nil,                                       // 75: pulumicost.v1.ModifyAction.RecommendedConfigEntry
-	nil,                                       // 76: pulumicost.v1.RecommendationSummary.CountByCategoryEntry
-	nil,                                       // 77: pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
-	nil,                                       // 78: pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
-	nil,                                       // 79: pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
-	nil,                                       // 80: pulumicost.v1.GetPluginInfoResponse.MetadataEntry
-	(*timestamppb.Timestamp)(nil),             // 81: google.protobuf.Timestamp
-	(GrowthType)(0),                           // 82: pulumicost.v1.GrowthType
-	(*FocusCostRecord)(nil),                   // 83: pulumicost.v1.FocusCostRecord
-	(*structpb.Struct)(nil),                   // 84: google.protobuf.Struct
-	(*GetBudgetsRequest)(nil),                 // 85: pulumicost.v1.GetBudgetsRequest
-	(*GetBudgetsResponse)(nil),                // 86: pulumicost.v1.GetBudgetsResponse
+	(*FieldMapping)(nil),                      // 63: pulumicost.v1.FieldMapping
+	(*DryRunRequest)(nil),                     // 64: pulumicost.v1.DryRunRequest
+	(*DryRunResponse)(nil),                    // 65: pulumicost.v1.DryRunResponse
+	nil,                                       // 66: pulumicost.v1.SupportsResponse.CapabilitiesEntry
+	nil,                                       // 67: pulumicost.v1.GetActualCostRequest.TagsEntry
+	nil,                                       // 68: pulumicost.v1.ResourceDescriptor.TagsEntry
+	nil,                                       // 69: pulumicost.v1.PricingSpec.PluginMetadataEntry
+	nil,                                       // 70: pulumicost.v1.ErrorDetail.DetailsEntry
+	nil,                                       // 71: pulumicost.v1.MetricSample.LabelsEntry
+	nil,                                       // 72: pulumicost.v1.LogEntry.FieldsEntry
+	nil,                                       // 73: pulumicost.v1.RecommendationFilter.TagsEntry
+	nil,                                       // 74: pulumicost.v1.Recommendation.MetadataEntry
+	nil,                                       // 75: pulumicost.v1.ResourceRecommendationInfo.TagsEntry
+	nil,                                       // 76: pulumicost.v1.ResourceUtilization.CustomMetricsEntry
+	nil,                                       // 77: pulumicost.v1.ModifyAction.CurrentConfigEntry
+	nil,                                       // 78: pulumicost.v1.ModifyAction.RecommendedConfigEntry
+	nil,                                       // 79: pulumicost.v1.RecommendationSummary.CountByCategoryEntry
+	nil,                                       // 80: pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
+	nil,                                       // 81: pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
+	nil,                                       // 82: pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
+	nil,                                       // 83: pulumicost.v1.GetPluginInfoResponse.MetadataEntry
+	nil,                                       // 84: pulumicost.v1.DryRunRequest.SimulationParametersEntry
+	(*timestamppb.Timestamp)(nil),             // 85: google.protobuf.Timestamp
+	(GrowthType)(0),                           // 86: pulumicost.v1.GrowthType
+	(*FocusCostRecord)(nil),                   // 87: pulumicost.v1.FocusCostRecord
+	(*structpb.Struct)(nil),                   // 88: google.protobuf.Struct
+	(FieldSupportStatus)(0),                   // 89: pulumicost.v1.FieldSupportStatus
+	(*GetBudgetsRequest)(nil),                 // 90: pulumicost.v1.GetBudgetsRequest
+	(*GetBudgetsResponse)(nil),                // 91: pulumicost.v1.GetBudgetsResponse
 }
 var file_pulumicost_v1_costsource_proto_depIdxs = []int32{
-	0,  // 0: pulumicost.v1.ImpactMetric.kind:type_name -> pulumicost.v1.MetricKind
-	24, // 1: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	63, // 2: pulumicost.v1.SupportsResponse.capabilities:type_name -> pulumicost.v1.SupportsResponse.CapabilitiesEntry
-	0,  // 3: pulumicost.v1.SupportsResponse.supported_metrics:type_name -> pulumicost.v1.MetricKind
-	81, // 4: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
-	81, // 5: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
-	64, // 6: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
-	25, // 7: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
-	1,  // 8: pulumicost.v1.GetActualCostResponse.fallback_hint:type_name -> pulumicost.v1.FallbackHint
-	24, // 9: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	82, // 10: pulumicost.v1.GetProjectedCostRequest.growth_type:type_name -> pulumicost.v1.GrowthType
-	15, // 11: pulumicost.v1.GetProjectedCostResponse.impact_metrics:type_name -> pulumicost.v1.ImpactMetric
-	82, // 12: pulumicost.v1.GetProjectedCostResponse.growth_type:type_name -> pulumicost.v1.GrowthType
-	24, // 13: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
-	27, // 14: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
-	65, // 15: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
-	82, // 16: pulumicost.v1.ResourceDescriptor.growth_type:type_name -> pulumicost.v1.GrowthType
-	81, // 17: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
-	83, // 18: pulumicost.v1.ActualCostResult.focus_record:type_name -> pulumicost.v1.FocusCostRecord
-	15, // 19: pulumicost.v1.ActualCostResult.impact_metrics:type_name -> pulumicost.v1.ImpactMetric
-	26, // 20: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
-	66, // 21: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
-	28, // 22: pulumicost.v1.PricingSpec.pricing_tiers:type_name -> pulumicost.v1.PricingTier
-	3,  // 23: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
-	2,  // 24: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
-	67, // 25: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
-	81, // 26: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
-	12, // 27: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
-	81, // 28: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
-	34, // 29: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
-	81, // 30: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 31: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
-	35, // 32: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
-	68, // 33: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
-	81, // 34: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
-	39, // 35: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
-	38, // 36: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
-	81, // 37: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
-	5,  // 38: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
-	81, // 39: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
-	81, // 40: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
-	81, // 41: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
-	69, // 42: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
-	42, // 43: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
-	84, // 44: pulumicost.v1.EstimateCostRequest.attributes:type_name -> google.protobuf.Struct
-	47, // 45: pulumicost.v1.GetRecommendationsRequest.filter:type_name -> pulumicost.v1.RecommendationFilter
-	24, // 46: pulumicost.v1.GetRecommendationsRequest.target_resources:type_name -> pulumicost.v1.ResourceDescriptor
-	48, // 47: pulumicost.v1.GetRecommendationsResponse.recommendations:type_name -> pulumicost.v1.Recommendation
-	58, // 48: pulumicost.v1.GetRecommendationsResponse.summary:type_name -> pulumicost.v1.RecommendationSummary
-	6,  // 49: pulumicost.v1.RecommendationFilter.category:type_name -> pulumicost.v1.RecommendationCategory
-	7,  // 50: pulumicost.v1.RecommendationFilter.action_type:type_name -> pulumicost.v1.RecommendationActionType
-	70, // 51: pulumicost.v1.RecommendationFilter.tags:type_name -> pulumicost.v1.RecommendationFilter.TagsEntry
-	8,  // 52: pulumicost.v1.RecommendationFilter.priority:type_name -> pulumicost.v1.RecommendationPriority
-	9,  // 53: pulumicost.v1.RecommendationFilter.sort_by:type_name -> pulumicost.v1.RecommendationSortBy
-	10, // 54: pulumicost.v1.RecommendationFilter.sort_order:type_name -> pulumicost.v1.SortOrder
-	6,  // 55: pulumicost.v1.Recommendation.category:type_name -> pulumicost.v1.RecommendationCategory
-	7,  // 56: pulumicost.v1.Recommendation.action_type:type_name -> pulumicost.v1.RecommendationActionType
-	49, // 57: pulumicost.v1.Recommendation.resource:type_name -> pulumicost.v1.ResourceRecommendationInfo
-	51, // 58: pulumicost.v1.Recommendation.rightsize:type_name -> pulumicost.v1.RightsizeAction
-	52, // 59: pulumicost.v1.Recommendation.terminate:type_name -> pulumicost.v1.TerminateAction
-	53, // 60: pulumicost.v1.Recommendation.commitment:type_name -> pulumicost.v1.CommitmentAction
-	54, // 61: pulumicost.v1.Recommendation.kubernetes:type_name -> pulumicost.v1.KubernetesAction
-	56, // 62: pulumicost.v1.Recommendation.modify:type_name -> pulumicost.v1.ModifyAction
-	57, // 63: pulumicost.v1.Recommendation.impact:type_name -> pulumicost.v1.RecommendationImpact
-	8,  // 64: pulumicost.v1.Recommendation.priority:type_name -> pulumicost.v1.RecommendationPriority
-	81, // 65: pulumicost.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
-	71, // 66: pulumicost.v1.Recommendation.metadata:type_name -> pulumicost.v1.Recommendation.MetadataEntry
-	72, // 67: pulumicost.v1.ResourceRecommendationInfo.tags:type_name -> pulumicost.v1.ResourceRecommendationInfo.TagsEntry
-	50, // 68: pulumicost.v1.ResourceRecommendationInfo.utilization:type_name -> pulumicost.v1.ResourceUtilization
-	73, // 69: pulumicost.v1.ResourceUtilization.custom_metrics:type_name -> pulumicost.v1.ResourceUtilization.CustomMetricsEntry
-	50, // 70: pulumicost.v1.RightsizeAction.projected_utilization:type_name -> pulumicost.v1.ResourceUtilization
-	55, // 71: pulumicost.v1.KubernetesAction.current_requests:type_name -> pulumicost.v1.KubernetesResources
-	55, // 72: pulumicost.v1.KubernetesAction.recommended_requests:type_name -> pulumicost.v1.KubernetesResources
-	55, // 73: pulumicost.v1.KubernetesAction.current_limits:type_name -> pulumicost.v1.KubernetesResources
-	55, // 74: pulumicost.v1.KubernetesAction.recommended_limits:type_name -> pulumicost.v1.KubernetesResources
-	74, // 75: pulumicost.v1.ModifyAction.current_config:type_name -> pulumicost.v1.ModifyAction.CurrentConfigEntry
-	75, // 76: pulumicost.v1.ModifyAction.recommended_config:type_name -> pulumicost.v1.ModifyAction.RecommendedConfigEntry
-	76, // 77: pulumicost.v1.RecommendationSummary.count_by_category:type_name -> pulumicost.v1.RecommendationSummary.CountByCategoryEntry
-	77, // 78: pulumicost.v1.RecommendationSummary.savings_by_category:type_name -> pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
-	78, // 79: pulumicost.v1.RecommendationSummary.count_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
-	79, // 80: pulumicost.v1.RecommendationSummary.savings_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
-	11, // 81: pulumicost.v1.DismissRecommendationRequest.reason:type_name -> pulumicost.v1.DismissalReason
-	81, // 82: pulumicost.v1.DismissRecommendationRequest.expires_at:type_name -> google.protobuf.Timestamp
-	81, // 83: pulumicost.v1.DismissRecommendationResponse.dismissed_at:type_name -> google.protobuf.Timestamp
-	81, // 84: pulumicost.v1.DismissRecommendationResponse.expires_at:type_name -> google.protobuf.Timestamp
-	80, // 85: pulumicost.v1.GetPluginInfoResponse.metadata:type_name -> pulumicost.v1.GetPluginInfoResponse.MetadataEntry
-	13, // 86: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
-	16, // 87: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
-	18, // 88: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
-	20, // 89: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
-	22, // 90: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
-	43, // 91: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
-	45, // 92: pulumicost.v1.CostSourceService.GetRecommendations:input_type -> pulumicost.v1.GetRecommendationsRequest
-	59, // 93: pulumicost.v1.CostSourceService.DismissRecommendation:input_type -> pulumicost.v1.DismissRecommendationRequest
-	85, // 94: pulumicost.v1.CostSourceService.GetBudgets:input_type -> pulumicost.v1.GetBudgetsRequest
-	61, // 95: pulumicost.v1.CostSourceService.GetPluginInfo:input_type -> pulumicost.v1.GetPluginInfoRequest
-	30, // 96: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
-	32, // 97: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
-	36, // 98: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
-	14, // 99: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
-	17, // 100: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
-	19, // 101: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
-	21, // 102: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
-	23, // 103: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
-	44, // 104: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
-	46, // 105: pulumicost.v1.CostSourceService.GetRecommendations:output_type -> pulumicost.v1.GetRecommendationsResponse
-	60, // 106: pulumicost.v1.CostSourceService.DismissRecommendation:output_type -> pulumicost.v1.DismissRecommendationResponse
-	86, // 107: pulumicost.v1.CostSourceService.GetBudgets:output_type -> pulumicost.v1.GetBudgetsResponse
-	62, // 108: pulumicost.v1.CostSourceService.GetPluginInfo:output_type -> pulumicost.v1.GetPluginInfoResponse
-	31, // 109: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
-	33, // 110: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
-	37, // 111: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
-	99, // [99:112] is the sub-list for method output_type
-	86, // [86:99] is the sub-list for method input_type
-	86, // [86:86] is the sub-list for extension type_name
-	86, // [86:86] is the sub-list for extension extendee
-	0,  // [0:86] is the sub-list for field type_name
+	0,   // 0: pulumicost.v1.ImpactMetric.kind:type_name -> pulumicost.v1.MetricKind
+	24,  // 1: pulumicost.v1.SupportsRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	66,  // 2: pulumicost.v1.SupportsResponse.capabilities:type_name -> pulumicost.v1.SupportsResponse.CapabilitiesEntry
+	0,   // 3: pulumicost.v1.SupportsResponse.supported_metrics:type_name -> pulumicost.v1.MetricKind
+	85,  // 4: pulumicost.v1.GetActualCostRequest.start:type_name -> google.protobuf.Timestamp
+	85,  // 5: pulumicost.v1.GetActualCostRequest.end:type_name -> google.protobuf.Timestamp
+	67,  // 6: pulumicost.v1.GetActualCostRequest.tags:type_name -> pulumicost.v1.GetActualCostRequest.TagsEntry
+	25,  // 7: pulumicost.v1.GetActualCostResponse.results:type_name -> pulumicost.v1.ActualCostResult
+	1,   // 8: pulumicost.v1.GetActualCostResponse.fallback_hint:type_name -> pulumicost.v1.FallbackHint
+	65,  // 9: pulumicost.v1.GetActualCostResponse.dry_run_result:type_name -> pulumicost.v1.DryRunResponse
+	24,  // 10: pulumicost.v1.GetProjectedCostRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	86,  // 11: pulumicost.v1.GetProjectedCostRequest.growth_type:type_name -> pulumicost.v1.GrowthType
+	15,  // 12: pulumicost.v1.GetProjectedCostResponse.impact_metrics:type_name -> pulumicost.v1.ImpactMetric
+	86,  // 13: pulumicost.v1.GetProjectedCostResponse.growth_type:type_name -> pulumicost.v1.GrowthType
+	65,  // 14: pulumicost.v1.GetProjectedCostResponse.dry_run_result:type_name -> pulumicost.v1.DryRunResponse
+	24,  // 15: pulumicost.v1.GetPricingSpecRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	27,  // 16: pulumicost.v1.GetPricingSpecResponse.spec:type_name -> pulumicost.v1.PricingSpec
+	68,  // 17: pulumicost.v1.ResourceDescriptor.tags:type_name -> pulumicost.v1.ResourceDescriptor.TagsEntry
+	86,  // 18: pulumicost.v1.ResourceDescriptor.growth_type:type_name -> pulumicost.v1.GrowthType
+	85,  // 19: pulumicost.v1.ActualCostResult.timestamp:type_name -> google.protobuf.Timestamp
+	87,  // 20: pulumicost.v1.ActualCostResult.focus_record:type_name -> pulumicost.v1.FocusCostRecord
+	15,  // 21: pulumicost.v1.ActualCostResult.impact_metrics:type_name -> pulumicost.v1.ImpactMetric
+	26,  // 22: pulumicost.v1.PricingSpec.metric_hints:type_name -> pulumicost.v1.UsageMetricHint
+	69,  // 23: pulumicost.v1.PricingSpec.plugin_metadata:type_name -> pulumicost.v1.PricingSpec.PluginMetadataEntry
+	28,  // 24: pulumicost.v1.PricingSpec.pricing_tiers:type_name -> pulumicost.v1.PricingTier
+	3,   // 25: pulumicost.v1.ErrorDetail.code:type_name -> pulumicost.v1.ErrorCode
+	2,   // 26: pulumicost.v1.ErrorDetail.category:type_name -> pulumicost.v1.ErrorCategory
+	70,  // 27: pulumicost.v1.ErrorDetail.details:type_name -> pulumicost.v1.ErrorDetail.DetailsEntry
+	85,  // 28: pulumicost.v1.ErrorDetail.timestamp:type_name -> google.protobuf.Timestamp
+	12,  // 29: pulumicost.v1.HealthCheckResponse.status:type_name -> pulumicost.v1.HealthCheckResponse.Status
+	85,  // 30: pulumicost.v1.HealthCheckResponse.last_check_time:type_name -> google.protobuf.Timestamp
+	34,  // 31: pulumicost.v1.GetMetricsResponse.metrics:type_name -> pulumicost.v1.Metric
+	85,  // 32: pulumicost.v1.GetMetricsResponse.timestamp:type_name -> google.protobuf.Timestamp
+	4,   // 33: pulumicost.v1.Metric.type:type_name -> pulumicost.v1.MetricType
+	35,  // 34: pulumicost.v1.Metric.samples:type_name -> pulumicost.v1.MetricSample
+	71,  // 35: pulumicost.v1.MetricSample.labels:type_name -> pulumicost.v1.MetricSample.LabelsEntry
+	85,  // 36: pulumicost.v1.MetricSample.timestamp:type_name -> google.protobuf.Timestamp
+	39,  // 37: pulumicost.v1.GetServiceLevelIndicatorsRequest.time_range:type_name -> pulumicost.v1.TimeRange
+	38,  // 38: pulumicost.v1.GetServiceLevelIndicatorsResponse.slis:type_name -> pulumicost.v1.ServiceLevelIndicator
+	85,  // 39: pulumicost.v1.GetServiceLevelIndicatorsResponse.measurement_time:type_name -> google.protobuf.Timestamp
+	5,   // 40: pulumicost.v1.ServiceLevelIndicator.status:type_name -> pulumicost.v1.SLIStatus
+	85,  // 41: pulumicost.v1.TimeRange.start:type_name -> google.protobuf.Timestamp
+	85,  // 42: pulumicost.v1.TimeRange.end:type_name -> google.protobuf.Timestamp
+	85,  // 43: pulumicost.v1.LogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	72,  // 44: pulumicost.v1.LogEntry.fields:type_name -> pulumicost.v1.LogEntry.FieldsEntry
+	42,  // 45: pulumicost.v1.LogEntry.error_details:type_name -> pulumicost.v1.ErrorDetails
+	88,  // 46: pulumicost.v1.EstimateCostRequest.attributes:type_name -> google.protobuf.Struct
+	47,  // 47: pulumicost.v1.GetRecommendationsRequest.filter:type_name -> pulumicost.v1.RecommendationFilter
+	24,  // 48: pulumicost.v1.GetRecommendationsRequest.target_resources:type_name -> pulumicost.v1.ResourceDescriptor
+	48,  // 49: pulumicost.v1.GetRecommendationsResponse.recommendations:type_name -> pulumicost.v1.Recommendation
+	58,  // 50: pulumicost.v1.GetRecommendationsResponse.summary:type_name -> pulumicost.v1.RecommendationSummary
+	6,   // 51: pulumicost.v1.RecommendationFilter.category:type_name -> pulumicost.v1.RecommendationCategory
+	7,   // 52: pulumicost.v1.RecommendationFilter.action_type:type_name -> pulumicost.v1.RecommendationActionType
+	73,  // 53: pulumicost.v1.RecommendationFilter.tags:type_name -> pulumicost.v1.RecommendationFilter.TagsEntry
+	8,   // 54: pulumicost.v1.RecommendationFilter.priority:type_name -> pulumicost.v1.RecommendationPriority
+	9,   // 55: pulumicost.v1.RecommendationFilter.sort_by:type_name -> pulumicost.v1.RecommendationSortBy
+	10,  // 56: pulumicost.v1.RecommendationFilter.sort_order:type_name -> pulumicost.v1.SortOrder
+	6,   // 57: pulumicost.v1.Recommendation.category:type_name -> pulumicost.v1.RecommendationCategory
+	7,   // 58: pulumicost.v1.Recommendation.action_type:type_name -> pulumicost.v1.RecommendationActionType
+	49,  // 59: pulumicost.v1.Recommendation.resource:type_name -> pulumicost.v1.ResourceRecommendationInfo
+	51,  // 60: pulumicost.v1.Recommendation.rightsize:type_name -> pulumicost.v1.RightsizeAction
+	52,  // 61: pulumicost.v1.Recommendation.terminate:type_name -> pulumicost.v1.TerminateAction
+	53,  // 62: pulumicost.v1.Recommendation.commitment:type_name -> pulumicost.v1.CommitmentAction
+	54,  // 63: pulumicost.v1.Recommendation.kubernetes:type_name -> pulumicost.v1.KubernetesAction
+	56,  // 64: pulumicost.v1.Recommendation.modify:type_name -> pulumicost.v1.ModifyAction
+	57,  // 65: pulumicost.v1.Recommendation.impact:type_name -> pulumicost.v1.RecommendationImpact
+	8,   // 66: pulumicost.v1.Recommendation.priority:type_name -> pulumicost.v1.RecommendationPriority
+	85,  // 67: pulumicost.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
+	74,  // 68: pulumicost.v1.Recommendation.metadata:type_name -> pulumicost.v1.Recommendation.MetadataEntry
+	75,  // 69: pulumicost.v1.ResourceRecommendationInfo.tags:type_name -> pulumicost.v1.ResourceRecommendationInfo.TagsEntry
+	50,  // 70: pulumicost.v1.ResourceRecommendationInfo.utilization:type_name -> pulumicost.v1.ResourceUtilization
+	76,  // 71: pulumicost.v1.ResourceUtilization.custom_metrics:type_name -> pulumicost.v1.ResourceUtilization.CustomMetricsEntry
+	50,  // 72: pulumicost.v1.RightsizeAction.projected_utilization:type_name -> pulumicost.v1.ResourceUtilization
+	55,  // 73: pulumicost.v1.KubernetesAction.current_requests:type_name -> pulumicost.v1.KubernetesResources
+	55,  // 74: pulumicost.v1.KubernetesAction.recommended_requests:type_name -> pulumicost.v1.KubernetesResources
+	55,  // 75: pulumicost.v1.KubernetesAction.current_limits:type_name -> pulumicost.v1.KubernetesResources
+	55,  // 76: pulumicost.v1.KubernetesAction.recommended_limits:type_name -> pulumicost.v1.KubernetesResources
+	77,  // 77: pulumicost.v1.ModifyAction.current_config:type_name -> pulumicost.v1.ModifyAction.CurrentConfigEntry
+	78,  // 78: pulumicost.v1.ModifyAction.recommended_config:type_name -> pulumicost.v1.ModifyAction.RecommendedConfigEntry
+	79,  // 79: pulumicost.v1.RecommendationSummary.count_by_category:type_name -> pulumicost.v1.RecommendationSummary.CountByCategoryEntry
+	80,  // 80: pulumicost.v1.RecommendationSummary.savings_by_category:type_name -> pulumicost.v1.RecommendationSummary.SavingsByCategoryEntry
+	81,  // 81: pulumicost.v1.RecommendationSummary.count_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.CountByActionTypeEntry
+	82,  // 82: pulumicost.v1.RecommendationSummary.savings_by_action_type:type_name -> pulumicost.v1.RecommendationSummary.SavingsByActionTypeEntry
+	11,  // 83: pulumicost.v1.DismissRecommendationRequest.reason:type_name -> pulumicost.v1.DismissalReason
+	85,  // 84: pulumicost.v1.DismissRecommendationRequest.expires_at:type_name -> google.protobuf.Timestamp
+	85,  // 85: pulumicost.v1.DismissRecommendationResponse.dismissed_at:type_name -> google.protobuf.Timestamp
+	85,  // 86: pulumicost.v1.DismissRecommendationResponse.expires_at:type_name -> google.protobuf.Timestamp
+	83,  // 87: pulumicost.v1.GetPluginInfoResponse.metadata:type_name -> pulumicost.v1.GetPluginInfoResponse.MetadataEntry
+	89,  // 88: pulumicost.v1.FieldMapping.support_status:type_name -> pulumicost.v1.FieldSupportStatus
+	24,  // 89: pulumicost.v1.DryRunRequest.resource:type_name -> pulumicost.v1.ResourceDescriptor
+	84,  // 90: pulumicost.v1.DryRunRequest.simulation_parameters:type_name -> pulumicost.v1.DryRunRequest.SimulationParametersEntry
+	63,  // 91: pulumicost.v1.DryRunResponse.field_mappings:type_name -> pulumicost.v1.FieldMapping
+	13,  // 92: pulumicost.v1.CostSourceService.Name:input_type -> pulumicost.v1.NameRequest
+	16,  // 93: pulumicost.v1.CostSourceService.Supports:input_type -> pulumicost.v1.SupportsRequest
+	18,  // 94: pulumicost.v1.CostSourceService.GetActualCost:input_type -> pulumicost.v1.GetActualCostRequest
+	20,  // 95: pulumicost.v1.CostSourceService.GetProjectedCost:input_type -> pulumicost.v1.GetProjectedCostRequest
+	22,  // 96: pulumicost.v1.CostSourceService.GetPricingSpec:input_type -> pulumicost.v1.GetPricingSpecRequest
+	43,  // 97: pulumicost.v1.CostSourceService.EstimateCost:input_type -> pulumicost.v1.EstimateCostRequest
+	45,  // 98: pulumicost.v1.CostSourceService.GetRecommendations:input_type -> pulumicost.v1.GetRecommendationsRequest
+	59,  // 99: pulumicost.v1.CostSourceService.DismissRecommendation:input_type -> pulumicost.v1.DismissRecommendationRequest
+	90,  // 100: pulumicost.v1.CostSourceService.GetBudgets:input_type -> pulumicost.v1.GetBudgetsRequest
+	61,  // 101: pulumicost.v1.CostSourceService.GetPluginInfo:input_type -> pulumicost.v1.GetPluginInfoRequest
+	64,  // 102: pulumicost.v1.CostSourceService.DryRun:input_type -> pulumicost.v1.DryRunRequest
+	30,  // 103: pulumicost.v1.ObservabilityService.HealthCheck:input_type -> pulumicost.v1.HealthCheckRequest
+	32,  // 104: pulumicost.v1.ObservabilityService.GetMetrics:input_type -> pulumicost.v1.GetMetricsRequest
+	36,  // 105: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:input_type -> pulumicost.v1.GetServiceLevelIndicatorsRequest
+	14,  // 106: pulumicost.v1.CostSourceService.Name:output_type -> pulumicost.v1.NameResponse
+	17,  // 107: pulumicost.v1.CostSourceService.Supports:output_type -> pulumicost.v1.SupportsResponse
+	19,  // 108: pulumicost.v1.CostSourceService.GetActualCost:output_type -> pulumicost.v1.GetActualCostResponse
+	21,  // 109: pulumicost.v1.CostSourceService.GetProjectedCost:output_type -> pulumicost.v1.GetProjectedCostResponse
+	23,  // 110: pulumicost.v1.CostSourceService.GetPricingSpec:output_type -> pulumicost.v1.GetPricingSpecResponse
+	44,  // 111: pulumicost.v1.CostSourceService.EstimateCost:output_type -> pulumicost.v1.EstimateCostResponse
+	46,  // 112: pulumicost.v1.CostSourceService.GetRecommendations:output_type -> pulumicost.v1.GetRecommendationsResponse
+	60,  // 113: pulumicost.v1.CostSourceService.DismissRecommendation:output_type -> pulumicost.v1.DismissRecommendationResponse
+	91,  // 114: pulumicost.v1.CostSourceService.GetBudgets:output_type -> pulumicost.v1.GetBudgetsResponse
+	62,  // 115: pulumicost.v1.CostSourceService.GetPluginInfo:output_type -> pulumicost.v1.GetPluginInfoResponse
+	65,  // 116: pulumicost.v1.CostSourceService.DryRun:output_type -> pulumicost.v1.DryRunResponse
+	31,  // 117: pulumicost.v1.ObservabilityService.HealthCheck:output_type -> pulumicost.v1.HealthCheckResponse
+	33,  // 118: pulumicost.v1.ObservabilityService.GetMetrics:output_type -> pulumicost.v1.GetMetricsResponse
+	37,  // 119: pulumicost.v1.ObservabilityService.GetServiceLevelIndicators:output_type -> pulumicost.v1.GetServiceLevelIndicatorsResponse
+	106, // [106:120] is the sub-list for method output_type
+	92,  // [92:106] is the sub-list for method input_type
+	92,  // [92:92] is the sub-list for extension type_name
+	92,  // [92:92] is the sub-list for extension extendee
+	0,   // [0:92] is the sub-list for field type_name
 }
 
 func init() { file_pulumicost_v1_costsource_proto_init() }
@@ -5884,7 +6200,7 @@ func file_pulumicost_v1_costsource_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_costsource_proto_rawDesc), len(file_pulumicost_v1_costsource_proto_rawDesc)),
 			NumEnums:      13,
-			NumMessages:   68,
+			NumMessages:   72,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

@@ -1,0 +1,161 @@
+{
+  "request": {
+    "resource": {
+      "provider": "azure",
+      "resource_type": "vm",
+      "region": "eastus",
+      "sku": "Standard_B1s"
+    },
+    "simulation_parameters": {
+      "pricing_tier": "standard"
+    }
+  },
+  "response": {
+    "field_mappings": [
+      {
+        "field_name": "provider_name",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "billing_account_id",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "service_category",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "enum"
+      },
+      {
+        "field_name": "service_name",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "billed_cost",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "double"
+      },
+      {
+        "field_name": "effective_cost",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "double"
+      },
+      {
+        "field_name": "list_cost",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "double"
+      },
+      {
+        "field_name": "consumed_quantity",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "double"
+      },
+      {
+        "field_name": "consumed_unit",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "resource_id",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "resource_name",
+        "support_status": "FIELD_SUPPORT_STATUS_CONDITIONAL",
+        "condition_description": "Populated when VM resource has a name tag configured",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "region_name",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "availability_zone",
+        "support_status": "FIELD_SUPPORT_STATUS_UNSUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "sku_id",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "tags",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "map"
+      },
+      {
+        "field_name": "charge_category",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "enum"
+      },
+      {
+        "field_name": "charge_class",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "enum"
+      },
+      {
+        "field_name": "pricing_category",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "enum"
+      },
+      {
+        "field_name": "pricing_quantity",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "double"
+      },
+      {
+        "field_name": "pricing_unit",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "list_unit_price",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "double"
+      },
+      {
+        "field_name": "billing_currency",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "enum"
+      },
+      {
+        "field_name": "billing_period_start",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "timestamp"
+      },
+      {
+        "field_name": "billing_period_end",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "timestamp"
+      },
+      {
+        "field_name": "charge_period_start",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "timestamp"
+      },
+      {
+        "field_name": "charge_period_end",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "timestamp"
+      },
+      {
+        "field_name": "invoice_id",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      },
+      {
+        "field_name": "invoice_issuer",
+        "support_status": "FIELD_SUPPORT_STATUS_SUPPORTED",
+        "expected_type": "string"
+      }
+    ],
+    "configuration_valid": true,
+    "configuration_errors": [],
+    "resource_type_supported": true
+  }
+}

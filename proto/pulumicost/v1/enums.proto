@@ -86,6 +86,39 @@ enum FocusCapacityReservationStatus {
   FOCUS_CAPACITY_RESERVATION_STATUS_UNUSED = 2;
 }
 
+// FieldSupportStatus represents the support status of a FOCUS field for a given
+// resource type in dry-run introspection. Used in DryRunResponse to indicate whether
+// a plugin can populate specific fields for a queried resource type.
+//
+// Usage in dry-run responses:
+//   - SUPPORTED: Field is always populated for this resource type
+//   - UNSUPPORTED: Field is never populated (e.g., K8s-specific fields on AWS)
+//   - CONDITIONAL: Field depends on resource configuration (provide condition_description)
+//   - DYNAMIC: Field requires runtime data to determine (provide condition_description)
+enum FieldSupportStatus {
+  // Default value - unknown or not determined.
+  // Should not be used in well-formed responses; indicates incomplete implementation.
+  FIELD_SUPPORT_STATUS_UNSPECIFIED = 0;
+
+  // Field is always populated for this resource type.
+  // Example: service_category is always available for compute resources.
+  FIELD_SUPPORT_STATUS_SUPPORTED = 1;
+
+  // Field is never populated for this resource type.
+  // Example: kubernetes-specific fields on AWS EC2 resources.
+  FIELD_SUPPORT_STATUS_UNSUPPORTED = 2;
+
+  // Field is populated based on resource configuration or provider settings.
+  // When using this status, condition_description MUST explain the condition.
+  // Example: availability_zone only populated for regional resources in multi-AZ providers.
+  FIELD_SUPPORT_STATUS_CONDITIONAL = 3;
+
+  // Field requires runtime data to determine value; cannot be fully introspected.
+  // When using this status, condition_description SHOULD explain what data is needed.
+  // Example: actual billed_cost values require querying billing APIs.
+  FIELD_SUPPORT_STATUS_DYNAMIC = 4;
+}
+
 // GrowthType represents the mathematical model used for projecting cost growth.
 // Used in ResourceDescriptor and GetProjectedCostRequest for forward-looking projections.
 enum GrowthType {

@@ -29,6 +29,7 @@ const (
 	CostSourceService_DismissRecommendation_FullMethodName = "/pulumicost.v1.CostSourceService/DismissRecommendation"
 	CostSourceService_GetBudgets_FullMethodName            = "/pulumicost.v1.CostSourceService/GetBudgets"
 	CostSourceService_GetPluginInfo_FullMethodName         = "/pulumicost.v1.CostSourceService/GetPluginInfo"
+	CostSourceService_DryRun_FullMethodName                = "/pulumicost.v1.CostSourceService/DryRun"
 )
 
 // CostSourceServiceClient is the client API for CostSourceService service.
@@ -137,6 +138,38 @@ type CostSourceServiceClient interface {
 	//	    SpecVersion: resp.GetSpecVersion(),
 	//	}
 	GetPluginInfo(ctx context.Context, in *GetPluginInfoRequest, opts ...grpc.CallOption) (*GetPluginInfoResponse, error)
+	// DryRun returns field mapping information for a resource type without
+	// performing actual cost data retrieval. Useful for debugging plugin
+	// configurations and comparing plugin capabilities.
+	//
+	// This RPC is optional - plugins that do not support dry-run introspection
+	// should return Unimplemented. Check SupportsResponse.capabilities["dry_run"]
+	// to detect support before calling.
+	//
+	// Response time requirement: <100ms (no external network calls).
+	// The response should be generated entirely from local configuration/logic.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid resource descriptor (empty provider/resource_type)
+	//   - Unimplemented: Plugin does not support dry-run introspection
+	//   - Internal: Unexpected error during introspection
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.DryRun(ctx, &DryRunRequest{...})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        log.Info("Plugin does not implement DryRun RPC")
+	//	        // Fall back to inferring capabilities from Supports RPC
+	//	        return nil
+	//	    }
+	//	    return nil, fmt.Errorf("DryRun failed: %w", err)
+	//	}
+	//	// Process field mappings
+	//	for _, fm := range resp.GetFieldMappings() {
+	//	    log.Printf("%s: %v", fm.GetFieldName(), fm.GetSupportStatus())
+	//	}
+	DryRun(ctx context.Context, in *DryRunRequest, opts ...grpc.CallOption) (*DryRunResponse, error)
 }
 
 type costSourceServiceClient struct {
@@ -241,6 +274,16 @@ func (c *costSourceServiceClient) GetPluginInfo(ctx context.Context, in *GetPlug
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetPluginInfoResponse)
 	err := c.cc.Invoke(ctx, CostSourceService_GetPluginInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *costSourceServiceClient) DryRun(ctx context.Context, in *DryRunRequest, opts ...grpc.CallOption) (*DryRunResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DryRunResponse)
+	err := c.cc.Invoke(ctx, CostSourceService_DryRun_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -353,6 +396,38 @@ type CostSourceServiceServer interface {
 	//	    SpecVersion: resp.GetSpecVersion(),
 	//	}
 	GetPluginInfo(context.Context, *GetPluginInfoRequest) (*GetPluginInfoResponse, error)
+	// DryRun returns field mapping information for a resource type without
+	// performing actual cost data retrieval. Useful for debugging plugin
+	// configurations and comparing plugin capabilities.
+	//
+	// This RPC is optional - plugins that do not support dry-run introspection
+	// should return Unimplemented. Check SupportsResponse.capabilities["dry_run"]
+	// to detect support before calling.
+	//
+	// Response time requirement: <100ms (no external network calls).
+	// The response should be generated entirely from local configuration/logic.
+	//
+	// Error cases:
+	//   - InvalidArgument: Invalid resource descriptor (empty provider/resource_type)
+	//   - Unimplemented: Plugin does not support dry-run introspection
+	//   - Internal: Unexpected error during introspection
+	//
+	// Client-side error handling example (Go):
+	//
+	//	resp, err := client.DryRun(ctx, &DryRunRequest{...})
+	//	if err != nil {
+	//	    if status.Code(err) == codes.Unimplemented {
+	//	        log.Info("Plugin does not implement DryRun RPC")
+	//	        // Fall back to inferring capabilities from Supports RPC
+	//	        return nil
+	//	    }
+	//	    return nil, fmt.Errorf("DryRun failed: %w", err)
+	//	}
+	//	// Process field mappings
+	//	for _, fm := range resp.GetFieldMappings() {
+	//	    log.Printf("%s: %v", fm.GetFieldName(), fm.GetSupportStatus())
+	//	}
+	DryRun(context.Context, *DryRunRequest) (*DryRunResponse, error)
 	mustEmbedUnimplementedCostSourceServiceServer()
 }
 
@@ -392,6 +467,9 @@ func (UnimplementedCostSourceServiceServer) GetBudgets(context.Context, *GetBudg
 }
 func (UnimplementedCostSourceServiceServer) GetPluginInfo(context.Context, *GetPluginInfoRequest) (*GetPluginInfoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPluginInfo not implemented")
+}
+func (UnimplementedCostSourceServiceServer) DryRun(context.Context, *DryRunRequest) (*DryRunResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DryRun not implemented")
 }
 func (UnimplementedCostSourceServiceServer) mustEmbedUnimplementedCostSourceServiceServer() {}
 func (UnimplementedCostSourceServiceServer) testEmbeddedByValue()                           {}
@@ -594,6 +672,24 @@ func _CostSourceService_GetPluginInfo_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CostSourceService_DryRun_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DryRunRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CostSourceServiceServer).DryRun(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CostSourceService_DryRun_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CostSourceServiceServer).DryRun(ctx, req.(*DryRunRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CostSourceService_ServiceDesc is the grpc.ServiceDesc for CostSourceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -640,6 +736,10 @@ var CostSourceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPluginInfo",
 			Handler:    _CostSourceService_GetPluginInfo_Handler,
+		},
+		{
+			MethodName: "DryRun",
+			Handler:    _CostSourceService_DryRun_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
