@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.13](https://github.com/rshade/pulumicost-spec/compare/v0.4.12...v0.4.13) (2026-01-01)
+
+
+### Added
+
+* **pluginsdk:** Add DryRun for plugin field mapping discovery ([#248](https://github.com/rshade/pulumicost-spec/issues/248)) ([45cea69](https://github.com/rshade/pulumicost-spec/commit/45cea69ca004e4d08a0fb9c08a1ea62422c0ec9f)), closes [#186](https://github.com/rshade/pulumicost-spec/issues/186)
+* **proto:** add growth_type to projected cost response ([#250](https://github.com/rshade/pulumicost-spec/issues/250)) ([4ba1da4](https://github.com/rshade/pulumicost-spec/commit/4ba1da43a642939f1bceb42c8bf2ebd14b7d327d)), closes [#249](https://github.com/rshade/pulumicost-spec/issues/249)
+
 ## [0.4.12](https://github.com/rshade/pulumicost-spec/compare/v0.4.11...v0.4.12) (2025-12-31)
 
 
