@@ -54,13 +54,33 @@ centered around the FinOps Foundation's FOCUS standard.
 
 ---
 
+## [Completed Milestones] (Q1 2026)
+
+### Protocol & Modeling
+
+- [x] **Forecasting Primitives**
+  ([#241](https://github.com/rshade/pulumicost-spec/issues/241),
+  [#250](https://github.com/rshade/pulumicost-spec/issues/250)) -
+  Added `GrowthType` (Linear, Exponential) and `GrowthRate` to `CostResult` for cost projections.
+- [x] **FOCUS 1.3 Migration** ([#199](https://github.com/rshade/pulumicost-spec/issues/199)) -
+  Audit new columns and entities in FOCUS 1.3 and update builder APIs.
+
+### SDK & Tooling
+
+- [x] **Plugin Capability Discovery** ([#242](https://github.com/rshade/pulumicost-spec/issues/242)) -
+  Implemented `GetPluginInfo` RPC for spec version compatibility and capability advertisement.
+- [x] **Plugin Capability Dry Run Mode** ([#248](https://github.com/rshade/pulumicost-spec/issues/248)) -
+  Implemented `DryRun` for plugin field mapping discovery.
+- [x] **Contextual FinOps Validation** ([#201](https://github.com/rshade/pulumicost-spec/issues/201)) -
+  Extended `pluginsdk/validation` to include contextual checks.
+- [x] **Advanced SDK Patterns** ([#213](https://github.com/rshade/pulumicost-spec/issues/213)) -
+  Implementation examples for complex tiered pricing and multi-provider mapping.
+- [x] **SDK Documentation Overhaul** ([#243](https://github.com/rshade/pulumicost-spec/issues/243)) -
+  Comprehensive Godoc, thread safety, rate limiting, and performance documentation.
+
+---
+
 ## [Immediate Focus] (Q1 2026)
-
-### High Priority Research
-
-- [ ] **Plugin Capability Discovery (Feature Flagging)**
-  ([#194](https://github.com/rshade/pulumicost-spec/issues/194)) -
-  Implementing a discovery protocol for advertisement of supported RPCs.
 
 ### Stability & Maintenance
 
@@ -69,17 +89,6 @@ centered around the FinOps Foundation's FOCUS standard.
 
 ### Planned Features
 
-- [ ] **FOCUS 1.3 Migration** ([#183](https://github.com/rshade/pulumicost-spec/issues/183)) -
-  Audit new columns and entities in FOCUS 1.3 and update builder APIs.
-- [ ] **Contextual FinOps Validation** ([#184](https://github.com/rshade/pulumicost-spec/issues/184)) -
-  Extend `pluginsdk/validation` to include contextual checks
-  (e.g., ensuring `ListPrice` is not less than `BilledCost`).
-- [ ] **Advanced SDK Patterns** ([#185](https://github.com/rshade/pulumicost-spec/issues/185)) -
-  Implementation examples for complex tiered pricing and multi-provider mapping.
-- [ ] **SDK Documentation Overhaul** -
-  Comprehensive Godoc and implementation examples for the new `mapping` and `validation` packages.
-- [ ] **Forecasting Primitives** ([#215](https://github.com/rshade/pulumicost-spec/issues/215))
-  - Define `GrowthType` enum (Linear, Exponential) and `GrowthRate` fields in `CostResult`
 - [ ] **Pricing Tier Intelligence** ([#217](https://github.com/rshade/pulumicost-spec/issues/217))
   - Define `PricingTier` enum (`STANDARD`, `SPOT`, `RESERVED`)
   - Define `SpotRisk` enum (`LOW`, `MEDIUM`, `HIGH`) for interruption probability
@@ -132,16 +141,11 @@ centered around the FinOps Foundation's FOCUS standard.
 
 - [ ] **Custom Health Checker Interface** ([#230](https://github.com/rshade/pulumicost-spec/issues/230)) -
   Allow plugins to implement custom health check logic beyond simple "ok" responses.
-- [ ] **Thread Safety Documentation** ([#231](https://github.com/rshade/pulumicost-spec/issues/231)) -
-  Explicitly document concurrency guarantees for Server, Client, and configuration types.
 - [ ] **Context Validation Helpers** ([#232](https://github.com/rshade/pulumicost-spec/issues/232)) -
   Add utilities for validating context deadlines and detecting already-expired contexts.
-- [ ] **Rate Limiting Patterns** ([#233](https://github.com/rshade/pulumicost-spec/issues/233)) -
-  Document best practices for implementing rate limiting in plugins.
 
 ### Proposed for Discussion (Discovery)
 
-- [ ] **Plugin Capability Dry Run Mode** ([#186](https://github.com/rshade/pulumicost-spec/issues/186))
 - [ ] **JSON-LD / Schema.org Serialization** ([#187](https://github.com/rshade/pulumicost-spec/issues/187))
 - [ ] **Standardized Recommendation Reasoning** ([#188](https://github.com/rshade/pulumicost-spec/issues/188))
 - [ ] **Multi-Currency Segregation Pattern** ([#190](https://github.com/rshade/pulumicost-spec/issues/190))
