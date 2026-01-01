@@ -1,0 +1,25 @@
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "focus": "https://focus.finops.org/v1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "focus:ContractCommitment",
+  "@id": "urn:focus:commitment:a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "contractCommitmentId": "commit-001",
+  "contractId": "contract-aws-2025",
+  "contractCommitmentCategory": "FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND",
+  "contractCommitmentType": "Reserved Instance",
+  "contractCommitmentPeriodStart": "2025-01-01T00:00:00Z",
+  "contractCommitmentPeriodEnd": "2025-12-31T23:59:59Z",
+  "contractPeriodStart": "2025-01-01T00:00:00Z",
+  "contractPeriodEnd": "2027-12-31T23:59:59Z",
+  "contractCommitmentCost": {
+    "@type": "schema:MonetaryAmount",
+    "value": 120000.00,
+    "currency": "USD"
+  },
+  "contractCommitmentQuantity": 8760.0,
+  "contractCommitmentUnit": "Hours",
+  "billingCurrency": "USD"
+}

@@ -1,0 +1,169 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "schema": "https://schema.org/",
+    "focus": "https://focus.finops.org/v1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "FocusCostRecord": "focus:FocusCostRecord",
+    "ContractCommitment": "focus:ContractCommitment",
+
+    "billingAccountId": "focus:billingAccountId",
+    "billingAccountName": "focus:billingAccountName",
+    "billingAccountType": "focus:billingAccountType",
+    "subAccountId": "focus:subAccountId",
+    "subAccountName": "focus:subAccountName",
+    "subAccountType": "focus:subAccountType",
+
+    "billingPeriodStart": {
+      "@id": "focus:billingPeriodStart",
+      "@type": "xsd:dateTime"
+    },
+    "billingPeriodEnd": {
+      "@id": "focus:billingPeriodEnd",
+      "@type": "xsd:dateTime"
+    },
+    "chargePeriodStart": {
+      "@id": "focus:chargePeriodStart",
+      "@type": "xsd:dateTime"
+    },
+    "chargePeriodEnd": {
+      "@id": "focus:chargePeriodEnd",
+      "@type": "xsd:dateTime"
+    },
+
+    "chargeCategory": "focus:chargeCategory",
+    "chargeClass": "focus:chargeClass",
+    "chargeDescription": "focus:chargeDescription",
+    "chargeFrequency": "focus:chargeFrequency",
+
+    "pricingCategory": "focus:pricingCategory",
+    "pricingQuantity": {
+      "@id": "focus:pricingQuantity",
+      "@type": "xsd:decimal"
+    },
+    "pricingUnit": "focus:pricingUnit",
+    "listUnitPrice": {
+      "@id": "focus:listUnitPrice",
+      "@type": "xsd:decimal"
+    },
+
+    "serviceCategory": "focus:serviceCategory",
+    "serviceName": "focus:serviceName",
+    "serviceSubcategory": "focus:serviceSubcategory",
+
+    "resourceId": "focus:resourceId",
+    "resourceName": "focus:resourceName",
+    "resourceType": "focus:resourceType",
+
+    "skuId": "focus:skuId",
+    "skuPriceId": "focus:skuPriceId",
+    "skuMeter": "focus:skuMeter",
+    "skuPriceDetails": "focus:skuPriceDetails",
+
+    "regionId": "focus:regionId",
+    "regionName": "focus:regionName",
+    "availabilityZone": "focus:availabilityZone",
+
+    "billedCost": "focus:billedCost",
+    "listCost": "focus:listCost",
+    "effectiveCost": "focus:effectiveCost",
+    "contractedCost": "focus:contractedCost",
+    "contractedUnitPrice": {
+      "@id": "focus:contractedUnitPrice",
+      "@type": "xsd:decimal"
+    },
+
+    "consumedQuantity": {
+      "@id": "focus:consumedQuantity",
+      "@type": "xsd:decimal"
+    },
+    "consumedUnit": "focus:consumedUnit",
+
+    "commitmentDiscountCategory": "focus:commitmentDiscountCategory",
+    "commitmentDiscountId": "focus:commitmentDiscountId",
+    "commitmentDiscountName": "focus:commitmentDiscountName",
+    "commitmentDiscountQuantity": {
+      "@id": "focus:commitmentDiscountQuantity",
+      "@type": "xsd:decimal"
+    },
+    "commitmentDiscountStatus": "focus:commitmentDiscountStatus",
+    "commitmentDiscountType": "focus:commitmentDiscountType",
+    "commitmentDiscountUnit": "focus:commitmentDiscountUnit",
+
+    "capacityReservationId": "focus:capacityReservationId",
+    "capacityReservationStatus": "focus:capacityReservationStatus",
+
+    "invoiceId": "focus:invoiceId",
+    "invoiceIssuer": "focus:invoiceIssuer",
+
+    "tags": {
+      "@id": "focus:tags",
+      "@container": "@index"
+    },
+    "extendedColumns": {
+      "@id": "focus:extendedColumns",
+      "@container": "@index"
+    },
+
+    "providerName": {
+      "@id": "focus:providerName",
+      "schema:supersededBy": "focus:serviceProviderName"
+    },
+    "publisher": {
+      "@id": "focus:publisher",
+      "schema:supersededBy": "focus:hostProviderName"
+    },
+    "serviceProviderName": "focus:serviceProviderName",
+    "hostProviderName": "focus:hostProviderName",
+
+    "allocatedMethodId": "focus:allocatedMethodId",
+    "allocatedMethodDetails": "focus:allocatedMethodDetails",
+    "allocatedResourceId": "focus:allocatedResourceId",
+    "allocatedResourceName": "focus:allocatedResourceName",
+    "allocatedTags": {
+      "@id": "focus:allocatedTags",
+      "@container": "@index"
+    },
+
+    "contractApplied": {
+      "@id": "focus:contractApplied",
+      "@type": "@id"
+    },
+
+    "contractCommitmentId": "focus:contractCommitmentId",
+    "contractId": "focus:contractId",
+    "contractCommitmentCategory": "focus:contractCommitmentCategory",
+    "contractCommitmentType": "focus:contractCommitmentType",
+    "contractCommitmentPeriodStart": {
+      "@id": "focus:contractCommitmentPeriodStart",
+      "@type": "xsd:dateTime"
+    },
+    "contractCommitmentPeriodEnd": {
+      "@id": "focus:contractCommitmentPeriodEnd",
+      "@type": "xsd:dateTime"
+    },
+    "contractPeriodStart": {
+      "@id": "focus:contractPeriodStart",
+      "@type": "xsd:dateTime"
+    },
+    "contractPeriodEnd": {
+      "@id": "focus:contractPeriodEnd",
+      "@type": "xsd:dateTime"
+    },
+    "contractCommitmentCost": "focus:contractCommitmentCost",
+    "contractCommitmentQuantity": {
+      "@id": "focus:contractCommitmentQuantity",
+      "@type": "xsd:decimal"
+    },
+    "contractCommitmentUnit": "focus:contractCommitmentUnit",
+    "billingCurrency": "focus:billingCurrency",
+
+    "MonetaryAmount": "schema:MonetaryAmount",
+    "value": {
+      "@id": "schema:value",
+      "@type": "xsd:decimal"
+    },
+    "currency": "schema:currency"
+  }
+}

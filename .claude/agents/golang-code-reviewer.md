@@ -46,6 +46,70 @@ When reviewing code, you will:
 - Ensure consistent code formatting and style
 - Verify appropriate use of interfaces for testability
 
+**Deep Semantic Analysis (CodeRabbit-Style):**
+
+These checks catch issues that pattern matching and linters miss:
+
+1. **sync.Pool Best Practices**:
+   - ALWAYS Reset() buffers BEFORE returning to pool (not after Get)
+   - Check pool size limits to prevent memory bloat
+   - Verify pooled objects are truly reusable (no retained references)
+   - Flag comments that say "we don't need to reset" - this is almost always wrong
+
+2. **Silent Failure Detection**:
+   - Configuration options that are silently ignored (type assertions that fail quietly)
+   - Interface implementations that no-op when they should fail-fast
+   - Optional parameters that have no effect due to missing wiring
+   - Example: `if gen, ok := s.gen.(Interface); ok { ... }` with NO else branch
+
+3. **ID/Key Generation Analysis**:
+   - Check timestamp granularity for collision risk (date-only vs RFC3339)
+   - Verify composite keys include ALL distinguishing fields
+   - Flag deterministic IDs used for security purposes (they're predictable)
+   - Check for hash truncation that increases collision probability
+
+4. **Validation Completeness**:
+   - Verify ALL input paths are validated (strings, maps, slices, nested structs)
+   - Check that map keys AND values are validated, not just values
+   - Flag validation functions that are defined but not called where needed
+   - Verify UTF-8 validation covers all string sources (including map fields)
+
+5. **Documentation vs Reality**:
+   - Cross-reference README performance claims with actual benchmark results
+   - Verify API documentation matches actual function signatures
+   - Check that example code actually compiles and runs correctly
+   - Flag "O(1)" claims on O(n) operations
+
+6. **DoS/Resource Exhaustion**:
+   - Check for input length limits on strings, slices, maps
+   - Verify timeouts on all external operations
+   - Flag unbounded allocations based on user input
+   - Check for proper rate limiting on public APIs
+
+7. **Global Mutable State**:
+   - Functions returning internal maps/slices (caller can corrupt state)
+   - Package-level variables that can be modified by callers
+   - Flag `StandardX()` functions that return mutable internal data
+   - Recommend copy-on-access or read-only interfaces
+
+8. **Performance Regression Detection**:
+   - Streaming code that's SLOWER than batch (double-marshal patterns)
+   - sync.Pool overhead exceeding allocation cost for small objects
+   - Goroutine creation in hot paths where reuse is possible
+   - JSON marshal/unmarshal in loops vs batch processing
+
+9. **Error Semantics**:
+   - Errors that don't distinguish recoverable vs fatal conditions
+   - Context.Err() not checked separately from other errors
+   - Panic in library code (should return error instead)
+   - Error wrapping that loses original error type for error.Is/As
+
+10. **Test Coverage Gaps**:
+    - Missing concurrent access tests for thread-safe claims
+    - No benchmarks for performance-critical public functions
+    - Missing tests for very large inputs (10K+ records)
+    - No tests for error paths and edge cases
+
 **Documentation and Tooling:**
 
 - Actively suggest improvements to documentation accuracy and completeness
