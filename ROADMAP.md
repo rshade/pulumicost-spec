@@ -58,7 +58,9 @@ centered around the FinOps Foundation's FOCUS standard.
 
 ### Protocol & Modeling
 
-- [x] **Forecasting Primitives** ([#241](https://github.com/rshade/pulumicost-spec/issues/241), [#250](https://github.com/rshade/pulumicost-spec/issues/250)) -
+- [x] **Forecasting Primitives**
+  ([#241](https://github.com/rshade/pulumicost-spec/issues/241),
+  [#250](https://github.com/rshade/pulumicost-spec/issues/250)) -
   Added `GrowthType` (Linear, Exponential) and `GrowthRate` to `CostResult` for cost projections.
 - [x] **FOCUS 1.3 Migration** ([#199](https://github.com/rshade/pulumicost-spec/issues/199)) -
   Audit new columns and entities in FOCUS 1.3 and update builder APIs.
