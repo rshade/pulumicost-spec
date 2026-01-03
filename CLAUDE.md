@@ -717,6 +717,8 @@ cd schemas && /init            # JSON Schema validation
 
 - Go 1.25.5 (per go.mod) + Protocol Buffers v3 (032-plugin-dry-run)
 - N/A (stateless RPC introspection, no data persistence) (032-plugin-dry-run)
+- Go 1.25.5 (per go.mod) + encoding/json (stdlib), crypto/sha256 (stdlib), no external JSON-LD (032-jsonld-serialization)
+- N/A (stateless serialization library) (032-jsonld-serialization)
 
 - Go 1.25.5 (per go.mod) + markdown documentation + pluginsdk package, testing package, zerolog (logging examples) (031-sdk-docs-consolidation)
 - N/A (pure documentation) (031-sdk-docs-consolidation)

@@ -1,0 +1,47 @@
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "focus": "https://focus.finops.org/v1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "focus:FocusCostRecord",
+  "@id": "urn:focus:cost:a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "billingAccountId": "123456789012",
+  "billingAccountName": "Production AWS Account",
+  "chargePeriodStart": "2025-12-30T00:00:00Z",
+  "chargePeriodEnd": "2025-12-31T00:00:00Z",
+  "serviceCategory": "FOCUS_SERVICE_CATEGORY_COMPUTE",
+  "serviceName": "Amazon EC2",
+  "resourceId": "i-1234567890abcdef0",
+  "resourceName": "production-web-server-1",
+  "resourceType": "m5.large",
+  "regionId": "us-east-1",
+  "regionName": "US East (N. Virginia)",
+  "billedCost": {
+    "@type": "schema:MonetaryAmount",
+    "value": 125.50,
+    "currency": "USD"
+  },
+  "listCost": {
+    "@type": "schema:MonetaryAmount",
+    "value": 150.00,
+    "currency": "USD"
+  },
+  "effectiveCost": {
+    "@type": "schema:MonetaryAmount",
+    "value": 125.50,
+    "currency": "USD"
+  },
+  "billingCurrency": "USD",
+  "chargeCategory": "FOCUS_CHARGE_CATEGORY_USAGE",
+  "pricingCategory": "FOCUS_PRICING_CATEGORY_ON_DEMAND",
+  "consumedQuantity": 744.0,
+  "consumedUnit": "Hours",
+  "tags": {
+    "environment": "production",
+    "team": "engineering",
+    "cost_center": "CC-12345"
+  },
+  "serviceProviderName": "Amazon Web Services",
+  "hostProviderName": "Amazon Web Services"
+}
