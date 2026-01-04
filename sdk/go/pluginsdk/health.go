@@ -19,6 +19,7 @@ func HealthHandler() http.Handler {
 			return
 		}
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.WriteHeader(http.StatusOK)
 		if r.Method == http.MethodGet {
 			_, _ = w.Write([]byte("ok"))

@@ -715,6 +715,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod) + net/http (stdlib), strings (stdlib) - no new dependencies (033-cors-headers-config)
+- N/A (stateless configuration extension) (033-cors-headers-config)
+
 - Go 1.25.5 (per go.mod) + Protocol Buffers v3 (032-plugin-dry-run)
 - N/A (stateless RPC introspection, no data persistence) (032-plugin-dry-run)
 - Go 1.25.5 (per go.mod) + encoding/json (stdlib), crypto/sha256 (stdlib), no external JSON-LD (032-jsonld-serialization)

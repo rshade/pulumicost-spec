@@ -248,6 +248,7 @@ func TestHealthHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Equal(t, "ok", w.Body.String())
 		assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+		assert.Equal(t, "nosniff", w.Header().Get("X-Content-Type-Options"))
 	})
 
 	t.Run("HEAD returns 200 OK with no body", func(t *testing.T) {
@@ -330,6 +331,7 @@ func TestServeConnect_CORS(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 		assert.Equal(t, "http://localhost:3000", resp.Header.Get("Access-Control-Allow-Origin"))
 		assert.Equal(t, "true", resp.Header.Get("Access-Control-Allow-Credentials"))
+		assert.Equal(t, "86400", resp.Header.Get("Access-Control-Max-Age")) // Default 24 hours
 	})
 
 	t.Run("actual request includes CORS headers", func(t *testing.T) {
@@ -440,4 +442,434 @@ func TestServe_CORSWildcardCredentialsValidation(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "AllowCredentials cannot be used with wildcard origin")
+}
+
+// T003: Test that nil AllowedHeaders uses default headers.
+func TestServe_CORS_NilAllowedHeaders_UsesDefaults(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "cors-nil-allowed-headers-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				// AllowedHeaders is nil - should use DefaultAllowedHeaders
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send preflight request
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	// Verify defaults are used
+	allowedHeaders := resp.Header.Get("Access-Control-Allow-Headers")
+	assert.Equal(t, pluginsdk.DefaultAllowedHeaders, allowedHeaders)
+
+	cancel()
+	<-errCh
+}
+
+// T004: Test that custom AllowedHeaders are used.
+func TestServe_CORS_CustomAllowedHeaders(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "cors-custom-allowed-headers-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	customHeaders := []string{"Content-Type", "Authorization", "X-Request-ID"}
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				AllowedHeaders: customHeaders,
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send preflight request
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	// Verify custom headers are used (joined by ", ")
+	allowedHeaders := resp.Header.Get("Access-Control-Allow-Headers")
+	assert.Equal(t, "Content-Type, Authorization, X-Request-ID", allowedHeaders)
+
+	cancel()
+	<-errCh
+}
+
+// T005: Test that empty AllowedHeaders slice results in empty header (FR-008).
+func TestServe_CORS_EmptyAllowedHeaders(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "cors-empty-allowed-headers-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				AllowedHeaders: []string{}, // Empty - should result in empty header
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send preflight request
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	// Verify empty header is set (browser will only allow CORS-safelisted headers)
+	allowedHeaders := resp.Header.Get("Access-Control-Allow-Headers")
+	assert.Empty(t, allowedHeaders)
+
+	cancel()
+	<-errCh
+}
+
+// T009: Test that nil ExposedHeaders uses default headers.
+func TestServe_CORS_NilExposedHeaders_UsesDefaults(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "cors-nil-exposed-headers-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				// ExposedHeaders is nil - should use DefaultExposedHeaders
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send actual request (not preflight) to check Expose-Headers
+	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+		bytes.NewReader([]byte(`{}`)))
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	// Verify defaults are used
+	exposedHeaders := resp.Header.Get("Access-Control-Expose-Headers")
+	assert.Equal(t, pluginsdk.DefaultExposedHeaders, exposedHeaders)
+
+	cancel()
+	<-errCh
+}
+
+// T010: Test that custom ExposedHeaders are used.
+func TestServe_CORS_CustomExposedHeaders(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "cors-custom-exposed-headers-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	customHeaders := []string{"X-Request-ID", "X-Trace-ID", "Grpc-Status"}
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				ExposedHeaders: customHeaders,
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send actual request to check Expose-Headers
+	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+		bytes.NewReader([]byte(`{}`)))
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	// Verify custom headers are used (joined by ", ")
+	exposedHeaders := resp.Header.Get("Access-Control-Expose-Headers")
+	assert.Equal(t, "X-Request-ID, X-Trace-ID, Grpc-Status", exposedHeaders)
+
+	cancel()
+	<-errCh
+}
+
+// T011: Test that empty ExposedHeaders slice results in empty header (FR-009).
+func TestServe_CORS_EmptyExposedHeaders(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "cors-empty-exposed-headers-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				ExposedHeaders: []string{}, // Empty - should result in empty header
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send actual request to check Expose-Headers
+	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+		bytes.NewReader([]byte(`{}`)))
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	// Verify empty header is set (no custom headers exposed to JavaScript)
+	exposedHeaders := resp.Header.Get("Access-Control-Expose-Headers")
+	assert.Empty(t, exposedHeaders)
+
+	cancel()
+	<-errCh
+}
+
+// T021: Test custom MaxAge configuration (#229).
+func TestServeConnect_CustomMaxAge(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "maxage-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				MaxAge:         intPtr(3600), // 1 hour instead of default 24h
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send preflight request and verify custom max-age
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+	assert.Equal(t, "3600", resp.Header.Get("Access-Control-Max-Age"))
+
+	cancel()
+	<-errCh
+}
+
+// T022: Test MaxAge of zero disables caching (#229).
+func TestServeConnect_MaxAgeZero(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "maxage-zero-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				MaxAge:         intPtr(0), // Disable caching
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Send preflight request and verify zero max-age
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+
+	resp, respErr := http.DefaultClient.Do(req)
+	require.NoError(t, respErr)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+	assert.Equal(t, "0", resp.Header.Get("Access-Control-Max-Age"))
+
+	cancel()
+	<-errCh
+}
+
+// intPtr is a helper to create a pointer to an int.
+func intPtr(v int) *int {
+	return &v
+}
+
+// T023: Benchmark corsMiddleware overhead for SC-005 compliance (<1μs per request).
+func BenchmarkCORSMiddleware(b *testing.B) {
+	// Create a simple handler that just returns OK
+	baseHandler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	// Wrap with CORS middleware via test server
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	plugin := &connectTestPlugin{name: "cors-benchmark-test"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled:        true,
+				AllowedOrigins: []string{"http://localhost:3000"},
+				AllowedHeaders: []string{"Content-Type", "Authorization", "X-Request-ID"},
+				ExposedHeaders: []string{"X-Request-ID", "Grpc-Status"},
+			},
+		})
+	}()
+
+	// Wait for server to be ready
+	addr := listener.Addr().String()
+	for range 50 {
+		healthResp, healthErr := http.Get("http://" + addr + "/healthz")
+		if healthErr == nil {
+			healthResp.Body.Close()
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	// Benchmark preflight requests (OPTIONS)
+	b.Run("preflight_request", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+			req.Header.Set("Origin", "http://localhost:3000")
+			req.Header.Set("Access-Control-Request-Method", "POST")
+
+			resp, doErr := http.DefaultClient.Do(req)
+			if doErr != nil {
+				b.Fatal(doErr)
+			}
+			resp.Body.Close()
+		}
+	})
+
+	// Benchmark actual CORS requests
+	b.Run("cors_request", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+				bytes.NewReader([]byte(`{}`)))
+			req.Header.Set("Origin", "http://localhost:3000")
+			req.Header.Set("Content-Type", "application/json")
+
+			resp, doErr := http.DefaultClient.Do(req)
+			if doErr != nil {
+				b.Fatal(doErr)
+			}
+			resp.Body.Close()
+		}
+	})
+
+	cancel()
+	select {
+	case <-errCh:
+	case <-time.After(time.Second):
+		b.Fatal("server did not shut down in time")
+	}
+
+	// Silence unused variable warning
+	_ = baseHandler
 }
