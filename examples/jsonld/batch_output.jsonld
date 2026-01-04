@@ -1,0 +1,68 @@
+[
+  {
+    "@context": {
+      "schema": "https://schema.org/",
+      "focus": "https://focus.finops.org/v1#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "@type": "focus:FocusCostRecord",
+    "@id": "urn:focus:cost:a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "billingAccountId": "123456789012",
+    "billingAccountName": "Production AWS Account",
+    "chargePeriodStart": "2025-12-30T00:00:00Z",
+    "chargePeriodEnd": "2025-12-31T00:00:00Z",
+    "serviceCategory": "FOCUS_SERVICE_CATEGORY_COMPUTE",
+    "serviceName": "Amazon EC2",
+    "resourceId": "i-1234567890abcdef0",
+    "billedCost": {
+      "@type": "schema:MonetaryAmount",
+      "value": 125.50,
+      "currency": "USD"
+    },
+    "billingCurrency": "USD"
+  },
+  {
+    "@context": {
+      "schema": "https://schema.org/",
+      "focus": "https://focus.finops.org/v1#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "@type": "focus:FocusCostRecord",
+    "@id": "urn:focus:cost:b2c3d4e5f67890a1b2c3d4e5f6789012",
+    "billingAccountId": "123456789012",
+    "billingAccountName": "Production AWS Account",
+    "chargePeriodStart": "2025-12-30T00:00:00Z",
+    "chargePeriodEnd": "2025-12-31T00:00:00Z",
+    "serviceCategory": "FOCUS_SERVICE_CATEGORY_STORAGE",
+    "serviceName": "Amazon S3",
+    "resourceId": "arn:aws:s3:::my-bucket",
+    "billedCost": {
+      "@type": "schema:MonetaryAmount",
+      "value": 45.00,
+      "currency": "USD"
+    },
+    "billingCurrency": "USD"
+  },
+  {
+    "@context": {
+      "schema": "https://schema.org/",
+      "focus": "https://focus.finops.org/v1#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "@type": "focus:FocusCostRecord",
+    "@id": "urn:focus:cost:c3d4e5f67890a1b2c3d4e5f678901234",
+    "billingAccountId": "123456789012",
+    "billingAccountName": "Production AWS Account",
+    "chargePeriodStart": "2025-12-30T00:00:00Z",
+    "chargePeriodEnd": "2025-12-31T00:00:00Z",
+    "serviceCategory": "FOCUS_SERVICE_CATEGORY_DATABASE",
+    "serviceName": "Amazon RDS",
+    "resourceId": "arn:aws:rds:us-east-1:123456789012:db:production-db",
+    "billedCost": {
+      "@type": "schema:MonetaryAmount",
+      "value": 250.00,
+      "currency": "USD"
+    },
+    "billingCurrency": "USD"
+  }
+]
