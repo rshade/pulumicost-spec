@@ -77,6 +77,15 @@ centered around the FinOps Foundation's FOCUS standard.
   Implementation examples for complex tiered pricing and multi-provider mapping.
 - [x] **SDK Documentation Overhaul** ([#243](https://github.com/rshade/pulumicost-spec/issues/243)) -
   Comprehensive Godoc, thread safety, rate limiting, and performance documentation.
+- [x] **DismissRecommendation Consistency** ([#225](https://github.com/rshade/pulumicost-spec/issues/225)) -
+  Made DismissRecommendation follow the same pattern as other RPC methods.
+- [x] **Standardized Benchmark Suite**
+  ([#113](https://github.com/rshade/pulumicost-spec/pull/113),
+  [#142](https://github.com/rshade/pulumicost-spec/pull/142)) -
+  Formalized "Time to First Byte" and memory allocation benchmarks for plugins.
+- [x] **JSON-LD / Schema.org Serialization** ([#187](https://github.com/rshade/pulumicost-spec/issues/187),
+  [#252](https://github.com/rshade/pulumicost-spec/pull/252)) -
+  Added `jsonld` package for FOCUS cost data serialization with Schema.org compatibility.
 
 ---
 
@@ -96,17 +105,8 @@ centered around the FinOps Foundation's FOCUS standard.
   - Add `UsageProfile` context to requests to allow plugins to adjust recommendations
     based on environment (e.g., Dev vs Prod)
 
-### In Progress
-
-- [/] **Standardized Benchmark Suite**
-  ([#113](https://github.com/rshade/pulumicost-spec/issues/113),
-  [#142](https://github.com/rshade/pulumicost-spec/issues/142)) -
-  Formalizing "Time to First Byte" and memory allocation benchmarks for plugins.
-
 ### Connect Protocol Enhancements
 
-- [ ] **DismissRecommendation Consistency** ([#225](https://github.com/rshade/pulumicost-spec/issues/225)) -
-  Make DismissRecommendation follow the same pattern as other RPC methods.
 - [ ] **Configurable Client Timeouts** ([#226](https://github.com/rshade/pulumicost-spec/issues/226)) -
   Add per-request timeout configuration for client operations.
 - [ ] **Connect Protocol Test Coverage** ([#227](https://github.com/rshade/pulumicost-spec/issues/227)) -
@@ -146,11 +146,14 @@ centered around the FinOps Foundation's FOCUS standard.
 
 ### Proposed for Discussion (Discovery)
 
-- [ ] **JSON-LD / Schema.org Serialization** ([#187](https://github.com/rshade/pulumicost-spec/issues/187))
 - [ ] **Standardized Recommendation Reasoning** ([#188](https://github.com/rshade/pulumicost-spec/issues/188))
 - [ ] **Multi-Currency Segregation Pattern** ([#190](https://github.com/rshade/pulumicost-spec/issues/190))
 - [ ] **Validation Bypass Protocol** ([#216](https://github.com/rshade/pulumicost-spec/issues/216)) -
   Add `BypassReason` and `OverrideMetadata` to `ValidationResult` for governance auditing.
+- [ ] **Per-Request Credential Passing** ([#220](https://github.com/rshade/pulumicost-spec/issues/220)) -
+  Multi-tenant optimization allowing per-request cloud credentials.
+- [ ] **Batch RPC for Multi-Resource Queries** ([#221](https://github.com/rshade/pulumicost-spec/issues/221)) -
+  Efficient batch API for querying costs across multiple resources.
 
 ---
 

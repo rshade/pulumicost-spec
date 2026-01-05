@@ -37,6 +37,8 @@ type PluginInfoOption func(*PluginInfo)
 
 // NewPluginInfo creates a new PluginInfo with the given name and version.
 // The SpecVersion is automatically set to the SDK's current SpecVersion constant.
+// The PluginInfo should be treated as immutable after passing to ServeConfig.
+// Modifying the original slices/maps after construction may cause data races.
 // Use functional options to customize additional fields.
 //
 // Example:

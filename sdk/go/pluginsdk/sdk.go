@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -946,8 +947,34 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 	return nil
 }
 
+// resolveHeaderValue computes the header value based on nil/empty/populated semantics.
+// - nil slice: returns the default value
+// - empty slice: returns empty string
+// - populated slice: joins with ", ".
+func resolveHeaderValue(headers []string, defaultValue string) string {
+	if headers == nil {
+		return defaultValue
+	}
+	if len(headers) == 0 {
+		return ""
+	}
+	return strings.Join(headers, ", ")
+}
+
 // corsMiddleware wraps an http.Handler with CORS support.
 func corsMiddleware(next http.Handler, webConfig WebConfig) http.Handler {
+	// Pre-compute header values ONCE at middleware construction time (not per-request).
+	// This avoids allocations from strings.Join on every HTTP request.
+	allowedHeadersValue := resolveHeaderValue(webConfig.AllowedHeaders, DefaultAllowedHeaders)
+	exposedHeadersValue := resolveHeaderValue(webConfig.ExposedHeaders, DefaultExposedHeaders)
+
+	// Pre-compute max-age value (use default if not configured)
+	maxAge := DefaultMaxAge
+	if webConfig.MaxAge != nil {
+		maxAge = *webConfig.MaxAge
+	}
+	maxAgeValue := strconv.Itoa(maxAge)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Always set Vary: Origin when CORS is configured to prevent cache pollution.
 		// This tells caches that the response varies based on the Origin header,
@@ -974,16 +1001,11 @@ func corsMiddleware(next http.Handler, webConfig WebConfig) http.Handler {
 			return
 		}
 
-		// Set CORS headers
+		// Set CORS headers (using pre-computed values for zero allocation)
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers",
-			"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, "+
-				"X-CSRF-Token, X-Requested-With, Connect-Protocol-Version, Connect-Timeout-Ms, "+
-				"Grpc-Timeout, X-Grpc-Web, X-User-Agent")
-		w.Header().Set("Access-Control-Expose-Headers",
-			"Grpc-Status, Grpc-Message, Grpc-Status-Details-Bin, Connect-Content-Encoding, "+
-				"Connect-Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", allowedHeadersValue)
+		w.Header().Set("Access-Control-Expose-Headers", exposedHeadersValue)
 
 		if webConfig.AllowCredentials {
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -991,7 +1013,7 @@ func corsMiddleware(next http.Handler, webConfig WebConfig) http.Handler {
 
 		// Handle preflight
 		if r.Method == http.MethodOptions {
-			w.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
+			w.Header().Set("Access-Control-Max-Age", maxAgeValue)
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}

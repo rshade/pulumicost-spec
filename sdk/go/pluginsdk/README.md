@@ -288,6 +288,8 @@ err := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
 | `AllowedOrigins` | `[]string` | `nil` | CORS allowed origins (empty = no CORS headers) |
 | `AllowCredentials` | `bool` | `false` | Include credentials in CORS |
 | `EnableHealthEndpoint` | `bool` | `false` | Add `/healthz` health check endpoint |
+| `AllowedHeaders` | `[]string` | `nil` | Custom allowed headers (nil = defaults) |
+| `ExposedHeaders` | `[]string` | `nil` | Custom exposed headers (nil = defaults) |
 
 ### Builder Pattern
 
@@ -298,7 +300,9 @@ cfg := pluginsdk.DefaultWebConfig().
     WithWebEnabled(true).
     WithAllowedOrigins([]string{"https://app.example.com"}).
     WithAllowCredentials(true).
-    WithHealthEndpoint(true)
+    WithHealthEndpoint(true).
+    WithAllowedHeaders([]string{"Content-Type", "Authorization"}).
+    WithExposedHeaders([]string{"X-Request-ID"})
 ```
 
 ### Calling from Browsers
@@ -2118,6 +2122,119 @@ For multi-tenant deployments:
 - Each tenant gets own plugin server instance
 - Complete isolation between tenant origins
 - Per-tenant rate limiting possible
+
+### Custom CORS Headers
+
+The SDK provides configurable CORS headers for security compliance and observability requirements.
+
+#### Default Headers
+
+When `AllowedHeaders` and `ExposedHeaders` are `nil`, sensible defaults are used:
+
+| Header Type | Default Value |
+| ----------- | ------------- |
+| `AllowedHeaders` | Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-Token, X-Requested-With, Connect-Protocol-Version, Connect-Timeout-Ms, Grpc-Timeout, X-Grpc-Web, X-User-Agent |
+| `ExposedHeaders` | Grpc-Status, Grpc-Message, Grpc-Status-Details-Bin, Connect-Content-Encoding, Connect-Content-Type |
+
+#### Customizing Headers
+
+Use the builder methods to customize which headers are allowed or exposed:
+
+```go
+// Minimal security footprint (omit Authorization if using different auth)
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"https://app.example.com"}).
+    WithAllowedHeaders([]string{
+        "Accept",
+        "Content-Type",
+        "Connect-Protocol-Version",
+        "Connect-Timeout-Ms",
+        "Grpc-Timeout",
+        "X-Grpc-Web",
+    })
+```
+
+```go
+// Add observability headers for tracing
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"https://app.example.com"}).
+    WithAllowedHeaders([]string{
+        "Content-Type",
+        "Authorization",
+        "X-Request-ID",       // Custom tracing header
+        "X-Correlation-ID",   // Custom tracing header
+        "Connect-Protocol-Version",
+    }).
+    WithExposedHeaders([]string{
+        "Grpc-Status",
+        "Grpc-Message",
+        "X-Request-ID",       // Expose for client correlation
+        "X-Trace-ID",         // Expose for client tracing
+    })
+```
+
+```go
+// Strict compliance: only CORS-safelisted headers
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"https://app.example.com"}).
+    WithAllowedHeaders([]string{}).  // Empty = simple headers only
+    WithExposedHeaders([]string{})   // Empty = no custom headers exposed
+```
+
+#### Header Configuration Semantics
+
+| Config Value | Behavior |
+| ------------ | -------- |
+| `nil` (default) | Use default headers for Connect/gRPC-Web compatibility |
+| `[]string{}` (empty) | Set empty header (only CORS-safelisted headers allowed) |
+| `[]string{"A", "B"}` | Use exactly these headers, joined by ", " |
+
+#### Accessing Default Header Constants
+
+The default header values are available as package constants:
+
+```go
+// Use in documentation or comparisons
+fmt.Println(pluginsdk.DefaultAllowedHeaders)
+fmt.Println(pluginsdk.DefaultExposedHeaders)
+fmt.Println(pluginsdk.DefaultMaxAge) // 86400 seconds (24 hours)
+```
+
+### Preflight Cache (Max-Age)
+
+The `MaxAge` setting controls how long browsers cache CORS preflight responses. This affects performance
+(fewer OPTIONS requests) versus security (faster policy propagation).
+
+```go
+// Default: 24 hours (maximum for most browsers)
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"https://app.example.com"})
+// MaxAge is nil, uses DefaultMaxAge (86400 seconds)
+
+// Custom: 1 hour for faster policy updates
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"https://app.example.com"}).
+    WithMaxAge(3600)
+
+// Disable caching: useful for development or high-security environments
+cfg := pluginsdk.DefaultWebConfig().
+    WithWebEnabled(true).
+    WithAllowedOrigins([]string{"http://localhost:3000"}).
+    WithMaxAge(0)
+```
+
+| Value | Use Case |
+| ----- | -------- |
+| `nil` (default) | Production - uses 86400s (24 hours) |
+| `3600` | Balanced - policy updates within 1 hour |
+| `0` | Development/High-security - no caching, preflight on every request |
+
+**Note**: Most browsers cap max-age at 24 hours regardless of the value set.
 
 ### Security Guidelines
 
