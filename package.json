@@ -1,6 +1,6 @@
 {
   "name": "@pulumicost/spec",
-  "version": "0.4.12",
+  "version": "0.4.13",
   "description": "Production-ready specification for cloud cost source plugins with gRPC protocol, JSON schemas, and Go SDK",
   "keywords": [
     "pulumi",

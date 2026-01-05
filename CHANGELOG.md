@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.13](https://github.com/rshade/pulumicost-spec/compare/v0.4.12...v0.4.13) (2026-01-05)
+
+
+### Added
+
+* **pluginsdk:** Add CORS headers, max-age, and security headers ([#256](https://github.com/rshade/pulumicost-spec/issues/256)) ([93555f6](https://github.com/rshade/pulumicost-spec/commit/93555f6003b3a32b645f36c42bd740f35fef9e97)), closes [#228](https://github.com/rshade/pulumicost-spec/issues/228) [#229](https://github.com/rshade/pulumicost-spec/issues/229) [#239](https://github.com/rshade/pulumicost-spec/issues/239)
+* **pluginsdk:** Add DryRun for plugin field mapping discovery ([#248](https://github.com/rshade/pulumicost-spec/issues/248)) ([45cea69](https://github.com/rshade/pulumicost-spec/commit/45cea69ca004e4d08a0fb9c08a1ea62422c0ec9f)), closes [#186](https://github.com/rshade/pulumicost-spec/issues/186)
+* **proto:** add growth_type to projected cost response ([#250](https://github.com/rshade/pulumicost-spec/issues/250)) ([4ba1da4](https://github.com/rshade/pulumicost-spec/commit/4ba1da43a642939f1bceb42c8bf2ebd14b7d327d)), closes [#249](https://github.com/rshade/pulumicost-spec/issues/249)
+* **sdk:** add jsonld serialization package for focus cost data ([#252](https://github.com/rshade/pulumicost-spec/issues/252)) ([6760501](https://github.com/rshade/pulumicost-spec/commit/676050119a3605598286238e3f5a8a0b25a6e374)), closes [#187](https://github.com/rshade/pulumicost-spec/issues/187)
+
 ## [0.4.12](https://github.com/rshade/pulumicost-spec/compare/v0.4.11...v0.4.12) (2025-12-31)
 
 
