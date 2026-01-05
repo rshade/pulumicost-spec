@@ -60,8 +60,8 @@
     "ajv-formats": "^3.0.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.2.0",
-    "@commitlint/config-conventional": "^20.2.0",
+    "@commitlint/cli": "^20.3.0",
+    "@commitlint/config-conventional": "^20.3.0",
     "@types/node": "^24.10.4",
     "keep-a-changelog": "^2.7.1",
     "markdownlint-cli2": "^0.20.0",
