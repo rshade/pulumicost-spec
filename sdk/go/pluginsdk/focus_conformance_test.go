@@ -3,6 +3,7 @@ package pluginsdk_test
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"testing"
@@ -1210,6 +1211,96 @@ func TestSentinelErrors(t *testing.T) {
 			// Verify errors.Is works with sentinel (primary use case)
 			if !errors.Is(tt.sentinel, tt.sentinel) {
 				t.Errorf("errors.Is failed for sentinel %s", tt.name)
+			}
+		})
+	}
+}
+
+// TestValidateFocusRecord_ExtremeValues tests handling of IEEE 754 special values (Inf, NaN).
+func TestValidateFocusRecord_ExtremeValues(t *testing.T) {
+	tests := []struct {
+		name          string
+		setField      func(*pbc.FocusCostRecord, float64)
+		fieldValue    float64
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:        "valid billed_cost",
+			setField:    func(r *pbc.FocusCostRecord, v float64) { r.BilledCost = v },
+			fieldValue:  100.0,
+			expectError: false,
+		},
+		{
+			name:          "billed_cost positive infinity",
+			setField:      func(r *pbc.FocusCostRecord, v float64) { r.BilledCost = v },
+			fieldValue:    math.Inf(1),
+			expectError:   true,
+			errorContains: "cannot be infinity",
+		},
+		{
+			name:          "effective_cost NaN",
+			setField:      func(r *pbc.FocusCostRecord, v float64) { r.EffectiveCost = v },
+			fieldValue:    math.NaN(),
+			expectError:   true,
+			errorContains: "cannot be NaN",
+		},
+		{
+			name:          "list_cost positive infinity",
+			setField:      func(r *pbc.FocusCostRecord, v float64) { r.ListCost = v },
+			fieldValue:    math.Inf(1),
+			expectError:   true,
+			errorContains: "cannot be infinity",
+		},
+		{
+			name:          "contracted_cost NaN",
+			setField:      func(r *pbc.FocusCostRecord, v float64) { r.ContractedCost = v },
+			fieldValue:    math.NaN(),
+			expectError:   true,
+			errorContains: "cannot be NaN",
+		},
+		{
+			name:          "contracted_unit_price negative infinity",
+			setField:      func(r *pbc.FocusCostRecord, v float64) { r.ContractedUnitPrice = v },
+			fieldValue:    math.Inf(-1),
+			expectError:   true,
+			errorContains: "cannot be infinity",
+		},
+		{
+			name:          "list_unit_price NaN",
+			setField:      func(r *pbc.FocusCostRecord, v float64) { r.ListUnitPrice = v },
+			fieldValue:    math.NaN(),
+			expectError:   true,
+			errorContains: "cannot be NaN",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			record := createValidFocusRecord()
+			tt.setField(record, tt.fieldValue)
+
+			if !tt.expectError {
+				// Sync other cost fields to avoid hierarchy validation errors (FR-001/FR-002)
+				// since ValidateFocusRecord checks extreme values before hierarchy.
+				record.EffectiveCost = tt.fieldValue
+				record.ListCost = tt.fieldValue
+				record.ContractedCost = tt.fieldValue
+				record.BilledCost = tt.fieldValue
+			}
+
+			err := pluginsdk.ValidateFocusRecord(record)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("Expected error, got nil")
+					return
+				}
+				if !strings.Contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error containing %q, got %q", tt.errorContains, err.Error())
+				}
+			} else if err != nil {
+				t.Errorf("Expected no error, got %v", err)
 			}
 		})
 	}

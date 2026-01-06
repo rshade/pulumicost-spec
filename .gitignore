@@ -17,6 +17,9 @@ coverage.*
 *.coverprofile
 profile.cov
 
+# Log files
+*.log
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
@@ -40,3 +43,9 @@ CodeRabbitPrompt.md
 node_modules/
 Linter_Validation_Prompt.md
 CodeRabbitPromptGrok.md
+
+# Universal patterns
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp

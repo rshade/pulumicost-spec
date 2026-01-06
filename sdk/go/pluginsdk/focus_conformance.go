@@ -85,6 +85,14 @@ func ValidateFocusRecordWithOptions(r *pbc.FocusCostRecord, opts ValidationOptio
 		return []error{errors.New("record is nil")}
 	}
 
+	// Validate cost values (check for Inf/NaN).
+	if err := validateCostValues(r); err != nil {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{err}
+		}
+		errs = append(errs, err)
+	}
+
 	// Validate mandatory fields (FOCUS 1.2).
 	if err := validateMandatoryFields(r); err != nil {
 		if opts.Mode == ValidationModeFailFast {
@@ -111,6 +119,31 @@ func ValidateFocusRecordWithOptions(r *pbc.FocusCostRecord, opts ValidationOptio
 	}
 
 	return errs
+}
+
+// validateCostValues checks that cost fields are not Infinity or NaN.
+func validateCostValues(r *pbc.FocusCostRecord) error {
+	costs := []struct {
+		val  float64
+		name string
+	}{
+		{r.GetBilledCost(), "billed_cost"},
+		{r.GetEffectiveCost(), "effective_cost"},
+		{r.GetListCost(), "list_cost"},
+		{r.GetContractedCost(), "contracted_cost"},
+		{r.GetContractedUnitPrice(), "contracted_unit_price"},
+		{r.GetListUnitPrice(), "list_unit_price"},
+	}
+
+	for _, c := range costs {
+		if math.IsInf(c.val, 0) {
+			return fmt.Errorf("%s cannot be infinity", c.name)
+		}
+		if math.IsNaN(c.val) {
+			return fmt.Errorf("%s cannot be NaN", c.name)
+		}
+	}
+	return nil
 }
 
 // validateMandatoryFields checks all 14 mandatory FOCUS 1.2 fields.

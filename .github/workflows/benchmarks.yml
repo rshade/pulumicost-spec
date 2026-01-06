@@ -45,7 +45,7 @@ jobs:
           auto-push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           # CI environments have high variance (2x+ for sub-microsecond ops)
           # See issue #224 for analysis
-          alert-threshold: '200%'  # 100% tolerance for CI variability
+          alert-threshold: '150%'  # 50% tolerance for CI variability
           comment-on-alert: true
           # Don't fail builds on benchmark variance - informational only
           # CI runners have inherent variability that causes false positives

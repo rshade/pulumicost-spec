@@ -26,6 +26,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const maxPayloadSize = 1 << 20 // 1MB
+
 // portFlag is the --port command-line flag for specifying the gRPC server port.
 // This is registered at package initialization time.
 //
@@ -345,14 +347,14 @@ func (s *Server) GetPluginInfo(
 				Str("version", resp.GetVersion()).
 				Str("spec_version", resp.GetSpecVersion()).
 				Msg("GetPluginInfo returned incomplete response")
-			return nil, status.Error(codes.Internal, "plugin returned incomplete metadata")
+			return nil, status.Error(codes.Internal, "plugin metadata is incomplete")
 		}
+
 		if specErr := ValidateSpecVersion(resp.GetSpecVersion()); specErr != nil {
 			s.logger.Error().
-				Str("spec_version", resp.GetSpecVersion()).
 				Err(specErr).
 				Msg("GetPluginInfo returned invalid spec_version")
-			return nil, status.Error(codes.Internal, "plugin returned invalid spec_version format")
+			return nil, status.Error(codes.Internal, "plugin reported an invalid specification version")
 		}
 		return resp, nil
 	}
@@ -874,6 +876,12 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 	path, handler := pbcconnect.NewCostSourceServiceHandler(connectHandler, handlerOpts...)
 	mux.Handle(path, handler)
 
+	// Detect HealthChecker from plugin
+	var customChecker HealthChecker
+	if hc, ok := server.plugin.(HealthChecker); ok {
+		customChecker = hc
+	}
+
 	// Register gRPC health check service (grpc.health.v1.Health/Check)
 	// This provides standard gRPC health checking protocol support
 	healthChecker := grpchealth.NewStaticChecker(
@@ -885,7 +893,7 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 
 	// Add simple HTTP health endpoint if enabled
 	if config.Web.EnableHealthEndpoint {
-		mux.Handle("/healthz", HealthHandler())
+		mux.Handle("/healthz", HealthHandler(customChecker))
 	}
 
 	// Wrap with h2c for HTTP/2 cleartext support (required for gRPC protocol)
@@ -896,6 +904,9 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 	if len(config.Web.AllowedOrigins) > 0 {
 		finalHandler = corsMiddleware(h2cHandler, config.Web)
 	}
+
+	// Apply payload size limit (1MB) to prevent DoS
+	finalHandler = payloadLimitMiddleware(finalHandler, maxPayloadSize)
 
 	// Resolve timeouts with defaults
 	timeouts := DefaultServerTimeouts()
@@ -959,6 +970,14 @@ func resolveHeaderValue(headers []string, defaultValue string) string {
 		return ""
 	}
 	return strings.Join(headers, ", ")
+}
+
+// payloadLimitMiddleware wraps an http.Handler to enforce a maximum request body size.
+func payloadLimitMiddleware(next http.Handler, maxBytes int64) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+		next.ServeHTTP(w, r)
+	})
 }
 
 // corsMiddleware wraps an http.Handler with CORS support.

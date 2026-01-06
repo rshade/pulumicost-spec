@@ -1009,3 +1009,110 @@ func TestParsePortFlag(t *testing.T) {
 	// Default value when flag is not explicitly set is 0
 	assert.GreaterOrEqual(t, got, 0, "ParsePortFlag should return non-negative value")
 }
+
+func TestGetPluginInfo(t *testing.T) {
+	t.Run("provider implements GetPluginInfoProvider returns metadata", func(t *testing.T) {
+		plugin := &mockPluginInfoPlugin{
+			name:      "test-plugin",
+			version:   "v1.0.0",
+			providers: []string{"aws", "azure"},
+		}
+		server := NewServer(plugin)
+
+		req := &pbc.GetPluginInfoRequest{}
+		resp, err := server.GetPluginInfo(context.Background(), req)
+		require.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, "test-plugin", resp.GetName())
+		assert.Equal(t, "v1.0.0", resp.GetVersion())
+		assert.Equal(t, []string{"aws", "azure"}, resp.GetProviders())
+		assert.Equal(t, SpecVersion, resp.GetSpecVersion())
+	})
+
+	t.Run("provider does not implement GetPluginInfoProvider returns Unimplemented", func(t *testing.T) {
+		plugin := &mockPlugin{name: "legacy-plugin"}
+		server := NewServer(plugin)
+
+		req := &pbc.GetPluginInfoRequest{}
+		resp, err := server.GetPluginInfo(context.Background(), req)
+		require.Error(t, err)
+		assert.Nil(t, resp)
+		assert.Equal(t, codes.Unimplemented, status.Code(err))
+	})
+}
+
+type mockPluginInfoPlugin struct {
+	mockPlugin
+
+	name      string
+	version   string
+	providers []string
+	metadata  map[string]string
+}
+
+func (m *mockPluginInfoPlugin) GetPluginInfo(
+	_ context.Context,
+	_ *pbc.GetPluginInfoRequest,
+) (*pbc.GetPluginInfoResponse, error) {
+	return &pbc.GetPluginInfoResponse{
+		Name:        m.name,
+		Version:     m.version,
+		SpecVersion: SpecVersion,
+		Providers:   m.providers,
+		Metadata:    m.metadata,
+	}, nil
+}
+
+func TestValidateCORSConfig(t *testing.T) {
+	tests := []struct {
+		name    string
+		config  WebConfig
+		wantErr bool
+	}{
+		{
+			name:    "nil config (disabled)",
+			config:  WebConfig{Enabled: false},
+			wantErr: false,
+		},
+		{
+			name:    "valid config",
+			config:  WebConfig{Enabled: true, AllowedOrigins: []string{"http://localhost:3000"}},
+			wantErr: false,
+		},
+		{
+			name:    "wildcard origin",
+			config:  WebConfig{Enabled: true, AllowedOrigins: []string{"*"}},
+			wantErr: false,
+		},
+		{
+			name:    "wildcard mixed with specific",
+			config:  WebConfig{Enabled: true, AllowedOrigins: []string{"*", "http://localhost:3000"}},
+			wantErr: true,
+		},
+		{
+			name:    "credentials with wildcard",
+			config:  WebConfig{Enabled: true, AllowedOrigins: []string{"*"}, AllowCredentials: true},
+			wantErr: true,
+		},
+		{
+			name: "credentials with specific origin",
+			config: WebConfig{
+				Enabled:          true,
+				AllowedOrigins:   []string{"http://localhost:3000"},
+				AllowCredentials: true,
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateCORSConfig(tt.config)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

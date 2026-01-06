@@ -91,6 +91,11 @@ type ClientConfig struct {
 	// If nil, a default client with 30-second timeout is used.
 	HTTPClient *http.Client
 
+	// Timeout is the per-client default timeout for RPC calls.
+	// A value of 0 (default) means use the DefaultClientTimeout (30 seconds).
+	// Context deadlines (if set) take precedence over this field.
+	Timeout time.Duration
+
 	// ConnectOptions allows passing additional connect.ClientOption values.
 	ConnectOptions []connect.ClientOption
 }
@@ -170,7 +175,11 @@ func NewClient(cfg ClientConfig) *Client {
 	httpClient := cfg.HTTPClient
 	ownsClient := false
 	if httpClient == nil {
-		httpClient = &http.Client{Timeout: DefaultClientTimeout}
+		timeout := cfg.Timeout
+		if timeout == 0 {
+			timeout = DefaultClientTimeout
+		}
+		httpClient = &http.Client{Timeout: timeout}
 		ownsClient = true
 	}
 
