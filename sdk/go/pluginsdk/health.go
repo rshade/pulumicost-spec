@@ -26,7 +26,9 @@ type HealthStatus struct {
 	LastChecked time.Time         `json:"last_checked"`
 }
 
-// executeCheck runs the health check safely, recovering from panics.
+// executeCheck runs the given HealthChecker's Check method and converts panics into an error.
+// If the check panics, executeCheck recovers and returns an error describing the panic; otherwise
+// it returns the error returned by Check.
 func executeCheck(ctx context.Context, checker HealthChecker) (err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
@@ -38,7 +40,16 @@ func executeCheck(ctx context.Context, checker HealthChecker) (err error) {
 
 // HealthHandler returns an http.Handler that responds to health check requests.
 // If checker is provided, it runs the check and returns a JSON HealthStatus.
-// If checker is nil, it returns 200 OK with "ok" body (legacy behavior).
+// HealthHandler returns an http.Handler that serves plugin health checks using the given HealthChecker.
+// 
+// HealthHandler accepts only GET and HEAD requests. If checker is nil, it preserves legacy behavior by
+// responding with 200 OK and a plain "ok" body for GET requests (text/plain; charset=utf-8).
+// 
+// When checker is non-nil, the handler runs checker.Check with the request context (applying a 5s timeout
+// if the context has no deadline), and returns a JSON-encoded HealthStatus on GET requests. The handler
+// sets X-Content-Type-Options: nosniff and Content-Type appropriately. It responds with HTTP 200 when the
+// health check reports healthy and HTTP 503 when it reports unhealthy. Any error message from the check is
+// included in the HealthStatus.Message field.
 func HealthHandler(checker HealthChecker) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {

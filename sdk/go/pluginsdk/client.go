@@ -165,7 +165,17 @@ func wrapRPCError(ctx context.Context, operation string, err error) error {
 //   - If HTTPClient is provided, the caller retains ownership. Close() is a no-op;
 //     the caller is responsible for closing the HTTP client.
 //
-// Thread Safety: Client is safe for concurrent use from multiple goroutines.
+// NewClient creates a Client configured according to cfg and is safe for concurrent use.
+//
+// If cfg.Protocol is not a known Protocol value it defaults to ProtocolConnect.
+// If cfg.HTTPClient is nil, NewClient constructs an http.Client using cfg.Timeout (or
+// DefaultClientTimeout when Timeout is 0); in that case the returned Client is considered
+// to own the HTTP client and will close idle connections when Close is called. If a
+// user-provided HTTPClient is supplied, ownership remains with the caller and Close is a no-op.
+// The returned Client is configured to use the requested RPC protocol (Connect, gRPC, or
+// gRPC-Web) and includes any provided ConnectOptions.
+//
+// NewClient returns a pointer to the constructed Client.
 func NewClient(cfg ClientConfig) *Client {
 	// Validate protocol - default to Connect for invalid values
 	if !IsValidProtocol(cfg.Protocol) {
