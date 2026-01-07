@@ -20,7 +20,10 @@ const (
 var k8sSegmentRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$`)
 
 // DetectARNProvider returns the cloud provider inferred from ARN format.
-// Returns empty string if format is unrecognized.
+// DetectARNProvider infers the cloud/provider from an ARN-like string.
+// It returns "aws", "azure", "gcp", "kubernetes", or an empty string if the format is unrecognized.
+// Kubernetes detection is heuristic: the string must contain at least three '/' separators, must not start with '/'
+// or "arn:", and every segment must match the Kubernetes segment validation pattern.
 func DetectARNProvider(arn string) string {
 	switch {
 	case strings.HasPrefix(arn, AWSARNPrefix):
@@ -49,7 +52,8 @@ func DetectARNProvider(arn string) string {
 }
 
 // ValidateARNConsistency checks if the ARN format matches the expected provider.
-// Returns an error if the detected provider differs from the expected one.
+// ValidateARNConsistency verifies that the provider inferred from arn matches expectedProvider.
+// It returns nil if the ARN is unrecognized or its detected provider equals expectedProvider; otherwise it returns an error describing the mismatch.
 func ValidateARNConsistency(arn, expectedProvider string) error {
 	detected := DetectARNProvider(arn)
 	if detected == "" {
