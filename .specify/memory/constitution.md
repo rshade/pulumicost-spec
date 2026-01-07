@@ -1,16 +1,15 @@
 <!--
-Sync Impact Report - Constitution v1.1.0
+Sync Impact Report - Constitution v1.2.0
 ========================================
-Version Change: 1.0.0 → 1.1.0
+Version Change: 1.1.0 → 1.2.0
 Modified Principles:
-  - Section V (Comprehensive Documentation): Added documentation currency requirement
-  - Example Contribution Requirements: Added quality standards for non-AI-slop examples
-Added Sections: Example Quality Standards subsection
+  - Section V (Comprehensive Documentation): Explicitly mandated updates to root README.md and docs/ directory to prevent documentation drift.
+Added Sections: None
 Removed Sections: None
 Templates Requiring Updates:
-  ✅ .specify/templates/plan-template.md - Constitution Check section aligned
-  ✅ .specify/templates/spec-template.md - Requirements structure aligned
-  ✅ .specify/templates/tasks-template.md - Test-first workflow aligned
+  ✅ .specify/templates/plan-template.md - Constitution Check aligns.
+  ✅ .specify/templates/spec-template.md - Requirements align.
+  ✅ .specify/templates/tasks-template.md - Includes documentation tasks.
 Follow-up TODOs: None
 -->
 
@@ -90,9 +89,9 @@ Every gRPC specification element MUST be documented:
 **Documentation Currency (NON-NEGOTIABLE)**:
 
 - Documentation MUST be updated in the same PR as feature implementation
-- SDK README files MUST reflect current RPC method capabilities
+- **Root `README.md`, `docs/` directory, and SDK `README.md` files MUST be updated to reflect specification changes**
 - Example files MUST be added for new RPC methods before merge
-- Stale or outdated documentation is a blocking issue for PR approval
+- Stale or outdated documentation (including `docs/` drift) is a blocking issue for PR approval
 - CLAUDE.md files MUST be updated when new patterns are established
 
 **Rationale**: gRPC specifications are only useful if understood. Plugin developers need clear proto field
@@ -263,4 +262,4 @@ For day-to-day gRPC development guidance not covered by this constitution, refer
 root. The constitution defines non-negotiable protobuf and gRPC principles; CLAUDE.md provides practical buf
 commands, proto generation patterns, and workflow tips.
 
-**Version**: 1.1.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2025-12-06
+**Version**: 1.2.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-07
