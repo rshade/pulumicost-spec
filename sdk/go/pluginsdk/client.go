@@ -88,12 +88,14 @@ type ClientConfig struct {
 	Protocol Protocol
 
 	// HTTPClient is the HTTP client to use for requests.
-	// If nil, a default client with 30-second timeout is used.
+	// If nil, a default client is created using cfg.Timeout (or DefaultClientTimeout when Timeout is 0).
 	HTTPClient *http.Client
 
 	// Timeout is the per-client default timeout for RPC calls.
+	// This field is only applied if cfg.HTTPClient is nil (i.e., when NewClient creates the HTTP client).
+	// If a custom cfg.HTTPClient is provided, the caller must set HTTPClient.Timeout directly.
 	// A value of 0 (default) means use the DefaultClientTimeout (30 seconds).
-	// Context deadlines (if set) take precedence over this field.
+	// Context deadlines (if set) take precedence over this per-client timeout.
 	Timeout time.Duration
 
 	// ConnectOptions allows passing additional connect.ClientOption values.

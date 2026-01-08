@@ -61,7 +61,6 @@ func TestValidateContext(t *testing.T) {
 func TestContextRemainingTime(t *testing.T) {
 	cancelledCtx, cancel := context.WithTimeout(context.Background(), time.Hour)
 	cancel()
-	cancelledDeadline, _ := cancelledCtx.Deadline()
 
 	tests := []struct {
 		name             string
@@ -69,9 +68,14 @@ func TestContextRemainingTime(t *testing.T) {
 		expectedDuration time.Duration
 	}{
 		{
-			name:             "cancelled context with deadline returns remaining time",
+			name:             "nil context returns zero",
+			ctx:              nil,
+			expectedDuration: 0,
+		},
+		{
+			name:             "cancelled context returns zero",
 			ctx:              cancelledCtx,
-			expectedDuration: time.Until(cancelledDeadline),
+			expectedDuration: 0,
 		},
 		{
 			name:             "context without deadline returns MaxInt64 duration",

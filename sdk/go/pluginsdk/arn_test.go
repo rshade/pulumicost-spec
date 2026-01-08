@@ -7,6 +7,8 @@ import (
 )
 
 func TestDetectARNProvider(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		arn      string
@@ -26,6 +28,11 @@ func TestDetectARNProvider(t *testing.T) {
 			name:     "GCP full resource name returns gcp",
 			arn:      "//compute.googleapis.com/projects/my-project/zones/us-central1-a/instances/my-instance",
 			provider: "gcp",
+		},
+		{
+			name:     "non-GCP URL-like string returns empty",
+			arn:      "//example.com/some/path",
+			provider: "",
 		},
 		{
 			name:     "Kubernetes format returns kubernetes",
@@ -66,6 +73,7 @@ func TestDetectARNProvider(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := pluginsdk.DetectARNProvider(tt.arn)
 			if got != tt.provider {
 				t.Errorf("DetectARNProvider(%q) = %q, want %q", tt.arn, got, tt.provider)
@@ -75,58 +83,61 @@ func TestDetectARNProvider(t *testing.T) {
 }
 
 func TestValidateARNConsistency(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name        string
 		arn         string
-		expected    string
+		expected    pluginsdk.Provider
 		expectError bool
 	}{
 		{
 			name:        "valid AWS ARN with AWS expected returns nil",
 			arn:         "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0",
-			expected:    "aws",
+			expected:    pluginsdk.ProviderAWS,
 			expectError: false,
 		},
 		{
 			name:        "AWS ARN with Azure expected returns error",
 			arn:         "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0",
-			expected:    "azure",
+			expected:    pluginsdk.ProviderAzure,
 			expectError: true,
 		},
 		{
 			name:        "Azure subscription ID with Azure expected returns nil",
 			arn:         "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/myResourceGroup",
-			expected:    "azure",
+			expected:    pluginsdk.ProviderAzure,
 			expectError: false,
 		},
 		{
 			name:        "Azure subscription ID with AWS expected returns error",
 			arn:         "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/myResourceGroup",
-			expected:    "aws",
+			expected:    pluginsdk.ProviderAWS,
 			expectError: true,
 		},
 		{
 			name:        "GCP full resource name with GCP expected returns nil",
 			arn:         "//compute.googleapis.com/projects/my-project/zones/us-central1-a/instances/my-instance",
-			expected:    "gcp",
+			expected:    pluginsdk.ProviderGCP,
 			expectError: false,
 		},
 		{
 			name:        "Kubernetes format with Kubernetes expected returns nil",
 			arn:         "my-cluster/my-namespace/pod/my-pod",
-			expected:    "kubernetes",
+			expected:    pluginsdk.ProviderKubernetes,
 			expectError: false,
 		},
 		{
 			name:        "unrecognized ARN format returns nil",
 			arn:         "custom:identifier:format",
-			expected:    "aws",
+			expected:    pluginsdk.ProviderAWS,
 			expectError: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			err := pluginsdk.ValidateARNConsistency(tt.arn, tt.expected)
 			if tt.expectError && err == nil {
 				t.Errorf("ValidateARNConsistency(%q, %q) expected error, got nil", tt.arn, tt.expected)

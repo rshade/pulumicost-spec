@@ -407,7 +407,7 @@ func TestDetectARNProvider(t *testing.T) {
 - **Full Documentation**: See [contracts/README.md](./contracts/README.md) for detailed interface contracts
 - **Migration Guide**: See `sdk/go/pluginsdk/README.md` → "Migrating to GetPluginInfo" section
 - **Examples**: See `examples/` directory for complete plugin examples
-- **Issues**: Report bugs or request features at https://github.com/rshade/pulumicost-spec/issues
+- **Issues**: Report bugs or request features at <https://github.com/rshade/pulumicost-spec/issues>
 
 ---
 

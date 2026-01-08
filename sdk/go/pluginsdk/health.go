@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 const healthCheckTimeout = 5 * time.Second
@@ -20,8 +23,10 @@ type HealthChecker interface {
 
 // HealthStatus provides detailed health information.
 type HealthStatus struct {
-	Healthy     bool              `json:"healthy"`
-	Message     string            `json:"message,omitempty"`
+	Healthy bool   `json:"healthy"`
+	Message string `json:"message,omitempty"`
+	// Details is an optional map meant to be populated by custom HealthChecker implementations
+	// to provide component-specific key/value diagnostics. The default HealthHandler does not populate it.
 	Details     map[string]string `json:"details,omitempty"`
 	LastChecked time.Time         `json:"last_checked"`
 }
@@ -32,19 +37,21 @@ type HealthStatus struct {
 func executeCheck(ctx context.Context, checker HealthChecker) (err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
+			log.Debug().
+				Bytes("stack", debug.Stack()).
+				Interface("panic", rec).
+				Msg("health check panic")
 			err = fmt.Errorf("panic during health check: %v", rec)
 		}
 	}()
 	return checker.Check(ctx)
 }
 
-// HealthHandler returns an http.Handler that responds to health check requests.
-// If checker is provided, it runs the check and returns a JSON HealthStatus.
 // HealthHandler returns an http.Handler that serves plugin health checks using the given HealthChecker.
-// 
+//
 // HealthHandler accepts only GET and HEAD requests. If checker is nil, it preserves legacy behavior by
 // responding with 200 OK and a plain "ok" body for GET requests (text/plain; charset=utf-8).
-// 
+//
 // When checker is non-nil, the handler runs checker.Check with the request context (applying a 5s timeout
 // if the context has no deadline), and returns a JSON-encoded HealthStatus on GET requests. The handler
 // sets X-Content-Type-Options: nosniff and Content-Type appropriately. It responds with HTTP 200 when the
@@ -94,7 +101,7 @@ func HealthHandler(checker HealthChecker) http.Handler {
 
 		if r.Method == http.MethodGet {
 			if encodeErr := json.NewEncoder(w).Encode(status); encodeErr != nil {
-				// Log encoding error to standard output since we don't have a logger context here
+				// Log encoding error to standard error since we don't have a logger context here
 				_, _ = fmt.Fprintf(os.Stderr, "pluginsdk: failed to encode health status: %v\n", encodeErr)
 			}
 		}

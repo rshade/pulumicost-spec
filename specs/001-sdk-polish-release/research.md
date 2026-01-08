@@ -8,7 +8,8 @@
 
 ### 1. Context-Based Timeout Handling in Go gRPC Clients
 
-**Decision**: Use Go's `context.WithTimeout()` pattern for per-request timeouts, with `ClientConfig.Timeout` option for default override.
+**Decision**: Use Go's `context.WithTimeout()` pattern for per-request timeouts, with `ClientConfig.Timeout` option for
+default override.
 
 **Rationale**:
 
@@ -48,14 +49,15 @@ func (c *Client) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest
 
 **References**:
 
-- Go context package documentation: https://pkg.go.dev/context
-- gRPC-Go context handling: https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-go.md
+- Go context package documentation: <https://pkg.go.dev/context>
+- gRPC-Go context handling: <https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-go.md>
 
 ---
 
 ### 2. Context Validation Helper Design
 
-**Decision**: Provide `ValidateContext()`, `ContextRemainingTime()`, and `ContextDeadline()` as standalone helper functions in new `context.go` file.
+**Decision**: Provide `ValidateContext()`, `ContextRemainingTime()`, and `ContextDeadline()` as standalone helper
+functions in new `context.go` file.
 
 **Rationale**:
 
@@ -104,14 +106,15 @@ func ContextDeadline(ctx context.Context) (time.Time, bool) {
 
 **References**:
 
-- Go context error handling: https://pkg.go.dev/context#Deadline
-- Defensive programming in Go: https://go.dev/doc/effective_go#errors
+- Go context error handling: <https://pkg.go.dev/context#Deadline>
+- Defensive programming in Go: <https://go.dev/doc/effective_go#errors>
 
 ---
 
 ### 3. HealthChecker Interface Design
 
-**Decision**: Define `HealthChecker` interface with `Check(ctx context.Context) error` method. Return `HTTPStatus 503 / gRPC Unavailable` on timeout/panic.
+**Decision**: Define `HealthChecker` interface with `Check(ctx context.Context) error` method. Return `HTTPStatus 503 /
+gRPC Unavailable` on timeout/panic.
 
 **Rationale**:
 
@@ -167,14 +170,15 @@ if hc, ok := config.Plugin.(HealthChecker); ok {
 
 **References**:
 
-- Go health check patterns: https://github.com/grpc-ecosystem/grpc-health-probe
-- HTTP 503 semantics: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+- Go health check patterns: <https://github.com/grpc-ecosystem/grpc-health-probe>
+- HTTP 503 semantics: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503>
 
 ---
 
 ### 4. ARN Format Detection and Validation
 
-**Decision**: `DetectARNProvider()` uses prefix/pattern matching. `ValidateARNConsistency()` checks ARN format matches expected provider. Ambiguous formats return explicit error.
+**Decision**: `DetectARNProvider()` uses prefix/pattern matching. `ValidateARNConsistency()` checks ARN format matches
+expected provider. Ambiguous formats return explicit error.
 
 **Rationale**:
 
@@ -236,9 +240,9 @@ func ValidateARNConsistency(arn, expectedProvider string) error {
 
 **References**:
 
-- AWS ARN format: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
-- Azure Resource ID format: https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/
-- GCP Full Resource Names: https://cloud.google.com/apis/design/resource_names
+- AWS ARN format: <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>
+- Azure Resource ID format: <https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/>
+- GCP Full Resource Names: <https://cloud.google.com/apis/design/resource_names>
 
 ---
 
@@ -253,6 +257,7 @@ func ValidateARNConsistency(arn, expectedProvider string) error {
 - Separation of concerns: UX for users, diagnostics for developers
 
 **Current → Mapped Examples**:
+
 | Current Error | Proposed Error |
 |----------------------------------------|-----------------------------------------------|
 | "plugin returned nil response" | "unable to retrieve plugin metadata" |
@@ -297,8 +302,8 @@ func (s *Server) GetPluginInfo(ctx context.Context, req *pb.GetPluginInfoRequest
 
 **References**:
 
-- gRPC error handling best practices: https://grpc.github.io/grpc/core/md_doc_statuscodes.html
-- User-friendly error messages: https://blog.codinghorror.com/the-art-of-error-messages/
+- gRPC error handling best practices: <https://grpc.github.io/grpc/core/md_doc_statuscodes.html>
+- User-friendly error messages: <https://blog.codinghorror.com/the-art-of-error-messages/>
 
 ---
 
@@ -362,8 +367,8 @@ func FuzzResourceDescriptorID(f *testing.F) {
 
 **References**:
 
-- Go fuzz testing tutorial: https://go.dev/doc/fuzz
-- Fuzz testing best practices: https://go.dev/security/fuzz/
+- Go fuzz testing tutorial: <https://go.dev/doc/fuzz>
+- Fuzz testing best practices: <https://go.dev/security/fuzz/>
 
 ---
 
@@ -404,8 +409,8 @@ comment-on-alert: true # Post comment for visibility
 
 **References**:
 
-- GitHub Actions performance variability: https://github.com/actions/runner-images/issues
-- Benchmarking best practices: https://golang.org/pkg/testing/#hdr.Benchmark
+- GitHub Actions performance variability: <https://github.com/actions/runner-images/issues>
+- Benchmarking best practices: <https://golang.org/pkg/testing/#hdr.Benchmark>
 
 ---
 
@@ -465,14 +470,15 @@ func ValidateCost(cost float64) error {
 
 **References**:
 
-- IEEE 754 floating-point standard: https://ieeexplore.ieee.org/document/4610935
-- Go math package specials: https://pkg.go.dev/math#IsInf
+- IEEE 754 floating-point standard: <https://ieeexplore.ieee.org/document/4610935>
+- Go math package specials: <https://pkg.go.dev/math#IsInf>
 
 ---
 
 ### 9. Code Complexity Reduction Techniques
 
-**Decision**: Extract `validateCORSConfig()` function to reduce `Serve()` cognitive complexity below 20. Add unit tests for extracted function.
+**Decision**: Extract `validateCORSConfig()` function to reduce `Serve()` cognitive complexity below 20. Add unit tests
+for extracted function.
 
 **Rationale**:
 
@@ -550,14 +556,15 @@ func TestValidateCORSConfig(t *testing.T) {
 
 **References**:
 
-- Cognitive complexity definition: https://en.wikipedia.org/wiki/Cyclomatic_complexity
-- Go refactoring patterns: https://github.com/golang/go/wiki/CodeReviewComments#refactoring
+- Cognitive complexity definition: <https://en.wikipedia.org/wiki/Cyclomatic_complexity>
+- Go refactoring patterns: <https://github.com/golang/go/wiki/CodeReviewComments#refactoring>
 
 ---
 
 ### 10. Backward Compatibility Patterns
 
-**Decision**: Maintain backward compatibility for legacy plugins (no HealthChecker implementation → default "always healthy", GetPluginInfo returns Unimplemented).
+**Decision**: Maintain backward compatibility for legacy plugins (no HealthChecker implementation → default "always
+healthy", GetPluginInfo returns Unimplemented).
 
 **Rationale**:
 
@@ -582,7 +589,7 @@ if hc, ok := config.Plugin.(HealthChecker); ok {
 }
 ```
 
-2. **Fallback for Legacy RPCs** (GetPluginInfo):
+1. **Fallback for Legacy RPCs** (GetPluginInfo):
 
 ```go
 // Implement GetPluginInfo RPC
@@ -596,7 +603,7 @@ func (s *Server) GetPluginInfo(ctx context.Context, req *pb.GetPluginInfoRequest
 }
 ```
 
-3. **Documentation** (Migration Guide):
+1. **Documentation** (Migration Guide):
 
 ```markdown
 ## Migrating to GetPluginInfo
@@ -619,8 +626,8 @@ func (s *Server) GetPluginInfo(ctx context.Context, req *pb.GetPluginInfoRequest
 
 **References**:
 
-- Go interface assertion patterns: https://go.dev/tour/methods-and-interfaces#type-assertions
-- gRPC backward compatibility: https://grpc.github.io/grpc/core/md_doc_grpc-well-known-types.html
+- Go interface assertion patterns: <https://go.dev/tour/methods-and-interfaces#type-assertions>
+- gRPC backward compatibility: <https://grpc.github.io/grpc/core/md_doc_grpc-well-known-types.html>
 
 ---
 

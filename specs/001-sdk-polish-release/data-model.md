@@ -6,7 +6,8 @@
 
 ## Overview
 
-This feature introduces new interfaces, helper functions, and validation patterns to the Go SDK. The data model consists of:
+This feature introduces new interfaces, helper functions, and validation patterns to the Go SDK. The data model
+consists of:
 
 - **Interfaces**: HealthChecker for custom health checking
 - **Structs**: HealthStatus for detailed health information
@@ -91,6 +92,7 @@ type HealthStatus struct {
 ```
 
 **Field Descriptions**:
+
 | Field | Type | Description |
 |--------------|---------------------|----------------------------------------------------------|
 | Healthy | bool | `true` if system is healthy, `false` otherwise |
@@ -159,6 +161,7 @@ type ClientConfig struct {
 ```
 
 **Field Description**:
+
 | Field | Type | Description |
 |---------|--------------|-------------------------------------------------------|
 | Timeout | time.Duration | Per-client default timeout (0 = use default 30s) |
@@ -356,6 +359,7 @@ provider = pluginsdk.DetectARNProvider(unknownArn)
 - Technical error details logged with `logger.Error()` for debugging
 - Includes structured fields: error, debug info, stack trace if available
 - Log entry examples:
+
   ```go
   logger.Error("GetPluginInfo failed",
       "error", err,

@@ -6,7 +6,8 @@
 
 ## Overview
 
-This document defines the Go SDK interface contracts that plugin developers interact with. These contracts are stable, documented, and versioned commitments.
+This document defines the Go SDK interface contracts that plugin developers interact with. These contracts are stable,
+documented, and versioned commitments.
 
 ---
 
@@ -46,6 +47,7 @@ type HealthChecker interface {
 - `Check()` should not modify plugin state (idempotent reads only recommended)
 
 **Error Handling**:
+
 | Scenario | SDK Behavior | HTTP Status | gRPC Status |
 |----------|--------------|-------------|---------------|
 | `Check()` returns nil | Healthy | 200 | OK |
@@ -205,6 +207,7 @@ func DetectARNProvider(arn string) string
 - Uses simple prefix matching (not regex)
 
 **Examples**:
+
 | Input | Output |
 |-----------------------------------------------------|---------|
 | `"arn:aws:ec2:us-east-1:123:instance/i-abc"` | `"aws"` |

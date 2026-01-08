@@ -3,7 +3,8 @@ Sync Impact Report - Constitution v1.2.0
 ========================================
 Version Change: 1.1.0 → 1.2.0
 Modified Principles:
-  - Section V (Comprehensive Documentation): Explicitly mandated updates to root README.md and docs/ directory to prevent documentation drift.
+  - Section V (Comprehensive Documentation): Explicitly mandated updates to root README.md and docs/ directory to prevent
+    documentation drift.
 Added Sections: None
 Removed Sections: None
 Templates Requiring Updates:

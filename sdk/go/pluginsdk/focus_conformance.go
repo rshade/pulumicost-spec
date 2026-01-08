@@ -89,11 +89,12 @@ func ValidateFocusRecordWithOptions(r *pbc.FocusCostRecord, opts ValidationOptio
 	}
 
 	// Validate cost values (check for Inf/NaN).
-	if err := validateCostValues(r); err != nil {
+	costErrs := validateCostValues(r, opts)
+	if len(costErrs) > 0 {
 		if opts.Mode == ValidationModeFailFast {
-			return []error{err}
+			return []error{costErrs[0]}
 		}
-		errs = append(errs, err)
+		errs = append(errs, costErrs...)
 	}
 
 	// Validate mandatory fields (FOCUS 1.2).
@@ -125,28 +126,46 @@ func ValidateFocusRecordWithOptions(r *pbc.FocusCostRecord, opts ValidationOptio
 }
 
 // validateCostValues checks the numeric cost fields on the provided FocusCostRecord for invalid floating-point values.
-// It verifies billed_cost, effective_cost, list_cost, contracted_cost, contracted_unit_price, and list_unit_price.
+// It verifies billed_cost, effective_cost, list_cost, contracted_cost, contracted_unit_price, list_unit_price, pricing_quantity, and consumed_quantity.
 // If any of these fields is +Inf, -Inf, or NaN, validateCostValues returns an error naming the offending field; otherwise it returns nil.
-func validateCostValues(r *pbc.FocusCostRecord) error {
-	costs := []struct {
-		val  float64
+func validateCostValues(r *pbc.FocusCostRecord, opts ValidationOptions) []error {
+	var errs []error
+
+	// Build slice of name/value pairs directly to avoid heap allocations from method value capture.
+	// Calling the getters directly and storing their float64 results is more efficient.
+	costFields := []struct {
 		name string
+		val  float64
 	}{
-		{r.GetBilledCost(), "billed_cost"},
-		{r.GetEffectiveCost(), "effective_cost"},
-		{r.GetListCost(), "list_cost"},
-		{r.GetContractedCost(), "contracted_cost"},
-		{r.GetContractedUnitPrice(), "contracted_unit_price"},
-		{r.GetListUnitPrice(), "list_unit_price"},
+		{"billed_cost", r.GetBilledCost()},
+		{"effective_cost", r.GetEffectiveCost()},
+		{"list_cost", r.GetListCost()},
+		{"contracted_cost", r.GetContractedCost()},
+		{"contracted_unit_price", r.GetContractedUnitPrice()},
+		{"list_unit_price", r.GetListUnitPrice()},
+		{"pricing_quantity", r.GetPricingQuantity()},
+		{"consumed_quantity", r.GetConsumedQuantity()},
 	}
 
-	for _, c := range costs {
-		if math.IsInf(c.val, 0) {
-			return fmt.Errorf("%s cannot be infinity", c.name)
+	for _, f := range costFields {
+		if err := checkCostValue(f.val, f.name); err != nil {
+			if opts.Mode == ValidationModeFailFast {
+				return []error{err}
+			}
+			errs = append(errs, err)
 		}
-		if math.IsNaN(c.val) {
-			return fmt.Errorf("%s cannot be NaN", c.name)
-		}
+	}
+
+	return errs
+}
+
+// checkCostValue validates a single cost field for Inf/NaN values.
+func checkCostValue(val float64, name string) error {
+	if math.IsInf(val, 0) {
+		return fmt.Errorf("%s cannot be infinity", name)
+	}
+	if math.IsNaN(val) {
+		return fmt.Errorf("%s cannot be NaN", name)
 	}
 	return nil
 }

@@ -134,3 +134,15 @@ func (h *ConnectHandler) GetBudgets(
 	}
 	return connect.NewResponse(resp), nil
 }
+
+// GetPluginInfo implements pbcconnect.CostSourceServiceHandler.
+func (h *ConnectHandler) GetPluginInfo(
+	ctx context.Context,
+	req *connect.Request[pbc.GetPluginInfoRequest],
+) (*connect.Response[pbc.GetPluginInfoResponse], error) {
+	resp, err := h.server.GetPluginInfo(ctx, req.Msg)
+	if err != nil {
+		return nil, err
+	}
+	return connect.NewResponse(resp), nil
+}

@@ -963,9 +963,6 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 }
 
 // resolveHeaderValue computes the header value based on nil/empty/populated semantics.
-// - nil slice: returns the default value
-// - empty slice: returns empty string
-// resolveHeaderValue returns the joined header values or a default when the slice is nil.
 // If headers is nil, defaultValue is returned. If headers is an empty slice, the empty
 // string is returned. Otherwise the slice elements are joined with ", ".
 func resolveHeaderValue(headers []string, defaultValue string) string {
@@ -979,16 +976,30 @@ func resolveHeaderValue(headers []string, defaultValue string) string {
 }
 
 // payloadLimitMiddleware wraps next and limits the size of the incoming request body.
-// It replaces r.Body with an http.MaxBytesReader that enforces the provided maxBytes
-// limit before calling the next handler.
+// It first performs an early Content-Length check to reject obviously oversized requests
+// without reading any data, then replaces r.Body with an http.MaxBytesReader that enforces
+// the maxBytes limit for requests where Content-Length is missing, malformed, or incorrect.
 func payloadLimitMiddleware(next http.Handler, maxBytes int64) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Early Content-Length check to reject oversized requests without reading data.
+		// This is more efficient than streaming data only to reject it later.
+		if contentLength := r.Header.Get("Content-Length"); contentLength != "" {
+			if length, err := strconv.ParseInt(contentLength, 10, 64); err == nil && length > maxBytes {
+				http.Error(w, "payload too large", http.StatusRequestEntityTooLarge)
+				return
+			}
+		}
+		// Fallback: http.MaxBytesReader handles missing/incorrect Content-Length headers
 		r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
 		next.ServeHTTP(w, r)
 	})
 }
 
-// the AllowCredentials flag, and responds to preflight OPTIONS requests with HTTP 204 No Content.
+// corsMiddleware adds CORS headers to responses based on the provided WebConfig.
+// It handles the Origin, Access-Control-Allow-Origin, Access-Control-Allow-Methods,
+// Access-Control-Allow-Headers, Access-Control-Expose-Headers, Access-Control-Max-Age, and
+// Access-Control-Allow-Credentials headers. It responds to preflight OPTIONS requests
+// with HTTP 204 No Content.
 func corsMiddleware(next http.Handler, webConfig WebConfig) http.Handler {
 	// Pre-compute header values ONCE at middleware construction time (not per-request).
 	// This avoids allocations from strings.Join on every HTTP request.
