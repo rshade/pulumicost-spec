@@ -148,3 +148,12 @@ func TestValidateARNConsistency(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkIsValidProvider(b *testing.B) {
+	p := pluginsdk.ProviderAWS
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		pluginsdk.IsValidProvider(p)
+	}
+}

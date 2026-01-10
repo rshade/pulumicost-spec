@@ -18,6 +18,37 @@ const (
 	ProviderUnknown    Provider = ""
 )
 
+// allProviders is the list of recognized/supported cloud providers used for
+// zero-allocation validation.
+//
+//nolint:gochecknoglobals // Intentional optimization for zero-allocation validation
+var allProviders = []Provider{
+	ProviderAWS,
+	ProviderAzure,
+	ProviderGCP,
+	ProviderKubernetes,
+}
+
+// AllProviders returns all valid Provider values. The returned slice is shared and must not be modified.
+func AllProviders() []Provider {
+	return allProviders
+}
+
+// IsValidProvider returns true if the provider is a known valid value.
+func IsValidProvider(p Provider) bool {
+	for _, valid := range allProviders {
+		if p == valid {
+			return true
+		}
+	}
+	return false
+}
+
+// String returns the string representation of the Provider.
+func (p Provider) String() string {
+	return string(p)
+}
+
 const (
 	// AWSARNPrefix is the prefix for AWS ARN strings.
 	AWSARNPrefix = "arn:aws:"
