@@ -58,14 +58,14 @@ func IsGCPResourceName(s string) bool {
 // Kubernetes detection is heuristic: the string must contain at least three '/' separators, must not start with '/'
 // or "arn:", and every segment must match the Kubernetes segment validation pattern.
 // GCP detection requires the string to start with "//" and contain ".googleapis.com/" to avoid false positives.
-func DetectARNProvider(arn string) string {
+func DetectARNProvider(arn string) Provider {
 	switch {
 	case strings.HasPrefix(arn, AWSARNPrefix):
-		return string(ProviderAWS)
+		return ProviderAWS
 	case strings.HasPrefix(arn, AzureARNPrefix):
-		return string(ProviderAzure)
+		return ProviderAzure
 	case IsGCPResourceName(arn):
-		return string(ProviderGCP)
+		return ProviderGCP
 	default:
 		// Kubernetes detection is heuristic-based.
 		// We expect a format like "{cluster}/{namespace}/{kind}/{name}" (at least 3 slashes).
@@ -76,12 +76,12 @@ func DetectARNProvider(arn string) string {
 			parts := strings.Split(arn, "/")
 			for _, part := range parts {
 				if !k8sSegmentRegex.MatchString(part) {
-					return string(ProviderUnknown)
+					return ProviderUnknown
 				}
 			}
-			return string(ProviderKubernetes)
+			return ProviderKubernetes
 		}
-		return string(ProviderUnknown)
+		return ProviderUnknown
 	}
 }
 
@@ -90,10 +90,10 @@ func DetectARNProvider(arn string) string {
 // otherwise it returns an error describing the mismatch.
 func ValidateARNConsistency(arn string, expectedProvider Provider) error {
 	detected := DetectARNProvider(arn)
-	if detected == string(ProviderUnknown) {
+	if detected == ProviderUnknown {
 		return nil
 	}
-	if detected != string(expectedProvider) {
+	if detected != expectedProvider {
 		return fmt.Errorf("ARN format %q detected as %q but expected %q", arn, detected, expectedProvider)
 	}
 	return nil

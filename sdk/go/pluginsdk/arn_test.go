@@ -12,62 +12,62 @@ func TestDetectARNProvider(t *testing.T) {
 	tests := []struct {
 		name     string
 		arn      string
-		provider string
+		provider pluginsdk.Provider
 	}{
 		{
 			name:     "AWS ARN returns aws",
 			arn:      "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0",
-			provider: "aws",
+			provider: pluginsdk.ProviderAWS,
 		},
 		{
 			name:     "Azure subscription ID returns azure",
 			arn:      "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/myResourceGroup/providers/Microsoft.Compute/virtualMachines/myVM",
-			provider: "azure",
+			provider: pluginsdk.ProviderAzure,
 		},
 		{
 			name:     "GCP full resource name returns gcp",
 			arn:      "//compute.googleapis.com/projects/my-project/zones/us-central1-a/instances/my-instance",
-			provider: "gcp",
+			provider: pluginsdk.ProviderGCP,
 		},
 		{
 			name:     "non-GCP URL-like string returns empty",
 			arn:      "//example.com/some/path",
-			provider: "",
+			provider: pluginsdk.ProviderUnknown,
 		},
 		{
 			name:     "Kubernetes format returns kubernetes",
 			arn:      "my-cluster/my-namespace/pod/my-pod",
-			provider: "kubernetes",
+			provider: pluginsdk.ProviderKubernetes,
 		},
 		{
 			name:     "absolute file path returns empty string",
 			arn:      "/etc/passwd",
-			provider: "",
+			provider: pluginsdk.ProviderUnknown,
 		},
 		{
 			name:     "short relative path returns empty string",
 			arn:      "foo/bar",
-			provider: "",
+			provider: pluginsdk.ProviderUnknown,
 		},
 		{
 			name:     "path with uppercase returns empty string",
 			arn:      "File/Path/To/Resource",
-			provider: "",
+			provider: pluginsdk.ProviderUnknown,
 		},
 		{
 			name:     "path with underscores returns empty string",
 			arn:      "file/path/to/resource_name",
-			provider: "",
+			provider: pluginsdk.ProviderUnknown,
 		},
 		{
 			name:     "unrecognized format returns empty string",
 			arn:      "custom:identifier:format",
-			provider: "",
+			provider: pluginsdk.ProviderUnknown,
 		},
 		{
 			name:     "empty string returns empty string",
 			arn:      "",
-			provider: "",
+			provider: pluginsdk.ProviderUnknown,
 		},
 	}
 
