@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"runtime/debug"
 	"time"
 
@@ -101,8 +100,8 @@ func HealthHandler(checker HealthChecker) http.Handler {
 
 		if r.Method == http.MethodGet {
 			if encodeErr := json.NewEncoder(w).Encode(status); encodeErr != nil {
-				// Log encoding error to standard error since we don't have a logger context here
-				_, _ = fmt.Fprintf(os.Stderr, "pluginsdk: failed to encode health status: %v\n", encodeErr)
+				// Log encoding error
+				log.Error().Err(encodeErr).Msg("pluginsdk: failed to encode health status")
 			}
 		}
 	})
