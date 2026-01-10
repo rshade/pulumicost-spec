@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.14](https://github.com/rshade/pulumicost-spec/compare/v0.4.13...v0.4.14) (2026-01-10)
+
+
+### Added
+
+* **pluginsdk:** implement sdk polish features and hardening ([#259](https://github.com/rshade/pulumicost-spec/issues/259)) ([2091d19](https://github.com/rshade/pulumicost-spec/commit/2091d19cc0e84b46bd14469202e9d896e6fa3cc9))
+
+
+### Fixed
+
+* **pluginsdk:** use zerolog in health handler ([#268](https://github.com/rshade/pulumicost-spec/issues/268)) ([b43443e](https://github.com/rshade/pulumicost-spec/commit/b43443e8afedd7bdf69f19b81de0c852c35739f1)), closes [#266](https://github.com/rshade/pulumicost-spec/issues/266)
+
+
+### Changed
+
+* **sdk:** Improve ARN provider type safety ([#269](https://github.com/rshade/pulumicost-spec/issues/269)) ([813d98e](https://github.com/rshade/pulumicost-spec/commit/813d98e55e55d4efab4ea4802c9ad04dd7ebda85)), closes [#203](https://github.com/rshade/pulumicost-spec/issues/203)
+* **sdk:** Improve ARN provider type safety ([#270](https://github.com/rshade/pulumicost-spec/issues/270)) ([61ea613](https://github.com/rshade/pulumicost-spec/commit/61ea6136d9223fb188e862c7d8aff2adda6fd40c)), closes [#203](https://github.com/rshade/pulumicost-spec/issues/203)
+
 ## [0.4.13](https://github.com/rshade/pulumicost-spec/compare/v0.4.12...v0.4.13) (2026-01-05)
 
 
