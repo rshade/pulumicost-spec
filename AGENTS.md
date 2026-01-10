@@ -11,7 +11,7 @@
 
 ## Code Style
 
-- **Go version**: 1.24.10 (toolchain 1.25.4)
+- **Go version**: 1.25.5
 - **Formatting**: `goimports` + `golines` (120 char lines)
 - **Linting**: 120+ linters via golangci-lint (see `.golangci.yml`)
 - **Imports**: Standard library first, then third-party, then local
@@ -29,6 +29,9 @@
 - Sanitize secrets in examples
 
 ## Active Technologies
+
+- Go 1.25.5 (as specified in go.mod) + gRPC/protobuf (existing), buf v1.32.1 (existing for proto management) (001-sdk-polish-release)
+- N/A (SDK does not manage persistent storage) (001-sdk-polish-release)
 
 - Go 1.25.5 (per go.mod) + gRPC, protobuf, buf v1.32.1 (001-get-budgets-rpc)
 - JSON Schema (Draft 2020-12) for PricingSpec and BudgetSpec validation (001-get-budgets-rpc)
@@ -52,3 +55,9 @@
 - `pluginsdk.Serve`: Tests dealing with `Serve` should prefer injecting a `net.Listener` (via
   `ServeConfig.Listener`) rather than relying on `Port` and `listenOnLoopback` to avoid race
   conditions and ensure predictable port binding.
+
+## CI Variance
+
+GitHub Actions CI runners exhibit high-performance variability (up to 2x for sub-microsecond
+benchmarks). Benchmark alerts are informational and should not fail builds (`fail-on-alert: false`).
+The alert threshold is set to 150% to reduce noise.

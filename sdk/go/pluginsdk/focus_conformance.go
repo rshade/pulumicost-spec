@@ -77,12 +77,24 @@ func ValidateFocusRecord(r *pbc.FocusCostRecord) error {
 // In FailFast mode (default), returns a slice with at most one error.
 // In Aggregate mode, returns all validation errors found.
 // Returns an empty slice if the record is valid.
-// Reference: https://focus.finops.org
+// ValidateFocusRecordWithOptions validates a FocusCostRecord according to FOCUS 1.2/1.3 and contextual FinOps rules using the provided ValidationOptions.
+// It verifies numeric cost values (no Inf/NaN), required FOCUS fields, ISO 4217 currency codes, and business-rule constraints; when opts.Mode is ValidationModeFailFast validation stops on the first encountered error, otherwise all detected errors are returned.
+// If r is nil, the function returns a single error indicating the record is nil.
+// The function returns a slice of errors; the slice is empty when the record passes all validations.
 func ValidateFocusRecordWithOptions(r *pbc.FocusCostRecord, opts ValidationOptions) []error {
 	var errs []error
 
 	if r == nil {
 		return []error{errors.New("record is nil")}
+	}
+
+	// Validate cost values (check for Inf/NaN).
+	costErrs := validateCostValues(r, opts)
+	if len(costErrs) > 0 {
+		if opts.Mode == ValidationModeFailFast {
+			return []error{costErrs[0]}
+		}
+		errs = append(errs, costErrs...)
 	}
 
 	// Validate mandatory fields (FOCUS 1.2).
@@ -113,7 +125,56 @@ func ValidateFocusRecordWithOptions(r *pbc.FocusCostRecord, opts ValidationOptio
 	return errs
 }
 
-// validateMandatoryFields checks all 14 mandatory FOCUS 1.2 fields.
+// validateCostValues checks the numeric cost fields on the provided FocusCostRecord for invalid floating-point values.
+// It verifies billed_cost, effective_cost, list_cost, contracted_cost, contracted_unit_price, list_unit_price, pricing_quantity, and consumed_quantity.
+// If any of these fields is +Inf, -Inf, or NaN, validateCostValues returns an error naming the offending field; otherwise it returns nil.
+func validateCostValues(r *pbc.FocusCostRecord, opts ValidationOptions) []error {
+	var errs []error
+
+	// Build slice of name/value pairs directly to avoid heap allocations from method value capture.
+	// Calling the getters directly and storing their float64 results is more efficient.
+	costFields := []struct {
+		name string
+		val  float64
+	}{
+		{"billed_cost", r.GetBilledCost()},
+		{"effective_cost", r.GetEffectiveCost()},
+		{"list_cost", r.GetListCost()},
+		{"contracted_cost", r.GetContractedCost()},
+		{"contracted_unit_price", r.GetContractedUnitPrice()},
+		{"list_unit_price", r.GetListUnitPrice()},
+		{"pricing_quantity", r.GetPricingQuantity()},
+		{"consumed_quantity", r.GetConsumedQuantity()},
+	}
+
+	for _, f := range costFields {
+		if err := checkCostValue(f.val, f.name); err != nil {
+			if opts.Mode == ValidationModeFailFast {
+				return []error{err}
+			}
+			errs = append(errs, err)
+		}
+	}
+
+	return errs
+}
+
+// checkCostValue validates a single cost field for Inf/NaN values.
+func checkCostValue(val float64, name string) error {
+	if math.IsInf(val, 0) {
+		return fmt.Errorf("%s cannot be infinity", name)
+	}
+	if math.IsNaN(val) {
+		return fmt.Errorf("%s cannot be NaN", name)
+	}
+	return nil
+}
+
+// validateMandatoryFields verifies the 14 mandatory FOCUS 1.2 fields are present in r.
+// It returns an error describing the first missing or unspecified required field.
+// This validation requires provider_name for FOCUS 1.2 (provider_name is deprecated in FOCUS 1.3).
+// BilledCost and ContractedCost are considered mandatory but may be zero or negative; billing_account_name
+// validation is intentionally relaxed to accommodate providers that omit account names.
 func validateMandatoryFields(r *pbc.FocusCostRecord) error {
 	// Identity fields (FOCUS 1.2 Section 2.1).
 	// Note: provider_name is deprecated in FOCUS 1.3 but still required for FOCUS 1.2 conformance.

@@ -1771,3 +1771,30 @@ func TestResourceDescriptorOptions_Composability(t *testing.T) {
 		}
 	})
 }
+
+// FuzzResourceDescriptorID fuzz tests the WithID option for ResourceDescriptor.
+func FuzzResourceDescriptorID(f *testing.F) {
+	// Seed corpus
+	f.Add("urn:pulumi:prod::myapp::resource::name")
+	f.Add("https://example.com/resource?id=12345#anchor")
+	f.Add("arn:aws:ec2:us-east-1:123456789012:instance/i-abc")
+	f.Add("/subscriptions/sub-123/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/myVM")
+	f.Add("//compute.googleapis.com/projects/proj/zones/z/instances/i")
+	f.Add("")                        // Empty string
+	f.Add(strings.Repeat("a", 1000)) // Long string
+	f.Add("null\x00byte")            // Embedded null
+	f.Add("emoji\U0001F600test")     // Unicode
+
+	f.Fuzz(func(t *testing.T, id string) {
+		// Should never panic
+		desc := pluginsdk.NewResourceDescriptor(
+			"provider", "type",
+			pluginsdk.WithID(id),
+		)
+
+		// ID should round-trip correctly
+		if desc.GetId() != id {
+			t.Errorf("ID mismatch: got %q, want %q", desc.GetId(), id)
+		}
+	})
+}

@@ -26,6 +26,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const maxPayloadSize = 1 << 20 // 1MB
+
 // portFlag is the --port command-line flag for specifying the gRPC server port.
 // This is registered at package initialization time.
 //
@@ -345,14 +347,14 @@ func (s *Server) GetPluginInfo(
 				Str("version", resp.GetVersion()).
 				Str("spec_version", resp.GetSpecVersion()).
 				Msg("GetPluginInfo returned incomplete response")
-			return nil, status.Error(codes.Internal, "plugin returned incomplete metadata")
+			return nil, status.Error(codes.Internal, "plugin metadata is incomplete")
 		}
+
 		if specErr := ValidateSpecVersion(resp.GetSpecVersion()); specErr != nil {
 			s.logger.Error().
-				Str("spec_version", resp.GetSpecVersion()).
 				Err(specErr).
 				Msg("GetPluginInfo returned invalid spec_version")
-			return nil, status.Error(codes.Internal, "plugin returned invalid spec_version format")
+			return nil, status.Error(codes.Internal, "plugin reported an invalid specification version")
 		}
 		return resp, nil
 	}
@@ -861,7 +863,11 @@ func serveGRPC(ctx context.Context, listener net.Listener, server *Server, confi
 	return nil
 }
 
-// serveConnect starts a connect-go server supporting gRPC, gRPC-Web, and Connect protocols.
+// serveConnect starts an HTTP server that exposes the plugin over Connect, gRPC-Web, and gRPC (using h2c).
+// It registers the CostSource service and the gRPC health service, optionally exposes a /healthz endpoint,
+// applies CORS when configured, enforces a 1MB request payload limit, and uses the provided timeouts.
+// The server shuts down gracefully when ctx is canceled.
+// It returns ctx.Err() if shutdown was initiated by the provided context, or the underlying serve error otherwise.
 func serveConnect(ctx context.Context, listener net.Listener, server *Server, config ServeConfig) error {
 	// Create HTTP mux for routing
 	mux := http.NewServeMux()
@@ -874,6 +880,12 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 	path, handler := pbcconnect.NewCostSourceServiceHandler(connectHandler, handlerOpts...)
 	mux.Handle(path, handler)
 
+	// Detect HealthChecker from plugin
+	var customChecker HealthChecker
+	if hc, ok := server.plugin.(HealthChecker); ok {
+		customChecker = hc
+	}
+
 	// Register gRPC health check service (grpc.health.v1.Health/Check)
 	// This provides standard gRPC health checking protocol support
 	healthChecker := grpchealth.NewStaticChecker(
@@ -885,7 +897,7 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 
 	// Add simple HTTP health endpoint if enabled
 	if config.Web.EnableHealthEndpoint {
-		mux.Handle("/healthz", HealthHandler())
+		mux.Handle("/healthz", HealthHandler(customChecker))
 	}
 
 	// Wrap with h2c for HTTP/2 cleartext support (required for gRPC protocol)
@@ -896,6 +908,9 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 	if len(config.Web.AllowedOrigins) > 0 {
 		finalHandler = corsMiddleware(h2cHandler, config.Web)
 	}
+
+	// Apply payload size limit (1MB) to prevent DoS
+	finalHandler = payloadLimitMiddleware(finalHandler, maxPayloadSize)
 
 	// Resolve timeouts with defaults
 	timeouts := DefaultServerTimeouts()
@@ -948,9 +963,8 @@ func serveConnect(ctx context.Context, listener net.Listener, server *Server, co
 }
 
 // resolveHeaderValue computes the header value based on nil/empty/populated semantics.
-// - nil slice: returns the default value
-// - empty slice: returns empty string
-// - populated slice: joins with ", ".
+// If headers is nil, defaultValue is returned. If headers is an empty slice, the empty
+// string is returned. Otherwise the slice elements are joined with ", ".
 func resolveHeaderValue(headers []string, defaultValue string) string {
 	if headers == nil {
 		return defaultValue
@@ -961,7 +975,31 @@ func resolveHeaderValue(headers []string, defaultValue string) string {
 	return strings.Join(headers, ", ")
 }
 
-// corsMiddleware wraps an http.Handler with CORS support.
+// payloadLimitMiddleware wraps next and limits the size of the incoming request body.
+// It first performs an early Content-Length check to reject obviously oversized requests
+// without reading any data, then replaces r.Body with an http.MaxBytesReader that enforces
+// the maxBytes limit for requests where Content-Length is missing, malformed, or incorrect.
+func payloadLimitMiddleware(next http.Handler, maxBytes int64) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Early Content-Length check to reject oversized requests without reading data.
+		// This is more efficient than streaming data only to reject it later.
+		if contentLength := r.Header.Get("Content-Length"); contentLength != "" {
+			if length, err := strconv.ParseInt(contentLength, 10, 64); err == nil && length > maxBytes {
+				http.Error(w, "payload too large", http.StatusRequestEntityTooLarge)
+				return
+			}
+		}
+		// Fallback: http.MaxBytesReader handles missing/incorrect Content-Length headers
+		r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+		next.ServeHTTP(w, r)
+	})
+}
+
+// corsMiddleware adds CORS headers to responses based on the provided WebConfig.
+// It handles the Origin, Access-Control-Allow-Origin, Access-Control-Allow-Methods,
+// Access-Control-Allow-Headers, Access-Control-Expose-Headers, Access-Control-Max-Age, and
+// Access-Control-Allow-Credentials headers. It responds to preflight OPTIONS requests
+// with HTTP 204 No Content.
 func corsMiddleware(next http.Handler, webConfig WebConfig) http.Handler {
 	// Pre-compute header values ONCE at middleware construction time (not per-request).
 	// This avoids allocations from strings.Join on every HTTP request.

@@ -238,7 +238,7 @@ func TestServeConnect_ConnectClient(t *testing.T) {
 }
 
 func TestHealthHandler(t *testing.T) {
-	handler := pluginsdk.HealthHandler()
+	handler := pluginsdk.HealthHandler(nil)
 
 	t.Run("GET returns 200 OK", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
@@ -872,4 +872,160 @@ func BenchmarkCORSMiddleware(b *testing.B) {
 
 	// Silence unused variable warning
 	_ = baseHandler
+}
+
+func TestServeConnect_ConcurrentRequests(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "concurrent-test-plugin"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start server
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled: true,
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	client := pbcconnect.NewCostSourceServiceClient(
+		http.DefaultClient,
+		"http://"+addr,
+	)
+
+	// Run 100 concurrent requests
+	concurrency := 100
+	doneCh := make(chan error, concurrency)
+
+	for range concurrency {
+		go func() {
+			_, reqErr := client.Name(context.Background(), connect.NewRequest(&pbc.NameRequest{}))
+			doneCh <- reqErr
+		}()
+	}
+
+	for range concurrency {
+		reqErr := <-doneCh
+		require.NoError(t, reqErr)
+	}
+
+	cancel()
+	<-errCh
+}
+
+func TestServeConnect_LargePayload(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	plugin := &connectTestPlugin{name: "payload-test-plugin"}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start server
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   plugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled: true,
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	// Create >1MB payload
+	largeData := make([]byte, 1024*1024+100) // 1MB + 100 bytes
+	reqBody := bytes.NewReader(largeData)
+
+	// Send raw HTTP request to bypass client-side limits if any
+	resp, err := http.Post(
+		"http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+		"application/json",
+		reqBody,
+	)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Should be rejected with 4xx client error (likely 413 or 400)
+	is4xx := resp.StatusCode >= 400 && resp.StatusCode < 500
+	assert.True(t, is4xx, "Should reject large payload with 4xx status, got: %d", resp.StatusCode)
+}
+
+func TestServeConnect_GracefulShutdown(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+
+	// Plugin that sleeps
+	// We need to mock a slow method. Currently connectTestPlugin returns immediately.
+	// We can't easily modify it without changing struct.
+	// Let's create a new type.
+	slowPlugin := &slowPlugin{}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start server
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+			Plugin:   slowPlugin,
+			Listener: listener,
+			Web: pluginsdk.WebConfig{
+				Enabled: true,
+			},
+		})
+	}()
+
+	addr := listener.Addr().String()
+	waitForServer(t, addr)
+
+	client := pbcconnect.NewCostSourceServiceClient(
+		http.DefaultClient,
+		"http://"+addr,
+	)
+
+	// Start a slow request
+	reqDone := make(chan error)
+	go func() {
+		_, reqErr := client.Name(context.Background(), connect.NewRequest(&pbc.NameRequest{}))
+		reqDone <- reqErr
+	}()
+
+	// Wait a bit to ensure request is in-flight
+	time.Sleep(100 * time.Millisecond)
+
+	// Trigger shutdown
+	cancel()
+
+	// Request should complete successfully
+	select {
+	case reqErr := <-reqDone:
+		require.NoError(t, reqErr, "In-flight request should complete during graceful shutdown")
+	case <-time.After(2 * time.Second):
+		t.Fatal("Request timed out during shutdown")
+	}
+
+	<-errCh
+}
+
+// slowPlugin sleeps in Name().
+type slowPlugin struct {
+	connectTestPlugin
+}
+
+func (p *slowPlugin) Name() string {
+	time.Sleep(500 * time.Millisecond)
+	return "slow-plugin"
 }

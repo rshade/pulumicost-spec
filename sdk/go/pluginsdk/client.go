@@ -88,8 +88,15 @@ type ClientConfig struct {
 	Protocol Protocol
 
 	// HTTPClient is the HTTP client to use for requests.
-	// If nil, a default client with 30-second timeout is used.
+	// If nil, a default client is created using cfg.Timeout (or DefaultClientTimeout when Timeout is 0).
 	HTTPClient *http.Client
+
+	// Timeout is the per-client default timeout for RPC calls.
+	// This field is only applied if cfg.HTTPClient is nil (i.e., when NewClient creates the HTTP client).
+	// If a custom cfg.HTTPClient is provided, the caller must set HTTPClient.Timeout directly.
+	// A value of 0 (default) means use the DefaultClientTimeout (30 seconds).
+	// Context deadlines (if set) take precedence over this per-client timeout.
+	Timeout time.Duration
 
 	// ConnectOptions allows passing additional connect.ClientOption values.
 	ConnectOptions []connect.ClientOption
@@ -160,7 +167,17 @@ func wrapRPCError(ctx context.Context, operation string, err error) error {
 //   - If HTTPClient is provided, the caller retains ownership. Close() is a no-op;
 //     the caller is responsible for closing the HTTP client.
 //
-// Thread Safety: Client is safe for concurrent use from multiple goroutines.
+// NewClient creates a Client configured according to cfg and is safe for concurrent use.
+//
+// If cfg.Protocol is not a known Protocol value it defaults to ProtocolConnect.
+// If cfg.HTTPClient is nil, NewClient constructs an http.Client using cfg.Timeout (or
+// DefaultClientTimeout when Timeout is 0); in that case the returned Client is considered
+// to own the HTTP client and will close idle connections when Close is called. If a
+// user-provided HTTPClient is supplied, ownership remains with the caller and Close is a no-op.
+// The returned Client is configured to use the requested RPC protocol (Connect, gRPC, or
+// gRPC-Web) and includes any provided ConnectOptions.
+//
+// NewClient returns a pointer to the constructed Client.
 func NewClient(cfg ClientConfig) *Client {
 	// Validate protocol - default to Connect for invalid values
 	if !IsValidProtocol(cfg.Protocol) {
@@ -170,7 +187,11 @@ func NewClient(cfg ClientConfig) *Client {
 	httpClient := cfg.HTTPClient
 	ownsClient := false
 	if httpClient == nil {
-		httpClient = &http.Client{Timeout: DefaultClientTimeout}
+		timeout := cfg.Timeout
+		if timeout == 0 {
+			timeout = DefaultClientTimeout
+		}
+		httpClient = &http.Client{Timeout: timeout}
 		ownsClient = true
 	}
 

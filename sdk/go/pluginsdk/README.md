@@ -257,11 +257,11 @@ This behavior ensures no in-flight requests are dropped during rolling updates o
 The SDK supports serving plugins over multiple protocols simultaneously using the
 [Connect](https://connectrpc.com/) framework:
 
-| Protocol | Use Case | Client Support |
-| -------- | -------- | -------------- |
-| **gRPC** | Server-to-server (HTTP/2) | All gRPC clients |
+| Protocol     | Use Case                   | Client Support                    |
+| ------------ | -------------------------- | --------------------------------- |
+| **gRPC**     | Server-to-server (HTTP/2)  | All gRPC clients                  |
 | **gRPC-Web** | Browser clients (HTTP/1.1) | grpc-web, @connectrpc/connect-web |
-| **Connect** | Simple JSON over HTTP | fetch(), curl, any HTTP client |
+| **Connect**  | Simple JSON over HTTP      | fetch(), curl, any HTTP client    |
 
 ### Enabling Web Support
 
@@ -282,14 +282,14 @@ err := pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
 
 ### WebConfig Options
 
-| Field | Type | Default | Description |
-| ----- | ---- | ------- | ----------- |
-| `Enabled` | `bool` | `false` | Enable Connect/gRPC-Web protocols |
-| `AllowedOrigins` | `[]string` | `nil` | CORS allowed origins (empty = no CORS headers) |
-| `AllowCredentials` | `bool` | `false` | Include credentials in CORS |
-| `EnableHealthEndpoint` | `bool` | `false` | Add `/healthz` health check endpoint |
-| `AllowedHeaders` | `[]string` | `nil` | Custom allowed headers (nil = defaults) |
-| `ExposedHeaders` | `[]string` | `nil` | Custom exposed headers (nil = defaults) |
+| Field                  | Type       | Default | Description                                    |
+| ---------------------- | ---------- | ------- | ---------------------------------------------- |
+| `Enabled`              | `bool`     | `false` | Enable Connect/gRPC-Web protocols              |
+| `AllowedOrigins`       | `[]string` | `nil`   | CORS allowed origins (empty = no CORS headers) |
+| `AllowCredentials`     | `bool`     | `false` | Include credentials in CORS                    |
+| `EnableHealthEndpoint` | `bool`     | `false` | Add `/healthz` health check endpoint           |
+| `AllowedHeaders`       | `[]string` | `nil`   | Custom allowed headers (nil = defaults)        |
+| `ExposedHeaders`       | `[]string` | `nil`   | Custom exposed headers (nil = defaults)        |
 
 ### Builder Pattern
 
@@ -311,11 +311,14 @@ With `Web.Enabled = true`, you can call your plugin using simple `fetch()`:
 
 ```javascript
 // Get plugin name
-const response = await fetch('http://localhost:8080/pulumicost.v1.CostSourceService/Name', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+const response = await fetch(
+  "http://localhost:8080/pulumicost.v1.CostSourceService/Name",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({}),
-});
+  },
+);
 const data = await response.json();
 console.log(data.name); // "my-cost-plugin"
 ```
@@ -406,19 +409,19 @@ client := pluginsdk.NewClient(cfg)
 
 ### Available Methods
 
-| Method | Description |
-| ------ | ----------- |
-| `Name(ctx)` | Get plugin name |
-| `Supports(ctx, resource)` | Check resource support |
+| Method                                    | Description                             |
+| ----------------------------------------- | --------------------------------------- |
+| `Name(ctx)`                               | Get plugin name                         |
+| `Supports(ctx, resource)`                 | Check resource support                  |
 | `SupportsResourceType(ctx, resourceType)` | Convenience for checking by type string |
-| `EstimateCost(ctx, req)` | Estimate monthly cost |
-| `GetActualCost(ctx, req)` | Get historical cost data |
-| `GetProjectedCost(ctx, req)` | Get projected cost |
-| `GetPricingSpec(ctx, req)` | Get pricing specification |
-| `GetRecommendations(ctx, req)` | Get cost recommendations |
-| `DismissRecommendation(ctx, req)` | Dismiss a recommendation |
-| `GetBudgets(ctx, req)` | Get budget information |
-| `Inner()` | Access underlying connect client |
+| `EstimateCost(ctx, req)`                  | Estimate monthly cost                   |
+| `GetActualCost(ctx, req)`                 | Get historical cost data                |
+| `GetProjectedCost(ctx, req)`              | Get projected cost                      |
+| `GetPricingSpec(ctx, req)`                | Get pricing specification               |
+| `GetRecommendations(ctx, req)`            | Get cost recommendations                |
+| `DismissRecommendation(ctx, req)`         | Dismiss a recommendation                |
+| `GetBudgets(ctx, req)`                    | Get budget information                  |
+| `Inner()`                                 | Access underlying connect client        |
 
 ### Using the Raw Connect Client
 
@@ -518,6 +521,115 @@ func (p *MyPlugin) GetPluginInfo(
 
 You should always use the `pluginsdk.SpecVersion` constant to ensure your plugin reports the
 correct SDK version it was compiled against.
+
+### Migrating to GetPluginInfo
+
+The `GetPluginInfo` RPC is a new requirement for all plugins. It allows the core system to
+discover capabilities and validate compatibility.
+
+#### Static Metadata (Recommended)
+
+For most plugins, metadata is static. Use the `NewPluginInfo` helper:
+
+```go
+pluginsdk.Serve(ctx, pluginsdk.ServeConfig{
+    Plugin: &MyPlugin{},
+    // Add this field:
+    PluginInfo: pluginsdk.NewPluginInfo(
+        "my-cost-plugin",
+        "v1.0.0",
+        pluginsdk.WithProviders("aws", "azure"),
+        pluginsdk.WithDescription("Cost analysis for AWS and Azure"),
+    ),
+})
+```
+
+#### Dynamic Metadata
+
+If your plugin's capabilities change at runtime (e.g., based on credentials), implement
+the `PluginInfoProvider` interface:
+
+```go
+func (p *MyPlugin) GetPluginInfo(ctx context.Context, req *pbc.GetPluginInfoRequest) (
+    *pbc.GetPluginInfoResponse, error) {
+    return &pbc.GetPluginInfoResponse{
+        Name:        "my-cost-plugin",
+        Version:     "v1.0.0",
+        SpecVersion: pluginsdk.SpecVersion,
+        Providers:   p.discoverProviders(), // Dynamic logic
+    }, nil
+}
+```
+
+#### Backward Compatibility
+
+Legacy plugins that do not implement `GetPluginInfo` will return a gRPC `Unimplemented`
+status. Clients should handle this gracefully:
+
+```go
+info, err := client.GetPluginInfo(ctx, req)
+if status.Code(err) == codes.Unimplemented {
+    // Legacy plugin - assume default behavior
+}
+```
+
+## Developer Experience Improvements
+
+The SDK includes several helpers to simplify plugin development.
+
+### Health Checking
+
+Plugins can implement the `HealthChecker` interface to provide custom health logic:
+
+```go
+func (p *MyPlugin) Check(ctx context.Context) error {
+    if err := p.db.PingContext(ctx); err != nil {
+        return fmt.Errorf("database unavailable: %w", err)
+    }
+    return nil
+}
+```
+
+The SDK automatically registers a `/healthz` endpoint when `Web.EnableHealthEndpoint` is true.
+
+### Context Validation
+
+Validate contexts before performing work to fail fast:
+
+```go
+func (p *MyPlugin) GetActualCost(ctx context.Context, req *pbc.GetActualCostRequest) (*pbc.GetActualCostResponse, error) {
+    if err := pluginsdk.ValidateContext(ctx); err != nil {
+        return nil, status.Error(codes.Canceled, err.Error())
+    }
+    // ...
+}
+```
+
+### ARN Helpers
+
+Parse and validate cloud resource identifiers:
+
+```go
+provider := pluginsdk.DetectARNProvider(resource.Id)
+if provider == "aws" { // Returns "" for unrecognized formats
+    // Handle AWS resource
+}
+
+if err := pluginsdk.ValidateARNConsistency(resource.Id, "aws"); err != nil {
+    return nil, status.Error(codes.InvalidArgument, "invalid ARN for provider")
+}
+```
+
+### Client Timeouts
+
+Configure timeouts when creating clients:
+
+```go
+client := pluginsdk.NewClient(pluginsdk.ClientConfig{
+    BaseURL: "http://localhost:8080",
+    Timeout: 2 * time.Minute, // Override default 30s
+})
+```
 
 ## Environment Variables
 
@@ -702,13 +814,13 @@ logger := pluginsdk.NewPluginLogger(
 
 **Behavior**:
 
-| Scenario | Result |
-| -------- | ------ |
-| `PULUMICOST_LOG_FILE` not set | Returns `os.Stderr` |
-| `PULUMICOST_LOG_FILE=""` (empty) | Returns `os.Stderr` |
-| `PULUMICOST_LOG_FILE=/valid/path.log` | Returns file writer (creates if needed, appends if exists) |
-| `PULUMICOST_LOG_FILE=/invalid/path` | Logs warning to stderr, returns `os.Stderr` |
-| `PULUMICOST_LOG_FILE=/some/directory/` | Logs warning to stderr, returns `os.Stderr` |
+| Scenario                               | Result                                                     |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `PULUMICOST_LOG_FILE` not set          | Returns `os.Stderr`                                        |
+| `PULUMICOST_LOG_FILE=""` (empty)       | Returns `os.Stderr`                                        |
+| `PULUMICOST_LOG_FILE=/valid/path.log`  | Returns file writer (creates if needed, appends if exists) |
+| `PULUMICOST_LOG_FILE=/invalid/path`    | Logs warning to stderr, returns `os.Stderr`                |
+| `PULUMICOST_LOG_FILE=/some/directory/` | Logs warning to stderr, returns `os.Stderr`                |
 
 **File Handling**:
 
@@ -1210,23 +1322,23 @@ provider identification, and contract commitment tracking.
 
 ### New FOCUS 1.3 Columns
 
-| Column                 | Builder Method                              | Purpose                                    |
-| ---------------------- | ------------------------------------------- | ------------------------------------------ |
-| AllocatedMethodId      | `WithAllocation(methodId, details)`         | Allocation methodology identifier          |
-| AllocatedMethodDetails | `WithAllocation(methodId, details)`         | Human-readable allocation description      |
-| AllocatedResourceId    | `WithAllocatedResource(id, name)`           | Target resource receiving allocated cost   |
-| AllocatedResourceName  | `WithAllocatedResource(id, name)`           | Display name of allocated resource         |
-| AllocatedTags          | `WithAllocatedTags(tags)`                   | Tags for the allocated resource            |
-| ServiceProviderName    | `WithServiceProvider(name)`                 | Entity providing the service (ISV/reseller)|
-| HostProviderName       | `WithHostProvider(name)`                    | Entity hosting the resource (cloud vendor) |
-| ContractApplied        | `WithContractApplied(commitmentId)`         | Link to ContractCommitment record          |
+| Column                 | Builder Method                      | Purpose                                     |
+| ---------------------- | ----------------------------------- | ------------------------------------------- |
+| AllocatedMethodId      | `WithAllocation(methodId, details)` | Allocation methodology identifier           |
+| AllocatedMethodDetails | `WithAllocation(methodId, details)` | Human-readable allocation description       |
+| AllocatedResourceId    | `WithAllocatedResource(id, name)`   | Target resource receiving allocated cost    |
+| AllocatedResourceName  | `WithAllocatedResource(id, name)`   | Display name of allocated resource          |
+| AllocatedTags          | `WithAllocatedTags(tags)`           | Tags for the allocated resource             |
+| ServiceProviderName    | `WithServiceProvider(name)`         | Entity providing the service (ISV/reseller) |
+| HostProviderName       | `WithHostProvider(name)`            | Entity hosting the resource (cloud vendor)  |
+| ContractApplied        | `WithContractApplied(commitmentId)` | Link to ContractCommitment record           |
 
 ### Deprecated Fields (FOCUS 1.3)
 
-| Deprecated Field | Replacement           | Migration                                     |
-| ---------------- | --------------------- | --------------------------------------------- |
+| Deprecated Field | Replacement             | Migration                                                            |
+| ---------------- | ----------------------- | -------------------------------------------------------------------- |
 | `provider_name`  | `service_provider_name` | Use `WithServiceProvider()` instead of `WithIdentity()` for provider |
-| `publisher`      | `host_provider_name`  | Use `WithHostProvider()` instead of `WithPublisher()` |
+| `publisher`      | `host_provider_name`    | Use `WithHostProvider()` instead of `WithPublisher()`                |
 
 When both deprecated and replacement fields are set, a warning is logged and the FOCUS 1.3
 field takes precedence.
@@ -1314,27 +1426,27 @@ commitment, err := builder.
 
 ### ContractCommitment Fields
 
-| Field                        | Builder Method                     | Required | Description                                |
-| ---------------------------- | ---------------------------------- | -------- | ------------------------------------------ |
-| ContractCommitmentId         | `WithIdentity(commitmentId, ...)`  | Yes      | Unique commitment identifier               |
-| ContractId                   | `WithIdentity(..., contractId)`    | Yes      | Parent contract identifier                 |
-| ContractCommitmentCategory   | `WithCategory(category)`           | No       | SPEND or USAGE commitment type             |
-| ContractCommitmentType       | `WithType(type)`                   | No       | Provider-specific type (e.g., "RI", "SP")  |
-| ContractCommitmentPeriodStart| `WithCommitmentPeriod(start, end)` | No       | Commitment period start                    |
-| ContractCommitmentPeriodEnd  | `WithCommitmentPeriod(start, end)` | No       | Commitment period end                      |
-| ContractPeriodStart          | `WithContractPeriod(start, end)`   | No       | Overall contract period start              |
-| ContractPeriodEnd            | `WithContractPeriod(start, end)`   | No       | Overall contract period end                |
-| ContractCommitmentCost       | `WithFinancials(cost, ...)`        | No       | Monetary commitment amount (SPEND)         |
-| ContractCommitmentQuantity   | `WithFinancials(..., qty, ...)`    | No       | Quantity commitment (USAGE)                |
-| ContractCommitmentUnit       | `WithFinancials(..., unit, ...)`   | No       | Unit of measure for quantity               |
-| BillingCurrency              | `WithFinancials(..., currency)`    | Yes      | ISO 4217 currency code                     |
+| Field                         | Builder Method                     | Required | Description                               |
+| ----------------------------- | ---------------------------------- | -------- | ----------------------------------------- |
+| ContractCommitmentId          | `WithIdentity(commitmentId, ...)`  | Yes      | Unique commitment identifier              |
+| ContractId                    | `WithIdentity(..., contractId)`    | Yes      | Parent contract identifier                |
+| ContractCommitmentCategory    | `WithCategory(category)`           | No       | SPEND or USAGE commitment type            |
+| ContractCommitmentType        | `WithType(type)`                   | No       | Provider-specific type (e.g., "RI", "SP") |
+| ContractCommitmentPeriodStart | `WithCommitmentPeriod(start, end)` | No       | Commitment period start                   |
+| ContractCommitmentPeriodEnd   | `WithCommitmentPeriod(start, end)` | No       | Commitment period end                     |
+| ContractPeriodStart           | `WithContractPeriod(start, end)`   | No       | Overall contract period start             |
+| ContractPeriodEnd             | `WithContractPeriod(start, end)`   | No       | Overall contract period end               |
+| ContractCommitmentCost        | `WithFinancials(cost, ...)`        | No       | Monetary commitment amount (SPEND)        |
+| ContractCommitmentQuantity    | `WithFinancials(..., qty, ...)`    | No       | Quantity commitment (USAGE)               |
+| ContractCommitmentUnit        | `WithFinancials(..., unit, ...)`   | No       | Unit of measure for quantity              |
+| BillingCurrency               | `WithFinancials(..., currency)`    | Yes      | ISO 4217 currency code                    |
 
 ### Commitment Categories
 
-| Category   | Enum Value                                               | Use Case                                    |
-| ---------- | -------------------------------------------------------- | ------------------------------------------- |
-| SPEND      | `FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND`               | Dollar-based commitments (e.g., $10K/month) |
-| USAGE      | `FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE`               | Usage-based commitments (e.g., 1000 hours)  |
+| Category | Enum Value                                 | Use Case                                    |
+| -------- | ------------------------------------------ | ------------------------------------------- |
+| SPEND    | `FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND` | Dollar-based commitments (e.g., $10K/month) |
+| USAGE    | `FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE` | Usage-based commitments (e.g., 1000 hours)  |
 
 ### Example: SPEND Commitment (Reserved Instance)
 
@@ -1380,14 +1492,14 @@ costRecord, _ := pluginsdk.NewFocusRecordBuilder().
 
 ### Validation Rules
 
-| Rule                          | Description                                              |
-| ----------------------------- | -------------------------------------------------------- |
-| Required: ContractCommitmentId| Must be non-empty                                        |
-| Required: ContractId          | Must be non-empty                                        |
-| Required: BillingCurrency     | Must be valid ISO 4217 code (validated via currency pkg) |
-| Period Consistency            | commitment_period_end >= commitment_period_start         |
-| Period Consistency            | contract_period_end >= contract_period_start             |
-| Non-negative Values           | cost >= 0, quantity >= 0                                 |
+| Rule                           | Description                                              |
+| ------------------------------ | -------------------------------------------------------- |
+| Required: ContractCommitmentId | Must be non-empty                                        |
+| Required: ContractId           | Must be non-empty                                        |
+| Required: BillingCurrency      | Must be valid ISO 4217 code (validated via currency pkg) |
+| Period Consistency             | commitment_period_end >= commitment_period_start         |
+| Period Consistency             | contract_period_end >= contract_period_start             |
+| Non-negative Values            | cost >= 0, quantity >= 0                                 |
 
 ### Error Handling
 
@@ -1639,13 +1751,13 @@ func (p *MyPlugin) DryRun(
 
 Each FOCUS field can have one of the following support statuses:
 
-| Status | Value | Description |
-| ------ | ----- | ----------- |
-| `UNSPECIFIED` | 0 | Status not specified (default) |
-| `SUPPORTED` | 1 | Field is always populated by the plugin |
-| `UNSUPPORTED` | 2 | Field is never populated by the plugin |
-| `CONDITIONAL` | 3 | Field is populated under certain conditions (use `condition_description`) |
-| `DYNAMIC` | 4 | Field population depends on runtime data or simulation parameters |
+| Status        | Value | Description                                                               |
+| ------------- | ----- | ------------------------------------------------------------------------- |
+| `UNSPECIFIED` | 0     | Status not specified (default)                                            |
+| `SUPPORTED`   | 1     | Field is always populated by the plugin                                   |
+| `UNSUPPORTED` | 2     | Field is never populated by the plugin                                    |
+| `CONDITIONAL` | 3     | Field is populated under certain conditions (use `condition_description`) |
+| `DYNAMIC`     | 4     | Field population depends on runtime data or simulation parameters         |
 
 ### Field Mapping Helpers
 
@@ -1688,12 +1800,12 @@ mappings = pluginsdk.SetFieldStatus(
 
 ### DryRunResponse Builder Options
 
-| Option | Description |
-| ------ | ----------- |
-| `WithFieldMappings(mappings)` | Sets the field_mappings array |
-| `WithResourceTypeSupported(bool)` | Sets whether the resource type is supported |
-| `WithConfigurationValid(bool)` | Sets whether plugin configuration is valid |
-| `WithConfigurationErrors([]string)` | Sets configuration error messages |
+| Option                              | Description                                 |
+| ----------------------------------- | ------------------------------------------- |
+| `WithFieldMappings(mappings)`       | Sets the field_mappings array               |
+| `WithResourceTypeSupported(bool)`   | Sets whether the resource type is supported |
+| `WithConfigurationValid(bool)`      | Sets whether plugin configuration is valid  |
+| `WithConfigurationErrors([]string)` | Sets configuration error messages           |
 
 ### dry_run Flag on Cost RPCs
 
@@ -1811,11 +1923,11 @@ func (p *MyPlugin) DryRun(ctx context.Context, req *pbc.DryRunRequest) (
 
 DryRun operations should be fast and not make external API calls:
 
-| Metric | Requirement |
-| ------ | ----------- |
-| Response time | < 100ms (p99) |
-| External API calls | None |
-| Memory allocation | Minimal |
+| Metric             | Requirement   |
+| ------------------ | ------------- |
+| Response time      | < 100ms (p99) |
+| External API calls | None          |
+| Memory allocation  | Minimal       |
 
 ### Capability Discovery
 
@@ -1841,14 +1953,14 @@ This section documents thread safety guarantees for SDK components.
 
 ### Component Thread Safety Summary
 
-| Component | Thread-Safe | Notes |
-| --------- | ----------- | ----- |
-| **Client** | ✅ YES | Safe for concurrent RPC calls from multiple goroutines |
-| **Server** | ✅ YES | Assumes Plugin implementation is thread-safe |
-| **WebConfig** | ✅ YES | Read-only after construction (value semantics) |
-| **PluginMetrics** | ✅ YES | Uses Prometheus internal atomics |
-| **ResourceMatcher** | ❌ NO | Configure before Serve(), then read-only |
-| **FocusRecordBuilder** | ❌ NO | Single-threaded builder pattern |
+| Component              | Thread-Safe | Notes                                                  |
+| ---------------------- | ----------- | ------------------------------------------------------ |
+| **Client**             | ✅ YES      | Safe for concurrent RPC calls from multiple goroutines |
+| **Server**             | ✅ YES      | Assumes Plugin implementation is thread-safe           |
+| **WebConfig**          | ✅ YES      | Read-only after construction (value semantics)         |
+| **PluginMetrics**      | ✅ YES      | Uses Prometheus internal atomics                       |
+| **ResourceMatcher**    | ❌ NO       | Configure before Serve(), then read-only               |
+| **FocusRecordBuilder** | ❌ NO       | Single-threaded builder pattern                        |
 
 ### Client Thread Safety
 
@@ -1946,12 +2058,12 @@ func (p *MyPlugin) GetActualCost(
 **Note**: These limits were accurate as of December 2024. Always verify current
 limits in provider documentation as they change frequently.
 
-| Provider | Service | Default Limit (2024) | Suggested Local Limit | Source |
-| -------- | ------- | -------------------- | --------------------- | ------ |
-| AWS | Cost Explorer | 5 req/sec | 3 req/sec (60% headroom) | [AWS Docs](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/ce-api.html#ce-api-limits) |
-| Azure | Cost Management | 100 req/5min | 15 req/min | [Azure Docs](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/scalability-limits) |
-| GCP | Billing API | 1000 req/min | 800 req/min | [GCP Docs](https://cloud.google.com/billing/docs/reference/rest/v1/billingAccounts/get#authorization-and-quotas) |
-| Kubernetes | Metrics API | Varies | 50 req/sec | [K8s Docs](https://kubernetes.io/docs/reference/using-api/api-concepts/#rate-limiting) |
+| Provider   | Service         | Default Limit (2024) | Suggested Local Limit    | Source                                                                                                           |
+| ---------- | --------------- | -------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| AWS        | Cost Explorer   | 5 req/sec            | 3 req/sec (60% headroom) | [AWS Docs](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/ce-api.html#ce-api-limits)               |
+| Azure      | Cost Management | 100 req/5min         | 15 req/min               | [Azure Docs](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/scalability-limits)           |
+| GCP        | Billing API     | 1000 req/min         | 800 req/min              | [GCP Docs](https://cloud.google.com/billing/docs/reference/rest/v1/billingAccounts/get#authorization-and-quotas) |
+| Kubernetes | Metrics API     | Varies               | 50 req/sec               | [K8s Docs](https://kubernetes.io/docs/reference/using-api/api-concepts/#rate-limiting)                           |
 
 ### Backoff Strategies
 
@@ -1976,11 +2088,11 @@ func backoff(attempt int) time.Duration {
 
 ### gRPC Status Codes for Rate Limiting
 
-| Situation | Status Code | Description |
-| --------- | ----------- | ----------- |
-| Local rate limit | `ResourceExhausted` | Plugin's internal limit reached |
-| Upstream throttling | `Unavailable` | Backend API returned 429 |
-| Retry recommended | `Unavailable` | Include Retry-After header |
+| Situation           | Status Code         | Description                     |
+| ------------------- | ------------------- | ------------------------------- |
+| Local rate limit    | `ResourceExhausted` | Plugin's internal limit reached |
+| Upstream throttling | `Unavailable`       | Backend API returned 429        |
+| Retry recommended   | `Unavailable`       | Include Retry-After header      |
 
 ## Performance Tuning
 
@@ -1996,12 +2108,12 @@ defer client.Close()
 
 Default connection pool settings:
 
-| Setting | Default Value | Description |
-| ------- | ------------- | ----------- |
-| `MaxIdleConns` | 100 | Max idle connections across all hosts |
-| `MaxIdleConnsPerHost` | 10 | Max idle connections per host |
-| `IdleConnTimeout` | 90s | How long idle connections are kept |
-| `Timeout` | 30s | HTTP client timeout |
+| Setting               | Default Value | Description                           |
+| --------------------- | ------------- | ------------------------------------- |
+| `MaxIdleConns`        | 100           | Max idle connections across all hosts |
+| `MaxIdleConnsPerHost` | 10            | Max idle connections per host         |
+| `IdleConnTimeout`     | 90s           | How long idle connections are kept    |
+| `Timeout`             | 30s           | HTTP client timeout                   |
 
 ### Server Timeouts
 
@@ -2018,20 +2130,20 @@ type ServerTimeouts struct {
 
 Recommended production values:
 
-| Timeout | Recommended | Rationale |
-| ------- | ----------- | --------- |
-| ReadHeaderTimeout | 5s | Prevent slow loris attacks |
-| ReadTimeout | 30s | Allow time for large requests |
-| WriteTimeout | 60s | Allow time for cost calculations |
-| IdleTimeout | 120s | Balance connection reuse vs resources |
+| Timeout           | Recommended | Rationale                             |
+| ----------------- | ----------- | ------------------------------------- |
+| ReadHeaderTimeout | 5s          | Prevent slow loris attacks            |
+| ReadTimeout       | 30s         | Allow time for large requests         |
+| WriteTimeout      | 60s         | Allow time for cost calculations      |
+| IdleTimeout       | 120s        | Balance connection reuse vs resources |
 
 ### Protocol Performance Trade-offs
 
-| Protocol | Transport | Performance | Use Case |
-| -------- | --------- | ----------- | -------- |
-| **gRPC** | HTTP/2 only | Best (binary protobuf) | Server-to-server, native clients |
-| **Connect** | HTTP/1.1+ | Good (JSON) | Web dashboards, REST clients |
-| **gRPC-Web** | HTTP/1.1+ | Good (binary) | Browser clients needing binary |
+| Protocol     | Transport   | Performance            | Use Case                         |
+| ------------ | ----------- | ---------------------- | -------------------------------- |
+| **gRPC**     | HTTP/2 only | Best (binary protobuf) | Server-to-server, native clients |
+| **Connect**  | HTTP/1.1+   | Good (JSON)            | Web dashboards, REST clients     |
+| **gRPC-Web** | HTTP/1.1+   | Good (binary)          | Browser clients needing binary   |
 
 ### Benchmark Reference Values
 
@@ -2041,13 +2153,13 @@ Response time baselines from conformance tests.
 use shared thresholds (e.g., 100ms for simple RPCs) while these more granular
 targets are being phased into the testing suite.
 
-| Method | Standard | Advanced |
-| ------ | -------- | -------- |
-| Name() | < 100ms | < 50ms |
-| Supports() | < 50ms | < 25ms |
-| GetProjectedCost() | < 200ms | < 100ms |
-| GetPricingSpec() | < 200ms | < 100ms |
-| GetActualCost() | < 2s (24h) | < 10s (30d) |
+| Method             | Standard   | Advanced    |
+| ------------------ | ---------- | ----------- |
+| Name()             | < 100ms    | < 50ms      |
+| Supports()         | < 50ms     | < 25ms      |
+| GetProjectedCost() | < 200ms    | < 100ms     |
+| GetPricingSpec()   | < 200ms    | < 100ms     |
+| GetActualCost()    | < 2s (24h) | < 10s (30d) |
 
 ## CORS Configuration
 
@@ -2131,10 +2243,10 @@ The SDK provides configurable CORS headers for security compliance and observabi
 
 When `AllowedHeaders` and `ExposedHeaders` are `nil`, sensible defaults are used:
 
-| Header Type | Default Value |
-| ----------- | ------------- |
+| Header Type      | Default Value                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `AllowedHeaders` | Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-Token, X-Requested-With, Connect-Protocol-Version, Connect-Timeout-Ms, Grpc-Timeout, X-Grpc-Web, X-User-Agent |
-| `ExposedHeaders` | Grpc-Status, Grpc-Message, Grpc-Status-Details-Bin, Connect-Content-Encoding, Connect-Content-Type |
+| `ExposedHeaders` | Grpc-Status, Grpc-Message, Grpc-Status-Details-Bin, Connect-Content-Encoding, Connect-Content-Type                                                                                         |
 
 #### Customizing Headers
 
@@ -2186,11 +2298,11 @@ cfg := pluginsdk.DefaultWebConfig().
 
 #### Header Configuration Semantics
 
-| Config Value | Behavior |
-| ------------ | -------- |
-| `nil` (default) | Use default headers for Connect/gRPC-Web compatibility |
+| Config Value         | Behavior                                                |
+| -------------------- | ------------------------------------------------------- |
+| `nil` (default)      | Use default headers for Connect/gRPC-Web compatibility  |
 | `[]string{}` (empty) | Set empty header (only CORS-safelisted headers allowed) |
-| `[]string{"A", "B"}` | Use exactly these headers, joined by ", " |
+| `[]string{"A", "B"}` | Use exactly these headers, joined by ", "               |
 
 #### Accessing Default Header Constants
 
@@ -2228,11 +2340,11 @@ cfg := pluginsdk.DefaultWebConfig().
     WithMaxAge(0)
 ```
 
-| Value | Use Case |
-| ----- | -------- |
-| `nil` (default) | Production - uses 86400s (24 hours) |
-| `3600` | Balanced - policy updates within 1 hour |
-| `0` | Development/High-security - no caching, preflight on every request |
+| Value           | Use Case                                                           |
+| --------------- | ------------------------------------------------------------------ |
+| `nil` (default) | Production - uses 86400s (24 hours)                                |
+| `3600`          | Balanced - policy updates within 1 hour                            |
+| `0`             | Development/High-security - no caching, preflight on every request |
 
 **Note**: Most browsers cap max-age at 24 hours regardless of the value set.
 
@@ -2331,28 +2443,28 @@ The `pbc` alias remains the same, so no other code changes are required.
 
 ### Functions
 
-| Function                                         | Description                         |
-| ------------------------------------------------ | ----------------------------------- |
-| `NewServer(plugin)`                              | Create server with default registry |
-| `NewServerWithRegistry(plugin, registry)`        | Create server with custom registry  |
+| Function                                               | Description                         |
+| ------------------------------------------------------ | ----------------------------------- |
+| `NewServer(plugin)`                                    | Create server with default registry |
+| `NewServerWithRegistry(plugin, registry)`              | Create server with custom registry  |
 | `NewServerWithOptions(plugin, registry, logger, info)` | Create server with all options      |
-| `Serve(ctx, config)`                             | Start gRPC server                   |
-| `NewLogWriter()`                                 | Get log writer respecting env var   |
-| `NewPluginLogger(name, version, level, writer)`  | Create configured logger            |
-| `TracingUnaryServerInterceptor()`                | gRPC interceptor for trace IDs      |
-| `TraceIDFromContext(ctx)`                        | Extract trace ID from context       |
-| `ContextWithTraceID(ctx, traceID)`               | Inject trace ID into context        |
-| `GenerateTraceID()`                              | Generate new trace ID               |
-| `LogOperation(logger, operation)`                | Log operation with timing           |
-| `NotSupportedError(resource)`                    | Create not-supported error          |
-| `NoDataError(resourceID)`                        | Create no-data error                |
-| `LoadManifest(path)`                             | Load manifest from file             |
-| `SaveManifest(path, manifest)`                   | Save manifest to file               |
-| `NewTestServer(t, plugin)`                       | Create test server                  |
-| `NewTestPlugin(t, plugin)`                       | Create test plugin helper           |
-| `CreateTestResource(provider, type, props)`      | Create test resource                |
-| `RunBasicConformance(plugin)`                    | Run basic conformance tests         |
-| `RunStandardConformance(plugin)`                 | Run standard conformance tests      |
-| `RunAdvancedConformance(plugin)`                 | Run advanced conformance tests      |
-| `PrintConformanceReport(t, result)`              | Print formatted report to test log  |
-| `PrintConformanceReportTo(result, writer)`       | Print formatted report to io.Writer |
+| `Serve(ctx, config)`                                   | Start gRPC server                   |
+| `NewLogWriter()`                                       | Get log writer respecting env var   |
+| `NewPluginLogger(name, version, level, writer)`        | Create configured logger            |
+| `TracingUnaryServerInterceptor()`                      | gRPC interceptor for trace IDs      |
+| `TraceIDFromContext(ctx)`                              | Extract trace ID from context       |
+| `ContextWithTraceID(ctx, traceID)`                     | Inject trace ID into context        |
+| `GenerateTraceID()`                                    | Generate new trace ID               |
+| `LogOperation(logger, operation)`                      | Log operation with timing           |
+| `NotSupportedError(resource)`                          | Create not-supported error          |
+| `NoDataError(resourceID)`                              | Create no-data error                |
+| `LoadManifest(path)`                                   | Load manifest from file             |
+| `SaveManifest(path, manifest)`                         | Save manifest to file               |
+| `NewTestServer(t, plugin)`                             | Create test server                  |
+| `NewTestPlugin(t, plugin)`                             | Create test plugin helper           |
+| `CreateTestResource(provider, type, props)`            | Create test resource                |
+| `RunBasicConformance(plugin)`                          | Run basic conformance tests         |
+| `RunStandardConformance(plugin)`                       | Run standard conformance tests      |
+| `RunAdvancedConformance(plugin)`                       | Run advanced conformance tests      |
+| `PrintConformanceReport(t, result)`                    | Print formatted report to test log  |
+| `PrintConformanceReportTo(result, writer)`             | Print formatted report to io.Writer |
