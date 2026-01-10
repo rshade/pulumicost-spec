@@ -48,13 +48,13 @@ type HealthChecker interface {
 
 **Error Handling**:
 
-| Scenario | SDK Behavior | HTTP Status | gRPC Status |
-|----------|--------------|-------------|---------------|
-| `Check()` returns nil | Healthy | 200 | OK |
-| `Check()` returns error | Unhealthy | 503 | Unavailable |
-| `Check()` times out | Unhealthy | 503 | Unavailable |
-| `Check()` panics | Unhealthy | 503 | Unavailable |
-| Plugin doesn't implement `HealthChecker` | Healthy (default) | 200 | OK |
+| Scenario                                 | SDK Behavior      | HTTP Status | gRPC Status |
+| ---------------------------------------- | ----------------- | ----------- | ----------- |
+| `Check()` returns nil                    | Healthy           | 200         | OK          |
+| `Check()` returns error                  | Unhealthy         | 503         | Unavailable |
+| `Check()` times out                      | Unhealthy         | 503         | Unavailable |
+| `Check()` panics                         | Unhealthy         | 503         | Unavailable |
+| Plugin doesn't implement `HealthChecker` | Healthy (default) | 200         | OK          |
 
 ### Example Implementation
 
@@ -191,7 +191,7 @@ if hasDeadline {
 #### DetectARNProvider
 
 ```go
-func DetectARNProvider(arn string) string
+func DetectARNProvider(arn string) Provider
 ```
 
 **Contract Guarantees**:
@@ -208,18 +208,18 @@ func DetectARNProvider(arn string) string
 
 **Examples**:
 
-| Input | Output |
-|-----------------------------------------------------|---------|
-| `"arn:aws:ec2:us-east-1:123:instance/i-abc"` | `"aws"` |
-| `"/subscriptions/sub-123/resourceGroups/rg/..."` | `"azure"`|
-| `"//compute.googleapis.com/projects/proj/instances/i"` | `"gcp"` |
-| `"my-cluster/namespace/pod/my-pod"` | `"kubernetes"` |
-| `"custom:format"` | `""` |
+| Input                                                  | Output         |
+| ------------------------------------------------------ | -------------- |
+| `"arn:aws:ec2:us-east-1:123:instance/i-abc"`           | `"aws"`        |
+| `"/subscriptions/sub-123/resourceGroups/rg/..."`       | `"azure"`      |
+| `"//compute.googleapis.com/projects/proj/instances/i"` | `"gcp"`        |
+| `"my-cluster/namespace/pod/my-pod"`                    | `"kubernetes"` |
+| `"custom:format"`                                      | `""`           |
 
 #### ValidateARNConsistency
 
 ```go
-func ValidateARNConsistency(arn, expectedProvider string) error
+func ValidateARNConsistency(arn string, expectedProvider Provider) error
 ```
 
 **Contract Guarantees**:
