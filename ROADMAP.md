@@ -90,9 +90,13 @@ centered around the FinOps Foundation's FOCUS standard.
 - [x] **v0.4.14 SDK Polish Release** ([#257](https://github.com/rshade/pulumicost-spec/issues/257)) -
   Significant improvements to SDK developer experience, testing, and Connect protocol support.
   Includes:
-  - **Connect Protocol**: Test coverage ([#227](https://github.com/rshade/pulumicost-spec/issues/227)), CORS validation ([#234](https://github.com/rshade/pulumicost-spec/issues/234)).
-  - **Developer Experience**: Custom HealthChecker ([#230](https://github.com/rshade/pulumicost-spec/issues/230)), Context helpers ([#232](https://github.com/rshade/pulumicost-spec/issues/232)), ARN validation ([#203](https://github.com/rshade/pulumicost-spec/issues/203)), Migration guide ([#246](https://github.com/rshade/pulumicost-spec/issues/246)).
-  - **Quality**: CI Benchmarks ([#224](https://github.com/rshade/pulumicost-spec/issues/224)), Extreme value tests ([#212](https://github.com/rshade/pulumicost-spec/issues/212)), Fuzzing ([#205](https://github.com/rshade/pulumicost-spec/issues/205)).
+  - **Connect Protocol**: Test coverage ([#227](https://github.com/rshade/pulumicost-spec/issues/227)),
+    CORS validation ([#234](https://github.com/rshade/pulumicost-spec/issues/234)).
+  - **Developer Experience**: Custom HealthChecker ([#230](https://github.com/rshade/pulumicost-spec/issues/230)),
+    Context helpers ([#232](https://github.com/rshade/pulumicost-spec/issues/232)), ARN validation ([#203](https://github.com/rshade/pulumicost-spec/issues/203)),
+    Migration guide ([#246](https://github.com/rshade/pulumicost-spec/issues/246)).
+  - **Quality**: CI Benchmarks ([#224](https://github.com/rshade/pulumicost-spec/issues/224)),
+    Extreme value tests ([#212](https://github.com/rshade/pulumicost-spec/issues/212)), Fuzzing ([#205](https://github.com/rshade/pulumicost-spec/issues/205)).
 
 ---
 
@@ -121,13 +125,13 @@ centered around the FinOps Foundation's FOCUS standard.
   [#229](https://github.com/rshade/pulumicost-spec/issues/229)) -
   Make CORS headers and max-age configurable.
 
-
 ### SDK Polish (v0.4.15)
 
 - [ ] **GetPluginInfo Performance Test** ([#244](https://github.com/rshade/pulumicost-spec/issues/244)) -
   Add standalone conformance test for GetPluginInfo response time.
 - [ ] **User-Friendly Error Messages** ([#245](https://github.com/rshade/pulumicost-spec/issues/245)) -
   Improve GetPluginInfo error messages for end-users.
+
 ---
 
 ## [Future Vision] (Long-Term)
@@ -151,9 +155,6 @@ centered around the FinOps Foundation's FOCUS standard.
   Evaluating the need for `StreamActualCost` for real-time anomaly detection.
 
 ### SDK Developer Experience
-
-
-
 
 ### Proposed for Discussion (Discovery)
 

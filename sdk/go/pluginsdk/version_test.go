@@ -1,3 +1,17 @@
+// Copyright 2026 PulumiCost/FinFocus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package pluginsdk_test
 
 import (
@@ -124,7 +138,8 @@ func TestSpecVersionMatchesLatestTag(t *testing.T) {
 		t.Skipf("Skipping test: git command failed (not in git repo or git not available): %v", err)
 	}
 
-	tags := strings.Split(strings.TrimSpace(string(output)), "\n")
+	tags := strings.Split(strings.TrimSpace(string(output)), "
+")
 	if len(tags) == 0 || tags[0] == "" {
 		t.Skip("Skipping test: no git tags found")
 	}

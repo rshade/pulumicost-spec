@@ -129,7 +129,8 @@ make validate
 
 ## SDK Client Timeout Configuration
 
-The PulumiCost Go SDK supports configurable per-client timeouts for plugin RPC calls. This prevents indefinite blocking on slow servers.
+The PulumiCost Go SDK supports configurable per-client timeouts for plugin RPC calls.
+This prevents indefinite blocking on slow servers.
 
 ### Basic Usage
 
@@ -167,7 +168,8 @@ if err != nil {
 
 ## User-Friendly GetPluginInfo Error Messages
 
-The SDK returns user-friendly error messages for GetPluginInfo RPC failures, while logging detailed information server-side for debugging.
+The SDK returns user-friendly error messages for GetPluginInfo RPC failures,
+while logging detailed information server-side for debugging.
 
 ### Error Messages
 
@@ -195,7 +197,8 @@ go test -v ./sdk/go/testing -run Performance_GetPluginInfoLatency
 
 ### Legacy Plugin Support
 
-Plugins without GetPluginInfo implementation are handled gracefully (Unimplemented error does not fail performance tests).
+Plugins without GetPluginInfo implementation are handled gracefully (Unimplemented error does not
+fail performance tests).
 
 ## Plugin Development
 

@@ -1,3 +1,17 @@
+// Copyright 2026 PulumiCost/FinFocus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // Budget.proto defines messages for budget information from cost management services.
 // This file contains the data structures for representing spending limits, thresholds,
 // and budget status across different cloud providers.
@@ -783,83 +797,159 @@ func (x *BudgetSummary) GetBudgetsCritical() int32 {
 var File_pulumicost_v1_budget_proto protoreflect.FileDescriptor
 
 const file_pulumicost_v1_budget_proto_rawDesc = "" +
-	"\n" +
-	"\x1apulumicost/v1/budget.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcc\x04\n" +
-	"\x06Budget\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
-	"\x06source\x18\x03 \x01(\tR\x06source\x123\n" +
-	"\x06amount\x18\x04 \x01(\v2\x1b.pulumicost.v1.BudgetAmountR\x06amount\x123\n" +
-	"\x06period\x18\x05 \x01(\x0e2\x1b.pulumicost.v1.BudgetPeriodR\x06period\x123\n" +
-	"\x06filter\x18\x06 \x01(\v2\x1b.pulumicost.v1.BudgetFilterR\x06filter\x12>\n" +
-	"\n" +
-	"thresholds\x18\a \x03(\v2\x1e.pulumicost.v1.BudgetThresholdR\n" +
-	"thresholds\x123\n" +
-	"\x06status\x18\b \x01(\v2\x1b.pulumicost.v1.BudgetStatusR\x06status\x129\n" +
-	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12?\n" +
-	"\bmetadata\x18\v \x03(\v2#.pulumicost.v1.Budget.MetadataEntryR\bmetadata\x1a;\n" +
-	"\rMetadataEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"@\n" +
-	"\fBudgetAmount\x12\x14\n" +
-	"\x05limit\x18\x01 \x01(\x01R\x05limit\x12\x1a\n" +
-	"\bcurrency\x18\x02 \x01(\tR\bcurrency\"\xe1\x01\n" +
-	"\fBudgetFilter\x12\x1c\n" +
-	"\tproviders\x18\x01 \x03(\tR\tproviders\x12\x18\n" +
-	"\aregions\x18\x02 \x03(\tR\aregions\x12%\n" +
-	"\x0eresource_types\x18\x03 \x03(\tR\rresourceTypes\x129\n" +
-	"\x04tags\x18\x04 \x03(\v2%.pulumicost.v1.BudgetFilter.TagsEntryR\x04tags\x1a7\n" +
-	"\tTagsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xc0\x01\n" +
-	"\x0fBudgetThreshold\x12\x1e\n" +
-	"\n" +
-	"percentage\x18\x01 \x01(\x01R\n" +
-	"percentage\x120\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x1c.pulumicost.v1.ThresholdTypeR\x04type\x12\x1c\n" +
-	"\ttriggered\x18\x03 \x01(\bR\ttriggered\x12=\n" +
-	"\ftriggered_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vtriggeredAt\"\x93\x02\n" +
-	"\fBudgetStatus\x12#\n" +
-	"\rcurrent_spend\x18\x01 \x01(\x01R\fcurrentSpend\x12)\n" +
-	"\x10forecasted_spend\x18\x02 \x01(\x01R\x0fforecastedSpend\x12'\n" +
-	"\x0fpercentage_used\x18\x03 \x01(\x01R\x0epercentageUsed\x123\n" +
-	"\x15percentage_forecasted\x18\x04 \x01(\x01R\x14percentageForecasted\x12\x1a\n" +
-	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x129\n" +
-	"\x06health\x18\x06 \x01(\x0e2!.pulumicost.v1.BudgetHealthStatusR\x06health\"o\n" +
-	"\x11GetBudgetsRequest\x123\n" +
-	"\x06filter\x18\x01 \x01(\v2\x1b.pulumicost.v1.BudgetFilterR\x06filter\x12%\n" +
-	"\x0einclude_status\x18\x02 \x01(\bR\rincludeStatus\"}\n" +
-	"\x12GetBudgetsResponse\x12/\n" +
-	"\abudgets\x18\x01 \x03(\v2\x15.pulumicost.v1.BudgetR\abudgets\x126\n" +
-	"\asummary\x18\x02 \x01(\v2\x1c.pulumicost.v1.BudgetSummaryR\asummary\"\xd2\x01\n" +
-	"\rBudgetSummary\x12#\n" +
-	"\rtotal_budgets\x18\x01 \x01(\x05R\ftotalBudgets\x12\x1d\n" +
-	"\n" +
-	"budgets_ok\x18\x02 \x01(\x05R\tbudgetsOk\x12'\n" +
-	"\x0fbudgets_warning\x18\x03 \x01(\x05R\x0ebudgetsWarning\x12)\n" +
-	"\x10budgets_exceeded\x18\x04 \x01(\x05R\x0fbudgetsExceeded\x12)\n" +
-	"\x10budgets_critical\x18\x05 \x01(\x05R\x0fbudgetsCritical*\xb4\x01\n" +
-	"\fBudgetPeriod\x12\x1d\n" +
-	"\x19BUDGET_PERIOD_UNSPECIFIED\x10\x00\x12\x17\n" +
-	"\x13BUDGET_PERIOD_DAILY\x10\x01\x12\x18\n" +
-	"\x14BUDGET_PERIOD_WEEKLY\x10\x02\x12\x19\n" +
-	"\x15BUDGET_PERIOD_MONTHLY\x10\x03\x12\x1b\n" +
-	"\x17BUDGET_PERIOD_QUARTERLY\x10\x04\x12\x1a\n" +
-	"\x16BUDGET_PERIOD_ANNUALLY\x10\x05*i\n" +
-	"\rThresholdType\x12\x1e\n" +
-	"\x1aTHRESHOLD_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
-	"\x15THRESHOLD_TYPE_ACTUAL\x10\x01\x12\x1d\n" +
-	"\x19THRESHOLD_TYPE_FORECASTED\x10\x02*\xbf\x01\n" +
-	"\x12BudgetHealthStatus\x12$\n" +
-	" BUDGET_HEALTH_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
-	"\x17BUDGET_HEALTH_STATUS_OK\x10\x01\x12 \n" +
-	"\x1cBUDGET_HEALTH_STATUS_WARNING\x10\x02\x12!\n" +
-	"\x1dBUDGET_HEALTH_STATUS_CRITICAL\x10\x03\x12!\n" +
-	"\x1dBUDGET_HEALTH_STATUS_EXCEEDED\x10\x04BBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
+	"
+" +
+	"pulumicost/v1/budget.protopulumicost.v1google/protobuf/timestamp.proto\"Ì
+" +
+	"Budget
+" +
+	"id (	Rid
+" +
+	"name (	Rname
+" +
+	"source (	Rsource3
+" +
+	"amount (2.pulumicost.v1.BudgetAmountRamount3
+" +
+	"period (2.pulumicost.v1.BudgetPeriodRperiod3
+" +
+	"filter (2.pulumicost.v1.BudgetFilterRfilter>
+" +
+	"
+" +
+	"thresholds (2.pulumicost.v1.BudgetThresholdR
+" +
+	"thresholds3
+" +
+	"status (2.pulumicost.v1.BudgetStatusRstatus9
+" +
+	"
+" +
+	"created_at	 (2.google.protobuf.TimestampR	createdAt9
+" +
+	"
+" +
+	"updated_at
+" +
+	" (2.google.protobuf.TimestampR	updatedAt?
+" +
+	"metadata (2#.pulumicost.v1.Budget.MetadataEntryRmetadata;
+" +
+	"MetadataEntry
+" +
+	"key (	Rkey
+" +
+	"value (	Rvalue:8\"@
+" +
+	"BudgetAmount
+" +
+	"limit (Rlimit
+" +
+	"currency (	Rcurrency\"á
+" +
+	"BudgetFilter
+" +
+	"	providers (	R	providers
+" +
+	"regions (	Rregions%
+" +
+	"resource_types (	RresourceTypes9
+" +
+	"tags (2%.pulumicost.v1.BudgetFilter.TagsEntryRtags7
+" +
+	"	TagsEntry
+" +
+	"key (	Rkey
+" +
+	"value (	Rvalue:8\"À
+" +
+	"BudgetThreshold
+" +
+	"
+" +
+	"percentage (R
+" +
+	"percentage0
+" +
+	"type (2.pulumicost.v1.ThresholdTypeRtype
+" +
+	"	triggered (R	triggered=
+" +
+	"triggered_at (2.google.protobuf.TimestampRtriggeredAt\"“
+" +
+	"BudgetStatus#
+" +
+	"current_spend (RcurrentSpend)
+" +
+	"forecasted_spend (RforecastedSpend'
+" +
+	"percentage_used (RpercentageUsed3
+" +
+	"percentage_forecasted (RpercentageForecasted
+" +
+	"currency (	Rcurrency9
+" +
+	"health (2!.pulumicost.v1.BudgetHealthStatusRhealth\"o
+" +
+	"GetBudgetsRequest3
+" +
+	"filter (2.pulumicost.v1.BudgetFilterRfilter%
+" +
+	"include_status (RincludeStatus\"}
+" +
+	"GetBudgetsResponse/
+" +
+	"budgets (2.pulumicost.v1.BudgetRbudgets6
+" +
+	"summary (2.pulumicost.v1.BudgetSummaryRsummary\"Ò
+" +
+	"BudgetSummary#
+" +
+	"total_budgets (RtotalBudgets
+" +
+	"
+" +
+	"budgets_ok (R	budgetsOk'
+" +
+	"budgets_warning (RbudgetsWarning)
+" +
+	"budgets_exceeded (RbudgetsExceeded)
+" +
+	"budgets_critical (RbudgetsCritical*´
+" +
+	"BudgetPeriod
+" +
+	"BUDGET_PERIOD_UNSPECIFIED 
+" +
+	"BUDGET_PERIOD_DAILY
+" +
+	"BUDGET_PERIOD_WEEKLY
+" +
+	"BUDGET_PERIOD_MONTHLY
+" +
+	"BUDGET_PERIOD_QUARTERLY
+" +
+	"BUDGET_PERIOD_ANNUALLY*i
+" +
+	"ThresholdType
+" +
+	"THRESHOLD_TYPE_UNSPECIFIED 
+" +
+	"THRESHOLD_TYPE_ACTUAL
+" +
+	"THRESHOLD_TYPE_FORECASTED*¿
+" +
+	"BudgetHealthStatus$
+" +
+	" BUDGET_HEALTH_STATUS_UNSPECIFIED 
+" +
+	"BUDGET_HEALTH_STATUS_OK 
+" +
+	"BUDGET_HEALTH_STATUS_WARNING!
+" +
+	"BUDGET_HEALTH_STATUS_CRITICAL!
+" +
+	"BUDGET_HEALTH_STATUS_EXCEEDEDBBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcbproto3"
 
 var (
 	file_pulumicost_v1_budget_proto_rawDescOnce sync.Once

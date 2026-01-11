@@ -1,3 +1,17 @@
+// Copyright 2026 PulumiCost/FinFocus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // Package currency provides ISO 4217 currency validation and metadata.
 //
 // The currency package implements zero-allocation validation for ISO 4217 currency codes,
@@ -32,12 +46,14 @@
 //	if err != nil {
 //	    // handle error
 //	}
-//	fmt.Printf("%s uses %d decimal places\n", usd.Name, usd.MinorUnits)
+//	fmt.Printf("%s uses %d decimal places
+", usd.Name, usd.MinorUnits)
 //
 // Listing all currencies:
 //
 //	for _, c := range currency.AllCurrencies() {
-//	    fmt.Printf("%s: %s\n", c.Code, c.Name)
+//	    fmt.Printf("%s: %s
+", c.Code, c.Name)
 //	}
 //
 // # Integration

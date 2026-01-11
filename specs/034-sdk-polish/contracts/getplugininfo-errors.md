@@ -49,7 +49,7 @@ message GetPluginInfoResponse {
 
 ### Error Hierarchy
 
-```
+```text
 Server.GetPluginInfo()
 ├─ Plugin implements PluginInfoProvider?
 │  ├─ Yes: Delegate to plugin.GetPluginInfo()
@@ -281,7 +281,7 @@ s.logger.Debug().
 | Server Log                                                            | Client Message                                     | Security                     |
 | --------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------- |
 | "GetPluginInfo returned nil response"                                 | "unable to retrieve plugin metadata"               | ✅ No implementation details |
-| "GetPluginInfo handler error: <stack trace>"                          | "unable to retrieve plugin metadata"               | ✅ No stack trace leaked     |
+| "GetPluginInfo handler error: `<stack trace>`"                          | "unable to retrieve plugin metadata"               | ✅ No stack trace leaked     |
 | "GetPluginInfo returned invalid spec_version: expected format vX.Y.Z" | "plugin reported an invalid specification version" | ✅ No validation details     |
 
 ---

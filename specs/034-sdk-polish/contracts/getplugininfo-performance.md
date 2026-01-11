@@ -148,7 +148,7 @@ func compareToBaseline(result *PerformanceResult, baseline *PerformanceBaseline)
 
 **Success Example**:
 
-```
+```text
 Method: GetPluginInfo
 Iterations: 10
 MinLatency: 45ms
@@ -159,7 +159,7 @@ Status: PASSED
 
 **Failure Example**:
 
-```
+```text
 Method: GetPluginInfo
 Iterations: 10
 MinLatency: 85ms
@@ -183,7 +183,7 @@ if baseline.AdvancedLatency > 0 {
 
 **Success Example**:
 
-```
+```text
 Method: GetPluginInfo
 Iterations: 10
 MinLatency: 20ms
@@ -194,7 +194,7 @@ Status: PASSED (Advanced)
 
 **Failure Example**:
 
-```
+```text
 Method: GetPluginInfo
 Iterations: 10
 MinLatency: 40ms
@@ -262,7 +262,7 @@ if status.Code(err) == codes.Unimplemented {
 
 **Test Flow**:
 
-```
+```text
 1. Call GetPluginInfo()
    ↓
 2. Check error code
@@ -283,7 +283,7 @@ if status.Code(err) == codes.Unimplemented {
 
 **Expected Result**:
 
-```
+```text
 Min: 45ms
 Avg: 52ms  ← Pass (≤ 100ms)
 Max: 60ms
@@ -296,7 +296,7 @@ Status: PASSED
 
 **Expected Result**:
 
-```
+```text
 Min: 140ms
 Avg: 152ms  ← Fail (> 100ms)
 Max: 165ms
@@ -310,7 +310,7 @@ Error: "latency 152ms exceeds threshold 100ms"
 
 **Expected Result**:
 
-```
+```text
 Min: 30ms
 Avg: 78ms  ← Pass (≤ 100ms)
 Max: 130ms  ← Exceeds threshold, but not used for decision
@@ -324,7 +324,7 @@ Note: Only AvgLatency is used for pass/fail decision
 
 **Expected Result**:
 
-```
+```text
 Error: Unimplemented
 Status: PASSED (legacy plugin handling)
 Details: "Legacy plugin (GetPluginInfo not implemented)"
@@ -387,7 +387,7 @@ result.VariancePercent = variance
 
 ### Example
 
-```
+```text
 Baseline: 100ms
 AvgLatency: 95ms
 Variance: (95 - 100) / 100 * 100 = -5%

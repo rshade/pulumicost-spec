@@ -1,3 +1,17 @@
+// Copyright 2026 PulumiCost/FinFocus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package testing_test
 
 import (
@@ -937,14 +951,16 @@ func parseMultipleLogEntries(t *testing.T, logOutput string) []map[string]interf
 	t.Helper()
 	var entries []map[string]interface{}
 
-	lines := strings.Split(strings.TrimSpace(logOutput), "\n")
+	lines := strings.Split(strings.TrimSpace(logOutput), "
+")
 	for i, line := range lines {
 		if line == "" {
 			continue
 		}
 		var entry map[string]interface{}
 		if err := json.Unmarshal([]byte(line), &entry); err != nil {
-			t.Errorf("Failed to parse log entry %d as JSON: %v\nLine: %s", i, err, line)
+			t.Errorf("Failed to parse log entry %d as JSON: %v
+Line: %s", i, err, line)
 			continue
 		}
 		entries = append(entries, entry)
@@ -957,7 +973,8 @@ func parseMultipleLogEntries(t *testing.T, logOutput string) []map[string]interf
 func assertLogContains(t *testing.T, logOutput, expected, errMsg string) {
 	t.Helper()
 	if !strings.Contains(logOutput, expected) {
-		t.Errorf("%s: expected '%s' in log output:\n%s", errMsg, expected, logOutput)
+		t.Errorf("%s: expected '%s' in log output:
+%s", errMsg, expected, logOutput)
 	}
 }
 
@@ -966,7 +983,8 @@ func assertLogContains(t *testing.T, logOutput, expected, errMsg string) {
 func assertLogNotContains(t *testing.T, logOutput, unexpected, errMsg string) {
 	t.Helper()
 	if strings.Contains(logOutput, unexpected) {
-		t.Errorf("%s: unexpected '%s' found in log output:\n%s", errMsg, unexpected, logOutput)
+		t.Errorf("%s: unexpected '%s' found in log output:
+%s", errMsg, unexpected, logOutput)
 	}
 }
 

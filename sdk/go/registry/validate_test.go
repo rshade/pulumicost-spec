@@ -1,3 +1,17 @@
+// Copyright 2026 PulumiCost/FinFocus Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package registry_test
 
 import (
@@ -351,7 +365,9 @@ func TestValidatePluginManifest_Examples(t *testing.T) {
 			},
 			"security": {
 				"signature": "MEUCIQCx7HjRFkL3+Y8XrGQm4nW2V9iE2fP8jS6bK1qN7dR9yAIgD8sJ5tK2oP1mN3vB4cE5fG6hI7jK8lM9nO0pQ1rS2tU=",
-				"public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1234567890abcdef...\n-----END PUBLIC KEY-----",
+				"public_key": "-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1234567890abcdef...
+-----END PUBLIC KEY-----",
 				"security_level": "verified",
 				"permissions": [
 					"network_access", "filesystem_read", "config_read", "temp_files"

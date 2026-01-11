@@ -20,7 +20,8 @@ This guide shows how to use these features and verify they work correctly.
 
 ### Use Case
 
-You need to configure timeout behavior for a client that may call long-running RPC operations (e.g., `GetActualCost` with large date ranges).
+You need to configure timeout behavior for a client that may call long-running RPC operations
+(e.g., `GetActualCost` with large date ranges).
 
 ### Basic Timeout Configuration
 
@@ -138,7 +139,8 @@ if err != nil {
 
 ### Use Case
 
-Your plugin returns invalid metadata (nil, incomplete, or invalid spec_version), and you want to provide actionable error messages to developers.
+Your plugin returns invalid metadata (nil, incomplete, or invalid spec_version), and you want to
+provide actionable error messages to developers.
 
 ### Implementing GetPluginInfo
 
@@ -369,7 +371,7 @@ func main() {
 
 **Pass Example**:
 
-```
+```text
 Performance_GetPluginInfoLatency: PASSED
 Details: Avg: 78ms (threshold: 100ms)
 Min: 45ms, Max: 95ms
@@ -377,7 +379,7 @@ Min: 45ms, Max: 95ms
 
 **Fail Example**:
 
-```
+```text
 Performance_GetPluginInfoLatency: FAILED
 Error: latency 112ms exceeds threshold 100ms
 Details: Avg: 112ms, Min: 85ms, Max: 150ms
