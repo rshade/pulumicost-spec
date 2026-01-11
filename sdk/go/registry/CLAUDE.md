@@ -1,12 +1,12 @@
 # CLAUDE.md - Registry Package
 
-**Package**: `github.com/rshade/pulumicost-spec/sdk/go/registry`
-**Purpose**: Domain types and validation for PulumiCost plugin registry management
+**Package**: `github.com/rshade/finfocus-spec/sdk/go/registry`
+**Purpose**: Domain types and validation for FinFocus plugin registry management
 
 ## Overview
 
 The registry package provides enum types, validation functions, and domain models for plugin discovery, installation,
-and lifecycle management in the PulumiCost ecosystem.
+and lifecycle management in the FinFocus ecosystem.
 
 ## Core Components
 
@@ -108,7 +108,7 @@ cd ../../../ && make lint && make validate
 ### Basic Validation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/registry"
+import "github.com/rshade/finfocus-spec/sdk/go/registry"
 
 // Validate provider
 if !registry.IsValidProvider("aws") {

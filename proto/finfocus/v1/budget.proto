@@ -1,0 +1,115 @@
+// Budget.proto defines messages for budget information from cost management services.
+// This file contains the data structures for representing spending limits, thresholds,
+// and budget status across different cloud providers.
+
+syntax = "proto3";
+
+package finfocus.v1;
+
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
+
+import "google/protobuf/timestamp.proto";
+
+// Budget represents a spending limit with alert thresholds from cloud cost management services.
+// This unified structure supports budgets from AWS, GCP, Azure, Kubecost, and other providers.
+message Budget {
+  string id = 1;           // Unique identifier for the budget (required, non-empty)
+  string name = 2;         // Human-readable budget name (required, non-empty)
+  string source = 3;       // Provider identifier (e.g., "aws-budgets", "gcp-billing", "kubecost")
+
+  BudgetAmount amount = 4; // Monetary limit and currency (required)
+  BudgetPeriod period = 5; // Time interval for budget calculations (required)
+  BudgetFilter filter = 6; // Optional scope restrictions (provider, region, tags)
+
+  repeated BudgetThreshold thresholds = 7; // Alert points with percentages (optional)
+  BudgetStatus status = 8;   // Current spending state (optional, populated when include_status=true)
+
+  google.protobuf.Timestamp created_at = 9;  // Budget creation time (optional)
+  google.protobuf.Timestamp updated_at = 10; // Last budget modification time (optional)
+  map<string, string> metadata = 11;         // Provider-specific additional data (optional)
+}
+
+// BudgetAmount specifies the monetary limit and currency for a budget.
+message BudgetAmount {
+  double limit = 1;   // Maximum spending amount (required, > 0)
+  string currency = 2; // ISO 4217 currency code (required, 3 characters, e.g., "USD")
+}
+
+// BudgetPeriod defines the time interval for budget calculations.
+enum BudgetPeriod {
+  BUDGET_PERIOD_UNSPECIFIED = 0; // Invalid/unset
+  BUDGET_PERIOD_DAILY = 1;       // Daily budget cycle
+  BUDGET_PERIOD_WEEKLY = 2;      // Weekly budget cycle
+  BUDGET_PERIOD_MONTHLY = 3;     // Monthly budget cycle
+  BUDGET_PERIOD_QUARTERLY = 4;   // Quarterly budget cycle
+  BUDGET_PERIOD_ANNUALLY = 5;    // Annual budget cycle
+}
+
+// BudgetFilter allows narrowing down budgets by provider, region, resource type, or tags.
+// All fields are optional - empty filter matches all budgets.
+message BudgetFilter {
+  repeated string providers = 1;     // Cloud provider restrictions (optional)
+  repeated string regions = 2;       // Geographic region restrictions (optional)
+  repeated string resource_types = 3; // Resource type restrictions (optional)
+  map<string, string> tags = 4;      // Tag-based filtering (optional)
+}
+
+// BudgetThreshold defines alert points with percentages and trigger types.
+message BudgetThreshold {
+  double percentage = 1;  // Alert threshold percentage (required, 0-100)
+  ThresholdType type = 2; // Actual vs forecasted spending (required)
+  bool triggered = 3;     // Whether threshold has been crossed (optional)
+  google.protobuf.Timestamp triggered_at = 4; // When threshold was crossed (optional)
+}
+
+// ThresholdType specifies whether the threshold applies to actual or forecasted spending.
+enum ThresholdType {
+  THRESHOLD_TYPE_UNSPECIFIED = 0; // Invalid/unset
+  THRESHOLD_TYPE_ACTUAL = 1;      // Based on actual spending
+  THRESHOLD_TYPE_FORECASTED = 2;  // Based on forecasted spending
+}
+
+// BudgetStatus shows current spending state and utilization metrics.
+// Only populated when GetBudgetsRequest.include_status is true.
+message BudgetStatus {
+  double current_spend = 1;       // Actual spending to date (required)
+  double forecasted_spend = 2;    // Predicted end-of-period spending (optional)
+  double percentage_used = 3;     // Current utilization percentage (required, can exceed 100 for exceeded budgets)
+  double percentage_forecasted = 4; // Forecasted utilization percentage (optional, can exceed 100)
+  string currency = 5;            // Currency for spend amounts (required, 3 characters)
+  BudgetHealthStatus health = 6;  // Overall budget health assessment (required)
+}
+
+// BudgetHealthStatus represents the overall health state of a budget.
+enum BudgetHealthStatus {
+  BUDGET_HEALTH_STATUS_UNSPECIFIED = 0; // Invalid/unset
+  BUDGET_HEALTH_STATUS_OK = 1;          // Within normal thresholds
+  BUDGET_HEALTH_STATUS_WARNING = 2;     // Approaching limits
+  BUDGET_HEALTH_STATUS_CRITICAL = 3;    // Near or at limits
+  BUDGET_HEALTH_STATUS_EXCEEDED = 4;    // Over budget
+}
+
+// Request/Response Messages
+
+// GetBudgetsRequest retrieves budget information with optional filtering.
+// Use include_status=false for faster responses when current spend data isn't needed.
+message GetBudgetsRequest {
+  BudgetFilter filter = 1;        // Optional filtering criteria
+  bool include_status = 2;        // Whether to fetch current spending status
+}
+
+// GetBudgetsResponse contains budget information and aggregated statistics.
+message GetBudgetsResponse {
+  repeated Budget budgets = 1;     // List of budget information
+  BudgetSummary summary = 2;       // Aggregated statistics across all budgets
+}
+
+// BudgetSummary provides aggregated statistics across multiple budgets.
+// Counts should sum to total_budgets (budgets_ok + budgets_warning + budgets_critical + budgets_exceeded).
+message BudgetSummary {
+  int32 total_budgets = 1;    // Total number of budgets returned
+  int32 budgets_ok = 2;       // Number of healthy budgets (OK status)
+  int32 budgets_warning = 3;  // Number of warning budgets (approaching limits)
+  int32 budgets_exceeded = 4; // Number of exceeded budgets (over budget)
+  int32 budgets_critical = 5; // Number of critical budgets (near or at limits)
+}

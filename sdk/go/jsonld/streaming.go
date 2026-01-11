@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package jsonld
 
 import (
@@ -21,7 +7,7 @@ import (
 	"io"
 	"sync"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // StreamError represents an error that occurred during streaming serialization.
@@ -107,8 +93,7 @@ func (s *Serializer) SerializeStream(records <-chan *pbc.FocusCostRecord, w io.W
 	}
 
 	// Write opening bracket
-	if _, err := w.Write([]byte("[
-")); err != nil {
+	if _, err := w.Write([]byte("[\n")); err != nil {
 		return result, fmt.Errorf("failed to write opening bracket: %w", err)
 	}
 
@@ -134,8 +119,7 @@ func (s *Serializer) SerializeStream(records <-chan *pbc.FocusCostRecord, w io.W
 
 		// Write separator if not first record
 		if !first {
-			buf.WriteString(",
-")
+			buf.WriteString(",\n")
 		}
 		first = false
 
@@ -170,8 +154,7 @@ func (s *Serializer) SerializeStream(records <-chan *pbc.FocusCostRecord, w io.W
 	}
 
 	// Write closing bracket
-	if _, err := w.Write([]byte("
-]")); err != nil {
+	if _, err := w.Write([]byte("\n]")); err != nil {
 		return result, fmt.Errorf("failed to write closing bracket: %w", err)
 	}
 

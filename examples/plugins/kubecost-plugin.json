@@ -4,8 +4,8 @@
     "version": "3.0.1",
     "description": "Kubernetes cost analysis plugin integrating with Kubecost for namespace, pod, and node-level cost tracking",
     "author": "Kubecost Inc",
-    "homepage": "https://kubecost.com/pulumicost-integration",
-    "repository": "https://github.com/kubecost/pulumicost-plugin",
+    "homepage": "https://kubecost.com/finfocus-integration",
+    "repository": "https://github.com/kubecost/finfocus-plugin",
     "license": "Apache-2.0",
     "keywords": ["kubernetes", "kubecost", "cost", "namespace", "pod", "node"],
     "created_at": "2024-01-20T12:00:00Z",
@@ -28,7 +28,7 @@
     ],
     "service_definition": {
       "service_name": "CostSourceService",
-      "package_name": "pulumicost.v1",
+      "package_name": "finfocus.v1",
       "methods": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"],
       "port": 50053,
       "health_check_path": "/kubecost/health"
@@ -50,10 +50,10 @@
   },
   "installation": {
     "installation_method": "script",
-    "download_url": "https://releases.kubecost.com/pulumicost/v3.0.1/install.sh",
+    "download_url": "https://releases.kubecost.com/finfocus/v3.0.1/install.sh",
     "checksum": "c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456789",
     "checksum_algorithm": "sha256",
-    "install_script": "#!/bin/bash\nset -e\necho 'Installing Kubecost PulumiCost Plugin...'\ncurl -fsSL https://releases.kubecost.com/pulumicost/v3.0.1/kubecost-plugin.tar.gz | tar -xz\necho 'Installation completed'",
+    "install_script": "#!/bin/bash\nset -e\necho 'Installing Kubecost FinFocus Plugin...'\ncurl -fsSL https://releases.kubecost.com/finfocus/v3.0.1/kubecost-plugin.tar.gz | tar -xz\necho 'Installation completed'",
     "pre_install_checks": [
       "check_kubernetes_access",
       "verify_kubecost_api"

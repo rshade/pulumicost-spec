@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/rshade/pulumicost-spec/schemas/budget_spec.schema.json",
+  "$id": "https://github.com/rshade/finfocus-spec/schemas/budget_spec.schema.json",
   "title": "Budget Specification Schema",
   "description": "JSON schema for validating budget specifications in examples and requests",
   "type": "object",

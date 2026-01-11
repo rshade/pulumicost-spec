@@ -1,6 +1,6 @@
-# PulumiCost Documentation Index
+# FinFocus Documentation Index
 
-This directory contains comprehensive documentation for the PulumiCost specification
+This directory contains comprehensive documentation for the FinFocus specification
 and SDK. Use this guide to navigate to the appropriate documentation for your needs.
 
 ## Quick Links
@@ -98,7 +98,7 @@ The Go SDK consists of these packages:
 
 | Package | Description | Documentation |
 |---------|-------------|---------------|
-| `sdk/go/proto` | Generated protobuf code | [Go Reference](https://pkg.go.dev/github.com/rshade/pulumicost-spec/sdk/go/proto) |
+| `sdk/go/proto` | Generated protobuf code | [Go Reference](https://pkg.go.dev/github.com/rshade/finfocus-spec/sdk/go/proto) |
 | `sdk/go/pluginsdk` | Plugin development SDK | [README](../sdk/go/pluginsdk/README.md) |
 | `sdk/go/pluginsdk/mapping` | Property extraction helpers | [Property Mapping](PROPERTY_MAPPING.md) |
 | `sdk/go/pricing` | Domain types and validation | [SDK CLAUDE.md](../sdk/go/CLAUDE.md) |

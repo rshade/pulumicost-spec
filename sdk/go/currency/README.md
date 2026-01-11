@@ -1,6 +1,6 @@
 # ISO 4217 Currency Package
 
-Package `currency` provides ISO 4217 currency validation and metadata for the PulumiCost SDK.
+Package `currency` provides ISO 4217 currency validation and metadata for the FinFocus SDK.
 
 ## Features
 
@@ -12,7 +12,7 @@ Package `currency` provides ISO 4217 currency validation and metadata for the Pu
 ## Installation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/currency"
+import "github.com/rshade/finfocus-spec/sdk/go/currency"
 ```
 
 ## Usage

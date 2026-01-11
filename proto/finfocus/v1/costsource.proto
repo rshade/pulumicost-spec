@@ -1,0 +1,1427 @@
+syntax = "proto3";
+
+package finfocus.v1;
+
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "finfocus/v1/focus.proto";
+import "finfocus/v1/budget.proto";
+import "finfocus/v1/enums.proto";
+
+// CostSourceService provides gRPC interface for cost source plugins to implement.
+// This service defines the contract for retrieving actual costs, projected costs,
+// and pricing specifications from various cost data sources.
+service CostSourceService {
+  // Name returns the display name of the cost source plugin.
+  rpc Name(NameRequest) returns (NameResponse);
+  
+  // Supports checks if the cost source supports pricing for a given resource type.
+  rpc Supports(SupportsRequest) returns (SupportsResponse);
+  
+  // GetActualCost retrieves historical cost data for a specific resource.
+  rpc GetActualCost(GetActualCostRequest) returns (GetActualCostResponse);
+  
+  // GetProjectedCost calculates projected cost information for a resource.
+  rpc GetProjectedCost(GetProjectedCostRequest) returns (GetProjectedCostResponse);
+  
+  // GetPricingSpec returns detailed pricing specification for a resource type.
+  rpc GetPricingSpec(GetPricingSpecRequest) returns (GetPricingSpecResponse);
+
+  // EstimateCost returns an estimated monthly cost for a resource based on
+  // its type and configuration attributes. This enables proactive cost
+  // planning before resource deployment.
+  //
+  // The method is idempotent - identical inputs always produce identical
+  // outputs (deterministic pricing). Response time should be <500ms for
+  // standard resource types.
+  //
+  // Error cases:
+  //   - InvalidArgument: Invalid resource_type format or missing required attributes
+  //   - NotFound: Unsupported resource_type for this plugin
+  //   - Unavailable: Pricing source temporarily unavailable
+  rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);
+
+  // GetRecommendations retrieves cost optimization recommendations.
+  // Returns recommendations from the underlying cost management service
+  // (AWS Cost Explorer, Kubecost, Azure Advisor, GCP Recommender, etc.).
+  //
+  // Plugins that do not support recommendations return an empty list.
+  // This RPC is optional - plugins implement RecommendationsProvider interface.
+  //
+  // Error cases:
+  //   - InvalidArgument: Invalid filter criteria or pagination token
+  //   - Unavailable: Backend recommendation service unavailable
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+
+  // DismissRecommendation marks a recommendation as dismissed/ignored.
+  // This is an optional RPC - plugins that support stateful recommendation
+  // management can implement this to persist dismissal state. Plugins that
+  // don't support dismissals should return Unimplemented.
+  //
+  // When a recommendation is dismissed:
+  //   - It should not appear in future GetRecommendations responses
+  //   - The dismissal may expire after a configurable period
+  //   - Users can optionally provide a reason for the dismissal
+  //
+  // Error cases:
+  //   - InvalidArgument: Empty recommendation_id or invalid expiration
+  //   - NotFound: Recommendation ID does not exist
+  //   - Unimplemented: Plugin does not support recommendation dismissal
+  rpc DismissRecommendation(DismissRecommendationRequest) returns (DismissRecommendationResponse);
+
+  // GetBudgets returns budget information from the cost management service.
+  // This enables unified budget visibility across cloud providers (AWS, GCP, Azure, etc.).
+  //
+  // The method supports optional filtering by provider, region, resource type, and tags.
+  // Use include_status=false for faster responses when current spend data isn't needed.
+  // Response time should be <5 seconds for typical budget queries (100-1000 budgets).
+  //
+  // This is an optional RPC - plugins may return Unimplemented if budget functionality
+  // is not supported by the underlying cost management service.
+  //
+  // Error cases:
+  //   - InvalidArgument: Invalid filter criteria or malformed request
+  //   - Unavailable: Budget service temporarily unavailable
+  //   - Unimplemented: Plugin does not support budget functionality
+  rpc GetBudgets(GetBudgetsRequest) returns (GetBudgetsResponse);
+
+  // GetPluginInfo returns metadata about the plugin for compatibility verification,
+  // diagnostics, and graceful degradation handling.
+  //
+  // This RPC enables the core system to:
+  //   1. Verify plugin compatibility by checking spec_version against supported ranges
+  //   2. Display plugin information in diagnostic tools (plugin list commands)
+  //   3. Handle legacy plugins gracefully (Unimplemented error = legacy plugin)
+  //
+  // The SDK provides a default implementation that returns compile-time constants.
+  // Plugins may override this to provide dynamic metadata if needed.
+  //
+  // Response time should be <100ms (metadata retrieval should be instant).
+  //
+  // Error cases:
+  //   - Unimplemented: Plugin is too old to support this RPC (legacy plugin)
+  //   - Internal: Plugin failed to retrieve its own metadata (unexpected)
+  //
+  // Client-side error handling example (Go):
+  //
+  //   resp, err := client.GetPluginInfo(ctx, &GetPluginInfoRequest{})
+  //   if err != nil {
+  //       if status.Code(err) == codes.Unimplemented {
+  //           // Legacy plugin - use fallback values
+  //           log.Info("Plugin does not implement GetPluginInfo")
+  //           return &PluginMetadata{Name: "unknown", Version: "unknown"}
+  //       }
+  //       return nil, fmt.Errorf("GetPluginInfo failed: %w", err)
+  //   }
+  //   return &PluginMetadata{
+  //       Name:        resp.GetName(),
+  //       Version:     resp.GetVersion(),
+  //       SpecVersion: resp.GetSpecVersion(),
+  //   }
+  //
+  rpc GetPluginInfo(GetPluginInfoRequest) returns (GetPluginInfoResponse);
+
+  // DryRun returns field mapping information for a resource type without
+  // performing actual cost data retrieval. Useful for debugging plugin
+  // configurations and comparing plugin capabilities.
+  //
+  // This RPC is optional - plugins that do not support dry-run introspection
+  // should return Unimplemented. Check SupportsResponse.capabilities["dry_run"]
+  // to detect support before calling.
+  //
+  // Response time requirement: <100ms (no external network calls).
+  // The response should be generated entirely from local configuration/logic.
+  //
+  // Error cases:
+  //   - InvalidArgument: Invalid resource descriptor (empty provider/resource_type)
+  //   - Unimplemented: Plugin does not support dry-run introspection
+  //   - Internal: Unexpected error during introspection
+  //
+  // Client-side error handling example (Go):
+  //
+  //   resp, err := client.DryRun(ctx, &DryRunRequest{...})
+  //   if err != nil {
+  //       if status.Code(err) == codes.Unimplemented {
+  //           log.Info("Plugin does not implement DryRun RPC")
+  //           // Fall back to inferring capabilities from Supports RPC
+  //           return nil
+  //       }
+  //       return nil, fmt.Errorf("DryRun failed: %w", err)
+  //   }
+  //   // Process field mappings
+  //   for _, fm := range resp.GetFieldMappings() {
+  //       log.Printf("%s: %v", fm.GetFieldName(), fm.GetSupportStatus())
+  //   }
+  //
+  rpc DryRun(DryRunRequest) returns (DryRunResponse);
+}
+
+// NameRequest is used for the Name RPC call (empty request).
+message NameRequest {}
+
+// NameResponse contains the plugin name information.
+message NameResponse {
+  // name is the display name of the cost source plugin (e.g., "kubecost", "cloudability")
+  string name = 1;
+}
+
+// MetricKind represents the type of sustainability/impact metric supported by a plugin.
+enum MetricKind {
+  METRIC_KIND_UNSPECIFIED = 0;
+  // Carbon Footprint in grams of CO2 equivalent (gCO2e)
+  METRIC_KIND_CARBON_FOOTPRINT = 1;
+  // Electrical Energy Consumption in kilowatt-hours (kWh)
+  METRIC_KIND_ENERGY_CONSUMPTION = 2;
+  // Water Usage in liters (L)
+  METRIC_KIND_WATER_USAGE = 3;
+}
+
+// ImpactMetric represents a single sustainability impact measurement.
+message ImpactMetric {
+  // kind specifies the type of impact metric (Carbon, Energy, etc.)
+  MetricKind kind = 1;
+  // value is the numeric measurement
+  double value = 2;
+  // unit is the measurement unit (e.g., "gCO2e", "kWh", "L")
+  string unit = 3;
+}
+
+// SupportsRequest contains the resource descriptor to check support for.
+message SupportsRequest {
+  // resource contains the resource descriptor to check support for
+  ResourceDescriptor resource = 1;
+}
+
+// SupportsResponse indicates whether the cost source supports the requested resource.
+message SupportsResponse {
+  // supported indicates if the resource type is supported by this cost source
+  bool supported = 1;
+  // reason provides optional explanation if supported is false
+  string reason = 2;
+  // capabilities declares optional capabilities the plugin supports.
+  // Standard capability keys:
+  //   - "recommendations": Plugin supports GetRecommendations RPC
+  //   - "dry_run": Plugin supports DryRun RPC and dry_run flag on cost RPCs
+  //   - "budgets": Plugin supports GetBudgets RPC
+  // Example: {"recommendations": true, "dry_run": true}
+  map<string, bool> capabilities = 3;
+  // supported_metrics declares optional sustainability metrics the plugin supports
+  repeated MetricKind supported_metrics = 4;
+}
+
+// GetActualCostRequest contains parameters for retrieving historical cost data.
+message GetActualCostRequest {
+  // resource_id is a flexible ID per plugin (e.g., "i-abc123", "namespace/default")
+  string resource_id = 1;
+  // start timestamp for the cost query period
+  google.protobuf.Timestamp start = 2;
+  // end timestamp for the cost query period
+  google.protobuf.Timestamp end = 3;
+  // tags provide optional extra filters for cost retrieval
+  map<string, string> tags = 4;
+  // New field: Canonical Cloud Identifier (e.g. AWS ARN, Azure Resource ID, GCP Full Resource Name)
+  string arn = 5;
+  // dry_run when true, returns DryRunResponse in dry_run_result field
+  // instead of performing actual cost data retrieval.
+  // Default: false (normal cost retrieval behavior).
+  // When true, the response will contain dry_run_result instead of results.
+  bool dry_run = 6;
+}
+
+// GetActualCostResponse contains the list of actual cost results.
+message GetActualCostResponse {
+  // results contains the actual cost data points for the requested period
+  repeated ActualCostResult results = 1;
+  // fallback_hint indicates whether the core should attempt to query other plugins
+  FallbackHint fallback_hint = 2;
+  // dry_run_result contains field mapping information when request.dry_run
+  // was true. Empty/nil when dry_run was false or not set.
+  // When populated, results field will be empty.
+  DryRunResponse dry_run_result = 3;
+}
+
+// GetProjectedCostRequest contains the resource descriptor for projected cost calculation.
+message GetProjectedCostRequest {
+  // resource contains the resource descriptor for cost projection
+  ResourceDescriptor resource = 1;
+  // utilization_percentage is the global default utilization for all resources in request.
+  // Valid range: 0.0 to 1.0 (representing 0% to 100% utilization).
+  //
+  // NOTE: Due to proto3 semantics, 0.0 cannot be distinguished from "not set".
+  // When this field is 0.0 (proto3 default for unset double), the SDK applies
+  // a baseline default of 0.5 (50% utilization).
+  //
+  // To explicitly request 0% utilization, use the resource-level override:
+  //   resource.utilization_percentage = proto.Float64(0.0)
+  double utilization_percentage = 2;
+
+  // growth_type overrides ResourceDescriptor.growth_type for this request.
+  // OPTIONAL. When set, takes precedence over the resource-level default.
+  //
+  // Use case: Project different growth scenarios for the same resource
+  // without modifying the resource descriptor.
+  //
+  // When LINEAR or EXPONENTIAL, growth_rate MUST also be provided
+  // (either here or in ResourceDescriptor).
+  GrowthType growth_type = 3;
+
+  // growth_rate overrides ResourceDescriptor.growth_rate for this request.
+  // OPTIONAL. When set (even to 0.0), takes precedence over resource-level default.
+  //
+  // Valid range: >= -1.0 (no upper bound)
+  //
+  // Proto3 optional field semantics:
+  //   - Not set (nil): Use resource-level growth_rate from ResourceDescriptor
+  //   - Explicitly set to 0.0: Apply 0% growth (overrides resource default)
+  //   - Set to any other value: Use the specified rate
+  //
+  // In generated Go code, check presence with:
+  //   if req.GrowthRate != nil { rate := *req.GrowthRate }
+  //
+  // Override semantics: If this field is set, it fully replaces
+  // ResourceDescriptor.growth_rate for this request.
+  optional double growth_rate = 4;
+
+  // dry_run when true, returns DryRunResponse in dry_run_result field
+  // instead of performing projected cost calculation.
+  // Default: false (normal projection behavior).
+  // When true, the response will contain dry_run_result instead of cost data.
+  bool dry_run = 5;
+}
+
+// GetProjectedCostResponse contains projected cost information.
+message GetProjectedCostResponse {
+  // unit_price is the price per unit (aligned with PricingSpec.billing_mode)
+  double unit_price = 1;
+  // currency for the pricing (e.g., "USD")
+  string currency = 2;
+  // cost_per_month is a convenience field for a typical 30-day month
+  double cost_per_month = 3;
+  // billing_detail provides context (e.g., "on-demand", "kubecost-avg-daily")
+  string billing_detail = 4;
+  // impact_metrics contains sustainability metrics (Carbon, Energy, etc.)
+  repeated ImpactMetric impact_metrics = 5;
+
+  // growth_type is the plugin-reported growth hint for forecasting.
+  // Indicates how the resource's cost is expected to grow over time,
+  // enabling Core to make smarter forecasts without hardcoded resource-type knowledge.
+  //
+  // Values:
+  //   - GROWTH_TYPE_UNSPECIFIED/NONE: Consumption-based (e.g., EC2, Lambda)
+  //     Cost is stable unless usage changes. No accumulation pattern.
+  //   - GROWTH_TYPE_LINEAR: Accumulation-based (e.g., S3, backups, logs)
+  //     Storage or data grows over time at a predictable rate.
+  //   - GROWTH_TYPE_EXPONENTIAL: Compounding growth pattern
+  //     Rare in practice; use for resources with exponential data growth.
+  //
+  // This field is OPTIONAL. When unset (UNSPECIFIED), Core should treat
+  // the resource as consumption-based (no growth assumption).
+  GrowthType growth_type = 6;
+
+  // dry_run_result contains field mapping information when request.dry_run
+  // was true. Empty/nil when dry_run was false or not set.
+  // When populated, cost fields will be empty/zero.
+  DryRunResponse dry_run_result = 7;
+}
+
+// GetPricingSpecRequest contains the resource descriptor for pricing specification.
+message GetPricingSpecRequest {
+  // resource contains the resource descriptor for pricing specification
+  ResourceDescriptor resource = 1;
+}
+
+// GetPricingSpecResponse contains the detailed pricing specification.
+message GetPricingSpecResponse {
+  // spec contains the complete pricing specification for the resource
+  PricingSpec spec = 1;
+}
+
+// ResourceDescriptor describes a cloud resource for cost analysis.
+// This message defines the contract between Core and Plugins for resource identification.
+//
+// Field Requirements:
+//   - REQUIRED fields must be non-empty for valid requests
+//   - OPTIONAL fields may be omitted or empty depending on context
+//
+// Validation Rules:
+//   - provider: Must be one of: "aws", "azure", "gcp", "kubernetes", "custom"
+//   - resource_type: Must match the plugin's supported resource types
+//   - sku: Format varies by provider (e.g., "t3.micro" for AWS, "Standard_B1s" for Azure)
+//   - region: Must match provider's region naming (e.g., "us-east-1", "eastus", "us-central1")
+//   - tags: Keys and values should be non-empty strings when provided
+message ResourceDescriptor {
+  // provider identifies the cloud provider.
+  // REQUIRED. Must be one of: "aws", "azure", "gcp", "kubernetes", "custom".
+  // Empty or unrecognized values will result in InvalidArgument error.
+  string provider = 1;
+
+  // resource_type specifies the type of resource being described.
+  // REQUIRED. Must match a resource type supported by the target plugin.
+  // Maximum length: 256 characters.
+  // Format: Alphanumeric with optional hyphens, colons, slashes (regex: ^[a-zA-Z][a-zA-Z0-9_\-:/]*$)
+  // Examples: "ec2", "s3", "k8s-namespace", "aws:ec2/instance:Instance".
+  // Empty values will result in InvalidArgument error.
+  string resource_type = 2;
+
+  // sku is the provider-specific SKU or instance size.
+  // OPTIONAL. Required for compute resources, may be omitted for others.
+  // Examples:
+  //   - AWS: "t3.micro", "m5.large"
+  //   - Azure: "Standard_B1s", "Standard_D2s_v3"
+  //   - GCP: "e2-micro", "n1-standard-1"
+  //   - Kubernetes: typically omitted (use tags for resource specifications)
+  string sku = 3;
+
+  // region specifies the deployment region.
+  // OPTIONAL. Required for regional resources, omit for global resources.
+  // Examples:
+  //   - AWS: "us-east-1", "eu-west-1"
+  //   - Azure: "eastus", "westeurope"
+  //   - GCP: "us-central1", "europe-west1"
+  //   - Kubernetes: typically omitted or set to cluster region
+  string region = 4;
+
+  // tags provide label/tag hints for resource identification and filtering.
+  // OPTIONAL. Used for additional resource matching and cost allocation.
+  // Examples: {"app": "web", "env": "production", "team": "platform"}
+  // Both keys and values should be non-empty when provided.
+  map<string, string> tags = 5;
+
+  // utilization_percentage is a per-resource utilization override (0.0 to 1.0).
+  // OPTIONAL. If provided, overrides the global request default.
+  optional double utilization_percentage = 6;
+
+  // id is a client-specified identifier for request/response correlation.
+  // OPTIONAL. When provided, plugins MUST include this ID in any
+  // recommendations or responses related to this resource, enabling
+  // clients to match responses to their original requests in batch operations.
+  //
+  // The ID is treated as an opaque string - plugins MUST NOT validate or
+  // transform this value. Common formats include Pulumi URNs, UUIDs, or
+  // application-specific identifiers.
+  //
+  // Example: "urn:pulumi:prod::myapp::aws:ec2/instance:Instance::webserver"
+  //
+  // Correlation pattern:
+  //   1. Client sets id in ResourceDescriptor
+  //   2. Plugin copies id to ResourceRecommendationInfo.id
+  //   3. Client matches response to request using id
+  string id = 7;
+
+  // arn is the canonical cloud resource identifier for exact matching.
+  // OPTIONAL. When provided, plugins SHOULD use this for precise resource
+  // lookup instead of matching by type/sku/region/tags.
+  //
+  // This field uses "arn" as the name for consistency with GetActualCostRequest,
+  // but accepts canonical identifiers from any cloud provider:
+  //
+  // AWS ARN:
+  //   arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0
+  //
+  // Azure Resource ID:
+  //   /subscriptions/{sub-id}/resourceGroups/{rg}/providers/
+  //   Microsoft.Compute/virtualMachines/{vm-name}
+  //
+  // GCP Full Resource Name:
+  //   //compute.googleapis.com/projects/{project}/zones/{zone}/instances/{name}
+  //
+  // Kubernetes Resource:
+  //   {cluster}/{namespace}/{kind}/{name} or UID
+  //
+  // Cloudflare:
+  //   {zone-id}/{resource-type}/{resource-id}
+  //
+  // Matching behavior:
+  //   - If arn is provided and valid: Use for exact resource lookup
+  //   - If arn is empty or invalid: Fall back to type/sku/region/tags matching
+  //   - If arn format is unrecognized: Log warning, use fallback matching
+  //
+  // Plugins MAY validate the arn format for their provider and SHOULD log
+  // a warning if the format is invalid before falling back.
+  string arn = 8;
+
+  // growth_type specifies the default growth model for cost projections.
+  // OPTIONAL. When set, defines how projected costs should grow over time.
+  // Can be overridden by GetProjectedCostRequest.growth_type.
+  //
+  // Values:
+  //   - GROWTH_TYPE_UNSPECIFIED/NONE: No growth (constant projections)
+  //   - GROWTH_TYPE_LINEAR: Additive growth (cost * (1 + rate * periods))
+  //   - GROWTH_TYPE_EXPONENTIAL: Compounding growth (cost * (1 + rate)^periods)
+  //
+  // When LINEAR or EXPONENTIAL, growth_rate MUST also be provided.
+  GrowthType growth_type = 9;
+
+  // growth_rate specifies the default growth rate per projection period.
+  // OPTIONAL. Required when growth_type is LINEAR or EXPONENTIAL.
+  //
+  // Valid range: >= -1.0 (no upper bound)
+  //   - Positive values: growth (e.g., 0.10 = 10% growth per period)
+  //   - Zero: no growth (equivalent to GROWTH_TYPE_NONE)
+  //   - Negative values: decline (e.g., -0.10 = 10% decline per period)
+  //   - -1.0: complete decline to zero cost
+  //
+  // Values below -1.0 are invalid (would produce negative costs).
+  // Can be overridden by GetProjectedCostRequest.growth_rate.
+  //
+  // Proto3 optional field semantics:
+  //   - Not set (nil): No default rate (caller must provide in request if needed)
+  //   - Explicitly set to 0.0: Resource has 0% growth rate as default
+  //   - Set to any other value: Use as resource-level default rate
+  //
+  // In generated Go code, check presence with:
+  //   if desc.GrowthRate != nil { rate := *desc.GrowthRate }
+  optional double growth_rate = 10;
+}
+
+// ActualCostResult represents a single cost data point.
+message ActualCostResult {
+  // timestamp indicates the point-in-time or bucket start for this cost data
+  google.protobuf.Timestamp timestamp = 1;
+  // cost is the total cost in the specified currency for the period/bucket
+  double cost = 2;
+  // usage_amount is the optional usage amount aligned with BillingMode
+  double usage_amount = 3;
+  // usage_unit specifies the unit of usage (e.g., "hour", "GB", "request")
+  string usage_unit = 4;
+  // source identifies the data source (e.g., "kubecost", "flexera")
+  string source = 5;
+  // focus_record provides the cost data in FOCUS 1.2 format.
+  // This field is optional and will eventually replace the legacy fields.
+  FocusCostRecord focus_record = 6;
+  // impact_metrics contains sustainability metrics (Carbon, Energy, etc.)
+  repeated ImpactMetric impact_metrics = 7;
+}
+
+// UsageMetricHint provides guidance on usage metrics for cost calculation.
+message UsageMetricHint {
+  // metric specifies the usage metric name (e.g., "vcpu_hours", "storage_gb", "requests")
+  string metric = 1;
+  // unit specifies the metric unit (e.g., "hour", "GB", "count")
+  string unit = 2;
+}
+
+// PricingSpec provides detailed pricing information for a specific resource type.
+message PricingSpec {
+  // provider identifies the cloud provider for this pricing specification
+  string provider = 1;
+  // resource_type specifies the type of resource being priced
+  string resource_type = 2;
+  // sku is the specific SKU or instance type identifier
+  string sku = 3;
+  // region specifies the geographic region for pricing
+  string region = 4;
+  // billing_mode defines how the resource is billed 
+  // (e.g., "per_hour", "per_gb_month", "per_request", "flat", "per_day", "per_cpu_hour")
+  string billing_mode = 5;
+  // rate_per_unit is the price per billing unit
+  double rate_per_unit = 6;
+  // currency specifies the pricing currency (e.g., "USD")
+  string currency = 7;
+  // description provides human-readable description of the pricing
+  string description = 8;
+  // metric_hints provide guidance on relevant usage metrics for cost calculation
+  repeated UsageMetricHint metric_hints = 9;
+  // plugin_metadata contains plugin-specific extra metadata (keys are not guaranteed to be stable)
+  map<string, string> plugin_metadata = 10;
+  // source identifies where the pricing model originated
+  // (e.g., "aws", "gcp", "azure", "kubecost", "flexera", "cloudability", "spec")
+  string source = 11;
+  // unit specifies the unit of measurement for rate_per_unit
+  // (e.g., "hour", "GB-month", "request", "unknown")
+  string unit = 12;
+  // assumptions contains human-readable strings explaining pricing derivation
+  // and any constraints or conditions applied to the pricing calculation
+  repeated string assumptions = 13;
+  // pricing_tiers contains tiered pricing breakdown for volume-based billing
+  // When billing_mode is "tiered", this array contains the pricing tiers
+  repeated PricingTier pricing_tiers = 14;
+}
+
+// PricingTier represents one tier in a tiered pricing model.
+// Used for volume-based pricing where rates decrease at higher usage levels.
+message PricingTier {
+  // min_quantity is the lower bound of this tier (inclusive)
+  double min_quantity = 1;
+  // max_quantity is the upper bound of this tier (exclusive, 0 means unlimited)
+  double max_quantity = 2;
+  // rate_per_unit is the price per unit within this tier
+  double rate_per_unit = 3;
+  // description provides human-readable explanation of this tier
+  string description = 4;
+}
+
+// FallbackHint indicates whether the core system should attempt to query
+// other plugins for the requested resource.
+enum FallbackHint {
+  // Default behavior (treated as FALLBACK_HINT_NONE).
+  // The plugin either found data or is the definitive source.
+  FALLBACK_HINT_UNSPECIFIED = 0;
+
+  // Plugin has data or is authoritative; do not attempt fallback.
+  FALLBACK_HINT_NONE = 1;
+
+  // Plugin has no data and recommends checking other plugins.
+  // Core should try fallback plugins if available.
+  FALLBACK_HINT_RECOMMENDED = 2;
+
+  // Plugin cannot handle this request (e.g. unsupported resource type).
+  // Core must try fallback plugins or fail.
+  FALLBACK_HINT_REQUIRED = 3;
+}
+
+// ErrorCategory defines the category of plugin errors.
+enum ErrorCategory {
+  ERROR_CATEGORY_UNSPECIFIED = 0;
+  ERROR_CATEGORY_TRANSIENT = 1;    // Temporary failure that may succeed on retry
+  ERROR_CATEGORY_PERMANENT = 2;    // Failure that will not succeed on retry without changes
+  ERROR_CATEGORY_CONFIGURATION = 3; // Error due to invalid configuration or setup
+}
+
+// ErrorCode defines standard error codes for plugin operations.
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  
+  // Transient error codes
+  ERROR_CODE_NETWORK_TIMEOUT = 1;      // Network timeout occurred
+  ERROR_CODE_SERVICE_UNAVAILABLE = 2;  // Service temporarily unavailable
+  ERROR_CODE_RATE_LIMITED = 3;         // Request was rate limited
+  ERROR_CODE_TEMPORARY_FAILURE = 4;    // Temporary failure occurred
+  ERROR_CODE_CIRCUIT_OPEN = 5;         // Circuit breaker is open
+  
+  // Permanent error codes
+  ERROR_CODE_INVALID_RESOURCE = 6;     // Invalid resource specification
+  ERROR_CODE_RESOURCE_NOT_FOUND = 7;   // Requested resource was not found
+  ERROR_CODE_INVALID_TIME_RANGE = 8;   // Invalid time range parameters
+  ERROR_CODE_UNSUPPORTED_REGION = 9;   // Region is not supported
+  ERROR_CODE_PERMISSION_DENIED = 10;   // Access is denied
+  ERROR_CODE_DATA_CORRUPTION = 11;     // Data corruption was detected
+  
+  // Configuration error codes
+  ERROR_CODE_INVALID_CREDENTIALS = 12; // Authentication credentials are invalid
+  ERROR_CODE_MISSING_API_KEY = 13;     // API key is missing
+  ERROR_CODE_INVALID_ENDPOINT = 14;    // Endpoint configuration is invalid
+  ERROR_CODE_INVALID_PROVIDER = 15;    // Provider specification is invalid
+  ERROR_CODE_PLUGIN_NOT_CONFIGURED = 16; // Plugin is not properly configured
+}
+
+// ErrorDetail provides detailed information about an error.
+message ErrorDetail {
+  // code is the specific error code
+  ErrorCode code = 1;
+  // category is the error category (transient, permanent, configuration)
+  ErrorCategory category = 2;
+  // message is the human-readable error message
+  string message = 3;
+  // details contains structured error details
+  map<string, string> details = 4;
+  // retry_after_seconds suggests when to retry (for transient errors)
+  optional int32 retry_after_seconds = 5;
+  // timestamp when the error occurred
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+// ObservabilityService provides telemetry, health checks, and monitoring capabilities
+// for cost source plugins. This service enables monitoring, debugging, and performance
+// optimization of plugin implementations.
+service ObservabilityService {
+  // HealthCheck returns the current health status of the plugin.
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  
+  // GetMetrics returns current metrics for monitoring plugin performance.
+  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
+  
+  // GetServiceLevelIndicators returns current SLI measurements.
+  rpc GetServiceLevelIndicators(GetServiceLevelIndicatorsRequest) returns (GetServiceLevelIndicatorsResponse);
+}
+
+// HealthCheckRequest is used for the HealthCheck RPC call.
+message HealthCheckRequest {
+  // service_name optionally specifies which service to check (empty for overall health)
+  string service_name = 1;
+}
+
+// HealthCheckResponse contains the health status of the plugin.
+message HealthCheckResponse {
+  // Status represents the health check status
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_SERVING = 1;
+    STATUS_NOT_SERVING = 2;
+    STATUS_SERVICE_UNKNOWN = 3;
+  }
+  
+  // status indicates the current health status
+  Status status = 1;
+  // message provides optional details about the health status
+  string message = 2;
+  // last_check_time indicates when this status was last updated
+  google.protobuf.Timestamp last_check_time = 3;
+}
+
+// GetMetricsRequest contains parameters for retrieving plugin metrics.
+message GetMetricsRequest {
+  // metric_names optionally filters which metrics to return (empty for all)
+  repeated string metric_names = 1;
+  // format specifies the output format (e.g., "prometheus", "json")
+  string format = 2;
+}
+
+// GetMetricsResponse contains the plugin metrics.
+message GetMetricsResponse {
+  // metrics contains the collected metrics data
+  repeated Metric metrics = 1;
+  // timestamp indicates when these metrics were collected
+  google.protobuf.Timestamp timestamp = 2;
+  // format indicates the format of the metrics data
+  string format = 3;
+}
+
+// Metric represents a single monitoring metric.
+message Metric {
+  // name is the metric name (e.g., "request_latency_seconds", "requests_total")
+  string name = 1;
+  // help provides a description of what the metric measures
+  string help = 2;
+  // type specifies the metric type (counter, gauge, histogram, summary)
+  MetricType type = 3;
+  // samples contains the metric data points
+  repeated MetricSample samples = 4;
+}
+
+// MetricType represents the type of metric being reported.
+enum MetricType {
+  METRIC_TYPE_UNSPECIFIED = 0;
+  METRIC_TYPE_COUNTER = 1;
+  METRIC_TYPE_GAUGE = 2;
+  METRIC_TYPE_HISTOGRAM = 3;
+  METRIC_TYPE_SUMMARY = 4;
+}
+
+// MetricSample represents a single metric measurement.
+message MetricSample {
+  // labels contains key-value pairs for metric dimensions
+  map<string, string> labels = 1;
+  // value is the numeric value of this metric sample
+  double value = 2;
+  // timestamp indicates when this sample was recorded
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+// GetServiceLevelIndicatorsRequest contains parameters for retrieving Service Level Indicators.
+message GetServiceLevelIndicatorsRequest {
+  // time_range optionally specifies the time range for SLI calculation
+  TimeRange time_range = 1;
+  // sli_names optionally filters which SLIs to return (empty for all)
+  repeated string sli_names = 2;
+}
+
+// GetServiceLevelIndicatorsResponse contains the current Service Level Indicators.
+message GetServiceLevelIndicatorsResponse {
+  // slis contains the current SLI measurements
+  repeated ServiceLevelIndicator slis = 1;
+  // measurement_time indicates when these SLIs were measured
+  google.protobuf.Timestamp measurement_time = 2;
+}
+
+// ServiceLevelIndicator represents a measurable aspect of service quality.
+message ServiceLevelIndicator {
+  // name is the SLI name (e.g., "availability", "latency_p99", "error_rate")
+  string name = 1;
+  // description explains what this SLI measures
+  string description = 2;
+  // value is the current SLI value (e.g., 0.995 for 99.5% availability)
+  double value = 3;
+  // unit specifies the unit of measurement (e.g., "percentage", "seconds", "ratio")
+  string unit = 4;
+  // target_value is the target/goal value for this SLI
+  double target_value = 5;
+  // status indicates if the SLI is meeting its target
+  SLIStatus status = 6;
+}
+
+// SLIStatus represents whether an SLI is meeting its target.
+enum SLIStatus {
+  SLI_STATUS_UNSPECIFIED = 0;
+  SLI_STATUS_MEETING_TARGET = 1;
+  SLI_STATUS_WARNING = 2;
+  SLI_STATUS_CRITICAL = 3;
+}
+
+// TimeRange represents a time period for metrics and SLI calculations.
+message TimeRange {
+  // start timestamp for the time range
+  google.protobuf.Timestamp start = 1;
+  // end timestamp for the time range  
+  google.protobuf.Timestamp end = 2;
+}
+
+// TelemetryMetadata provides observability context for RPC responses.
+// This can be embedded in existing response messages to add telemetry capabilities.
+message TelemetryMetadata {
+  // trace_id is the distributed trace identifier for request correlation
+  string trace_id = 1;
+  // span_id is the current span identifier within the trace
+  string span_id = 2;
+  // request_id is a unique identifier for this specific request
+  string request_id = 3;
+  // processing_time_ms indicates how long the request took to process
+  int64 processing_time_ms = 4;
+  // data_source indicates the backend system that provided the data
+  string data_source = 5;
+  // cache_hit indicates if the response came from cache
+  bool cache_hit = 6;
+  // quality_score optionally indicates the data quality/confidence (0.0-1.0)
+  double quality_score = 7;
+}
+
+// LogEntry represents a structured log entry for standardized logging.
+message LogEntry {
+  // timestamp when the log entry was created
+  google.protobuf.Timestamp timestamp = 1;
+  // level indicates the log level (e.g., "DEBUG", "INFO", "WARN", "ERROR")
+  string level = 2;
+  // message is the log message content
+  string message = 3;
+  // component identifies the plugin component that generated the log
+  string component = 4;
+  // trace_id for correlating logs with distributed traces
+  string trace_id = 5;
+  // span_id for correlating logs with specific spans
+  string span_id = 6;
+  // fields contains structured log fields as key-value pairs
+  map<string, string> fields = 7;
+  // error_details provides additional context for error logs
+  ErrorDetails error_details = 8;
+}
+
+// ErrorDetails provides structured error information for logging and debugging.
+message ErrorDetails {
+  // error_code is a machine-readable error identifier
+  string error_code = 1;
+  // error_category classifies the type of error (e.g., "network", "auth", "data")
+  string error_category = 2;
+  // stack_trace provides debugging information (should be sanitized in production)
+  string stack_trace = 3;
+  // retry_after_seconds suggests when the client should retry (for transient errors)
+  int32 retry_after_seconds = 4;
+  // correlation_id helps correlate related errors across services
+  string correlation_id = 5;
+}
+
+// EstimateCostRequest represents a request to estimate the cost of a Pulumi
+// resource before deployment. This enables "what-if" cost analysis for
+// configuration comparison and budget planning.
+message EstimateCostRequest {
+  // The full type name of the Pulumi resource to estimate cost for.
+  // Must follow the format: "provider:module/resource:Type"
+  //
+  // Examples:
+  //   - "aws:ec2/instance:Instance"
+  //   - "azure:compute/virtualMachine:VirtualMachine"
+  //   - "gcp:compute/instance:Instance"
+  //
+  // The resource_type must be supported by the plugin (check via Supports RPC).
+  // Invalid formats will return InvalidArgument error.
+  string resource_type = 1;
+
+  // A structured representation of the resource's input properties.
+  // This mirrors the structure of a Pulumi resource declaration.
+  //
+  // The attributes field may be null or missing, which is treated as an
+  // empty struct. The plugin determines which attributes are required for
+  // cost estimation based on its pricing model.
+  //
+  // Examples:
+  //   AWS: {"instanceType": "t3.micro", "region": "us-east-1"}
+  //   Azure: {"vmSize": "Standard_B1s", "location": "eastus"}
+  //   GCP: {"machineType": "e2-micro", "zone": "us-central1-a"}
+  google.protobuf.Struct attributes = 2;
+}
+
+// EstimateCostResponse contains the estimated monthly cost for a resource
+// based on the provided configuration.
+//
+// Future versions may add optional breakdown fields (e.g., compute vs storage)
+// while maintaining backward compatibility through optional fields.
+message EstimateCostResponse {
+  // The currency of the cost, as an ISO 4217 currency code.
+  // Typically "USD" but depends on the plugin's pricing source.
+  string currency = 1;
+
+  // The estimated monthly cost for the resource.
+  // Must be non-negative. Zero is valid for free-tier resources.
+  // Monthly cost assumes 730 hours/month for hourly-billed resources.
+  double cost_monthly = 2;
+}
+
+// =============================================================================
+// GetRecommendations RPC - Enums
+// =============================================================================
+
+// RecommendationCategory classifies the type of optimization recommendation.
+enum RecommendationCategory {
+  RECOMMENDATION_CATEGORY_UNSPECIFIED = 0;
+  RECOMMENDATION_CATEGORY_COST = 1;
+  RECOMMENDATION_CATEGORY_PERFORMANCE = 2;
+  RECOMMENDATION_CATEGORY_SECURITY = 3;
+  RECOMMENDATION_CATEGORY_RELIABILITY = 4;
+}
+
+// RecommendationActionType specifies the type of action recommended.
+enum RecommendationActionType {
+  RECOMMENDATION_ACTION_TYPE_UNSPECIFIED = 0;
+  RECOMMENDATION_ACTION_TYPE_RIGHTSIZE = 1;
+  RECOMMENDATION_ACTION_TYPE_TERMINATE = 2;
+  RECOMMENDATION_ACTION_TYPE_PURCHASE_COMMITMENT = 3;
+  RECOMMENDATION_ACTION_TYPE_ADJUST_REQUESTS = 4;
+  RECOMMENDATION_ACTION_TYPE_MODIFY = 5;
+  RECOMMENDATION_ACTION_TYPE_DELETE_UNUSED = 6;
+  // Move workloads to different regions, zones, or SKUs for cost optimization.
+  // Common in Azure Advisor (region migration) and GCP Recommender (zone migration).
+  // Use ModifyAction with modification_type="region_migration" or "zone_migration".
+  RECOMMENDATION_ACTION_TYPE_MIGRATE = 7;
+  // Combine multiple smaller resources into fewer, larger ones for efficiency.
+  // Common in Azure Advisor and Kubecost for node consolidation.
+  // Use ModifyAction with modification_type="node_consolidation" or "resource_merge".
+  RECOMMENDATION_ACTION_TYPE_CONSOLIDATE = 8;
+  // Start/stop resources on a schedule (e.g., dev/test environments).
+  // Common in AWS Instance Scheduler and Azure Automation.
+  // Use ModifyAction with modification_type="start_stop_schedule".
+  RECOMMENDATION_ACTION_TYPE_SCHEDULE = 9;
+  // Architectural changes such as moving to serverless or managed services.
+  // Common in GCP Recommender for App Engine/Cloud Run migration suggestions.
+  // Use ModifyAction with modification_type="serverless_migration" or "service_upgrade".
+  RECOMMENDATION_ACTION_TYPE_REFACTOR = 10;
+  // Catch-all for provider-specific recommendations not fitting other categories.
+  // Use when no other action type accurately describes the recommendation.
+  // Include details in Recommendation.metadata or Recommendation.description.
+  RECOMMENDATION_ACTION_TYPE_OTHER = 11;
+}
+
+// RecommendationPriority indicates the urgency of a recommendation.
+enum RecommendationPriority {
+  RECOMMENDATION_PRIORITY_UNSPECIFIED = 0;
+  RECOMMENDATION_PRIORITY_LOW = 1;
+  RECOMMENDATION_PRIORITY_MEDIUM = 2;
+  RECOMMENDATION_PRIORITY_HIGH = 3;
+  RECOMMENDATION_PRIORITY_CRITICAL = 4;
+}
+
+// RecommendationSortBy specifies the field to sort recommendations by.
+enum RecommendationSortBy {
+  RECOMMENDATION_SORT_BY_UNSPECIFIED = 0;
+  RECOMMENDATION_SORT_BY_ESTIMATED_SAVINGS = 1;
+  RECOMMENDATION_SORT_BY_PRIORITY = 2;
+  RECOMMENDATION_SORT_BY_CREATED_AT = 3;
+  RECOMMENDATION_SORT_BY_CONFIDENCE = 4;
+}
+
+// SortOrder specifies ascending or descending sort order.
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
+// =============================================================================
+// GetRecommendations RPC - Request/Response Messages
+// =============================================================================
+
+// GetRecommendationsRequest contains parameters for retrieving recommendations.
+message GetRecommendationsRequest {
+  // filter narrows the recommendations returned
+  RecommendationFilter filter = 1;
+  // projection_period specifies the time period for savings projection
+  // Valid values: "daily", "monthly" (default), "annual"
+  string projection_period = 2;
+  // page_size is the maximum number of recommendations to return (default: 50, max: 1000)
+  int32 page_size = 3;
+  // page_token is the continuation token from a previous response
+  string page_token = 4;
+  // excluded_recommendation_ids contains IDs of recommendations to exclude from results.
+  // Use this to filter out recommendations that have been dismissed by users.
+  // Plugins should not return recommendations matching these IDs.
+  repeated string excluded_recommendation_ids = 5;
+
+  // target_resources specifies the resources to analyze for recommendations.
+  // When provided, plugins return recommendations ONLY for these resources.
+  // When empty, plugins return recommendations for all resources in scope.
+  //
+  // Use cases:
+  //   - Stack-scoped recommendations: Pass Pulumi stack resources for targeted analysis
+  //   - Pre-deployment optimization: Analyze proposed resources before creation
+  //   - Batch resource analysis: Query recommendations for a known resource list
+  //
+  // Interaction with filter:
+  //   - target_resources defines the SCOPE (which resources to analyze)
+  //   - filter defines SELECTION CRITERIA within that scope (category, priority, etc.)
+  //   - Both are applied (AND logic): recommendations must match a target resource
+  //     AND satisfy any filter criteria
+  //
+  // Matching rules:
+  //   - provider and resource_type must always match (required fields)
+  //   - sku, region, and tags are matched only when specified in the target
+  //   - If specified, optional fields must match exactly (strict matching)
+  //
+  // Validation:
+  //   - Maximum 100 resources per request (exceeding returns InvalidArgument)
+  //   - Each ResourceDescriptor must have valid provider and resource_type
+  //   - Empty target_resources is valid (analyze all resources in scope)
+  repeated ResourceDescriptor target_resources = 6;
+}
+
+// GetRecommendationsResponse contains the recommendations and summary.
+message GetRecommendationsResponse {
+  // recommendations is the list of cost optimization recommendations
+  repeated Recommendation recommendations = 1;
+  // summary provides aggregated statistics for the recommendations included
+  // in this response page (not across all pages). Clients should aggregate
+  // summaries across pages if global totals are needed.
+  RecommendationSummary summary = 2;
+  // next_page_token is the token for retrieving the next page (empty if last)
+  string next_page_token = 3;
+}
+
+// RecommendationFilter specifies criteria for filtering recommendations.
+message RecommendationFilter {
+  // provider filters by cloud provider (e.g., "aws", "azure", "gcp", "kubernetes")
+  string provider = 1;
+  // region filters by deployment region
+  string region = 2;
+  // resource_type filters by resource type
+  string resource_type = 3;
+  // category filters by recommendation category
+  RecommendationCategory category = 4;
+  // action_type filters by recommended action type
+  RecommendationActionType action_type = 5;
+  // sku filters by SKU or instance type (e.g., "t2.medium", "gp2").
+  // When provided, plugins generate recommendations for this specific SKU.
+  // This enables resource-specific recommendations like instance generation
+  // upgrades (t2→t3) or Graviton migrations (m5→m6g).
+  string sku = 6;
+  // tags provides additional resource metadata for recommendation generation.
+  // Example: {"size": "100"} for EBS volume size, {"env": "prod"} for filtering.
+  // Plugins use this metadata to provide context-aware recommendations.
+  map<string, string> tags = 7;
+
+  // ==========================================================================
+  // P0: Must-have filter fields for production use
+  // ==========================================================================
+
+  // priority filters by recommendation priority level.
+  // Use to focus on high-impact recommendations during triage.
+  RecommendationPriority priority = 8;
+  // min_estimated_savings filters to only include recommendations above this
+  // savings threshold. The value is expressed in the same currency as
+  // RecommendationImpact.currency and RecommendationSummary.currency.
+  // Example: 100.0 to show only recommendations saving at least 100 units of currency.
+  double min_estimated_savings = 9;
+  // source filters by recommendation source (e.g., "aws-cost-explorer",
+  // "kubecost", "azure-advisor", "gcp-recommender").
+  // Use in multi-source environments to focus on specific backends.
+  string source = 10;
+
+  // ==========================================================================
+  // P1: Should-have filter fields for enterprise scale
+  // ==========================================================================
+
+  // account_id filters by cloud account/subscription/project ID.
+  // Essential for multi-account AWS Organizations, Azure subscriptions,
+  // or GCP projects. Format is provider-specific.
+  string account_id = 11;
+  // sort_by specifies the field to sort recommendations by.
+  // Default is UNSPECIFIED (implementation-defined order).
+  RecommendationSortBy sort_by = 12;
+  // sort_order specifies ascending or descending sort order.
+  // Default is UNSPECIFIED (DESC for savings/priority, ASC for others).
+  SortOrder sort_order = 13;
+
+  // ==========================================================================
+  // P2: Nice-to-have filter fields for advanced use cases
+  // ==========================================================================
+
+  // min_confidence_score filters to only include recommendations with
+  // confidence score >= this value. Range: 0.0 to 1.0.
+  // Use for automated remediation pipelines requiring high confidence.
+  double min_confidence_score = 14;
+  // max_age_days filters to only include recommendations created within
+  // the last N days. Use to focus on fresh recommendations.
+  // Value of 0 means no age filtering (include all).
+  int32 max_age_days = 15;
+  // resource_id filters for recommendations affecting a specific resource.
+  // Format is provider-specific (e.g., AWS instance ID, K8s resource name).
+  string resource_id = 16;
+}
+
+// =============================================================================
+// GetRecommendations RPC - Core Recommendation Message
+// =============================================================================
+
+// Recommendation represents a single cost optimization recommendation.
+message Recommendation {
+  // id is a unique identifier for this recommendation
+  string id = 1;
+  // category classifies the type of recommendation
+  RecommendationCategory category = 2;
+  // action_type specifies what action is recommended
+  RecommendationActionType action_type = 3;
+  // resource contains information about the affected resource
+  ResourceRecommendationInfo resource = 4;
+
+  // action_detail contains provider-specific action details
+  oneof action_detail {
+    RightsizeAction rightsize = 5;
+    TerminateAction terminate = 6;
+    CommitmentAction commitment = 7;
+    KubernetesAction kubernetes = 8;
+    ModifyAction modify = 9;
+  }
+
+  // impact contains the financial impact assessment
+  RecommendationImpact impact = 10;
+  // priority indicates the urgency of the recommendation
+  RecommendationPriority priority = 11;
+  // confidence_score indicates the confidence level (0.0-1.0), nil if unavailable
+  optional double confidence_score = 12;
+  // description is a human-readable summary of the recommendation
+  string description = 13;
+  // reasoning contains the reasons why this recommendation was generated
+  repeated string reasoning = 14;
+  // source identifies the data source (e.g., "aws", "kubecost", "azure-advisor")
+  string source = 15;
+  // created_at is when the recommendation was generated (optional - may not be
+  // available from all recommendation sources)
+  optional google.protobuf.Timestamp created_at = 16;
+  // metadata contains additional provider-specific information
+  map<string, string> metadata = 17;
+}
+
+// =============================================================================
+// GetRecommendations RPC - Resource Information
+// =============================================================================
+
+// ResourceRecommendationInfo describes the resource targeted by a recommendation.
+// Named differently from existing ResourceDescriptor to avoid confusion.
+message ResourceRecommendationInfo {
+  // id is the unique resource identifier
+  string id = 1;
+  // name is the human-readable resource name
+  string name = 2;
+  // provider is the cloud provider
+  string provider = 3;
+  // resource_type is the type of resource
+  string resource_type = 4;
+  // region is the deployment region
+  string region = 5;
+  // sku is the SKU or instance type
+  string sku = 6;
+  // tags are resource labels/tags
+  map<string, string> tags = 7;
+  // utilization contains current resource utilization metrics
+  ResourceUtilization utilization = 8;
+}
+
+// ResourceUtilization contains current utilization metrics for a resource.
+message ResourceUtilization {
+  // cpu_percent is CPU utilization percentage
+  double cpu_percent = 1;
+  // memory_percent is memory utilization percentage
+  double memory_percent = 2;
+  // storage_percent is storage utilization percentage
+  double storage_percent = 3;
+  // network_in_mbps is network ingress in Mbps
+  double network_in_mbps = 4;
+  // network_out_mbps is network egress in Mbps
+  double network_out_mbps = 5;
+  // custom_metrics contains provider-specific utilization metrics
+  map<string, double> custom_metrics = 6;
+}
+
+// =============================================================================
+// GetRecommendations RPC - Action Detail Messages
+// =============================================================================
+
+// RightsizeAction contains details for rightsizing recommendations.
+message RightsizeAction {
+  // current_sku is the current SKU/size
+  string current_sku = 1;
+  // recommended_sku is the recommended SKU/size
+  string recommended_sku = 2;
+  // current_instance_type is the current instance type
+  string current_instance_type = 3;
+  // recommended_instance_type is the recommended instance type
+  string recommended_instance_type = 4;
+  // projected_utilization is the expected utilization after resize
+  ResourceUtilization projected_utilization = 5;
+}
+
+// TerminateAction contains details for termination recommendations.
+message TerminateAction {
+  // termination_reason explains why termination is recommended
+  string termination_reason = 1;
+  // idle_days is the number of days the resource has been idle
+  int32 idle_days = 2;
+}
+
+// CommitmentAction contains details for commitment purchase recommendations.
+message CommitmentAction {
+  // commitment_type is the type of commitment (reserved_instance, savings_plan, cud)
+  string commitment_type = 1;
+  // term is the commitment term (1_year, 3_year)
+  string term = 2;
+  // payment_option is the payment option
+  string payment_option = 3;
+  // recommended_quantity is the recommended purchase quantity
+  double recommended_quantity = 4;
+  // scope is the commitment scope (account, region, etc.)
+  string scope = 5;
+}
+
+// KubernetesAction contains details for Kubernetes resource adjustments.
+message KubernetesAction {
+  // cluster_id identifies the Kubernetes cluster
+  string cluster_id = 1;
+  // namespace is the Kubernetes namespace
+  string namespace = 2;
+  // controller_kind is the controller type (Deployment, StatefulSet, etc.)
+  string controller_kind = 3;
+  // controller_name is the name of the controller
+  string controller_name = 4;
+  // container_name is the name of the container
+  string container_name = 5;
+  // current_requests are the current resource requests
+  KubernetesResources current_requests = 6;
+  // recommended_requests are the recommended resource requests
+  KubernetesResources recommended_requests = 7;
+  // current_limits are the current resource limits
+  KubernetesResources current_limits = 8;
+  // recommended_limits are the recommended resource limits
+  KubernetesResources recommended_limits = 9;
+  // algorithm is the recommendation algorithm used
+  string algorithm = 10;
+}
+
+// KubernetesResources specifies CPU and memory for Kubernetes.
+message KubernetesResources {
+  // cpu is the CPU specification (e.g., "100m", "2")
+  string cpu = 1;
+  // memory is the memory specification (e.g., "256Mi", "2Gi")
+  string memory = 2;
+}
+
+// ModifyAction contains details for generic modification recommendations.
+message ModifyAction {
+  // modification_type describes the type of modification
+  string modification_type = 1;
+  // current_config is the current configuration
+  map<string, string> current_config = 2;
+  // recommended_config is the recommended configuration
+  map<string, string> recommended_config = 3;
+}
+
+// =============================================================================
+// GetRecommendations RPC - Impact and Summary Messages
+// =============================================================================
+
+// RecommendationImpact describes the financial impact of implementing a recommendation.
+message RecommendationImpact {
+  // estimated_savings is the estimated cost savings
+  double estimated_savings = 1;
+  // currency is the ISO 4217 currency code
+  string currency = 2;
+  // projection_period is the time period for the projection
+  string projection_period = 3;
+  // current_cost is the current cost
+  double current_cost = 4;
+  // projected_cost is the projected cost after implementing the recommendation
+  double projected_cost = 5;
+  // savings_percentage is the savings as a percentage
+  double savings_percentage = 6;
+  // implementation_cost is the one-time cost to implement (if any)
+  optional double implementation_cost = 7;
+  // migration_effort_hours is the estimated effort in hours
+  optional double migration_effort_hours = 8;
+}
+
+// RecommendationSummary provides aggregated statistics for a page of recommendations.
+message RecommendationSummary {
+  // total_recommendations is the count of recommendations in this page
+  int32 total_recommendations = 1;
+  // total_estimated_savings is the total savings for recommendations in this page
+  double total_estimated_savings = 2;
+  // currency is the ISO 4217 currency code for savings
+  string currency = 3;
+  // projection_period matches GetRecommendationsRequest.projection_period
+  // (e.g., "daily", "monthly", "annual"). Servers apply a default when omitted.
+  string projection_period = 4;
+  // count_by_category maps category name to count
+  map<string, int32> count_by_category = 5;
+  // savings_by_category maps category name to total savings
+  map<string, double> savings_by_category = 6;
+  // count_by_action_type maps action type name to count
+  map<string, int32> count_by_action_type = 7;
+  // savings_by_action_type maps action type name to total savings
+  map<string, double> savings_by_action_type = 8;
+}
+
+// =============================================================================
+// DismissRecommendation RPC - Request/Response Messages
+// =============================================================================
+
+// DismissalReason specifies why a recommendation was dismissed.
+enum DismissalReason {
+  DISMISSAL_REASON_UNSPECIFIED = 0;
+  // User determined the recommendation is not applicable to their use case
+  DISMISSAL_REASON_NOT_APPLICABLE = 1;
+  // Recommendation was already implemented through other means
+  DISMISSAL_REASON_ALREADY_IMPLEMENTED = 2;
+  // Business requirements prevent implementing this recommendation
+  DISMISSAL_REASON_BUSINESS_CONSTRAINT = 3;
+  // Technical constraints prevent implementing this recommendation
+  DISMISSAL_REASON_TECHNICAL_CONSTRAINT = 4;
+  // User plans to implement later, dismissing temporarily
+  DISMISSAL_REASON_DEFERRED = 5;
+  // Recommendation is inaccurate or based on incorrect data
+  DISMISSAL_REASON_INACCURATE = 6;
+  // Other reason (see custom_reason field)
+  DISMISSAL_REASON_OTHER = 7;
+}
+
+// DismissRecommendationRequest contains parameters for dismissing a recommendation.
+message DismissRecommendationRequest {
+  // recommendation_id is the unique identifier of the recommendation to dismiss.
+  // Required field.
+  string recommendation_id = 1;
+  // reason specifies why the recommendation is being dismissed.
+  // Optional but recommended for audit purposes.
+  DismissalReason reason = 2;
+  // custom_reason provides free-form text when reason is OTHER or
+  // to supplement the structured reason. Max 500 characters.
+  string custom_reason = 3;
+  // expires_at specifies when the dismissal should expire and the
+  // recommendation should reappear. If not set, dismissal is permanent
+  // (or until the recommendation naturally expires).
+  optional google.protobuf.Timestamp expires_at = 4;
+  // dismissed_by identifies who dismissed the recommendation (e.g., user ID, email).
+  // Optional, used for audit purposes.
+  string dismissed_by = 5;
+}
+
+// DismissRecommendationResponse confirms the dismissal.
+message DismissRecommendationResponse {
+  // success indicates if the dismissal was successful.
+  bool success = 1;
+  // message provides additional context (e.g., confirmation or error details).
+  string message = 2;
+  // dismissed_at is the timestamp when the dismissal was recorded.
+  google.protobuf.Timestamp dismissed_at = 3;
+  // expires_at echoes back when the dismissal will expire (if set).
+  optional google.protobuf.Timestamp expires_at = 4;
+  // recommendation_id echoes back the dismissed recommendation ID for confirmation.
+  string recommendation_id = 5;
+}
+
+// =============================================================================
+// GetPluginInfo RPC - Plugin Metadata and Compatibility
+// =============================================================================
+
+// GetPluginInfoRequest is used to request plugin metadata.
+// Currently empty but may be extended in the future.
+message GetPluginInfoRequest {}
+
+// GetPluginInfoResponse contains metadata about the plugin for compatibility
+// verification, diagnostics, and graceful degradation handling.
+message GetPluginInfoResponse {
+  // name is the display name of the plugin (e.g., "aws-cost-plugin").
+  // Required field - must be non-empty.
+  string name = 1;
+  // version is the semantic version of the plugin implementation (e.g., "v1.2.0").
+  // Required field - must be non-empty.
+  string version = 2;
+  // spec_version is the version of the finfocus-spec protocol the plugin was
+  // compiled against (e.g., "v0.4.11"). Must be a valid SemVer string.
+  // Required field - used for compatibility verification.
+  string spec_version = 3;
+  // providers lists the cloud providers supported by this plugin (e.g., ["aws"]).
+  // At least one provider should be listed for functional plugins.
+  repeated string providers = 4;
+  // metadata contains optional key-value pairs for additional information
+  // such as build hash, commit ID, or plugin-specific configuration.
+  // Free-form; no key restrictions or size limits enforced by SDK.
+  map<string, string> metadata = 5;
+}
+
+// =============================================================================
+// DryRun RPC - Plugin Capability Introspection
+// =============================================================================
+
+// FieldMapping represents the support status for a single FOCUS field.
+// Used in DryRunResponse to report which fields a plugin would populate
+// for a given resource type.
+message FieldMapping {
+  // field_name is the FOCUS field identifier (e.g., "service_category", "billed_cost").
+  // Must match a field name in FocusCostRecord message.
+  // Required field.
+  string field_name = 1;
+
+  // support_status indicates how this field is supported for the queried resource type.
+  // See FieldSupportStatus enum for detailed semantics.
+  // Required field - should never be UNSPECIFIED in well-formed responses.
+  FieldSupportStatus support_status = 2;
+
+  // condition_description provides human-readable explanation when status is
+  // CONDITIONAL or DYNAMIC. Optional for SUPPORTED/UNSUPPORTED status.
+  // Example: "Only populated for regional resources in multi-AZ providers"
+  // Maximum recommended length: 256 characters.
+  string condition_description = 3;
+
+  // expected_type indicates the data type of the field value.
+  // Values: "string", "double", "timestamp", "enum", "map", "bool"
+  // Optional but recommended for documentation purposes.
+  string expected_type = 4;
+}
+
+// DryRunRequest contains parameters for querying plugin field mapping capabilities.
+// Sent to the DryRun RPC for standalone capability discovery.
+message DryRunRequest {
+  // resource contains the resource descriptor to query field mappings for.
+  // Required. Must have valid provider and resource_type fields.
+  // Region, SKU, and tags are optional but may influence field support status.
+  ResourceDescriptor resource = 1;
+
+  // simulation_parameters provides optional key-value pairs to simulate
+  // different scenarios (e.g., {"region": "us-west-2"} to see region-specific behavior).
+  // Unknown keys are ignored by plugins.
+  // Maximum recommended size: 20 key-value pairs.
+  map<string, string> simulation_parameters = 2;
+}
+
+// DryRunResponse contains the field mapping information returned by a plugin.
+// Includes per-field support status and configuration validation results.
+//
+// Response time requirement: <100ms (no external API calls should be made).
+// This is a synchronous, stateless introspection operation.
+message DryRunResponse {
+  // field_mappings contains the support status for each known FOCUS field.
+  // Should include entries for all ~50-66 FocusCostRecord fields.
+  // Order is not significant.
+  repeated FieldMapping field_mappings = 1;
+
+  // configuration_valid indicates whether the plugin configuration is valid.
+  // When false, configuration_errors contains the error details.
+  // A plugin with valid configuration may still not support a resource type.
+  bool configuration_valid = 2;
+
+  // configuration_errors contains human-readable error messages when
+  // configuration_valid is false. Empty when configuration is valid.
+  // Examples: "Missing API key", "Invalid endpoint URL"
+  repeated string configuration_errors = 3;
+
+  // resource_type_supported indicates whether the queried resource type
+  // is supported by this plugin. When false, field_mappings may be empty
+  // or contain only UNSUPPORTED entries.
+  bool resource_type_supported = 4;
+}

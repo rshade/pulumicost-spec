@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Service Level Indicators Example",
-  "description": "Example SLI measurements for PulumiCost plugin monitoring",
+  "description": "Example SLI measurements for FinFocus plugin monitoring",
   "type": "object",
   "properties": {
     "slis": {

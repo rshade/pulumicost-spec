@@ -58,11 +58,11 @@ Query multiple plugins for the same resource type to compare capabilities:
 
 ```bash
 # Query AWS plugin for EC2 field mappings
-grpcurl -plaintext localhost:50051 pulumicost.v1.CostSourceService/DryRun \
+grpcurl -plaintext localhost:50051 finfocus.v1.CostSourceService/DryRun \
   -d '{"resource":{"provider":"aws","resource_type":"ec2"}}'
 
 # Query Azure plugin for VM field mappings
-grpcurl -plaintext localhost:50052 pulumicost.v1.CostSourceService/DryRun \
+grpcurl -plaintext localhost:50052 finfocus.v1.CostSourceService/DryRun \
   -d '{"resource":{"provider":"azure","resource_type":"vm"}}'
 
 # Compare responses to understand provider differences
@@ -95,7 +95,7 @@ Instead of calling DryRun RPC directly, you can use the `dry_run` flag on existi
 ```bash
 # GetActualCost with dry-run
 grpcurl -plaintext localhost:50051 \
-  pulumicost.v1.CostSourceService/GetActualCost \
+  finfocus.v1.CostSourceService/GetActualCost \
   -d '{
     "resource_id": "i-1234567890",
     "start": "2024-01-01T00:00:00Z",
@@ -105,7 +105,7 @@ grpcurl -plaintext localhost:50051 \
 
 # GetProjectedCost with dry-run
 grpcurl -plaintext localhost:50051 \
-  pulumicost.v1.CostSourceService/GetProjectedCost \
+  finfocus.v1.CostSourceService/GetProjectedCost \
   -d '{
     "resource": {
       "provider": "aws",
@@ -123,7 +123,7 @@ Always check if plugin supports dry-run before making requests:
 ```bash
 # Check capabilities
 grpcurl -plaintext localhost:50051 \
-  pulumicost.v1.CostSourceService/Supports \
+  finfocus.v1.CostSourceService/Supports \
   -d '{
     "resource": {
       "provider": "aws",
@@ -180,7 +180,7 @@ Use these examples to test plugin implementations:
 # Test AWS EC2 example
 jq -r '.request' examples/requests/dry_run/aws_ec2.json | \
   grpcurl -plaintext localhost:50051 \
-    pulumicost.v1.CostSourceService/DryRun \
+    finfocus.v1.CostSourceService/DryRun \
     -d @- > /tmp/response.json
 
 # Validate response against expected

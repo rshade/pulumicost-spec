@@ -1,6 +1,6 @@
-# pluginsdk - PulumiCost Plugin Development SDK
+# pluginsdk - FinFocus Plugin Development SDK
 
-The `pluginsdk` package provides a comprehensive development SDK for building PulumiCost plugins. It includes
+The `pluginsdk` package provides a comprehensive development SDK for building FinFocus plugins. It includes
 the core plugin interface, helper utilities for cost calculations, structured logging with zerolog, and testing
 utilities for plugin development.
 
@@ -28,13 +28,13 @@ utilities for plugin development.
 - [Rate Limiting](#rate-limiting)
 - [Performance Tuning](#performance-tuning)
 - [CORS Configuration](#cors-configuration)
-- [Migration](#migration-from-pulumicost-core)
+- [Migration](#migration-from-finfocus-core)
 - [API Reference](#api-reference)
 
 ## Installation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 ```
 
 ## Quick Start
@@ -52,8 +52,8 @@ import (
     "os/signal"
     "syscall"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // MyPlugin implements the pluginsdk.Plugin interface.
@@ -148,7 +148,7 @@ type ServeConfig struct {
     Plugin Plugin
 
     // Optional: TCP port to listen on.
-    // If 0, uses PULUMICOST_PLUGIN_PORT env var or an ephemeral port.
+    // If 0, uses FINFOCUS_PLUGIN_PORT env var or an ephemeral port.
     Port int
 
     // Optional: Registry for looking up plugins (used for Supports validation).
@@ -170,7 +170,7 @@ type ServeConfig struct {
 The server port is determined with the following priority:
 
 1. **Explicit configuration**: `ServeConfig.Port` (if > 0)
-2. **Environment variable**: `PULUMICOST_PLUGIN_PORT` (if set)
+2. **Environment variable**: `FINFOCUS_PLUGIN_PORT` (if set)
 3. **Ephemeral port**: The OS assigns an available port (if both above are 0/unset)
 
 The generic `PORT` environment variable is **not supported** to avoid conflicts when multiple plugins run on the same machine.
@@ -183,7 +183,7 @@ Upon starting, the server prints the selected port to stdout in the format:
 PORT=50051
 ```
 
-This allows the parent process (e.g., pulumicost-core) to discover the ephemeral port.
+This allows the parent process (e.g., finfocus-core) to discover the ephemeral port.
 
 ### ParsePortFlag
 
@@ -207,7 +207,7 @@ port := pluginsdk.ParsePortFlag()
 **Using Environment Variable:**
 
 ```bash
-export PULUMICOST_PLUGIN_PORT=50052
+export FINFOCUS_PLUGIN_PORT=50052
 ./my-plugin
 ```
 
@@ -220,7 +220,7 @@ export PULUMICOST_PLUGIN_PORT=50052
 
 ### Multi-Plugin Orchestration
 
-When running multiple plugins on the same host (e.g., orchestrated by `pulumicost-core`),
+When running multiple plugins on the same host (e.g., orchestrated by `finfocus-core`),
 you must avoid port conflicts. This is why the generic `PORT` environment variable is **not supported**.
 
 Instead, assign unique ports using the `--port` flag or let the OS assign ephemeral ports:
@@ -312,7 +312,7 @@ With `Web.Enabled = true`, you can call your plugin using simple `fetch()`:
 ```javascript
 // Get plugin name
 const response = await fetch(
-  "http://localhost:8080/pulumicost.v1.CostSourceService/Name",
+  "http://localhost:8080/finfocus.v1.CostSourceService/Name",
   {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -327,12 +327,12 @@ console.log(data.name); // "my-cost-plugin"
 
 ```bash
 # Get plugin name
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/Name \
   -H "Content-Type: application/json" \
   -d '{}'
 
 # Estimate cost
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/EstimateCost \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/EstimateCost \
   -H "Content-Type: application/json" \
   -d '{"resource_type": "aws:ec2/instance:Instance"}'
 ```
@@ -347,12 +347,12 @@ When `Web.Enabled = false` (default), the server uses pure gRPC over HTTP/2. Thi
 
 ## Go Client SDK
 
-The SDK provides a convenient Go client for communicating with PulumiCost plugins:
+The SDK provides a convenient Go client for communicating with FinFocus plugins:
 
 ### Quick Start
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 // Create client using Connect protocol (recommended)
 client := pluginsdk.NewConnectClient("http://localhost:8080")
@@ -394,7 +394,7 @@ For advanced configuration:
 import (
     "net/http"
     "time"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 cfg := pluginsdk.ClientConfig{
@@ -430,7 +430,7 @@ For advanced use cases, access the underlying connect-generated client:
 ```go
 import (
     "connectrpc.com/connect"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
     "google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -637,33 +637,33 @@ Plugins can be configured using standard environment variables.
 
 | Variable                 | Purpose                                          | Default       |
 | ------------------------ | ------------------------------------------------ | ------------- |
-| `PULUMICOST_PLUGIN_PORT` | gRPC server port (overridden by `--port`)        | Ephemeral (0) |
-| `PULUMICOST_LOG_LEVEL`   | Log verbosity (`debug`, `info`, `warn`, `error`) | `info`        |
-| `PULUMICOST_LOG_FORMAT`  | Log output format (`json`, `text`)               | `json`        |
-| `PULUMICOST_LOG_FILE`    | Path to log file (empty = stderr)                | stderr        |
-| `PULUMICOST_TRACE_ID`    | Distributed trace ID for correlation             | (none)        |
-| `PULUMICOST_TEST_MODE`   | Enable test mode features (`true` / `false`)     | `false`       |
+| `FINFOCUS_PLUGIN_PORT` | gRPC server port (overridden by `--port`)        | Ephemeral (0) |
+| `FINFOCUS_LOG_LEVEL`   | Log verbosity (`debug`, `info`, `warn`, `error`) | `info`        |
+| `FINFOCUS_LOG_FORMAT`  | Log output format (`json`, `text`)               | `json`        |
+| `FINFOCUS_LOG_FILE`    | Path to log file (empty = stderr)                | stderr        |
+| `FINFOCUS_TRACE_ID`    | Distributed trace ID for correlation             | (none)        |
+| `FINFOCUS_TEST_MODE`   | Enable test mode features (`true` / `false`)     | `false`       |
 
 ### Logging Configuration
 
-- **PULUMICOST_LOG_LEVEL**: Controls the verbosity of the logger.
+- **FINFOCUS_LOG_LEVEL**: Controls the verbosity of the logger.
   - `debug`: Detailed debugging information
   - `info`: Standard operational events
   - `warn`: Warning conditions
   - `error`: Error conditions
-  - **Fallback**: If `PULUMICOST_LOG_LEVEL` is not set, `GetLogLevel()` falls back to the legacy
+  - **Fallback**: If `FINFOCUS_LOG_LEVEL` is not set, `GetLogLevel()` falls back to the legacy
     `LOG_LEVEL` environment variable.
-- **PULUMICOST_LOG_FORMAT**: Controls the output structure.
+- **FINFOCUS_LOG_FORMAT**: Controls the output structure.
   - `json`: Structured JSON for production (default)
   - `text`: Human-readable text for development
-- **PULUMICOST_LOG_FILE**: Redirects logs to a file instead of stderr.
-- **PULUMICOST_TEST_MODE**: Enables test mode features. Only `"true"` enables test mode; all other
+- **FINFOCUS_LOG_FILE**: Redirects logs to a file instead of stderr.
+- **FINFOCUS_TEST_MODE**: Enables test mode features. Only `"true"` enables test mode; all other
   values disable it. `GetTestMode()` logs a warning when the value is set but is not `"true"` or
   `"false"`.
 
 ### Distributed Tracing
 
-- **PULUMICOST_TRACE_ID**: If set, this ID is automatically attached to the logger and propagated
+- **FINFOCUS_TRACE_ID**: If set, this ID is automatically attached to the logger and propagated
   in gRPC contexts. This allows correlating plugin activity with the caller's trace.
 
 ### Helper Functions
@@ -672,7 +672,7 @@ The SDK provides getter functions to access these values type-safely:
 
 ```go
 port := pluginsdk.GetPort()           // Returns int
-level := pluginsdk.GetLogLevel()      // Returns string (checks PULUMICOST_LOG_LEVEL, falls back to LOG_LEVEL)
+level := pluginsdk.GetLogLevel()      // Returns string (checks FINFOCUS_LOG_LEVEL, falls back to LOG_LEVEL)
 format := pluginsdk.GetLogFormat()    // Returns string
 file := pluginsdk.GetLogFile()        // Returns string
 traceID := pluginsdk.GetTraceID()     // Returns string
@@ -684,7 +684,7 @@ isTest := pluginsdk.IsTestMode()      // Returns bool, silent version for repeat
 
 ### Plugin Interface
 
-The `Plugin` interface defines the core methods that every PulumiCost plugin must implement:
+The `Plugin` interface defines the core methods that every FinFocus plugin must implement:
 
 ```go
 type Plugin interface {
@@ -779,16 +779,16 @@ The SDK uses zerolog for structured logging with standardized field names.
 
 ### Log File Configuration
 
-By default, plugins log to stderr. Set `PULUMICOST_LOG_FILE` to redirect logs to a file:
+By default, plugins log to stderr. Set `FINFOCUS_LOG_FILE` to redirect logs to a file:
 
 ```bash
 # Direct all plugin logs to a file
-export PULUMICOST_LOG_FILE=/var/log/pulumicost/plugins.log
+export FINFOCUS_LOG_FILE=/var/log/finfocus/plugins.log
 ./my-plugin
 
 # Or per-plugin for separate log files
-PULUMICOST_LOG_FILE=/var/log/pulumicost/aws.log ./aws-plugin &
-PULUMICOST_LOG_FILE=/var/log/pulumicost/azure.log ./azure-plugin &
+FINFOCUS_LOG_FILE=/var/log/finfocus/aws.log ./aws-plugin &
+FINFOCUS_LOG_FILE=/var/log/finfocus/azure.log ./azure-plugin &
 ```
 
 When the environment variable is not set or empty, logs go to stderr (default behavior).
@@ -798,9 +798,9 @@ When the environment variable is not set or empty, logs go to stderr (default be
 Use `NewLogWriter()` to get an `io.Writer` that respects the log file configuration:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
-// Get writer that respects PULUMICOST_LOG_FILE
+// Get writer that respects FINFOCUS_LOG_FILE
 writer := pluginsdk.NewLogWriter()
 
 // Create logger with the configured writer
@@ -816,11 +816,11 @@ logger := pluginsdk.NewPluginLogger(
 
 | Scenario                               | Result                                                     |
 | -------------------------------------- | ---------------------------------------------------------- |
-| `PULUMICOST_LOG_FILE` not set          | Returns `os.Stderr`                                        |
-| `PULUMICOST_LOG_FILE=""` (empty)       | Returns `os.Stderr`                                        |
-| `PULUMICOST_LOG_FILE=/valid/path.log`  | Returns file writer (creates if needed, appends if exists) |
-| `PULUMICOST_LOG_FILE=/invalid/path`    | Logs warning to stderr, returns `os.Stderr`                |
-| `PULUMICOST_LOG_FILE=/some/directory/` | Logs warning to stderr, returns `os.Stderr`                |
+| `FINFOCUS_LOG_FILE` not set          | Returns `os.Stderr`                                        |
+| `FINFOCUS_LOG_FILE=""` (empty)       | Returns `os.Stderr`                                        |
+| `FINFOCUS_LOG_FILE=/valid/path.log`  | Returns file writer (creates if needed, appends if exists) |
+| `FINFOCUS_LOG_FILE=/invalid/path`    | Logs warning to stderr, returns `os.Stderr`                |
+| `FINFOCUS_LOG_FILE=/some/directory/` | Logs warning to stderr, returns `os.Stderr`                |
 
 **File Handling**:
 
@@ -944,8 +944,8 @@ http.Handle("/metrics", promhttp.HandlerFor(
 
 | Metric                                       | Type      | Labels                                    | Description                  |
 | -------------------------------------------- | --------- | ----------------------------------------- | ---------------------------- |
-| `pulumicost_plugin_requests_total`           | Counter   | `grpc_method`, `grpc_code`, `plugin_name` | Total gRPC requests          |
-| `pulumicost_plugin_request_duration_seconds` | Histogram | `grpc_method`, `plugin_name`              | Request latency distribution |
+| `finfocus_plugin_requests_total`           | Counter   | `grpc_method`, `grpc_code`, `plugin_name` | Total gRPC requests          |
+| `finfocus_plugin_request_duration_seconds` | Histogram | `grpc_method`, `plugin_name`              | Request latency distribution |
 
 **Histogram Buckets**: 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s
 
@@ -953,14 +953,14 @@ http.Handle("/metrics", promhttp.HandlerFor(
 
 ```promql
 # Request rate by method
-sum(rate(pulumicost_plugin_requests_total[5m])) by (grpc_method)
+sum(rate(finfocus_plugin_requests_total[5m])) by (grpc_method)
 
 # Error rate
-sum(rate(pulumicost_plugin_requests_total{grpc_code!="OK"}[5m]))
-/ sum(rate(pulumicost_plugin_requests_total[5m]))
+sum(rate(finfocus_plugin_requests_total{grpc_code!="OK"}[5m]))
+/ sum(rate(finfocus_plugin_requests_total[5m]))
 
 # P99 latency by method
-histogram_quantile(0.99, sum(rate(pulumicost_plugin_request_duration_seconds_bucket[5m])) by (le, grpc_method))
+histogram_quantile(0.99, sum(rate(finfocus_plugin_request_duration_seconds_bucket[5m])) by (le, grpc_method))
 ```
 
 ### Performance
@@ -987,7 +987,7 @@ For handlers with typical work (1ms+), the metrics overhead is under 1% of total
 
 | Constant             | Value        | Description          |
 | -------------------- | ------------ | -------------------- |
-| `MetricNamespace`    | `pulumicost` | Prometheus namespace |
+| `MetricNamespace`    | `finfocus` | Prometheus namespace |
 | `MetricSubsystem`    | `plugin`     | Prometheus subsystem |
 | `DefaultMetricsPort` | `9090`       | Default HTTP port    |
 | `DefaultMetricsPath` | `/metrics`   | Default URL path     |
@@ -1129,7 +1129,7 @@ For more advanced testing scenarios including mock plugins with error injection,
 custom configurations, and performance benchmarks, use the `sdk/go/testing` package directly:
 
 ```go
-import plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+import plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 
 // Create configurable mock
 mock := plugintesting.NewMockPlugin()
@@ -1164,8 +1164,8 @@ FOCUS (FinOps Open Cost and Usage Specification) is a standard for cloud billing
 
 ```go
 import (
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 builder := pluginsdk.NewFocusRecordBuilder()
@@ -1402,8 +1402,8 @@ from cost line items. The `ContractCommitmentBuilder` creates these records.
 ```go
 import (
     "time"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 builder := pluginsdk.NewContractCommitmentBuilder()
@@ -1538,7 +1538,7 @@ to decouple cloud-specific property extraction from their plugin logic.
 ### Installation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping"
 ```
 
 ### Provider-Specific Extraction
@@ -1664,7 +1664,7 @@ mapping.ExtractAWSSKU(nil)                  // ""
 mapping.ExtractGCPRegionFromZone("invalid") // "" (invalid region)
 ```
 
-### Migration from pulumicost-core
+### Migration from finfocus-core
 
 If you have cloud-specific extraction logic in your plugin or core adapter,
 you can replace it with the mapping package functions:
@@ -1695,8 +1695,8 @@ without triggering actual cost data retrieval. This is useful for:
 
 ```go
 import (
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // Create field mappings for a supported resource type
@@ -2368,7 +2368,7 @@ cfg := pluginsdk.DefaultWebConfig().
 2. **curl Testing**: Simulate browser with Origin header:
 
    ```bash
-   curl -X OPTIONS http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+   curl -X OPTIONS http://localhost:8080/finfocus.v1.CostSourceService/Name \
      -H "Origin: http://localhost:3000" \
      -H "Access-Control-Request-Method: POST" \
      -v
@@ -2377,16 +2377,16 @@ cfg := pluginsdk.DefaultWebConfig().
 3. **Server-side Logging**: Log origin, method, allowed status
 4. **Integration Tests**: Test preflight and actual requests
 
-## Migration from pulumicost-core
+## Migration from finfocus-core
 
-If you're migrating from `pulumicost-core`, update your imports:
+If you're migrating from `finfocus-core`, update your imports:
 
 ```go
 // Before
-import "github.com/rshade/pulumicost-core/pluginsdk"
+import "github.com/rshade/finfocus-core/pluginsdk"
 
 // After
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 ```
 
 Key changes:
@@ -2403,20 +2403,20 @@ The proto `go_package` path has changed to support connect-go code generation:
 
 ```diff
 // Before
--option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+-option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto;pbc";
 
 // After
-+option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbc";
++option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
 ```
 
 **Impact**: If you import proto types directly, update your imports:
 
 ```go
 // Before
-import pbc "github.com/rshade/pulumicost-spec/sdk/go/proto"
+import pbc "github.com/rshade/finfocus-spec/sdk/go/proto"
 
 // After
-import pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+import pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 ```
 
 The `pbc` alias remains the same, so no other code changes are required.

@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package pricing
 
 import (
@@ -78,25 +64,25 @@ var StandardMetrics = struct {
 	CacheHitRatePercent      string
 	DataSourceLatencySeconds string
 }{
-	RequestsTotal:          "pulumicost_requests_total",
-	RequestDurationSeconds: "pulumicost_request_duration_seconds",
-	RequestSizeBytes:       "pulumicost_request_size_bytes",
-	ResponseSizeBytes:      "pulumicost_response_size_bytes",
+	RequestsTotal:          "finfocus_requests_total",
+	RequestDurationSeconds: "finfocus_request_duration_seconds",
+	RequestSizeBytes:       "finfocus_request_size_bytes",
+	ResponseSizeBytes:      "finfocus_response_size_bytes",
 
-	ErrorsTotal:      "pulumicost_errors_total",
-	ErrorRatePercent: "pulumicost_error_rate_percent",
+	ErrorsTotal:      "finfocus_errors_total",
+	ErrorRatePercent: "finfocus_error_rate_percent",
 
-	LatencyP50Seconds: "pulumicost_latency_p50_seconds",
-	LatencyP95Seconds: "pulumicost_latency_p95_seconds",
-	LatencyP99Seconds: "pulumicost_latency_p99_seconds",
+	LatencyP50Seconds: "finfocus_latency_p50_seconds",
+	LatencyP95Seconds: "finfocus_latency_p95_seconds",
+	LatencyP99Seconds: "finfocus_latency_p99_seconds",
 
-	ActiveConnections: "pulumicost_active_connections",
-	MemoryUsageBytes:  "pulumicost_memory_usage_bytes",
-	CPUUsagePercent:   "pulumicost_cpu_usage_percent",
+	ActiveConnections: "finfocus_active_connections",
+	MemoryUsageBytes:  "finfocus_memory_usage_bytes",
+	CPUUsagePercent:   "finfocus_cpu_usage_percent",
 
-	CostQueriesTotal:         "pulumicost_cost_queries_total",
-	CacheHitRatePercent:      "pulumicost_cache_hit_rate_percent",
-	DataSourceLatencySeconds: "pulumicost_data_source_latency_seconds",
+	CostQueriesTotal:         "finfocus_cost_queries_total",
+	CacheHitRatePercent:      "finfocus_cache_hit_rate_percent",
+	DataSourceLatencySeconds: "finfocus_data_source_latency_seconds",
 }
 
 // StandardLabels defines the standard label keys used across metrics.

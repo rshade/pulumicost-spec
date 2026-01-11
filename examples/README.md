@@ -1,12 +1,12 @@
-# PulumiCost Examples
+# FinFocus Examples
 
-This directory contains examples of PulumiCost specification documents including
+This directory contains examples of FinFocus specification documents including
 PricingSpec JSON documents and plugin registry index files.
 
 ## Plugin Registry Index
 
 The **[registry.json](registry.json)** file demonstrates the plugin registry index
-format used by `pulumicost plugin install` to discover and install plugins.
+format used by `finfocus plugin install` to discover and install plugins.
 
 ### Registry Format
 

@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package pluginsdk_test
 
 import (
@@ -22,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
@@ -154,7 +140,7 @@ func checkReflection(ctx context.Context, conn grpc.ClientConnInterface) error {
 	}
 
 	for _, svc := range listResp.GetService() {
-		if svc.GetName() == "pulumicost.v1.CostSourceService" {
+		if svc.GetName() == "finfocus.v1.CostSourceService" {
 			return nil
 		}
 	}

@@ -1,6 +1,6 @@
-# PulumiCost Plugin Testing Framework
+# FinFocus Plugin Testing Framework
 
-This package provides a comprehensive testing framework for PulumiCost plugin
+This package provides a comprehensive testing framework for FinFocus plugin
 implementations, including integration tests, performance benchmarks, and conformance validation.
 
 ## Overview
@@ -42,8 +42,8 @@ package main
 import (
     "testing"
 
-    plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // Assume you have a plugin implementation
@@ -239,7 +239,7 @@ err := plugintesting.ValidateActualCostResult(result)
 The `pluginsdk` package provides comprehensive FOCUS 1.2/1.3 validation for cost records:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 // Basic validation (fail-fast mode)
 err := pluginsdk.ValidateFocusRecord(record)
@@ -1040,7 +1040,7 @@ multiple resources for recommendations, they can assign unique IDs to each resou
 those IDs to match responses back to their original requests.
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 // Create descriptors with unique IDs for batch correlation
 descriptors := []*pbc.ResourceDescriptor{
@@ -1162,7 +1162,7 @@ import (
     "testing"
 
     "github.com/myplugin/internal"
-    plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+    plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 func TestMyPlugin(t *testing.T) {
@@ -1236,7 +1236,7 @@ Running conformance tests produces a detailed report:
 
 ```text
 ================================================================================
-                     PulumiCost Plugin Conformance Report
+                     FinFocus Plugin Conformance Report
 ================================================================================
 
 Plugin:     my-cost-plugin
@@ -1274,5 +1274,5 @@ Result:   PASS - Plugin conforms to Standard level
 ================================================================================
 ```
 
-This testing framework ensures your plugin meets the PulumiCost specification requirements and
+This testing framework ensures your plugin meets the FinFocus specification requirements and
 provides a reliable, performant cost source for users.

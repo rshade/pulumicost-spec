@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is the **schemas directory** containing the canonical JSON Schema definition for PricingSpec validation in the PulumiCost
+This is the **schemas directory** containing the canonical JSON Schema definition for PricingSpec validation in the FinFocus
 ecosystem. The single file `pricing_spec.schema.json` serves as the authoritative specification for all pricing data structures
 across cloud providers and billing models.
 
@@ -15,7 +15,7 @@ across cloud providers and billing models.
 **Schema Specification**:
 
 - **JSON Schema Draft 2020-12** compliance for modern validation features
-- **Schema ID**: `https://spec.pulumicost.dev/schemas/pricing_spec.schema.json`
+- **Schema ID**: `https://spec.finfocus.dev/schemas/pricing_spec.schema.json`
 - **Version**: v0.4.6 production-ready specification
 - **Validation Mode**: Strict with `additionalProperties: false` for most objects
 
@@ -260,5 +260,5 @@ cd sdk/go/pricing && go test -v -run TestEmbeddedSchemaSync
 3. **Example Validation**: Ensure all examples pass new schema
 4. **Integration Testing**: Verify cross-language validation consistency
 
-This schema serves as the foundation for consistent pricing specification validation across the entire PulumiCost ecosystem,
+This schema serves as the foundation for consistent pricing specification validation across the entire FinFocus ecosystem,
 ensuring data integrity and interoperability across all implementations and cloud providers.

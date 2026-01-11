@@ -2,8 +2,8 @@
 
 ## Overview
 
-The PulumiCost Plugin Registry Specification defines the comprehensive protocol for plugin discovery, registration, and
-lifecycle management within the PulumiCost ecosystem. This specification enables standardized plugin distribution,
+The FinFocus Plugin Registry Specification defines the comprehensive protocol for plugin discovery, registration, and
+lifecycle management within the FinFocus ecosystem. This specification enables standardized plugin distribution,
 installation, and management across different deployment environments.
 
 ## Table of Contents
@@ -67,7 +67,7 @@ installation, and management across different deployment environments.
 
 ### Plugin Identity
 
-Every plugin in the PulumiCost ecosystem is uniquely identified by:
+Every plugin in the FinFocus ecosystem is uniquely identified by:
 
 - **Name**: A unique identifier following the pattern `^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`
 - **Version**: Semantic version following SemVer 2.0.0 specification
@@ -99,7 +99,7 @@ The security model operates on multiple trust levels:
 - **Untrusted**: Requires explicit user approval
 - **Community**: Community-verified plugins
 - **Verified**: Officially verified by trusted authorities
-- **Official**: Official PulumiCost plugins
+- **Official**: Official FinFocus plugins
 
 ## Plugin Manifest Format
 
@@ -115,7 +115,7 @@ Contains basic plugin information:
     "name": "aws-cost-plugin",
     "version": "1.2.3",
     "description": "AWS cost source plugin for retrieving EC2, S3, and Lambda pricing",
-    "author": "PulumiCost Team",
+    "author": "FinFocus Team",
     "homepage": "https://example.com/aws-plugin",
     "repository": "https://github.com/example/aws-plugin",
     "license": "Apache-2.0",
@@ -170,7 +170,7 @@ Defines plugin capabilities and interface compliance:
     ],
     "service_definition": {
       "service_name": "CostSourceService",
-      "package_name": "pulumicost.v1",
+      "package_name": "finfocus.v1",
       "methods": [
         "Name",
         "Supports",
@@ -194,7 +194,7 @@ Defines plugin capabilities and interface compliance:
 
 **Key Components**:
 
-- `spec_version`: PulumiCost specification version supported
+- `spec_version`: FinFocus specification version supported
 - `supported_providers`: Array of cloud providers (aws, azure, gcp, kubernetes, custom)
 - `supported_resources`: Detailed resource support per provider
 - `service_definition`: gRPC service implementation details
@@ -347,7 +347,7 @@ Queries remote plugin registries via HTTP API.
   "discovery_sources": [
     {
       "type": "registry",
-      "url": "https://registry.pulumicost.dev",
+      "url": "https://registry.finfocus.dev",
       "api_key": "optional-api-key",
       "timeout_seconds": 30,
       "cache_ttl_seconds": 300
@@ -428,7 +428,7 @@ All plugins must follow [Semantic Versioning 2.0.0](https://semver.org/):
 
 ### Specification Compatibility
 
-Plugins declare compatibility with PulumiCost specification versions:
+Plugins declare compatibility with FinFocus specification versions:
 
 ```json
 {
@@ -502,7 +502,7 @@ Four security trust levels:
    - Enterprise deployment ready
 
 4. **Official** (`official`)
-   - Official PulumiCost plugins
+   - Official FinFocus plugins
    - Maintained by core team
    - Highest trust level
    - Automatic updates allowed
@@ -717,7 +717,7 @@ Continuous plugin health monitoring:
 
 ### PluginRegistryService
 
-The registry implements the `PluginRegistryService` gRPC interface defined in [`proto/pulumicost/v1/registry.proto`](../proto/pulumicost/v1/registry.proto).
+The registry implements the `PluginRegistryService` gRPC interface defined in [`proto/finfocus/v1/registry.proto`](../proto/finfocus/v1/registry.proto).
 
 ### Service Methods
 
@@ -840,7 +840,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
 **Testing Requirements**:
 
 1. Unit tests for all functionality
-2. Integration tests with PulumiCost SDK
+2. Integration tests with FinFocus SDK
 3. Security testing and vulnerability scanning
 4. Performance benchmarking
 5. Compatibility testing across versions
@@ -855,9 +855,9 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
     "name": "aws-comprehensive-plugin",
     "version": "2.1.0",
     "description": "Comprehensive AWS cost source plugin supporting EC2, S3, Lambda, RDS, and DynamoDB with real-time and historical cost data",
-    "author": "PulumiCost Team",
-    "homepage": "https://pulumicost.dev/plugins/aws",
-    "repository": "https://github.com/pulumicost/aws-plugin",
+    "author": "FinFocus Team",
+    "homepage": "https://finfocus.dev/plugins/aws",
+    "repository": "https://github.com/finfocus/aws-plugin",
     "license": "Apache-2.0",
     "keywords": ["aws", "cost", "ec2", "s3", "lambda", "rds", "dynamodb"],
     "created_at": "2024-01-15T10:00:00Z",
@@ -898,7 +898,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
     ],
     "service_definition": {
       "service_name": "CostSourceService",
-      "package_name": "pulumicost.v1",
+      "package_name": "finfocus.v1",
       "methods": [
         "Name",
         "Supports",
@@ -931,7 +931,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
   },
   "installation": {
     "installation_method": "binary",
-    "download_url": "https://releases.pulumicost.dev/aws-plugin/v2.1.0/aws-plugin-linux-amd64.tar.gz",
+    "download_url": "https://releases.finfocus.dev/aws-plugin/v2.1.0/aws-plugin-linux-amd64.tar.gz",
     "checksum": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
     "checksum_algorithm": "sha256",
     "pre_install_checks": [
@@ -997,7 +997,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
       {
         "name": "official_registry",
         "type": "registry",
-        "url": "https://registry.pulumicost.dev",
+        "url": "https://registry.finfocus.dev",
         "priority": 1,
         "timeout_seconds": 30,
         "cache_ttl_seconds": 3600,
@@ -1010,7 +1010,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
       {
         "name": "local_filesystem",
         "type": "filesystem",
-        "path": "/usr/local/pulumicost/plugins",
+        "path": "/usr/local/finfocus/plugins",
         "priority": 2,
         "recursive": true,
         "manifest_filename": "plugin.json",
@@ -1019,7 +1019,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
       {
         "name": "git_repository",
         "type": "git",
-        "repository": "https://github.com/pulumicost/community-plugins",
+        "repository": "https://github.com/finfocus/community-plugins",
         "branch": "main",
         "path": "plugins/",
         "priority": 3,
@@ -1033,7 +1033,7 @@ result, err := client.InstallPlugin(ctx, &registry.InstallPluginRequest{
     "global_settings": {
       "concurrent_discoveries": 5,
       "default_timeout_seconds": 30,
-      "cache_directory": "/var/cache/pulumicost/plugins",
+      "cache_directory": "/var/cache/finfocus/plugins",
       "security_policy": {
         "default_security_level": "community",
         "prompt_for_untrusted": true,
@@ -1095,20 +1095,20 @@ echo "Pre-installation checks completed successfully"
 
 set -e
 
-PLUGIN_DIR="/usr/local/pulumicost/plugins/aws-plugin"
-CONFIG_DIR="/etc/pulumicost/plugins/aws-plugin"
-LOG_DIR="/var/log/pulumicost/aws-plugin"
+PLUGIN_DIR="/usr/local/finfocus/plugins/aws-plugin"
+CONFIG_DIR="/etc/finfocus/plugins/aws-plugin"
+LOG_DIR="/var/log/finfocus/aws-plugin"
 
 echo "Running post-installation setup..."
 
 # Create directories
 mkdir -p "$CONFIG_DIR"
 mkdir -p "$LOG_DIR"
-mkdir -p "/var/run/pulumicost"
+mkdir -p "/var/run/finfocus"
 
 # Set permissions
-chown -R pulumicost:pulumicost "$CONFIG_DIR"
-chown -R pulumicost:pulumicost "$LOG_DIR"
+chown -R finfocus:finfocus "$CONFIG_DIR"
+chown -R finfocus:finfocus "$LOG_DIR"
 chmod 750 "$CONFIG_DIR"
 chmod 755 "$LOG_DIR"
 
@@ -1130,7 +1130,7 @@ $LOG_DIR/*.log {
     rotate 7
     compress
     notifempty
-    create 0640 pulumicost pulumicost
+    create 0640 finfocus finfocus
     postrotate
         systemctl reload aws-plugin || true
     endscript
@@ -1140,13 +1140,13 @@ EOF
 # Create systemd service
 cat > "/etc/systemd/system/aws-plugin.service" << EOF
 [Unit]
-Description=PulumiCost AWS Plugin
+Description=FinFocus AWS Plugin
 After=network.target
 
 [Service]
 Type=simple
-User=pulumicost
-Group=pulumicost
+User=finfocus
+Group=finfocus
 ExecStart=$PLUGIN_DIR/bin/aws-plugin --config $CONFIG_DIR/config.json
 Restart=always
 RestartSec=10
@@ -1235,4 +1235,4 @@ Key validation rules:
 
 ---
 
-**Plugin Registry Specification v0.1.0** - Production-ready plugin management for the PulumiCost ecosystem.
+**Plugin Registry Specification v0.1.0** - Production-ready plugin management for the FinFocus ecosystem.

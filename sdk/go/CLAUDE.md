@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is the **Go SDK** for the PulumiCost specification, providing a complete runtime library for implementing and testing
+This is the **Go SDK** for the FinFocus specification, providing a complete runtime library for implementing and testing
 cost source plugins. The SDK consists of six main packages:
 
 - **`currency/`** - ISO 4217 currency validation and metadata with zero-allocation validation
@@ -75,7 +75,7 @@ cd ../../ && make test && make lint
 - `README.md` - **Comprehensive documentation** for `pluginsdk.Serve()` function, port resolution,
   environment variables, and plugin development
 - `sdk.go` - gRPC server setup with `Serve()` function and `ServeConfig` options
-- `env.go` - Centralized environment variable handling for all PulumiCost plugins
+- `env.go` - Centralized environment variable handling for all FinFocus plugins
 - `env_test.go` - Comprehensive tests for environment variable functions
 - `tracing.go` - Distributed tracing utilities with `TracingUnaryServerInterceptor()`
 - `logging.go` - Structured logging helpers with zerolog integration
@@ -85,17 +85,17 @@ cd ../../ && make test && make lint
 
 | Constant              | Variable Name            | Purpose                                  |
 | --------------------- | ------------------------ | ---------------------------------------- |
-| `EnvPort`             | `PULUMICOST_PLUGIN_PORT` | gRPC server port (no fallback)           |
-| `EnvLogLevel`         | `PULUMICOST_LOG_LEVEL`   | Log verbosity (debug, info, warn, error) |
+| `EnvPort`             | `FINFOCUS_PLUGIN_PORT` | gRPC server port (no fallback)           |
+| `EnvLogLevel`         | `FINFOCUS_LOG_LEVEL`   | Log verbosity (debug, info, warn, error) |
 | `EnvLogLevelFallback` | `LOG_LEVEL`              | Legacy fallback for log level            |
-| `EnvLogFormat`        | `PULUMICOST_LOG_FORMAT`  | Log output format (json, text)           |
-| `EnvLogFile`          | `PULUMICOST_LOG_FILE`    | Log file path (empty = stderr)           |
-| `EnvTraceID`          | `PULUMICOST_TRACE_ID`    | Distributed tracing correlation ID       |
-| `EnvTestMode`         | `PULUMICOST_TEST_MODE`   | Enable test mode (only "true" enables)   |
+| `EnvLogFormat`        | `FINFOCUS_LOG_FORMAT`  | Log output format (json, text)           |
+| `EnvLogFile`          | `FINFOCUS_LOG_FILE`    | Log file path (empty = stderr)           |
+| `EnvTraceID`          | `FINFOCUS_TRACE_ID`    | Distributed tracing correlation ID       |
+| `EnvTestMode`         | `FINFOCUS_TEST_MODE`   | Enable test mode (only "true" enables)   |
 
 **Environment Functions**:
 
-- `GetPort() int` - Returns port from `PULUMICOST_PLUGIN_PORT` or 0 if not set/invalid
+- `GetPort() int` - Returns port from `FINFOCUS_PLUGIN_PORT` or 0 if not set/invalid
 - `GetLogLevel() string` - Returns log level (canonical first, then fallback)
 - `GetLogFormat() string` - Returns log format or empty string
 - `GetLogFile() string` - Returns log file path or empty string
@@ -111,7 +111,7 @@ cd ../../ && make test && make lint
 
 **`proto/` Package - Generated gRPC Code**
 
-- Generated from `../../proto/pulumicost/v1/costsource.proto`
+- Generated from `../../proto/finfocus/v1/costsource.proto`
 - Contains all message types: `NameRequest/Response`, `SupportsRequest/Response`, etc.
 - `CostSourceServiceServer/Client` interfaces for gRPC communication
 - **Never edit manually** - regenerated via `make generate` from repo root
@@ -167,8 +167,8 @@ the core system should query other plugins for cost data.
 
 ```go
 import (
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // Plugin found cost data - signal no fallback needed
@@ -273,7 +273,7 @@ func TestMyPlugin(t *testing.T) {
 ### Validating PricingSpec Documents
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pricing"
+import "github.com/rshade/finfocus-spec/sdk/go/pricing"
 
 // Validate JSON document
 if err := pricing.ValidatePricingSpec(jsonData); err != nil {
@@ -284,7 +284,7 @@ if err := pricing.ValidatePricingSpec(jsonData); err != nil {
 ### Currency Validation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/currency"
+import "github.com/rshade/finfocus-spec/sdk/go/currency"
 
 // Validate currency codes
 if !currency.IsValid("USD") {
@@ -307,7 +307,7 @@ for _, c := range currency.AllCurrencies() {
 ### Using Environment Variables
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 // Get plugin port (returns 0 if not set)
 port := pluginsdk.GetPort()
@@ -316,7 +316,7 @@ if port == 0 {
 }
 
 // Get log configuration with fallback support
-logLevel := pluginsdk.GetLogLevel()  // checks PULUMICOST_LOG_LEVEL, then LOG_LEVEL
+logLevel := pluginsdk.GetLogLevel()  // checks FINFOCUS_LOG_LEVEL, then LOG_LEVEL
 logFormat := pluginsdk.GetLogFormat() // empty string if not set
 logFile := pluginsdk.GetLogFile()     // empty string means stdout
 

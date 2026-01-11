@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package testing_test
 
 import (
@@ -30,10 +16,10 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pricing"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // TestBasicPluginFunctionality tests all basic RPC methods of a plugin.
@@ -626,7 +612,7 @@ func TestDataConsistency(t *testing.T) {
 //
 // This example serves as the canonical reference for plugin developers to
 // understand how to properly integrate zerolog structured logging with
-// PulumiCost plugin operations.
+// FinFocus plugin operations.
 //
 // Key patterns demonstrated:
 //   - Creating a configured logger with plugin metadata (FR-001)
@@ -951,16 +937,14 @@ func parseMultipleLogEntries(t *testing.T, logOutput string) []map[string]interf
 	t.Helper()
 	var entries []map[string]interface{}
 
-	lines := strings.Split(strings.TrimSpace(logOutput), "
-")
+	lines := strings.Split(strings.TrimSpace(logOutput), "\n")
 	for i, line := range lines {
 		if line == "" {
 			continue
 		}
 		var entry map[string]interface{}
 		if err := json.Unmarshal([]byte(line), &entry); err != nil {
-			t.Errorf("Failed to parse log entry %d as JSON: %v
-Line: %s", i, err, line)
+			t.Errorf("Failed to parse log entry %d as JSON: %v\nLine: %s", i, err, line)
 			continue
 		}
 		entries = append(entries, entry)
@@ -973,8 +957,7 @@ Line: %s", i, err, line)
 func assertLogContains(t *testing.T, logOutput, expected, errMsg string) {
 	t.Helper()
 	if !strings.Contains(logOutput, expected) {
-		t.Errorf("%s: expected '%s' in log output:
-%s", errMsg, expected, logOutput)
+		t.Errorf("%s: expected '%s' in log output:\n%s", errMsg, expected, logOutput)
 	}
 }
 
@@ -983,8 +966,7 @@ func assertLogContains(t *testing.T, logOutput, expected, errMsg string) {
 func assertLogNotContains(t *testing.T, logOutput, unexpected, errMsg string) {
 	t.Helper()
 	if strings.Contains(logOutput, unexpected) {
-		t.Errorf("%s: unexpected '%s' found in log output:
-%s", errMsg, unexpected, logOutput)
+		t.Errorf("%s: unexpected '%s' found in log output:\n%s", errMsg, unexpected, logOutput)
 	}
 }
 
@@ -996,7 +978,7 @@ func assertLogNotContains(t *testing.T, logOutput, unexpected, errMsg string) {
 // EstimateCost RPC, per NFR-002 of spec 006-estimate-cost.
 //
 // This example serves as the canonical reference for plugin developers to
-// understand how to properly implement metrics tracking for PulumiCost plugin
+// understand how to properly implement metrics tracking for FinFocus plugin
 // operations.
 //
 // Key patterns demonstrated:
@@ -1502,7 +1484,7 @@ func sortDurations(durations []time.Duration) {
 // EstimateCost RPC, per NFR-003 of spec 006-estimate-cost.
 //
 // This example serves as the canonical reference for plugin developers to
-// understand how to properly implement distributed tracing for PulumiCost
+// understand how to properly implement distributed tracing for FinFocus
 // plugin operations.
 //
 // Key patterns demonstrated:
@@ -1953,8 +1935,8 @@ func testTracingBestPractices(t *testing.T) {
 
 	// Best Practice 2: Use standard metadata key for gRPC propagation
 	t.Logf("Standard gRPC metadata key: %s", pluginsdk.TraceIDMetadataKey)
-	if pluginsdk.TraceIDMetadataKey != "x-pulumicost-trace-id" {
-		t.Errorf("Expected metadata key 'x-pulumicost-trace-id', got '%s'",
+	if pluginsdk.TraceIDMetadataKey != "x-finfocus-trace-id" {
+		t.Errorf("Expected metadata key 'x-finfocus-trace-id', got '%s'",
 			pluginsdk.TraceIDMetadataKey)
 	}
 
@@ -1978,7 +1960,7 @@ func testTracingBestPractices(t *testing.T) {
 
 	// Best Practice 5: Use TracingUnaryServerInterceptor for automatic extraction
 	t.Log("Server interceptor automatically:")
-	t.Log("  - Extracts trace_id from x-pulumicost-trace-id header")
+	t.Log("  - Extracts trace_id from x-finfocus-trace-id header")
 	t.Log("  - Validates the trace ID format")
 	t.Log("  - Generates new trace ID if missing or invalid")
 	t.Log("  - Stores trace ID in context for handler access")

@@ -1,5 +1,5 @@
 {
-  "name": "@pulumicost/spec",
+  "name": "@finfocus/spec",
   "version": "0.4.14",
   "description": "Production-ready specification for cloud cost source plugins with gRPC protocol, JSON schemas, and Go SDK",
   "keywords": [
@@ -16,13 +16,13 @@
     "billing",
     "finops"
   ],
-  "homepage": "https://github.com/rshade/pulumicost-spec",
+  "homepage": "https://github.com/rshade/finfocus-spec",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rshade/pulumicost-spec.git"
+    "url": "git+https://github.com/rshade/finfocus-spec.git"
   },
   "bugs": {
-    "url": "https://github.com/rshade/pulumicost-spec/issues"
+    "url": "https://github.com/rshade/finfocus-spec/issues"
   },
   "license": "Apache-2.0",
   "author": {

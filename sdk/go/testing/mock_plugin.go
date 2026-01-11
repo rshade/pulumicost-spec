@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // Package testing provides test utilities for PulumiCost plugin development.
 // It includes mock plugin implementations, test harnesses, and conformance testing
 // utilities for validating plugin behavior against the CostSource gRPC service spec.
@@ -31,8 +17,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/internal/utilization"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/internal/utilization"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 const (
@@ -1438,8 +1424,8 @@ func NewActualCostResponseWithHint(
 
 // NOTE: ValidateActualCostResponseHelper was removed. Use pluginsdk.ValidateActualCostResponse
 // instead, which is the canonical implementation for validating GetActualCostResponse messages.
-// Import: "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+// Import: "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
-// NOTE: getUtilization was removed. Use github.com/rshade/pulumicost-spec/sdk/go/internal/utilization.Get()
+// NOTE: getUtilization was removed. Use github.com/rshade/finfocus-spec/sdk/go/internal/utilization.Get()
 // which is the shared implementation. The circular dependency that previously prevented this
 // import has been resolved by creating the internal/utilization package.

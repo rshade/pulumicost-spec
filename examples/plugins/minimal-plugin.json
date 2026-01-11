@@ -10,7 +10,7 @@
     "supported_providers": ["custom"],
     "service_definition": {
       "service_name": "CostSourceService",
-      "package_name": "pulumicost.v1",
+      "package_name": "finfocus.v1",
       "methods": ["Name", "Supports", "GetActualCost"]
     }
   },

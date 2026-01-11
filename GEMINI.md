@@ -1,13 +1,13 @@
-# GEMINI.md - Guiding Principles for pulumicost-spec
+# GEMINI.md - Guiding Principles for finfocus-spec
 
 This document outlines the core principles, architectural guidelines, and development philosophy
-for the `pulumicost-spec` repository, based on an analysis of existing documentation and direct
+for the `finfocus-spec` repository, based on an analysis of existing documentation and direct
 feedback. It serves as a constitution to ensure all future contributions are aligned with the
 project's vision.
 
 ## 1. Project Vision
 
-The `pulumicost-spec` repository aims to define the **universal, open-source standard for cloud
+The `finfocus-spec` repository aims to define the **universal, open-source standard for cloud
 cost observability**. It provides the foundational contracts (schemas, Protobufs) and developer
 tools to create a robust ecosystem of cost-estimation plugins.
 
@@ -24,14 +24,14 @@ tools to create a robust ecosystem of cost-estimation plugins.
   that make creating high-quality plugins as easy as possible.
 - **Strict Separation of Concerns:** This repository defines the _specification_ and foundational
   tooling. It is not a monolithic application.
-  - `pulumicost-spec`: Defines the interfaces and data schemas. Provides SDKs for implementation.
-  - `pulumicost-core`: (Separate repo) Contains higher-level application logic, such as the
+  - `finfocus-spec`: Defines the interfaces and data schemas. Provides SDKs for implementation.
+  - `finfocus-core`: (Separate repo) Contains higher-level application logic, such as the
     public-facing Plugin Registry service.
-  - `pulumicost-plugins-*`: (Separate repos) Individual plugins that implement the spec.
+  - `finfocus-plugins-*`: (Separate repos) Individual plugins that implement the spec.
 
 ## 3. Architectural & Development Guidelines
 
-- **The Spec Consumes, It Does Not Calculate:** The `pulumicost-spec` and the plugins that directly
+- **The Spec Consumes, It Does Not Calculate:** The `finfocus-spec` and the plugins that directly
   implement it are not responsible for complex pricing logic (e.g., tiered pricing, committed-use
   discounts). This logic belongs to upstream data providers (like Kubecost, Vantage, Flexera, etc.).
   The spec's role is to consume the final, _adjusted_ cost from these services and provide a

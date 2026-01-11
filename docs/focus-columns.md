@@ -2,7 +2,7 @@
 
 This document provides a comprehensive reference for columns defined in the
 FinOps FOCUS (FinOps Open Cost and Usage Specification) as implemented in
-PulumiCost, covering FOCUS 1.2 and 1.3 additions.
+FinFocus, covering FOCUS 1.2 and 1.3 additions.
 
 References:
 
@@ -316,7 +316,7 @@ discount programs separately from cost records.
 ### ContractCommitment Example
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 commitment := pluginsdk.NewContractCommitmentBuilder().
     WithIdentity("ri-123456789", "contract-2024-001").

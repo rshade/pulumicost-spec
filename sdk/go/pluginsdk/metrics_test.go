@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package pluginsdk_test
 
 import (
@@ -25,7 +11,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -70,10 +56,10 @@ func TestNewPluginMetrics(t *testing.T) {
 		metricNames[family.GetName()] = true
 	}
 
-	assert.True(t, metricNames["pulumicost_plugin_requests_total"], "should have requests_total metric")
+	assert.True(t, metricNames["finfocus_plugin_requests_total"], "should have requests_total metric")
 	assert.True(
 		t,
-		metricNames["pulumicost_plugin_request_duration_seconds"],
+		metricNames["finfocus_plugin_request_duration_seconds"],
 		"should have request_duration_seconds metric",
 	)
 }
@@ -89,7 +75,7 @@ func TestMetricsUnaryServerInterceptor_CounterIncrement(t *testing.T) {
 	}
 
 	info := &grpc.UnaryServerInfo{
-		FullMethod: "/pulumicost.v1.CostSource/GetProjectedCost",
+		FullMethod: "/finfocus.v1.CostSource/GetProjectedCost",
 	}
 
 	// Execute interceptor
@@ -100,7 +86,7 @@ func TestMetricsUnaryServerInterceptor_CounterIncrement(t *testing.T) {
 	// Verify counter was incremented
 	counter, err := getCounterValue(
 		metrics.RequestsTotal,
-		"pulumicost.v1.CostSource/GetProjectedCost",
+		"finfocus.v1.CostSource/GetProjectedCost",
 		"OK",
 		"test-plugin",
 	)
@@ -113,7 +99,7 @@ func TestMetricsUnaryServerInterceptor_CounterIncrement(t *testing.T) {
 
 	counter, err = getCounterValue(
 		metrics.RequestsTotal,
-		"pulumicost.v1.CostSource/GetProjectedCost",
+		"finfocus.v1.CostSource/GetProjectedCost",
 		"OK",
 		"test-plugin",
 	)
@@ -133,7 +119,7 @@ func TestMetricsUnaryServerInterceptor_HistogramObservation(t *testing.T) {
 	}
 
 	info := &grpc.UnaryServerInfo{
-		FullMethod: "/pulumicost.v1.CostSource/GetActualCost",
+		FullMethod: "/finfocus.v1.CostSource/GetActualCost",
 	}
 
 	ctx := context.Background()
@@ -143,7 +129,7 @@ func TestMetricsUnaryServerInterceptor_HistogramObservation(t *testing.T) {
 	// Verify histogram was observed
 	count, sum, err := getHistogramValues(
 		metrics.RequestDuration,
-		"pulumicost.v1.CostSource/GetActualCost",
+		"finfocus.v1.CostSource/GetActualCost",
 		"test-plugin",
 	)
 	require.NoError(t, err)
@@ -195,7 +181,7 @@ func TestMetricsUnaryServerInterceptor_ErrorHandling(t *testing.T) {
 			}
 
 			info := &grpc.UnaryServerInfo{
-				FullMethod: "/pulumicost.v1.CostSource/GetProjectedCost",
+				FullMethod: "/finfocus.v1.CostSource/GetProjectedCost",
 			}
 
 			ctx := context.Background()
@@ -203,7 +189,7 @@ func TestMetricsUnaryServerInterceptor_ErrorHandling(t *testing.T) {
 
 			counter, err := getCounterValue(
 				localMetrics.RequestsTotal,
-				"pulumicost.v1.CostSource/GetProjectedCost",
+				"finfocus.v1.CostSource/GetProjectedCost",
 				tc.expectedCode,
 				"error-test-plugin",
 			)
@@ -230,7 +216,7 @@ func TestMetricsInterceptor_ChainingWithTracingInterceptor(t *testing.T) {
 	}
 
 	info := &grpc.UnaryServerInfo{
-		FullMethod: "/pulumicost.v1.CostSource/Name",
+		FullMethod: "/finfocus.v1.CostSource/Name",
 	}
 
 	// Chain: tracing -> metrics -> handler
@@ -246,7 +232,7 @@ func TestMetricsInterceptor_ChainingWithTracingInterceptor(t *testing.T) {
 	assert.NotEmpty(t, capturedTraceID, "trace_id should be set by tracing interceptor")
 
 	// Verify metrics were recorded
-	counter, err := getCounterValue(metrics.RequestsTotal, "pulumicost.v1.CostSource/Name", "OK", "chaining-test")
+	counter, err := getCounterValue(metrics.RequestsTotal, "finfocus.v1.CostSource/Name", "OK", "chaining-test")
 	require.NoError(t, err)
 	assert.InDelta(t, float64(1), counter, 0.01)
 }
@@ -265,7 +251,7 @@ func TestNoMetricsOverhead_InterceptorNotConfigured(t *testing.T) {
 	}
 
 	info := &grpc.UnaryServerInfo{
-		FullMethod: "/pulumicost.v1.CostSource/GetProjectedCost",
+		FullMethod: "/finfocus.v1.CostSource/GetProjectedCost",
 	}
 
 	// Execute directly without metrics interceptor
@@ -284,7 +270,7 @@ func TestNoMetricsOverhead_InterceptorNotConfigured(t *testing.T) {
 	// Fresh registry should have no observations
 	for _, family := range families {
 		// Ignore standard Go metrics, only check plugin metrics
-		if !strings.HasPrefix(family.GetName(), "pulumicost") {
+		if !strings.HasPrefix(family.GetName(), "finfocus") {
 			continue
 		}
 		for _, metric := range family.GetMetric() {
@@ -364,8 +350,8 @@ func TestStartMetricsServer_MetricsEndpoint(t *testing.T) {
 	metrics := pluginsdk.NewPluginMetrics("endpoint-test")
 
 	// Add test data
-	metrics.RequestsTotal.WithLabelValues("pulumicost.v1.CostSource/GetProjectedCost", "OK", "endpoint-test").Add(42)
-	metrics.RequestDuration.WithLabelValues("pulumicost.v1.CostSource/GetProjectedCost", "endpoint-test").Observe(0.123)
+	metrics.RequestsTotal.WithLabelValues("finfocus.v1.CostSource/GetProjectedCost", "OK", "endpoint-test").Add(42)
+	metrics.RequestDuration.WithLabelValues("finfocus.v1.CostSource/GetProjectedCost", "endpoint-test").Observe(0.123)
 
 	server, err := pluginsdk.StartMetricsServer(pluginsdk.MetricsServerConfig{
 		Registry: metrics.Registry,
@@ -391,9 +377,9 @@ func TestStartMetricsServer_MetricsEndpoint(t *testing.T) {
 	bodyStr := string(body)
 
 	// Verify Prometheus format output
-	assert.Contains(t, bodyStr, "pulumicost_plugin_requests_total")
-	assert.Contains(t, bodyStr, "pulumicost_plugin_request_duration_seconds")
-	assert.Contains(t, bodyStr, "grpc_method=\"pulumicost.v1.CostSource/GetProjectedCost\"")
+	assert.Contains(t, bodyStr, "finfocus_plugin_requests_total")
+	assert.Contains(t, bodyStr, "finfocus_plugin_request_duration_seconds")
+	assert.Contains(t, bodyStr, "grpc_method=\"finfocus.v1.CostSource/GetProjectedCost\"")
 	assert.Contains(t, bodyStr, "plugin_name=\"endpoint-test\"")
 	assert.Contains(t, bodyStr, "42") // Counter value
 }
@@ -465,7 +451,7 @@ func TestStartMetricsServer_CustomPath(t *testing.T) {
 
 	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
-	assert.Contains(t, string(body), "pulumicost_plugin_requests_total")
+	assert.Contains(t, string(body), "finfocus_plugin_requests_total")
 }
 
 // ============================================================================
@@ -482,9 +468,9 @@ func TestMetrics_PerMethodLabels(t *testing.T) {
 	}
 
 	methods := []string{
-		"/pulumicost.v1.CostSource/Name",
-		"/pulumicost.v1.CostSource/GetProjectedCost",
-		"/pulumicost.v1.CostSource/GetActualCost",
+		"/finfocus.v1.CostSource/Name",
+		"/finfocus.v1.CostSource/GetProjectedCost",
+		"/finfocus.v1.CostSource/GetActualCost",
 	}
 
 	ctx := context.Background()
@@ -517,12 +503,12 @@ func TestMetrics_AllGRPCMethods(t *testing.T) {
 
 	// All 6 PulumiCost gRPC methods
 	methods := []string{
-		"/pulumicost.v1.CostSource/Name",
-		"/pulumicost.v1.CostSource/Supports",
-		"/pulumicost.v1.CostSource/GetProjectedCost",
-		"/pulumicost.v1.CostSource/GetActualCost",
-		"/pulumicost.v1.CostSource/GetPricingSpec",
-		"/pulumicost.v1.CostSource/EstimateCost",
+		"/finfocus.v1.CostSource/Name",
+		"/finfocus.v1.CostSource/Supports",
+		"/finfocus.v1.CostSource/GetProjectedCost",
+		"/finfocus.v1.CostSource/GetActualCost",
+		"/finfocus.v1.CostSource/GetPricingSpec",
+		"/finfocus.v1.CostSource/EstimateCost",
 	}
 
 	ctx := context.Background()
@@ -538,7 +524,7 @@ func TestMetrics_AllGRPCMethods(t *testing.T) {
 
 	var histogramFamily *dto.MetricFamily
 	for _, f := range families {
-		if f.GetName() == "pulumicost_plugin_request_duration_seconds" {
+		if f.GetName() == "finfocus_plugin_request_duration_seconds" {
 			histogramFamily = f
 			break
 		}
@@ -556,12 +542,12 @@ func TestMetrics_AllGRPCMethods(t *testing.T) {
 	}
 
 	assert.Len(t, methodsSeen, 6, "should have 6 distinct methods")
-	assert.True(t, methodsSeen["pulumicost.v1.CostSource/Name"])
-	assert.True(t, methodsSeen["pulumicost.v1.CostSource/Supports"])
-	assert.True(t, methodsSeen["pulumicost.v1.CostSource/GetProjectedCost"])
-	assert.True(t, methodsSeen["pulumicost.v1.CostSource/GetActualCost"])
-	assert.True(t, methodsSeen["pulumicost.v1.CostSource/GetPricingSpec"])
-	assert.True(t, methodsSeen["pulumicost.v1.CostSource/EstimateCost"])
+	assert.True(t, methodsSeen["finfocus.v1.CostSource/Name"])
+	assert.True(t, methodsSeen["finfocus.v1.CostSource/Supports"])
+	assert.True(t, methodsSeen["finfocus.v1.CostSource/GetProjectedCost"])
+	assert.True(t, methodsSeen["finfocus.v1.CostSource/GetActualCost"])
+	assert.True(t, methodsSeen["finfocus.v1.CostSource/GetPricingSpec"])
+	assert.True(t, methodsSeen["finfocus.v1.CostSource/EstimateCost"])
 }
 
 // TestMetrics_CountAccuracy sends exactly 1000 requests and verifies counter accuracy.
@@ -574,7 +560,7 @@ func TestMetrics_CountAccuracy(t *testing.T) {
 	}
 
 	info := &grpc.UnaryServerInfo{
-		FullMethod: "/pulumicost.v1.CostSource/GetProjectedCost",
+		FullMethod: "/finfocus.v1.CostSource/GetProjectedCost",
 	}
 
 	ctx := context.Background()
@@ -587,7 +573,7 @@ func TestMetrics_CountAccuracy(t *testing.T) {
 
 	counter, err := getCounterValue(
 		metrics.RequestsTotal,
-		"pulumicost.v1.CostSource/GetProjectedCost",
+		"finfocus.v1.CostSource/GetProjectedCost",
 		"OK",
 		"accuracy-test",
 	)

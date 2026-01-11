@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"time"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // ConformanceLevel defines the certification level for plugin validation.

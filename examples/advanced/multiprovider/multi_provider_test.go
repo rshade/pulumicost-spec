@@ -5,7 +5,7 @@ package main
 import (
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // TestExtractInstanceFamily tests AWS instance family extraction.

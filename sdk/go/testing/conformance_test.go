@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package testing_test
 
 import (
@@ -22,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // ConformanceLevel defines the level of conformance testing.
@@ -617,8 +603,7 @@ func addAdvancedConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 
 // PrintConformanceReport prints a detailed conformance test report.
 func PrintConformanceReport(t *testing.T, result *ConformanceResult) {
-	t.Log("
-=== CONFORMANCE TEST REPORT ===")
+	t.Log("\n=== CONFORMANCE TEST REPORT ===")
 	t.Logf("Level: %s", conformanceLevelString(result.Level))
 	t.Logf("Total Tests: %d", result.TotalTests)
 	t.Logf("Passed: %d", result.PassedTests)
@@ -633,8 +618,7 @@ func PrintConformanceReport(t *testing.T, result *ConformanceResult) {
 	t.Logf("Summary: %s", result.Summary)
 
 	if result.FailedTests > 0 {
-		t.Log("
---- FAILED TESTS ---")
+		t.Log("\n--- FAILED TESTS ---")
 		for _, testResult := range result.Results {
 			if !testResult.Success {
 				t.Logf("❌ %s: %v (%s)", testResult.Method, testResult.Error, testResult.Details)
@@ -642,8 +626,7 @@ func PrintConformanceReport(t *testing.T, result *ConformanceResult) {
 		}
 	}
 
-	t.Log("
---- ALL TEST RESULTS ---")
+	t.Log("\n--- ALL TEST RESULTS ---")
 	for _, testResult := range result.Results {
 		status := "✅"
 		if !testResult.Success {

@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package registry_test
 
 import (
@@ -19,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/registry"
+	"github.com/rshade/finfocus-spec/sdk/go/registry"
 )
 
 func TestValidatePluginManifest_ValidManifests(t *testing.T) {
@@ -37,7 +23,7 @@ func TestValidatePluginManifest_ValidManifests(t *testing.T) {
 				"supported_providers": ["custom"],
 				"service_definition": {
 					"service_name": "CostSourceService",
-					"package_name": "pulumicost.v1",
+					"package_name": "finfocus.v1",
 					"methods": ["Name"]
 				}
 			},
@@ -51,14 +37,14 @@ func TestValidatePluginManifest_ValidManifests(t *testing.T) {
 				"name": "aws-cost-plugin",
 				"version": "2.1.0",
 				"description": "Comprehensive AWS cost source plugin supporting EC2, S3, Lambda, RDS, and DynamoDB with real-time and historical cost data retrieval",
-				"author": "PulumiCost Team"
+				"author": "FinFocus Team"
 			},
 			"specification": {
 				"spec_version": "0.1.0",
 				"supported_providers": ["aws"],
 				"service_definition": {
 					"service_name": "CostSourceService",
-					"package_name": "pulumicost.v1",
+					"package_name": "finfocus.v1",
 					"methods": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"]
 				}
 			},
@@ -94,7 +80,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["custom"],
 					"service_definition": {
 						"service_name": "CostSourceService",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["Name"]
 					}
 				},
@@ -117,7 +103,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["custom"],
 					"service_definition": {
 						"service_name": "CostSourceService",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["Name"]
 					}
 				},
@@ -140,7 +126,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["custom"],
 					"service_definition": {
 						"service_name": "CostSourceService",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["Name"]
 					}
 				},
@@ -163,7 +149,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["custom"],
 					"service_definition": {
 						"service_name": "CostSourceService",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["Name"]
 					}
 				},
@@ -186,7 +172,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["invalid-provider"],
 					"service_definition": {
 						"service_name": "CostSourceService",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["Name"]
 					}
 				},
@@ -210,7 +196,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["custom"],
 					"service_definition": {
 						"service_name": "invalidServiceName",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["Name"]
 					}
 				},
@@ -256,7 +242,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["custom"],
 					"service_definition": {
 						"service_name": "CostSourceService",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["InvalidMethod"]
 					}
 				},
@@ -279,7 +265,7 @@ func TestValidatePluginManifest_InvalidManifests(t *testing.T) {
 					"supported_providers": ["custom"],
 					"service_definition": {
 						"service_name": "CostSourceService",
-						"package_name": "pulumicost.v1",
+						"package_name": "finfocus.v1",
 						"methods": ["Name"]
 					}
 				},
@@ -320,9 +306,9 @@ func TestValidatePluginManifest_Examples(t *testing.T) {
 				"name": "aws-cost-plugin",
 				"version": "2.1.0",
 				"description": "Comprehensive AWS cost source plugin supporting EC2, S3, Lambda, RDS, and DynamoDB with real-time and historical cost data retrieval",
-				"author": "PulumiCost Team",
-				"homepage": "https://pulumicost.dev/plugins/aws",
-				"repository": "https://github.com/pulumicost/aws-plugin",
+				"author": "FinFocus Team",
+				"homepage": "https://finfocus.dev/plugins/aws",
+				"repository": "https://github.com/finfocus/aws-plugin",
 				"license": "Apache-2.0",
 				"keywords": ["aws", "cost", "ec2", "s3", "lambda", "rds", "dynamodb"],
 				"created_at": "2024-01-15T10:00:00Z",
@@ -350,7 +336,7 @@ func TestValidatePluginManifest_Examples(t *testing.T) {
 				],
 				"service_definition": {
 					"service_name": "CostSourceService",
-					"package_name": "pulumicost.v1",
+					"package_name": "finfocus.v1",
 					"methods": ["Name", "Supports", "GetActualCost", "GetProjectedCost", "GetPricingSpec"],
 					"port": 50051,
 					"health_check_path": "/health"
@@ -365,9 +351,7 @@ func TestValidatePluginManifest_Examples(t *testing.T) {
 			},
 			"security": {
 				"signature": "MEUCIQCx7HjRFkL3+Y8XrGQm4nW2V9iE2fP8jS6bK1qN7dR9yAIgD8sJ5tK2oP1mN3vB4cE5fG6hI7jK8lM9nO0pQ1rS2tU=",
-				"public_key": "-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1234567890abcdef...
------END PUBLIC KEY-----",
+				"public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1234567890abcdef...\n-----END PUBLIC KEY-----",
 				"security_level": "verified",
 				"permissions": [
 					"network_access", "filesystem_read", "config_read", "temp_files"
@@ -376,7 +360,7 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1234567890abcdef...
 			},
 			"installation": {
 				"installation_method": "binary",
-				"download_url": "https://releases.pulumicost.dev/aws-plugin/v2.1.0/aws-plugin-linux-amd64.tar.gz",
+				"download_url": "https://releases.finfocus.dev/aws-plugin/v2.1.0/aws-plugin-linux-amd64.tar.gz",
 				"checksum": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
 				"checksum_algorithm": "sha256",
 				"pre_install_checks": [

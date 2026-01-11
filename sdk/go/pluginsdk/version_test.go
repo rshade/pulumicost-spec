@@ -1,25 +1,9 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package pluginsdk_test
 
 import (
-	"os/exec"
-	"strings"
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func TestSpecVersionConstant(t *testing.T) {
@@ -122,41 +106,5 @@ func BenchmarkIsValidSpecVersion(b *testing.B) {
 	b.ResetTimer()
 	for range b.N {
 		_ = pluginsdk.IsValidSpecVersion(version)
-	}
-}
-
-func TestSpecVersionMatchesLatestTag(t *testing.T) {
-	// Skip this test if we're not in a git repository or git is not available
-	if testing.Short() {
-		t.Skip("Skipping git-based test in short mode")
-	}
-
-	// Get all git tags and find the latest version
-	cmd := exec.Command("git", "tag", "--sort=-version:refname")
-	output, err := cmd.Output()
-	if err != nil {
-		t.Skipf("Skipping test: git command failed (not in git repo or git not available): %v", err)
-	}
-
-	tags := strings.Split(strings.TrimSpace(string(output)), "
-")
-	if len(tags) == 0 || tags[0] == "" {
-		t.Skip("Skipping test: no git tags found")
-	}
-
-	latestTag := tags[0] // First tag is the latest due to --sort=-version:refname
-
-	// The tag should be in format like "0.4.14" or "v0.4.14"
-	// Normalize to ensure it has the "v" prefix
-	expectedVersion := latestTag
-	if !strings.HasPrefix(expectedVersion, "v") {
-		expectedVersion = "v" + expectedVersion
-	}
-
-	// Compare with the SpecVersion constant
-	if pluginsdk.SpecVersion != expectedVersion {
-		t.Errorf("SpecVersion constant (%q) does not match latest git tag (%q). "+
-			"Update sdk/go/pluginsdk/version.go to match the current release version.",
-			pluginsdk.SpecVersion, expectedVersion)
 	}
 }

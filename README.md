@@ -1,20 +1,20 @@
-# PulumiCost Specification v0.4.7
+# FinFocus Specification v0.5.0
 
-## Production-ready specification for cloud cost source plugins
+## Focusing your finances left
 
-The PulumiCost specification provides a comprehensive, standardized protocol for cost source
+FinFocus (formerly PulumiCost) provides a comprehensive, standardized protocol for cost source
 plugins to integrate with cost management platforms. This specification enables consistent
 cost data retrieval across AWS, Azure, GCP, Kubernetes, and custom providers.
 
-[![CI](https://github.com/rshade/pulumicost-spec/actions/workflows/ci.yml/badge.svg)](https://github.com/rshade/pulumicost-spec/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/rshade/pulumicost-spec/branch/main/graph/badge.svg)](https://codecov.io/gh/rshade/pulumicost-spec)
-[![Go Reference](https://pkg.go.dev/badge/github.com/rshade/pulumicost-spec/sdk/go.svg)](https://pkg.go.dev/github.com/rshade/pulumicost-spec/sdk/go)
+[![CI](https://github.com/rshade/finfocus-spec/actions/workflows/ci.yml/badge.svg)](https://github.com/rshade/finfocus-spec/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/rshade/finfocus-spec/branch/main/graph/badge.svg)](https://codecov.io/gh/rshade/finfocus-spec)
+[![Go Reference](https://pkg.go.dev/badge/github.com/rshade/finfocus-spec/sdk/go.svg)](https://pkg.go.dev/github.com/rshade/finfocus-spec/sdk/go)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![FOCUS 1.2](https://img.shields.io/badge/FinOps-FOCUS_1.2-green)](https://focus.finops.org)
 
 ## Overview
 
-PulumiCost Specification v0.4.7 is a complete, enterprise-ready protocol for
+FinFocus Specification v0.5.0 is a complete, enterprise-ready protocol for
 standardizing cloud cost data retrieval. It provides:
 
 ### Core Features
@@ -48,8 +48,8 @@ standardizing cloud cost data retrieval. It provides:
 ## Repository Structure
 
 ```text
-pulumicost-spec/
-├─ proto/pulumicost/v1/           # gRPC service definitions
+finfocus-spec/
+├─ proto/finfocus/v1/           # gRPC service definitions
 │  └─ costsource.proto            # Complete CostSource service specification
 ├─ schemas/                       # JSON schema validation
 │  └─ pricing_spec.schema.json    # Comprehensive pricing schema (44+ billing modes)
@@ -77,7 +77,7 @@ pulumicost-spec/
 
 ### Core Components
 
-- **[gRPC Service](proto/pulumicost/v1/costsource.proto)**: CostSourceService with 8 RPC methods
+- **[gRPC Service](proto/finfocus/v1/costsource.proto)**: CostSourceService with 8 RPC methods
 - **[JSON Schema](schemas/pricing_spec.schema.json)**: Comprehensive validation supporting all major cloud providers
 - **[Go SDK](sdk/go/)**: Production-ready SDK with automatic protobuf generation
 - **[Plugin SDK](sdk/go/pluginsdk/)**: Serve(), environment handling, logging, metrics, FOCUS builder
@@ -95,19 +95,19 @@ pulumicost-spec/
 
 ```bash
 # Add SDK to your Go project
-go get github.com/rshade/pulumicost-spec/sdk/go/proto      # Generated protobuf code
-go get github.com/rshade/pulumicost-spec/sdk/go/pluginsdk  # Plugin development SDK
-go get github.com/rshade/pulumicost-spec/sdk/go/pricing    # Domain types and validation
-go get github.com/rshade/pulumicost-spec/sdk/go/currency   # ISO 4217 currency validation
-go get github.com/rshade/pulumicost-spec/sdk/go/registry   # Plugin registry types
+go get github.com/rshade/finfocus-spec/sdk/go/proto      # Generated protobuf code
+go get github.com/rshade/finfocus-spec/sdk/go/pluginsdk  # Plugin development SDK
+go get github.com/rshade/finfocus-spec/sdk/go/pricing    # Domain types and validation
+go get github.com/rshade/finfocus-spec/sdk/go/currency   # ISO 4217 currency validation
+go get github.com/rshade/finfocus-spec/sdk/go/registry   # Plugin registry types
 ```
 
 ### Development Setup
 
 ```bash
 # Clone repository
-git clone https://github.com/rshade/pulumicost-spec.git
-cd pulumicost-spec
+git clone https://github.com/rshade/finfocus-spec.git
+cd finfocus-spec
 
 # Generate Go SDK (installs buf automatically)
 make generate
@@ -129,7 +129,7 @@ make validate
 
 ## SDK Client Timeout Configuration
 
-The PulumiCost Go SDK supports configurable per-client timeouts for plugin RPC calls.
+The FinFocus Go SDK supports configurable per-client timeouts for plugin RPC calls.
 This prevents indefinite blocking on slow servers.
 
 ### Basic Usage
@@ -221,7 +221,7 @@ import (
     "google.golang.org/grpc"
     "google.golang.org/protobuf/types/known/timestamppb"
 
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 type kubecostPlugin struct {
@@ -365,7 +365,7 @@ import (
     "google.golang.org/protobuf/types/known/structpb"
     "google.golang.org/protobuf/types/known/timestamppb"
 
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func main() {
@@ -497,7 +497,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pricing"
+    "github.com/rshade/finfocus-spec/sdk/go/pricing"
 )
 
 func main() {
@@ -541,7 +541,7 @@ package main
 import (
     "fmt"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pricing"
+    "github.com/rshade/finfocus-spec/sdk/go/pricing"
 )
 
 func main() {
@@ -572,7 +572,7 @@ func main() {
 
 ## Testing Framework
 
-PulumiCost Specification includes a comprehensive testing framework with multi-level conformance validation.
+FinFocus Specification includes a comprehensive testing framework with multi-level conformance validation.
 
 ### Plugin Testing
 
@@ -581,7 +581,7 @@ package main
 
 import (
     "testing"
-    plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+    plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 func TestMyPlugin(t *testing.T) {
@@ -798,7 +798,7 @@ version, preventing `package-lock.json` drift from npm version differences.
 nvm use
 
 # 1. Make changes to proto or schema files
-vim proto/pulumicost/v1/costsource.proto
+vim proto/finfocus/v1/costsource.proto
 vim schemas/pricing_spec.schema.json
 
 # 2. Generate SDK and validate
@@ -849,9 +849,9 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ### Community
 
-- **[Issues](https://github.com/rshade/pulumicost-spec/issues)** - Bug reports and feature requests
+- **[Issues](https://github.com/rshade/finfocus-spec/issues)** - Bug reports and feature requests
 - **[Project Board](https://github.com/users/rshade/projects/3)** - Development roadmap and progress
 
 ---
 
-**PulumiCost Specification v0.4.7** - Production-ready protocol for cloud cost source plugins
+**FinFocus Specification v0.4.7** - Production-ready protocol for cloud cost source plugins

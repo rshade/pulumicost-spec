@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // Budget.proto defines messages for budget information from cost management services.
 // This file contains the data structures for representing spending limits, thresholds,
 // and budget status across different cloud providers.
@@ -20,7 +6,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: pulumicost/v1/budget.proto
+// source: finfocus/v1/budget.proto
 
 package pbc
 
@@ -83,11 +69,11 @@ func (x BudgetPeriod) String() string {
 }
 
 func (BudgetPeriod) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_budget_proto_enumTypes[0].Descriptor()
+	return file_finfocus_v1_budget_proto_enumTypes[0].Descriptor()
 }
 
 func (BudgetPeriod) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_budget_proto_enumTypes[0]
+	return &file_finfocus_v1_budget_proto_enumTypes[0]
 }
 
 func (x BudgetPeriod) Number() protoreflect.EnumNumber {
@@ -96,7 +82,7 @@ func (x BudgetPeriod) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BudgetPeriod.Descriptor instead.
 func (BudgetPeriod) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{0}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{0}
 }
 
 // ThresholdType specifies whether the threshold applies to actual or forecasted spending.
@@ -133,11 +119,11 @@ func (x ThresholdType) String() string {
 }
 
 func (ThresholdType) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_budget_proto_enumTypes[1].Descriptor()
+	return file_finfocus_v1_budget_proto_enumTypes[1].Descriptor()
 }
 
 func (ThresholdType) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_budget_proto_enumTypes[1]
+	return &file_finfocus_v1_budget_proto_enumTypes[1]
 }
 
 func (x ThresholdType) Number() protoreflect.EnumNumber {
@@ -146,7 +132,7 @@ func (x ThresholdType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ThresholdType.Descriptor instead.
 func (ThresholdType) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{1}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{1}
 }
 
 // BudgetHealthStatus represents the overall health state of a budget.
@@ -189,11 +175,11 @@ func (x BudgetHealthStatus) String() string {
 }
 
 func (BudgetHealthStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_budget_proto_enumTypes[2].Descriptor()
+	return file_finfocus_v1_budget_proto_enumTypes[2].Descriptor()
 }
 
 func (BudgetHealthStatus) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_budget_proto_enumTypes[2]
+	return &file_finfocus_v1_budget_proto_enumTypes[2]
 }
 
 func (x BudgetHealthStatus) Number() protoreflect.EnumNumber {
@@ -202,7 +188,7 @@ func (x BudgetHealthStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BudgetHealthStatus.Descriptor instead.
 func (BudgetHealthStatus) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{2}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{2}
 }
 
 // Budget represents a spending limit with alert thresholds from cloud cost management services.
@@ -213,7 +199,7 @@ type Budget struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                                                                    // Human-readable budget name (required, non-empty)
 	Source        string                 `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`                                                                                // Provider identifier (e.g., "aws-budgets", "gcp-billing", "kubecost")
 	Amount        *BudgetAmount          `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`                                                                                // Monetary limit and currency (required)
-	Period        BudgetPeriod           `protobuf:"varint,5,opt,name=period,proto3,enum=pulumicost.v1.BudgetPeriod" json:"period,omitempty"`                                               // Time interval for budget calculations (required)
+	Period        BudgetPeriod           `protobuf:"varint,5,opt,name=period,proto3,enum=finfocus.v1.BudgetPeriod" json:"period,omitempty"`                                                 // Time interval for budget calculations (required)
 	Filter        *BudgetFilter          `protobuf:"bytes,6,opt,name=filter,proto3" json:"filter,omitempty"`                                                                                // Optional scope restrictions (provider, region, tags)
 	Thresholds    []*BudgetThreshold     `protobuf:"bytes,7,rep,name=thresholds,proto3" json:"thresholds,omitempty"`                                                                        // Alert points with percentages (optional)
 	Status        *BudgetStatus          `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`                                                                                // Current spending state (optional, populated when include_status=true)
@@ -226,7 +212,7 @@ type Budget struct {
 
 func (x *Budget) Reset() {
 	*x = Budget{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[0]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -238,7 +224,7 @@ func (x *Budget) String() string {
 func (*Budget) ProtoMessage() {}
 
 func (x *Budget) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[0]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -251,7 +237,7 @@ func (x *Budget) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Budget.ProtoReflect.Descriptor instead.
 func (*Budget) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{0}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Budget) GetId() string {
@@ -342,7 +328,7 @@ type BudgetAmount struct {
 
 func (x *BudgetAmount) Reset() {
 	*x = BudgetAmount{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[1]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -354,7 +340,7 @@ func (x *BudgetAmount) String() string {
 func (*BudgetAmount) ProtoMessage() {}
 
 func (x *BudgetAmount) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[1]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -367,7 +353,7 @@ func (x *BudgetAmount) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BudgetAmount.ProtoReflect.Descriptor instead.
 func (*BudgetAmount) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{1}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *BudgetAmount) GetLimit() float64 {
@@ -398,7 +384,7 @@ type BudgetFilter struct {
 
 func (x *BudgetFilter) Reset() {
 	*x = BudgetFilter{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[2]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -410,7 +396,7 @@ func (x *BudgetFilter) String() string {
 func (*BudgetFilter) ProtoMessage() {}
 
 func (x *BudgetFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[2]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -423,7 +409,7 @@ func (x *BudgetFilter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BudgetFilter.ProtoReflect.Descriptor instead.
 func (*BudgetFilter) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{2}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *BudgetFilter) GetProviders() []string {
@@ -457,17 +443,17 @@ func (x *BudgetFilter) GetTags() map[string]string {
 // BudgetThreshold defines alert points with percentages and trigger types.
 type BudgetThreshold struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Percentage    float64                `protobuf:"fixed64,1,opt,name=percentage,proto3" json:"percentage,omitempty"`                     // Alert threshold percentage (required, 0-100)
-	Type          ThresholdType          `protobuf:"varint,2,opt,name=type,proto3,enum=pulumicost.v1.ThresholdType" json:"type,omitempty"` // Actual vs forecasted spending (required)
-	Triggered     bool                   `protobuf:"varint,3,opt,name=triggered,proto3" json:"triggered,omitempty"`                        // Whether threshold has been crossed (optional)
-	TriggeredAt   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=triggered_at,json=triggeredAt,proto3" json:"triggered_at,omitempty"`  // When threshold was crossed (optional)
+	Percentage    float64                `protobuf:"fixed64,1,opt,name=percentage,proto3" json:"percentage,omitempty"`                    // Alert threshold percentage (required, 0-100)
+	Type          ThresholdType          `protobuf:"varint,2,opt,name=type,proto3,enum=finfocus.v1.ThresholdType" json:"type,omitempty"`  // Actual vs forecasted spending (required)
+	Triggered     bool                   `protobuf:"varint,3,opt,name=triggered,proto3" json:"triggered,omitempty"`                       // Whether threshold has been crossed (optional)
+	TriggeredAt   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=triggered_at,json=triggeredAt,proto3" json:"triggered_at,omitempty"` // When threshold was crossed (optional)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *BudgetThreshold) Reset() {
 	*x = BudgetThreshold{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[3]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -479,7 +465,7 @@ func (x *BudgetThreshold) String() string {
 func (*BudgetThreshold) ProtoMessage() {}
 
 func (x *BudgetThreshold) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[3]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -492,7 +478,7 @@ func (x *BudgetThreshold) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BudgetThreshold.ProtoReflect.Descriptor instead.
 func (*BudgetThreshold) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{3}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *BudgetThreshold) GetPercentage() float64 {
@@ -532,14 +518,14 @@ type BudgetStatus struct {
 	PercentageUsed       float64                `protobuf:"fixed64,3,opt,name=percentage_used,json=percentageUsed,proto3" json:"percentage_used,omitempty"`                   // Current utilization percentage (required, can exceed 100 for exceeded budgets)
 	PercentageForecasted float64                `protobuf:"fixed64,4,opt,name=percentage_forecasted,json=percentageForecasted,proto3" json:"percentage_forecasted,omitempty"` // Forecasted utilization percentage (optional, can exceed 100)
 	Currency             string                 `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`                                                       // Currency for spend amounts (required, 3 characters)
-	Health               BudgetHealthStatus     `protobuf:"varint,6,opt,name=health,proto3,enum=pulumicost.v1.BudgetHealthStatus" json:"health,omitempty"`                    // Overall budget health assessment (required)
+	Health               BudgetHealthStatus     `protobuf:"varint,6,opt,name=health,proto3,enum=finfocus.v1.BudgetHealthStatus" json:"health,omitempty"`                      // Overall budget health assessment (required)
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
 
 func (x *BudgetStatus) Reset() {
 	*x = BudgetStatus{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[4]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -551,7 +537,7 @@ func (x *BudgetStatus) String() string {
 func (*BudgetStatus) ProtoMessage() {}
 
 func (x *BudgetStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[4]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -564,7 +550,7 @@ func (x *BudgetStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BudgetStatus.ProtoReflect.Descriptor instead.
 func (*BudgetStatus) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{4}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *BudgetStatus) GetCurrentSpend() float64 {
@@ -621,7 +607,7 @@ type GetBudgetsRequest struct {
 
 func (x *GetBudgetsRequest) Reset() {
 	*x = GetBudgetsRequest{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[5]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -633,7 +619,7 @@ func (x *GetBudgetsRequest) String() string {
 func (*GetBudgetsRequest) ProtoMessage() {}
 
 func (x *GetBudgetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[5]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -646,7 +632,7 @@ func (x *GetBudgetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBudgetsRequest.ProtoReflect.Descriptor instead.
 func (*GetBudgetsRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{5}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetBudgetsRequest) GetFilter() *BudgetFilter {
@@ -674,7 +660,7 @@ type GetBudgetsResponse struct {
 
 func (x *GetBudgetsResponse) Reset() {
 	*x = GetBudgetsResponse{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[6]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -686,7 +672,7 @@ func (x *GetBudgetsResponse) String() string {
 func (*GetBudgetsResponse) ProtoMessage() {}
 
 func (x *GetBudgetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[6]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -699,7 +685,7 @@ func (x *GetBudgetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBudgetsResponse.ProtoReflect.Descriptor instead.
 func (*GetBudgetsResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{6}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetBudgetsResponse) GetBudgets() []*Budget {
@@ -731,7 +717,7 @@ type BudgetSummary struct {
 
 func (x *BudgetSummary) Reset() {
 	*x = BudgetSummary{}
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[7]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -743,7 +729,7 @@ func (x *BudgetSummary) String() string {
 func (*BudgetSummary) ProtoMessage() {}
 
 func (x *BudgetSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_budget_proto_msgTypes[7]
+	mi := &file_finfocus_v1_budget_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -756,7 +742,7 @@ func (x *BudgetSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BudgetSummary.ProtoReflect.Descriptor instead.
 func (*BudgetSummary) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_budget_proto_rawDescGZIP(), []int{7}
+	return file_finfocus_v1_budget_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *BudgetSummary) GetTotalBudgets() int32 {
@@ -794,209 +780,133 @@ func (x *BudgetSummary) GetBudgetsCritical() int32 {
 	return 0
 }
 
-var File_pulumicost_v1_budget_proto protoreflect.FileDescriptor
+var File_finfocus_v1_budget_proto protoreflect.FileDescriptor
 
-const file_pulumicost_v1_budget_proto_rawDesc = "" +
-	"
-" +
-	"pulumicost/v1/budget.protopulumicost.v1google/protobuf/timestamp.proto\"Ì
-" +
-	"Budget
-" +
-	"id (	Rid
-" +
-	"name (	Rname
-" +
-	"source (	Rsource3
-" +
-	"amount (2.pulumicost.v1.BudgetAmountRamount3
-" +
-	"period (2.pulumicost.v1.BudgetPeriodRperiod3
-" +
-	"filter (2.pulumicost.v1.BudgetFilterRfilter>
-" +
-	"
-" +
-	"thresholds (2.pulumicost.v1.BudgetThresholdR
-" +
-	"thresholds3
-" +
-	"status (2.pulumicost.v1.BudgetStatusRstatus9
-" +
-	"
-" +
-	"created_at	 (2.google.protobuf.TimestampR	createdAt9
-" +
-	"
-" +
-	"updated_at
-" +
-	" (2.google.protobuf.TimestampR	updatedAt?
-" +
-	"metadata (2#.pulumicost.v1.Budget.MetadataEntryRmetadata;
-" +
-	"MetadataEntry
-" +
-	"key (	Rkey
-" +
-	"value (	Rvalue:8\"@
-" +
-	"BudgetAmount
-" +
-	"limit (Rlimit
-" +
-	"currency (	Rcurrency\"á
-" +
-	"BudgetFilter
-" +
-	"	providers (	R	providers
-" +
-	"regions (	Rregions%
-" +
-	"resource_types (	RresourceTypes9
-" +
-	"tags (2%.pulumicost.v1.BudgetFilter.TagsEntryRtags7
-" +
-	"	TagsEntry
-" +
-	"key (	Rkey
-" +
-	"value (	Rvalue:8\"À
-" +
-	"BudgetThreshold
-" +
-	"
-" +
-	"percentage (R
-" +
-	"percentage0
-" +
-	"type (2.pulumicost.v1.ThresholdTypeRtype
-" +
-	"	triggered (R	triggered=
-" +
-	"triggered_at (2.google.protobuf.TimestampRtriggeredAt\"“
-" +
-	"BudgetStatus#
-" +
-	"current_spend (RcurrentSpend)
-" +
-	"forecasted_spend (RforecastedSpend'
-" +
-	"percentage_used (RpercentageUsed3
-" +
-	"percentage_forecasted (RpercentageForecasted
-" +
-	"currency (	Rcurrency9
-" +
-	"health (2!.pulumicost.v1.BudgetHealthStatusRhealth\"o
-" +
-	"GetBudgetsRequest3
-" +
-	"filter (2.pulumicost.v1.BudgetFilterRfilter%
-" +
-	"include_status (RincludeStatus\"}
-" +
-	"GetBudgetsResponse/
-" +
-	"budgets (2.pulumicost.v1.BudgetRbudgets6
-" +
-	"summary (2.pulumicost.v1.BudgetSummaryRsummary\"Ò
-" +
-	"BudgetSummary#
-" +
-	"total_budgets (RtotalBudgets
-" +
-	"
-" +
-	"budgets_ok (R	budgetsOk'
-" +
-	"budgets_warning (RbudgetsWarning)
-" +
-	"budgets_exceeded (RbudgetsExceeded)
-" +
-	"budgets_critical (RbudgetsCritical*´
-" +
-	"BudgetPeriod
-" +
-	"BUDGET_PERIOD_UNSPECIFIED 
-" +
-	"BUDGET_PERIOD_DAILY
-" +
-	"BUDGET_PERIOD_WEEKLY
-" +
-	"BUDGET_PERIOD_MONTHLY
-" +
-	"BUDGET_PERIOD_QUARTERLY
-" +
-	"BUDGET_PERIOD_ANNUALLY*i
-" +
-	"ThresholdType
-" +
-	"THRESHOLD_TYPE_UNSPECIFIED 
-" +
-	"THRESHOLD_TYPE_ACTUAL
-" +
-	"THRESHOLD_TYPE_FORECASTED*¿
-" +
-	"BudgetHealthStatus$
-" +
-	" BUDGET_HEALTH_STATUS_UNSPECIFIED 
-" +
-	"BUDGET_HEALTH_STATUS_OK 
-" +
-	"BUDGET_HEALTH_STATUS_WARNING!
-" +
-	"BUDGET_HEALTH_STATUS_CRITICAL!
-" +
-	"BUDGET_HEALTH_STATUS_EXCEEDEDBBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcbproto3"
+const file_finfocus_v1_budget_proto_rawDesc = "" +
+	"\n" +
+	"\x18finfocus/v1/budget.proto\x12\vfinfocus.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc0\x04\n" +
+	"\x06Budget\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06source\x18\x03 \x01(\tR\x06source\x121\n" +
+	"\x06amount\x18\x04 \x01(\v2\x19.finfocus.v1.BudgetAmountR\x06amount\x121\n" +
+	"\x06period\x18\x05 \x01(\x0e2\x19.finfocus.v1.BudgetPeriodR\x06period\x121\n" +
+	"\x06filter\x18\x06 \x01(\v2\x19.finfocus.v1.BudgetFilterR\x06filter\x12<\n" +
+	"\n" +
+	"thresholds\x18\a \x03(\v2\x1c.finfocus.v1.BudgetThresholdR\n" +
+	"thresholds\x121\n" +
+	"\x06status\x18\b \x01(\v2\x19.finfocus.v1.BudgetStatusR\x06status\x129\n" +
+	"\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12=\n" +
+	"\bmetadata\x18\v \x03(\v2!.finfocus.v1.Budget.MetadataEntryR\bmetadata\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"@\n" +
+	"\fBudgetAmount\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x01R\x05limit\x12\x1a\n" +
+	"\bcurrency\x18\x02 \x01(\tR\bcurrency\"\xdf\x01\n" +
+	"\fBudgetFilter\x12\x1c\n" +
+	"\tproviders\x18\x01 \x03(\tR\tproviders\x12\x18\n" +
+	"\aregions\x18\x02 \x03(\tR\aregions\x12%\n" +
+	"\x0eresource_types\x18\x03 \x03(\tR\rresourceTypes\x127\n" +
+	"\x04tags\x18\x04 \x03(\v2#.finfocus.v1.BudgetFilter.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xbe\x01\n" +
+	"\x0fBudgetThreshold\x12\x1e\n" +
+	"\n" +
+	"percentage\x18\x01 \x01(\x01R\n" +
+	"percentage\x12.\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x1a.finfocus.v1.ThresholdTypeR\x04type\x12\x1c\n" +
+	"\ttriggered\x18\x03 \x01(\bR\ttriggered\x12=\n" +
+	"\ftriggered_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vtriggeredAt\"\x91\x02\n" +
+	"\fBudgetStatus\x12#\n" +
+	"\rcurrent_spend\x18\x01 \x01(\x01R\fcurrentSpend\x12)\n" +
+	"\x10forecasted_spend\x18\x02 \x01(\x01R\x0fforecastedSpend\x12'\n" +
+	"\x0fpercentage_used\x18\x03 \x01(\x01R\x0epercentageUsed\x123\n" +
+	"\x15percentage_forecasted\x18\x04 \x01(\x01R\x14percentageForecasted\x12\x1a\n" +
+	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x127\n" +
+	"\x06health\x18\x06 \x01(\x0e2\x1f.finfocus.v1.BudgetHealthStatusR\x06health\"m\n" +
+	"\x11GetBudgetsRequest\x121\n" +
+	"\x06filter\x18\x01 \x01(\v2\x19.finfocus.v1.BudgetFilterR\x06filter\x12%\n" +
+	"\x0einclude_status\x18\x02 \x01(\bR\rincludeStatus\"y\n" +
+	"\x12GetBudgetsResponse\x12-\n" +
+	"\abudgets\x18\x01 \x03(\v2\x13.finfocus.v1.BudgetR\abudgets\x124\n" +
+	"\asummary\x18\x02 \x01(\v2\x1a.finfocus.v1.BudgetSummaryR\asummary\"\xd2\x01\n" +
+	"\rBudgetSummary\x12#\n" +
+	"\rtotal_budgets\x18\x01 \x01(\x05R\ftotalBudgets\x12\x1d\n" +
+	"\n" +
+	"budgets_ok\x18\x02 \x01(\x05R\tbudgetsOk\x12'\n" +
+	"\x0fbudgets_warning\x18\x03 \x01(\x05R\x0ebudgetsWarning\x12)\n" +
+	"\x10budgets_exceeded\x18\x04 \x01(\x05R\x0fbudgetsExceeded\x12)\n" +
+	"\x10budgets_critical\x18\x05 \x01(\x05R\x0fbudgetsCritical*\xb4\x01\n" +
+	"\fBudgetPeriod\x12\x1d\n" +
+	"\x19BUDGET_PERIOD_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13BUDGET_PERIOD_DAILY\x10\x01\x12\x18\n" +
+	"\x14BUDGET_PERIOD_WEEKLY\x10\x02\x12\x19\n" +
+	"\x15BUDGET_PERIOD_MONTHLY\x10\x03\x12\x1b\n" +
+	"\x17BUDGET_PERIOD_QUARTERLY\x10\x04\x12\x1a\n" +
+	"\x16BUDGET_PERIOD_ANNUALLY\x10\x05*i\n" +
+	"\rThresholdType\x12\x1e\n" +
+	"\x1aTHRESHOLD_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
+	"\x15THRESHOLD_TYPE_ACTUAL\x10\x01\x12\x1d\n" +
+	"\x19THRESHOLD_TYPE_FORECASTED\x10\x02*\xbf\x01\n" +
+	"\x12BudgetHealthStatus\x12$\n" +
+	" BUDGET_HEALTH_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17BUDGET_HEALTH_STATUS_OK\x10\x01\x12 \n" +
+	"\x1cBUDGET_HEALTH_STATUS_WARNING\x10\x02\x12!\n" +
+	"\x1dBUDGET_HEALTH_STATUS_CRITICAL\x10\x03\x12!\n" +
+	"\x1dBUDGET_HEALTH_STATUS_EXCEEDED\x10\x04B>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
 
 var (
-	file_pulumicost_v1_budget_proto_rawDescOnce sync.Once
-	file_pulumicost_v1_budget_proto_rawDescData []byte
+	file_finfocus_v1_budget_proto_rawDescOnce sync.Once
+	file_finfocus_v1_budget_proto_rawDescData []byte
 )
 
-func file_pulumicost_v1_budget_proto_rawDescGZIP() []byte {
-	file_pulumicost_v1_budget_proto_rawDescOnce.Do(func() {
-		file_pulumicost_v1_budget_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_pulumicost_v1_budget_proto_rawDesc), len(file_pulumicost_v1_budget_proto_rawDesc)))
+func file_finfocus_v1_budget_proto_rawDescGZIP() []byte {
+	file_finfocus_v1_budget_proto_rawDescOnce.Do(func() {
+		file_finfocus_v1_budget_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_finfocus_v1_budget_proto_rawDesc), len(file_finfocus_v1_budget_proto_rawDesc)))
 	})
-	return file_pulumicost_v1_budget_proto_rawDescData
+	return file_finfocus_v1_budget_proto_rawDescData
 }
 
-var file_pulumicost_v1_budget_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_pulumicost_v1_budget_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
-var file_pulumicost_v1_budget_proto_goTypes = []any{
-	(BudgetPeriod)(0),             // 0: pulumicost.v1.BudgetPeriod
-	(ThresholdType)(0),            // 1: pulumicost.v1.ThresholdType
-	(BudgetHealthStatus)(0),       // 2: pulumicost.v1.BudgetHealthStatus
-	(*Budget)(nil),                // 3: pulumicost.v1.Budget
-	(*BudgetAmount)(nil),          // 4: pulumicost.v1.BudgetAmount
-	(*BudgetFilter)(nil),          // 5: pulumicost.v1.BudgetFilter
-	(*BudgetThreshold)(nil),       // 6: pulumicost.v1.BudgetThreshold
-	(*BudgetStatus)(nil),          // 7: pulumicost.v1.BudgetStatus
-	(*GetBudgetsRequest)(nil),     // 8: pulumicost.v1.GetBudgetsRequest
-	(*GetBudgetsResponse)(nil),    // 9: pulumicost.v1.GetBudgetsResponse
-	(*BudgetSummary)(nil),         // 10: pulumicost.v1.BudgetSummary
-	nil,                           // 11: pulumicost.v1.Budget.MetadataEntry
-	nil,                           // 12: pulumicost.v1.BudgetFilter.TagsEntry
+var file_finfocus_v1_budget_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_finfocus_v1_budget_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_finfocus_v1_budget_proto_goTypes = []any{
+	(BudgetPeriod)(0),             // 0: finfocus.v1.BudgetPeriod
+	(ThresholdType)(0),            // 1: finfocus.v1.ThresholdType
+	(BudgetHealthStatus)(0),       // 2: finfocus.v1.BudgetHealthStatus
+	(*Budget)(nil),                // 3: finfocus.v1.Budget
+	(*BudgetAmount)(nil),          // 4: finfocus.v1.BudgetAmount
+	(*BudgetFilter)(nil),          // 5: finfocus.v1.BudgetFilter
+	(*BudgetThreshold)(nil),       // 6: finfocus.v1.BudgetThreshold
+	(*BudgetStatus)(nil),          // 7: finfocus.v1.BudgetStatus
+	(*GetBudgetsRequest)(nil),     // 8: finfocus.v1.GetBudgetsRequest
+	(*GetBudgetsResponse)(nil),    // 9: finfocus.v1.GetBudgetsResponse
+	(*BudgetSummary)(nil),         // 10: finfocus.v1.BudgetSummary
+	nil,                           // 11: finfocus.v1.Budget.MetadataEntry
+	nil,                           // 12: finfocus.v1.BudgetFilter.TagsEntry
 	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
 }
-var file_pulumicost_v1_budget_proto_depIdxs = []int32{
-	4,  // 0: pulumicost.v1.Budget.amount:type_name -> pulumicost.v1.BudgetAmount
-	0,  // 1: pulumicost.v1.Budget.period:type_name -> pulumicost.v1.BudgetPeriod
-	5,  // 2: pulumicost.v1.Budget.filter:type_name -> pulumicost.v1.BudgetFilter
-	6,  // 3: pulumicost.v1.Budget.thresholds:type_name -> pulumicost.v1.BudgetThreshold
-	7,  // 4: pulumicost.v1.Budget.status:type_name -> pulumicost.v1.BudgetStatus
-	13, // 5: pulumicost.v1.Budget.created_at:type_name -> google.protobuf.Timestamp
-	13, // 6: pulumicost.v1.Budget.updated_at:type_name -> google.protobuf.Timestamp
-	11, // 7: pulumicost.v1.Budget.metadata:type_name -> pulumicost.v1.Budget.MetadataEntry
-	12, // 8: pulumicost.v1.BudgetFilter.tags:type_name -> pulumicost.v1.BudgetFilter.TagsEntry
-	1,  // 9: pulumicost.v1.BudgetThreshold.type:type_name -> pulumicost.v1.ThresholdType
-	13, // 10: pulumicost.v1.BudgetThreshold.triggered_at:type_name -> google.protobuf.Timestamp
-	2,  // 11: pulumicost.v1.BudgetStatus.health:type_name -> pulumicost.v1.BudgetHealthStatus
-	5,  // 12: pulumicost.v1.GetBudgetsRequest.filter:type_name -> pulumicost.v1.BudgetFilter
-	3,  // 13: pulumicost.v1.GetBudgetsResponse.budgets:type_name -> pulumicost.v1.Budget
-	10, // 14: pulumicost.v1.GetBudgetsResponse.summary:type_name -> pulumicost.v1.BudgetSummary
+var file_finfocus_v1_budget_proto_depIdxs = []int32{
+	4,  // 0: finfocus.v1.Budget.amount:type_name -> finfocus.v1.BudgetAmount
+	0,  // 1: finfocus.v1.Budget.period:type_name -> finfocus.v1.BudgetPeriod
+	5,  // 2: finfocus.v1.Budget.filter:type_name -> finfocus.v1.BudgetFilter
+	6,  // 3: finfocus.v1.Budget.thresholds:type_name -> finfocus.v1.BudgetThreshold
+	7,  // 4: finfocus.v1.Budget.status:type_name -> finfocus.v1.BudgetStatus
+	13, // 5: finfocus.v1.Budget.created_at:type_name -> google.protobuf.Timestamp
+	13, // 6: finfocus.v1.Budget.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 7: finfocus.v1.Budget.metadata:type_name -> finfocus.v1.Budget.MetadataEntry
+	12, // 8: finfocus.v1.BudgetFilter.tags:type_name -> finfocus.v1.BudgetFilter.TagsEntry
+	1,  // 9: finfocus.v1.BudgetThreshold.type:type_name -> finfocus.v1.ThresholdType
+	13, // 10: finfocus.v1.BudgetThreshold.triggered_at:type_name -> google.protobuf.Timestamp
+	2,  // 11: finfocus.v1.BudgetStatus.health:type_name -> finfocus.v1.BudgetHealthStatus
+	5,  // 12: finfocus.v1.GetBudgetsRequest.filter:type_name -> finfocus.v1.BudgetFilter
+	3,  // 13: finfocus.v1.GetBudgetsResponse.budgets:type_name -> finfocus.v1.Budget
+	10, // 14: finfocus.v1.GetBudgetsResponse.summary:type_name -> finfocus.v1.BudgetSummary
 	15, // [15:15] is the sub-list for method output_type
 	15, // [15:15] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name
@@ -1004,27 +914,27 @@ var file_pulumicost_v1_budget_proto_depIdxs = []int32{
 	0,  // [0:15] is the sub-list for field type_name
 }
 
-func init() { file_pulumicost_v1_budget_proto_init() }
-func file_pulumicost_v1_budget_proto_init() {
-	if File_pulumicost_v1_budget_proto != nil {
+func init() { file_finfocus_v1_budget_proto_init() }
+func file_finfocus_v1_budget_proto_init() {
+	if File_finfocus_v1_budget_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_budget_proto_rawDesc), len(file_pulumicost_v1_budget_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_finfocus_v1_budget_proto_rawDesc), len(file_finfocus_v1_budget_proto_rawDesc)),
 			NumEnums:      3,
 			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_pulumicost_v1_budget_proto_goTypes,
-		DependencyIndexes: file_pulumicost_v1_budget_proto_depIdxs,
-		EnumInfos:         file_pulumicost_v1_budget_proto_enumTypes,
-		MessageInfos:      file_pulumicost_v1_budget_proto_msgTypes,
+		GoTypes:           file_finfocus_v1_budget_proto_goTypes,
+		DependencyIndexes: file_finfocus_v1_budget_proto_depIdxs,
+		EnumInfos:         file_finfocus_v1_budget_proto_enumTypes,
+		MessageInfos:      file_finfocus_v1_budget_proto_msgTypes,
 	}.Build()
-	File_pulumicost_v1_budget_proto = out.File
-	file_pulumicost_v1_budget_proto_goTypes = nil
-	file_pulumicost_v1_budget_proto_depIdxs = nil
+	File_finfocus_v1_budget_proto = out.File
+	file_finfocus_v1_budget_proto_goTypes = nil
+	file_finfocus_v1_budget_proto_depIdxs = nil
 }

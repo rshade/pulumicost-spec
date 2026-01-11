@@ -1,17 +1,3 @@
-// Copyright 2026 PulumiCost/FinFocus Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // Package pluginsdk provides Prometheus metrics instrumentation for PulumiCost plugins.
 package pluginsdk
 
@@ -24,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
@@ -35,7 +21,7 @@ import (
 
 const (
 	// MetricNamespace is the Prometheus namespace for all plugin metrics.
-	MetricNamespace = "pulumicost"
+	MetricNamespace = "finfocus"
 
 	// MetricSubsystem is the Prometheus subsystem for plugin metrics.
 	MetricSubsystem = "plugin"
@@ -184,8 +170,8 @@ func NewPluginMetrics(pluginName string) *PluginMetrics {
 // Prometheus metrics for each unary RPC call.
 //
 // The interceptor records:
-//   - pulumicost_plugin_requests_total: Counter with labels grpc_method, grpc_code, plugin_name
-//   - pulumicost_plugin_request_duration_seconds: Histogram with labels grpc_method, plugin_name
+//   - finfocus_plugin_requests_total: Counter with labels grpc_method, grpc_code, plugin_name
+//   - finfocus_plugin_request_duration_seconds: Histogram with labels grpc_method, plugin_name
 //
 // Parameters:
 //   - pluginName: Identifier for the plugin, used as the plugin_name label value
@@ -230,7 +216,7 @@ func MetricsInterceptorWithRegistry(metrics *PluginMetrics) grpc.UnaryServerInte
 		duration := time.Since(start)
 		code := status.Code(err)
 
-		// Use the full method (e.g., "pulumicost.v1.CostSource/GetProjectedCost")
+		// Use the full method (e.g., "finfocus.v1.CostSource/GetProjectedCost")
 		// Trim leading slash to ensure uniqueness across services while keeping clean labels.
 		method := info.FullMethod
 		if len(method) > 0 && method[0] == '/' {
@@ -241,7 +227,7 @@ func MetricsInterceptorWithRegistry(metrics *PluginMetrics) grpc.UnaryServerInte
 		metrics.RequestDuration.WithLabelValues(method, metrics.pluginName).Observe(duration.Seconds())
 
 		// Record recommendation-specific metrics for GetRecommendations
-		if method == "pulumicost.v1.CostSource/GetRecommendations" && err == nil {
+		if method == "finfocus.v1.CostSource/GetRecommendations" && err == nil {
 			if recResp, ok := resp.(*pbc.GetRecommendationsResponse); ok {
 				recordRecommendationMetrics(metrics, recResp)
 			}

@@ -1,20 +1,13 @@
 <!--
-Sync Impact Report - Constitution v1.3.0
-========================================
-Version Change: 1.2.0 → 1.3.0
+Sync Impact Report - Constitution v1.3.2
+=======================================
+Version Change: 1.3.1 → 1.3.2
 Modified Principles:
-  - Section I (gRPC Proto Specification-First Development): Merged with "Contracts are Sacred" principle.
-  - Section VII (Comprehensive Documentation): Added mandatory notice regarding the upcoming rename to "FinFocus" (v0.2.0).
-  - Section IX (Observability & Validation): Merged with "Observability is for Maintainers" and "Logging and Metrics are Separate".
-Added Sections:
-  - Section III (The Spec Consumes, It Does Not Calculate): Critical architectural constraint from GEMINI.md.
-  - Section IV (Strict Separation of Concerns): Clarifies the repository's role as a specification, not an application.
-  - Section X (Follow Established Patterns): Mandates use of optimized patterns like the Standard Domain Enum.
+  - Section XI (Mandatory Copyright Headers): Removed specific attribution text
+    requirement ("Copyright 2026 PulumiCost/FinFocus Authors").
 Removed Sections: None
-Templates Requiring Updates:
-  ✅ .specify/templates/plan-template.md - Alignment with "Spec Consumes" principle.
-  ✅ .specify/templates/spec-template.md - Documentation requirements updated.
-  ✅ .specify/templates/tasks-template.md - Renaming tasks added to sample phases.
+Added Sections: None
+Templates Requiring Updates: None
 Follow-up TODOs: None
 -->
 
@@ -51,7 +44,7 @@ ecosystem and breaks interoperability.
 The specification and its implementing plugins are NOT responsible for complex pricing logic (e.g., tiered
 pricing, committed-use discounts):
 
-- **Data is Pre-Calculated**: The spec's role is to consume final, *adjusted* costs from upstream providers.
+- **Data is Pre-Calculated**: The spec's role is to consume final, _adjusted_ costs from upstream providers.
 - **No Complex Math**: Avoid embedding discount calculators or tiered-pricing engines in the SDK or plugins.
 - **Standardized Model**: Focus on providing a standardized model for the final cost data.
 
@@ -60,7 +53,7 @@ spec's role is standardized observability, not financial calculation.
 
 ### IV. Strict Separation of Concerns
 
-This repository defines the *specification* and foundational tooling, not the end-user application:
+This repository defines the _specification_ and foundational tooling, not the end-user application:
 
 - **Spec vs. Core**: `pulumicost-spec` defines interfaces; `pulumicost-core` contains application logic.
 - **Plugin SDK focus**: The SDK is for plugin creators, not end-users.
@@ -143,7 +136,6 @@ are met across the codebase.
 
 Every source file (Go, Proto, Script, Schema) MUST include the standard Apache 2.0 copyright header:
 
-- **Attribution**: Use "Copyright 2026 PulumiCost/FinFocus Authors".
 - **License**: Explicitly state "Licensed under the Apache License, Version 2.0".
 - **Persistence**: Headers must be maintained during the transition to FinFocus.
 
@@ -176,4 +168,4 @@ All PRs MUST verify:
 For day-to-day development guidance, refer to `CLAUDE.md` or `GEMINI.md` in the repository root. The
 constitution defines non-negotiable principles; these files provide practical workflow tips.
 
-**Version**: 1.3.1 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-11
+**Version**: 1.3.2 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-11
