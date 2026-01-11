@@ -1039,6 +1039,59 @@ func TestGetPluginInfo(t *testing.T) {
 		assert.Nil(t, resp)
 		assert.Equal(t, codes.Unimplemented, status.Code(err))
 	})
+
+	t.Run("plugin returns nil response - friendly error", func(t *testing.T) {
+		plugin := &errorPluginInfoPlugin{shouldReturnNil: true}
+		server := NewServer(plugin)
+		_, err := server.GetPluginInfo(context.Background(), &pbc.GetPluginInfoRequest{})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unable to retrieve plugin metadata")
+	})
+
+	t.Run("plugin returns incomplete metadata - friendly error", func(t *testing.T) {
+		plugin := &errorPluginInfoPlugin{incomplete: true}
+		server := NewServer(plugin)
+		_, err := server.GetPluginInfo(context.Background(), &pbc.GetPluginInfoRequest{})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "plugin metadata is incomplete")
+	})
+
+	t.Run("plugin returns invalid spec version - friendly error", func(t *testing.T) {
+		plugin := &errorPluginInfoPlugin{invalidSpec: true}
+		server := NewServer(plugin)
+		_, err := server.GetPluginInfo(context.Background(), &pbc.GetPluginInfoRequest{})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "plugin reported an invalid specification version")
+	})
+}
+
+type errorPluginInfoPlugin struct {
+	mockPlugin
+
+	shouldReturnNil bool
+	incomplete      bool
+	invalidSpec     bool
+}
+
+func (m *errorPluginInfoPlugin) GetPluginInfo(
+	_ context.Context,
+	_ *pbc.GetPluginInfoRequest,
+) (*pbc.GetPluginInfoResponse, error) {
+	if m.shouldReturnNil {
+		//nolint:nilnil // Intentional nil return for testing
+		return nil, nil
+	}
+	if m.incomplete {
+		return &pbc.GetPluginInfoResponse{Name: "test"}, nil
+	}
+	if m.invalidSpec {
+		return &pbc.GetPluginInfoResponse{
+			Name:        "test",
+			Version:     "v1.0.0",
+			SpecVersion: "invalid",
+		}, nil
+	}
+	return nil, errors.New("unexpected error")
 }
 
 type mockPluginInfoPlugin struct {

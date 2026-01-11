@@ -127,6 +127,76 @@ make validate
 - `make clean` - Clean generated files
 - `make tidy` - Tidy Go dependencies
 
+## SDK Client Timeout Configuration
+
+The PulumiCost Go SDK supports configurable per-client timeouts for plugin RPC calls. This prevents indefinite blocking on slow servers.
+
+### Basic Usage
+
+```go
+// Configure client with 5-second timeout
+cfg := pluginsdk.DefaultClientConfig("http://localhost:8080")
+cfg = cfg.WithTimeout(5 * time.Second)
+client := pluginsdk.NewClient(cfg)
+```
+
+### Timeout Precedence Rules
+
+When making RPC calls, timeout is resolved in this order (highest to lowest priority):
+
+1. **Context Deadline** (if set via `context.WithTimeout()`)
+2. **Custom HTTPClient.Timeout** (if `HTTPClient` provided)
+3. **ClientConfig.Timeout** (if > 0)
+4. **DefaultClientTimeout** (30 seconds)
+
+### Context Deadline Override
+
+```go
+cfg := pluginsdk.DefaultClientConfig("http://localhost:8080")
+cfg = cfg.WithTimeout(30 * time.Second)
+client := pluginsdk.NewClient(cfg)
+
+// Context deadline (1 second) takes precedence over client timeout (30 seconds)
+ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+defer cancel()
+resp, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
+if err != nil {
+    // Times out after 1 second (not 30 seconds)
+}
+```
+
+## User-Friendly GetPluginInfo Error Messages
+
+The SDK returns user-friendly error messages for GetPluginInfo RPC failures, while logging detailed information server-side for debugging.
+
+### Error Messages
+
+| Error Condition      | Client Receives                                    | Server Logs                                   |
+| -------------------- | -------------------------------------------------- | --------------------------------------------- |
+| Plugin returns nil   | "unable to retrieve plugin metadata"               | "GetPluginInfo returned nil response"         |
+| Incomplete metadata  | "plugin metadata is incomplete"                    | "GetPluginInfo returned incomplete response"  |
+| Invalid spec version | "plugin reported an invalid specification version" | "GetPluginInfo returned invalid spec_version" |
+
+## GetPluginInfo Performance Conformance
+
+The SDK includes performance conformance tests for GetPluginInfo RPC calls.
+
+### Thresholds
+
+- **Standard Conformance**: ≤100ms average latency
+- **Advanced Conformance**: ≤50ms average latency
+
+### Running Tests
+
+```bash
+# Run performance conformance test
+go test -v ./sdk/go/testing -run Performance_GetPluginInfoLatency
+```
+
+### Legacy Plugin Support
+
+Plugins without GetPluginInfo implementation are handled gracefully (Unimplemented error does not fail performance tests).
+
 ## Plugin Development
 
 ### Creating a Cost Source Plugin

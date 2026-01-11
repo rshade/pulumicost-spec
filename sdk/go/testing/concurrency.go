@@ -19,6 +19,7 @@ const (
 	MethodGetProjectedCost = "GetProjectedCost"
 	MethodGetPricingSpec   = "GetPricingSpec"
 	MethodGetBudgets       = "GetBudgets"
+	MethodGetPluginInfo    = "GetPluginInfo"
 	MethodConcurrency      = "Concurrency"
 )
 

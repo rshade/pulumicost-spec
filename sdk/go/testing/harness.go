@@ -60,6 +60,10 @@ const (
 	SupportsStandardLatencyMs = 50
 	// SupportsAdvancedLatencyMs is the Supports RPC advanced latency threshold in milliseconds.
 	SupportsAdvancedLatencyMs = 25
+	// GetPluginInfoStandardLatencyMs is the GetPluginInfo RPC standard latency threshold in milliseconds.
+	GetPluginInfoStandardLatencyMs = 100
+	// GetPluginInfoAdvancedLatencyMs is the GetPluginInfo RPC advanced latency threshold in milliseconds.
+	GetPluginInfoAdvancedLatencyMs = 50
 	// ProjectedCostStandardLatencyMs is the GetProjectedCost standard latency threshold in milliseconds.
 	ProjectedCostStandardLatencyMs = 200
 	// ProjectedCostAdvancedLatencyMs is the GetProjectedCost advanced latency threshold in milliseconds.
