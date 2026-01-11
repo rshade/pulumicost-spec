@@ -231,6 +231,15 @@ func TestClient_Protocol(t *testing.T) {
 	})
 }
 
+func TestClientConfig_WithTimeout(t *testing.T) {
+	cfg := pluginsdk.DefaultClientConfig("http://localhost:8080").WithTimeout(5 * time.Second)
+	assert.Equal(t, 5*time.Second, cfg.Timeout)
+	assert.Nil(t, cfg.HTTPClient) // Verify that default HTTP client is cleared so it gets rebuilt with new timeout
+
+	client := pluginsdk.NewClient(cfg)
+	assert.NotNil(t, client)
+}
+
 func TestDefaultClientConfig(t *testing.T) {
 	cfg := pluginsdk.DefaultClientConfig("http://example.com")
 

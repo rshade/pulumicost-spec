@@ -40,6 +40,11 @@ func DefaultBaselines() []PerformanceBaseline {
 			AdvancedLatency: SupportsAdvancedLatencyMs * time.Millisecond,
 		},
 		{
+			Method:          MethodGetPluginInfo,
+			StandardLatency: GetPluginInfoStandardLatencyMs * time.Millisecond,
+			AdvancedLatency: GetPluginInfoAdvancedLatencyMs * time.Millisecond,
+		},
+		{
 			Method:          MethodGetProjectedCost,
 			StandardLatency: ProjectedCostStandardLatencyMs * time.Millisecond,
 			AdvancedLatency: ProjectedCostAdvancedLatencyMs * time.Millisecond,
@@ -204,6 +209,13 @@ func PerformanceTests() []ConformanceSuiteTest {
 			TestFunc:    createSupportsLatencyTest(),
 		},
 		{
+			Name:        "Performance_GetPluginInfoLatency",
+			Description: "Validates GetPluginInfo RPC latency within thresholds",
+			Category:    CategoryPerformance,
+			MinLevel:    ConformanceLevelStandard,
+			TestFunc:    createGetPluginInfoLatencyTest(),
+		},
+		{
 			Name:        "Performance_GetProjectedCostLatency",
 			Description: "Validates GetProjectedCost RPC latency within thresholds",
 			Category:    CategoryPerformance,
@@ -284,6 +296,17 @@ func createSupportsLatencyTest() func(*TestHarness) TestResult {
 	}
 }
 
+func createGetPluginInfoLatencyTest() func(*TestHarness) TestResult {
+	return func(harness *TestHarness) TestResult {
+		baseline := GetBaseline(MethodGetPluginInfo)
+		result := measureLatency(MethodGetPluginInfo, LatencyTestIterations, func() error {
+			_, callErr := harness.Client().GetPluginInfo(context.Background(), &pbc.GetPluginInfoRequest{})
+			return callErr
+		})
+		compareToBaseline(result, baseline)
+		return buildLatencyTestResult(MethodGetPluginInfo, result, baseline)
+	}
+}
 func createGetProjectedCostLatencyTest() func(*TestHarness) TestResult {
 	return func(harness *TestHarness) TestResult {
 		baseline := GetBaseline(MethodGetProjectedCost)

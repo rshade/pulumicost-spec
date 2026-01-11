@@ -37,7 +37,14 @@ func TestPerformanceBaselineThresholds(t *testing.T) {
 	baselines := plugintesting.DefaultBaselines()
 
 	// Verify we have expected baselines
-	expectedMethods := []string{"Name", "Supports", "GetProjectedCost", "GetPricingSpec", "GetActualCost_24h"}
+	expectedMethods := []string{
+		"Name",
+		"Supports",
+		"GetPluginInfo",
+		"GetProjectedCost",
+		"GetPricingSpec",
+		"GetActualCost_24h",
+	}
 	for _, method := range expectedMethods {
 		found := false
 		for _, b := range baselines {
@@ -119,6 +126,7 @@ func TestPerformanceGetBaseline(t *testing.T) {
 	}{
 		{"Name", false, true, true},
 		{"Supports", false, true, true},
+		{"GetPluginInfo", false, true, true},
 		{"GetProjectedCost", false, true, true},
 		{"GetPricingSpec", false, true, true},
 		{"GetActualCost_24h", false, true, true},

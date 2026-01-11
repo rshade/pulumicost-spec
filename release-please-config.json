@@ -9,16 +9,16 @@
       "draft": false,
       "prerelease": false,
       "changelog-sections": [
-        {"type": "feat", "section": "Added", "hidden": false},
-        {"type": "fix", "section": "Fixed", "hidden": false},
-        {"type": "perf", "section": "Performance", "hidden": false},
-        {"type": "refactor", "section": "Changed", "hidden": false},
-        {"type": "docs", "section": "Documentation", "hidden": false},
-        {"type": "style", "section": "Style", "hidden": true},
-        {"type": "test", "section": "Tests", "hidden": true},
-        {"type": "build", "section": "Build & CI", "hidden": true},
-        {"type": "ci", "section": "Build & CI", "hidden": true},
-        {"type": "chore", "section": "Chores", "hidden": true}
+        { "type": "feat", "section": "Added", "hidden": false },
+        { "type": "fix", "section": "Fixed", "hidden": false },
+        { "type": "perf", "section": "Performance", "hidden": false },
+        { "type": "refactor", "section": "Changed", "hidden": false },
+        { "type": "docs", "section": "Documentation", "hidden": false },
+        { "type": "style", "section": "Style", "hidden": true },
+        { "type": "test", "section": "Tests", "hidden": true },
+        { "type": "build", "section": "Build & CI", "hidden": true },
+        { "type": "ci", "section": "Build & CI", "hidden": true },
+        { "type": "chore", "section": "Chores", "hidden": true }
       ],
       "extra-files": [
         {
@@ -35,6 +35,11 @@
           "type": "json",
           "path": "package-lock.json",
           "jsonpath": "$.packages[''].version"
+        },
+        {
+          "type": "go",
+          "path": "sdk/go/pluginsdk/version.go",
+          "pattern": "const SpecVersion = \"{version}\""
         }
       ]
     }

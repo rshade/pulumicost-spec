@@ -29,6 +29,7 @@
 - Sanitize secrets in examples
 
 ## Active Technologies
+- Go 1.25.5 + gRPC, protobuf, buf v1.32.1 (034-sdk-polish)
 
 - Go 1.25.5 (as specified in go.mod) + gRPC/protobuf (existing), buf v1.32.1 (existing for proto management) (001-sdk-polish-release)
 - N/A (SDK does not manage persistent storage) (001-sdk-polish-release)
