@@ -113,8 +113,25 @@ func DefaultClientConfig(baseURL string) ClientConfig {
 	}
 }
 
-// HighThroughputClientConfig returns a ClientConfig optimized for high-throughput scenarios.
-// It configures connection pooling for better performance when making many requests.
+// WithTimeout returns a copy of the configuration with the specified timeout.
+// This allows for fluent configuration chaining:
+//
+//	cfg := pluginsdk.DefaultClientConfig(url).WithTimeout(5 * time.Minute)
+func (c ClientConfig) WithTimeout(timeout time.Duration) ClientConfig {
+	c.Timeout = timeout
+	// If we have a default HTTP client, update its timeout too
+	// (but only if we own it/it was created by DefaultClientConfig)
+	if c.HTTPClient != nil && c.HTTPClient.Transport == nil {
+		// Determine if this is likely a default client we can modify safely
+		// or if we should just clear it to let NewClient create a new one.
+		// Safest is to clear HTTPClient if it was just the default one,
+		// forcing NewClient to rebuild it with the new timeout.
+		c.HTTPClient = nil
+	}
+	return c
+}
+
+// HighThroughputClientConfig returns a ClientConfig optimized for high-throughput scenarios.// It configures connection pooling for better performance when making many requests.
 func HighThroughputClientConfig(baseURL string) ClientConfig {
 	transport := &http.Transport{
 		MaxIdleConns:        DefaultMaxIdleConns,

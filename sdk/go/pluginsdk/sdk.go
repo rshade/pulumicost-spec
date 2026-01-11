@@ -339,7 +339,7 @@ func (s *Server) GetPluginInfo(
 		// Validate response before returning (defense against buggy/malicious plugins)
 		if resp == nil {
 			s.logger.Error().Msg("GetPluginInfo returned nil response")
-			return nil, status.Error(codes.Internal, "plugin returned nil response")
+			return nil, status.Error(codes.Internal, "unable to retrieve plugin metadata")
 		}
 		if resp.GetName() == "" || resp.GetVersion() == "" || resp.GetSpecVersion() == "" {
 			s.logger.Error().
@@ -349,7 +349,6 @@ func (s *Server) GetPluginInfo(
 				Msg("GetPluginInfo returned incomplete response")
 			return nil, status.Error(codes.Internal, "plugin metadata is incomplete")
 		}
-
 		if specErr := ValidateSpecVersion(resp.GetSpecVersion()); specErr != nil {
 			s.logger.Error().
 				Err(specErr).

@@ -1,6 +1,8 @@
 package pluginsdk_test
 
 import (
+	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
@@ -106,5 +108,40 @@ func BenchmarkIsValidSpecVersion(b *testing.B) {
 	b.ResetTimer()
 	for range b.N {
 		_ = pluginsdk.IsValidSpecVersion(version)
+	}
+}
+
+func TestSpecVersionMatchesLatestTag(t *testing.T) {
+	// Skip this test if we're not in a git repository or git is not available
+	if testing.Short() {
+		t.Skip("Skipping git-based test in short mode")
+	}
+
+	// Get all git tags and find the latest version
+	cmd := exec.Command("git", "tag", "--sort=-version:refname")
+	output, err := cmd.Output()
+	if err != nil {
+		t.Skipf("Skipping test: git command failed (not in git repo or git not available): %v", err)
+	}
+
+	tags := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(tags) == 0 || tags[0] == "" {
+		t.Skip("Skipping test: no git tags found")
+	}
+
+	latestTag := tags[0] // First tag is the latest due to --sort=-version:refname
+
+	// The tag should be in format like "0.4.14" or "v0.4.14"
+	// Normalize to ensure it has the "v" prefix
+	expectedVersion := latestTag
+	if !strings.HasPrefix(expectedVersion, "v") {
+		expectedVersion = "v" + expectedVersion
+	}
+
+	// Compare with the SpecVersion constant
+	if pluginsdk.SpecVersion != expectedVersion {
+		t.Errorf("SpecVersion constant (%q) does not match latest git tag (%q). "+
+			"Update sdk/go/pluginsdk/version.go to match the current release version.",
+			pluginsdk.SpecVersion, expectedVersion)
 	}
 }
