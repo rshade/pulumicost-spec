@@ -144,17 +144,17 @@ with zone-to-region validation
 
 ## Phase 7: User Story 5 - Core System Decoupling (Priority: P1)
 
-**Goal**: Documentation and integration guidance for pulumicost-core adoption
+**Goal**: Documentation and integration guidance for finfocus-core adoption
 
 **Independent Test**: Verify package is importable and documented for core migration
 
 ### Implementation for User Story 5
 
 - [x] T031 [US5] Update sdk/go/pluginsdk/README.md with mapping package documentation
-- [x] T032 [US5] Add migration guide section for pulumicost-core adapter replacement
+- [x] T032 [US5] Add migration guide section for finfocus-core adapter replacement
 - [x] T033 [US5] Add usage examples for all extraction functions in doc.go
 
-**Checkpoint**: Package ready for pulumicost-core adoption
+**Checkpoint**: Package ready for finfocus-core adoption
 
 ---
 
@@ -167,7 +167,7 @@ with zone-to-region validation
 - [x] T036 Add nil/empty input edge case tests for all functions
 - [x] T037 Run `make lint` and fix any issues
 - [x] T038 Run `make test` and verify all tests pass
-- [x] T038a Verify package is importable at github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping
+- [x] T038a Verify package is importable at github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping
 - [x] T039 Run quickstart.md validation scenarios manually
 - [x] T040 Update sdk/go/CLAUDE.md with mapping package documentation
 
@@ -264,7 +264,7 @@ Task T011: "Implement ExtractAWSRegion"        # Uses T009
 
 - Covers most common use case
 - Validates package structure and patterns
-- Enables pulumicost-core migration for AWS resources
+- Enables finfocus-core migration for AWS resources
 
 ---
 

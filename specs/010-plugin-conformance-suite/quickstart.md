@@ -5,7 +5,7 @@
 ## Overview
 
 The Plugin Conformance Test Suite validates that your CostSource plugin implementation meets the
-pulumicost-spec requirements. Run these tests to ensure your plugin is ready for production
+finfocus-spec requirements. Run these tests to ensure your plugin is ready for production
 deployment.
 
 ## Installation
@@ -13,7 +13,7 @@ deployment.
 Add the testing package to your plugin's test dependencies:
 
 ```bash
-go get github.com/rshade/pulumicost-spec/sdk/go/testing
+go get github.com/rshade/finfocus-spec/sdk/go/testing
 ```
 
 ## Basic Usage (< 10 lines)
@@ -24,7 +24,7 @@ package myplugin_test
 import (
     "testing"
 
-    plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+    plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
     "github.com/yourorg/myplugin"
 )
 

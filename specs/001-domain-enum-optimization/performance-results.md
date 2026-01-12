@@ -242,7 +242,7 @@ Enum size < 20 values?
 ```text
 goos: linux
 goarch: amd64
-pkg: github.com/rshade/pulumicost-spec/sdk/go/registry
+pkg: github.com/rshade/finfocus-spec/sdk/go/registry
 cpu: Intel(R) Core(TM) i7-6600U CPU @ 2.60GHz
 
 Optimized Slice-Based Validation:
@@ -267,7 +267,7 @@ BenchmarkValidation_9Values-4                  248740696          5.908 ns/op   
 BenchmarkValidation_14Values-4                 100000000         12.60 ns/op        0 B/op        0 allocs/op
 
 PASS
-ok   github.com/rshade/pulumicost-spec/sdk/go/registry 27.424s
+ok   github.com/rshade/finfocus-spec/sdk/go/registry 27.424s
 ```
 
 ## Conclusion
@@ -281,4 +281,4 @@ The optimized slice-based validation approach successfully achieves:
 - ✅ **100% backward compatibility** (all existing tests pass)
 
 The implementation exceeds all performance requirements and establishes a solid pattern for future enum validation
-in the PulumiCost ecosystem.
+in the FinFocus ecosystem.

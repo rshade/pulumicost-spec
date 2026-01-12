@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the API contract changes resulting from the PulumiCost to
+This document describes the API contract changes resulting from the FinFocus to
 FinFocus rename. Since this is a mechanical rename rather than new functionality,
 the contracts focus on package and module path changes.
 
@@ -10,15 +10,15 @@ the contracts focus on package and module path changes.
 
 ### Package Declaration Change
 
-**Old Package**: `pulumicost.v1`
+**Old Package**: `finfocus.v1`
 **New Package**: `finfocus.v1`
 
 ### Proto File Structure
 
 ```protobuf
 // Before
-package pulumicost.v1;
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbc";
+package finfocus.v1;
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
 
 // After
 package finfocus.v1;
@@ -29,7 +29,7 @@ option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pb
 
 ```text
 Before:
-proto/pulumicost/
+proto/finfocus/
 ├── v1/
 │   ├── costsource.proto
 │   └── budget.proto
@@ -59,16 +59,16 @@ Message definitions remain **unchanged**:
 
 ### Module Path Change
 
-**Old Module**: `github.com/rshade/pulumicost-spec`
+**Old Module**: `github.com/rshade/finfocus-spec`
 **New Module**: `github.com/rshade/finfocus-spec`
 
 ### Import Path Changes
 
 | Purpose      | Old Import                                                     | New Import                                                 |
 | ------------ | -------------------------------------------------------------- | ---------------------------------------------------------- |
-| Plugin SDK   | `github.com/rshade/pulumicost-spec/sdk/go/pluginsdk`           | `github.com/rshade/finfocus-spec/sdk/go/pluginsdk`         |
-| Pulumi API   | `github.com/rshade/pulumicost-spec/sdk/go/pulumiapi`           | `github.com/rshade/finfocus-spec/sdk/go/pulumiapi`         |
-| Proto Client | `github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1` | `github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1` |
+| Plugin SDK   | `github.com/rshade/finfocus-spec/sdk/go/pluginsdk`           | `github.com/rshade/finfocus-spec/sdk/go/pluginsdk`         |
+| Pulumi API   | `github.com/rshade/finfocus-spec/sdk/go/pulumiapi`           | `github.com/rshade/finfocus-spec/sdk/go/pulumiapi`         |
+| Proto Client | `github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1` | `github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1` |
 
 ### Package Alias
 
@@ -89,7 +89,7 @@ MINOR version bump in pre-1.0 semantic versioning.
 ```json
 // Before
 {
-  "package-name": "pulumicost-spec",
+  "package-name": "finfocus-spec",
   "extra-files": [
     ...
   ]
@@ -132,7 +132,7 @@ MINOR version bump in pre-1.0 semantic versioning.
 
    ```go
    // Before
-   import pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+   import pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 
    // After
    import pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
@@ -165,9 +165,9 @@ MINOR version bump in pre-1.0 semantic versioning.
 All changes must pass the following validation:
 
 1. `make generate` produces clean proto code in `sdk/go/proto/finfocus/v1/`
-2. `make test` passes with zero `pulumicost-spec` imports
+2. `make test` passes with zero `finfocus-spec` imports
 3. `make validate` passes all linting and schema checks
-4. `rg pulumicost` returns only historical references
+4. `rg finfocus` returns only historical references
 
 ## Compliance with Constitution
 

@@ -11,7 +11,7 @@
 
 - Q: Should the schema enforce that the plugin `name` field matches its registry key?
   → A: Schema does NOT enforce match; documented as invalid for consumer validation
-  (pulumicost-core test file)
+  (finfocus-core test file)
 - Q: Should a deprecated plugin without a `deprecation_message` be allowed?
   → A: No, require `deprecation_message` when `deprecated: true` (no existing entries)
 - Q: Should schema validate that `max_spec_version` >= `min_spec_version`?
@@ -47,11 +47,11 @@ messages.
 
 ### User Story 2 - Discover Plugin Metadata (Priority: P1)
 
-A PulumiCost user runs `pulumicost plugin install kubecost` and the CLI fetches the registry
+A FinFocus user runs `finfocus plugin install kubecost` and the CLI fetches the registry
 index to locate the plugin's repository, supported providers, and minimum spec version.
 
 **Why this priority**: This represents the primary consumer use case that drives the need
-for a formal schema - the plugin installation system in pulumicost-core.
+for a formal schema - the plugin installation system in finfocus-core.
 
 **Independent Test**: Can be tested by verifying that the schema captures all metadata
 fields required by the plugin installation system to discover and install plugins.
@@ -124,7 +124,7 @@ and providers and verifying filtering operations work correctly.
 
 - **Name/key mismatch**: When a plugin `name` doesn't match its registry key, the schema
   does not enforce this constraint (JSON Schema limitation). Consuming applications
-  (e.g., pulumicost-core) MUST validate this match and reject mismatched entries.
+  (e.g., finfocus-core) MUST validate this match and reject mismatched entries.
 - **Deprecated without message**: Schema requires `deprecation_message` when `deprecated`
   is `true`; validation fails if message is missing.
 - **Version constraint violation**: When `max_spec_version` < `min_spec_version`, the
@@ -187,8 +187,8 @@ and providers and verifying filtering operations work correctly.
 
 ## Assumptions
 
-- The registry index is consumed by pulumicost-core's plugin installation system
-  (rshade/pulumicost-core#163)
+- The registry index is consumed by finfocus-core's plugin installation system
+  (rshade/finfocus-core#163)
 - Plugin names must be unique within the registry
 - The schema follows JSON Schema draft 2020-12 specification
 - Third-party registries will use this same schema for compatibility

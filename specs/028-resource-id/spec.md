@@ -216,7 +216,7 @@ identification.
 
 **Current Workarounds**:
 
-1. pulumicost-core sets the `ResourceID` on returned recommendations when
+1. finfocus-core sets the `ResourceID` on returned recommendations when
    there's exactly one resource in the request. This fails for batch requests.
 2. Plugins rely on type/sku/region/tags matching, which can be ambiguous when
    multiple similar resources exist.
@@ -281,7 +281,7 @@ message ResourceDescriptor {
 
 This section provides implementation guidance for dependent repositories.
 
-#### pulumicost-core
+#### finfocus-core
 
 **Location**: Recommendation analyzer and cost query components
 
@@ -326,7 +326,7 @@ This section provides implementation guidance for dependent repositories.
    }
    ```
 
-#### pulumicost-plugin-aws-public
+#### finfocus-plugin-aws-public
 
 **Location**: Recommendations provider implementation
 

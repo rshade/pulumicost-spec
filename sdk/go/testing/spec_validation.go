@@ -1,4 +1,4 @@
-// Package testing provides a comprehensive testing framework for PulumiCost plugins.
+// Package testing provides a comprehensive testing framework for FinFocus plugins.
 // This file implements spec validation for the Plugin Conformance Test Suite.
 package testing
 

@@ -53,7 +53,7 @@ attributes` (field 2)
   GetProjectedCost responses"
 - Avoids introducing incompatible precision handling between different cost APIs
 
-**Action Required**: Examine proto/pulumicost/v1/costsource.proto to determine exact type used in
+**Action Required**: Examine proto/finfocus/v1/costsource.proto to determine exact type used in
 existing cost response messages
 
 ### 3. Resource Type Validation Strategy

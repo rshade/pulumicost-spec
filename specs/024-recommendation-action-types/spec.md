@@ -69,7 +69,7 @@ updated SDK and verifying all existing functionality works unchanged.
 
 ### User Story 3 - Core CLI Categorization (Priority: P2)
 
-As a pulumicost CLI user running `pulumicost cost recommendations`, I want recommendations
+As a finfocus CLI user running `finfocus cost recommendations`, I want recommendations
 categorized by the full range of action types so that I can prioritize and filter
 recommendations effectively.
 
@@ -154,7 +154,7 @@ verifying CLI output correctly groups and labels recommendations.
 
 ## Out of Scope
 
-- CLI implementation changes (handled in pulumicost-core)
+- CLI implementation changes (handled in finfocus-core)
 - Plugin implementation updates (each plugin repository handles their own updates)
 - Changes to other enums or message types in the proto definition
 - Changes to JSON schema (this feature is proto-only)

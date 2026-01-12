@@ -11,7 +11,7 @@ Represents the metadata of a loaded cost source plugin.
 | :------------- | :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`         | `string`            | The display name of the plugin (e.g., "aws-cost-plugin").                                                                                      |
 | `version`      | `string`            | The semantic version of the plugin implementation (e.g., "v1.2.0").                                                                            |
-| `spec_version` | `string`            | The version of the `pulumicost-spec` protocol the plugin was compiled against (e.g., "v0.4.11").                                               |
+| `spec_version` | `string`            | The version of the `finfocus-spec` protocol the plugin was compiled against (e.g., "v0.4.11").                                               |
 | `providers`    | `[]string`          | List of cloud providers supported by this plugin (e.g., `["aws"]`).                                                                            |
 | `metadata`     | `map[string]string` | Optional key-value pairs for additional metadata (e.g., build hash, commit ID). Free-form; no key restrictions or size limits enforced by SDK. |
 

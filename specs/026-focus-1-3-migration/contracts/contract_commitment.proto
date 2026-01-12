@@ -1,14 +1,14 @@
 // Contract Commitment Dataset Contract
 // This file documents the new ContractCommitment proto message.
-// Actual implementation goes in proto/pulumicost/v1/focus.proto (or separate file)
+// Actual implementation goes in proto/finfocus/v1/focus.proto (or separate file)
 
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto;pbc";
 
 // =============================================================================
 // NEW ENUM: FocusContractCommitmentCategory

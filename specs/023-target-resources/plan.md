@@ -52,11 +52,11 @@ specs/019-target-resources/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 └── costsource.proto          # Add target_resources field to GetRecommendationsRequest
 
 sdk/go/
-├── proto/pulumicost/v1/      # Generated code (make generate)
+├── proto/finfocus/v1/      # Generated code (make generate)
 │   └── costsource.pb.go      # Updated with target_resources field
 └── testing/
     ├── contract.go           # Add MaxTargetResources + validation

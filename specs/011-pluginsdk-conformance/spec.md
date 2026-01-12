@@ -11,7 +11,7 @@
 
 As a plugin developer using the `pluginsdk.Plugin` interface, I want to run basic conformance tests
 against my plugin implementation with a single function call, so that I can validate my plugin meets
-minimum PulumiCost specification requirements without manually converting to the raw gRPC interface.
+minimum FinFocus specification requirements without manually converting to the raw gRPC interface.
 
 **Why this priority**: This is the core value proposition. Plugin developers using the high-level
 `Plugin` interface should not need to understand the underlying gRPC conversion to run conformance

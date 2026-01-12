@@ -76,7 +76,7 @@ As the Core System, I want to handle plugins that do not implement `GetPluginInf
 ### Scope Clarification
 
 This feature implements the **plugin SDK side** of GetPluginInfo. The following are **consumer-side
-responsibilities** that plugin SDK users (e.g., pulumicost-core) must implement:
+responsibilities** that plugin SDK users (e.g., finfocus-core) must implement:
 
 - Calling GetPluginInfo with appropriate timeout
 - Handling Unimplemented errors from legacy plugins
@@ -84,7 +84,7 @@ responsibilities** that plugin SDK users (e.g., pulumicost-core) must implement:
 - Displaying plugin info in CLI tools
 
 > **Note**: Consumer-side requirements are marked with _(Consumer)_ below. A tracking issue will be
-> created in pulumicost-core to implement these once this spec version is released.
+> created in finfocus-core to implement these once this spec version is released.
 
 ### Functional Requirements
 
@@ -112,6 +112,6 @@ responsibilities** that plugin SDK users (e.g., pulumicost-core) must implement:
 ### Measurable Outcomes
 
 - **SC-001**: Core system successfully retrieves metadata (including spec version) from 100% of compliant plugins.
-- **SC-002** _(Consumer)_: Consumer tools (e.g., `pulumicost plugin list`) can display the spec
+- **SC-002** _(Consumer)_: Consumer tools (e.g., `finfocus plugin list`) can display the spec
   version for all compliant plugins by calling `GetPluginInfo`.
 - **SC-003**: System successfully initializes 100% of legacy plugins (non-compliant) without crashing, logging a compatibility warning instead.

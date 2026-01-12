@@ -17,10 +17,10 @@ close issues and unblock dependent work.
 
 **Purpose**: Confirm all components exist and pass validation
 
-- [x] T001 Verify proto contains Supports RPC in proto/pulumicost/v1/costsource.proto
-- [x] T002 [P] Verify generated client method in sdk/go/proto/pulumicost/v1/costsource_grpc.pb.go
-- [x] T003 [P] Verify generated server interface in sdk/go/proto/pulumicost/v1/costsource_grpc.pb.go
-- [x] T004 [P] Verify service descriptor entry in sdk/go/proto/pulumicost/v1/costsource_grpc.pb.go
+- [x] T001 Verify proto contains Supports RPC in proto/finfocus/v1/costsource.proto
+- [x] T002 [P] Verify generated client method in sdk/go/proto/finfocus/v1/costsource_grpc.pb.go
+- [x] T003 [P] Verify generated server interface in sdk/go/proto/finfocus/v1/costsource_grpc.pb.go
+- [x] T004 [P] Verify service descriptor entry in sdk/go/proto/finfocus/v1/costsource_grpc.pb.go
 - [x] T005 Run `make test` to confirm all tests pass
 - [x] T006 Run `make lint` to confirm code quality
 - [x] T006a [P] Verify CHANGELOG documents Supports RPC availability in CHANGELOG.md
@@ -64,10 +64,10 @@ close issues and unblock dependent work.
 
 ## Phase 4: Issue Management
 
-**Purpose**: Close pulumicost-spec#64 and unblock pulumicost-core#160
+**Purpose**: Close finfocus-spec#64 and unblock finfocus-core#160
 
 - [x] T014 Close GitHub Issue #64 with completion comment
-- [x] T015 Comment on pulumicost-core#160 to unblock it
+- [x] T015 Comment on finfocus-core#160 to unblock it
 
 ### T014 - Close Issue #64 Comment
 
@@ -76,16 +76,16 @@ Post this comment and close the issue:
 ```text
 ## Resolution: Already Complete
 
-The Supports() RPC method has been fully implemented in pulumicost-spec since v0.1.0.
+The Supports() RPC method has been fully implemented in finfocus-spec since v0.1.0.
 
 ### Verified Components
 
-**Proto Definition** (proto/pulumicost/v1/costsource.proto):
+**Proto Definition** (proto/finfocus/v1/costsource.proto):
 - `rpc Supports(SupportsRequest) returns (SupportsResponse);` (line 17)
 - `SupportsRequest` message (lines 38-42)
 - `SupportsResponse` message (lines 44-50)
 
-**Generated Go SDK** (sdk/go/proto/pulumicost/v1/):
+**Generated Go SDK** (sdk/go/proto/finfocus/v1/):
 - `CostSourceServiceClient.Supports()` method
 - `CostSourceServiceServer.Supports()` interface
 - `UnimplementedCostSourceServiceServer.Supports()` default
@@ -100,24 +100,24 @@ The Supports() RPC method has been fully implemented in pulumicost-spec since v0
 
 ### Next Steps
 
-The actual issue is in **pulumicost-core's pluginsdk**, which needs to expose the Supports
-method to plugin implementations. See pulumicost-core#160.
+The actual issue is in **finfocus-core's pluginsdk**, which needs to expose the Supports
+method to plugin implementations. See finfocus-core#160.
 ```
 
-### T015 - Unblock pulumicost-core#160 Comment
+### T015 - Unblock finfocus-core#160 Comment
 
-Post this comment on <https://github.com/rshade/pulumicost-core/issues/160>:
+Post this comment on <https://github.com/rshade/finfocus-core/issues/160>:
 
 ```text
-This issue is now unblocked. pulumicost-spec#64 is already complete - the Supports()
-RPC method has been in pulumicost-spec since v0.1.0 release:
+This issue is now unblocked. finfocus-spec#64 is already complete - the Supports()
+RPC method has been in finfocus-spec since v0.1.0 release:
 
 - Proto: `rpc Supports(SupportsRequest) returns (SupportsResponse);`
 - Messages: SupportsRequest, SupportsResponse
 - Generated code: Client/Server interfaces, handlers, service descriptor
 - Testing: ValidateSupportsResponse, MockPlugin.Supports, integration tests
 
-Update pulumicost-core to use v0.1.0 or later and proceed with pluginsdk implementation.
+Update finfocus-core to use v0.1.0 or later and proceed with pluginsdk implementation.
 ```
 
 **Checkpoint**: Issues properly documented and dependencies unblocked
@@ -163,4 +163,4 @@ No modifications to proto, SDK, or testing code are needed.
 - Feature fully implemented in v0.1.0 release
 - Tasks verify existing implementation, not create new code
 - Main action is issue management (close #64, unblock core#160)
-- Dependent work continues in pulumicost-core repository
+- Dependent work continues in finfocus-core repository

@@ -16,7 +16,7 @@ and testing of each story.
 
 ## Path Conventions
 
-- **Proto definitions**: `proto/pulumicost/v1/`
+- **Proto definitions**: `proto/finfocus/v1/`
 - **Go SDK**: `sdk/go/`
 - **Testing framework**: `sdk/go/testing/`
 - **Plugin SDK**: `sdk/go/pluginsdk/`
@@ -30,7 +30,7 @@ and testing of each story.
 - [x] T001 Verify branch 026-focus-1-3-migration exists and is checked out
 - [x] T002 [P] Verify buf v1.32.1 is installed (`make generate` installs if needed)
 - [x] T003 [P] Verify Go 1.25.5+ and protobuf dependencies are available
-- [x] T004 Review existing `proto/pulumicost/v1/focus.proto` for field number conflicts
+- [x] T004 Review existing `proto/finfocus/v1/focus.proto` for field number conflicts
 
 ---
 
@@ -41,12 +41,12 @@ be implemented
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T005 Add `FocusContractCommitmentCategory` enum to `proto/pulumicost/v1/focus.proto`
+- [x] T005 Add `FocusContractCommitmentCategory` enum to `proto/finfocus/v1/focus.proto`
   with values: UNSPECIFIED(0), SPEND(1), USAGE(2)
-- [x] T006 Add `ContractCommitment` message to `proto/pulumicost/v1/focus.proto`
+- [x] T006 Add `ContractCommitment` message to `proto/finfocus/v1/focus.proto`
   with 12 fields per contracts/contract_commitment.proto
 - [x] T006a Add FOCUS 1.3 specification reference comments to all new proto fields
-  in `proto/pulumicost/v1/focus.proto` (reference FOCUS 1.3 section numbers for
+  in `proto/finfocus/v1/focus.proto` (reference FOCUS 1.3 section numbers for
   each column: AllocatedMethodId, ServiceProviderName, etc.)
 - [x] T007 Mark `provider_name` field (1) as deprecated with `[deprecated = true]`
   option in FocusCostRecord
@@ -85,15 +85,15 @@ proto serialization and validation
 ### Implementation for User Story 1
 
 - [x] T015 [US1] Add `allocated_method_id` field (61) string to FocusCostRecord
-  in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T016 [P] [US1] Add `allocated_method_details` field (62) string to
-  FocusCostRecord in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  FocusCostRecord in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T017 [P] [US1] Add `allocated_resource_id` field (63) string to
-  FocusCostRecord in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  FocusCostRecord in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T018 [P] [US1] Add `allocated_resource_name` field (64) string to
-  FocusCostRecord in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  FocusCostRecord in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T019 [US1] Add `allocated_tags` field (65) map<string,string> to
-  FocusCostRecord in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  FocusCostRecord in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T020 [US1] Run `make generate` after proto field additions (completed in Phase 2)
 - [x] T021 [US1] Implement `WithAllocation(methodId, methodDetails string)`
   builder method in `sdk/go/pluginsdk/focus_builder.go`
@@ -130,9 +130,9 @@ deprecation warning when both old and new fields set
 ### Implementation for User Story 2
 
 - [x] T029 [US2] Add `service_provider_name` field (59) string to FocusCostRecord
-  in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T030 [P] [US2] Add `host_provider_name` field (60) string to FocusCostRecord
-  in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T031 [US2] Run `make generate` after proto field additions (completed in Phase 2)
 - [x] T032 [US2] Implement `WithServiceProvider(name string)` builder method
   in `sdk/go/pluginsdk/focus_builder.go`
@@ -220,7 +220,7 @@ verify it accepts any string value (opaque reference)
 ### Implementation for User Story 4
 
 - [x] T056 [US4] Add `contract_applied` field (66) string to FocusCostRecord
-  in `proto/pulumicost/v1/focus.proto` (completed in Phase 2)
+  in `proto/finfocus/v1/focus.proto` (completed in Phase 2)
 - [x] T057 [US4] Run `make generate` after proto field addition (completed in Phase 2)
 - [x] T058 [US4] Implement `WithContractApplied(commitmentId string)` builder
   method in `sdk/go/pluginsdk/focus_builder.go` (completed in Phase 3)

@@ -84,7 +84,7 @@ func (p *AWSPlugin) lookupByARN(arnStr string) (*Resource, error) {
 }
 ```
 
-## For pulumicost-core Developers
+## For finfocus-core Developers
 
 ### Setting Correlation IDs
 
@@ -208,7 +208,7 @@ type/sku/region/tags matching continues to work.
 
 ### Opting In
 
-1. Update to latest pulumicost-spec
+1. Update to latest finfocus-spec
 2. Run `make generate` to regenerate proto bindings
 3. Add correlation ID pass-through in recommendation handlers
 4. (Optional) Add ARN-based exact matching for improved accuracy

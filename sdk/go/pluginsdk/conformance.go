@@ -1,4 +1,4 @@
-// Package pluginsdk provides a development SDK for PulumiCost plugins.
+// Package pluginsdk provides a development SDK for FinFocus plugins.
 // This file provides adapter functions for running conformance tests directly
 // on Plugin implementations without manual conversion to CostSourceServiceServer.
 package pluginsdk

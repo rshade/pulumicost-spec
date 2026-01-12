@@ -7,7 +7,7 @@
 
 Add a JSON Schema (`schemas/plugin_registry.schema.json`) for validating plugin registry
 index files (`registry.json`). The schema defines the contract for well-known plugin
-registries used by `pulumicost plugin install`, aligning field patterns and enums with
+registries used by `finfocus plugin install`, aligning field patterns and enums with
 `registry.proto` definitions.
 
 ## Technical Context

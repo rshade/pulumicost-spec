@@ -10,7 +10,7 @@
 ### User Story 1 - Plugin Developer Learns Logging Patterns (Priority: P1)
 
 A plugin developer wants to understand how to properly integrate zerolog structured
-logging with PulumiCost plugin operations, specifically for the EstimateCost RPC.
+logging with FinFocus plugin operations, specifically for the EstimateCost RPC.
 
 **Why this priority**: Documentation through working examples is the most effective way
 to ensure consistent logging practices across the plugin ecosystem. This example serves

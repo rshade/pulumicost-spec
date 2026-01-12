@@ -13,7 +13,7 @@ them. This allows you to:
 
 ## Prerequisites
 
-- A PulumiCost plugin that implements the EstimateCost RPC
+- A FinFocus plugin that implements the EstimateCost RPC
 - The resource type you want to estimate must be supported by the plugin
 - gRPC client library for your language (examples use Go)
 
@@ -25,7 +25,7 @@ First, verify the plugin supports your resource type using the existing `Support
 
 ```go
 import (
-    pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
     "google.golang.org/grpc"
 )
 

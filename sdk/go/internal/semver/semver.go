@@ -1,4 +1,4 @@
-// Package semver provides shared semantic versioning validation for the PulumiCost SDK.
+// Package semver provides shared semantic versioning validation for the FinFocus SDK.
 //
 // This package exists to break circular dependencies between sdk/go/pluginsdk and
 // sdk/go/testing. Both packages need semantic version validation but importing

@@ -14,8 +14,8 @@ import (
  "fmt"
  "time"
 
- pb "github.com/pulumi/pulumicost-spec/sdk/go/pulumicost/v1"
- "github.com/pulumi/pulumicost-spec/sdk/go/pluginsdk"
+ pb "github.com/pulumi/finfocus-spec/sdk/go/finfocus/v1"
+ "github.com/pulumi/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {

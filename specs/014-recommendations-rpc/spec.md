@@ -3,7 +3,7 @@
 **Feature Branch**: `013-recommendations-rpc`
 **Created**: 2025-12-04
 **Status**: Draft
-**GitHub Issue**: [#122](https://github.com/rshade/pulumicost-spec/issues/122)
+**GitHub Issue**: [#122](https://github.com/rshade/finfocus-spec/issues/122)
 **Input**: Add GetRecommendations RPC to CostSourceService for FinOps recommendations
 
 ## Overview
@@ -26,7 +26,7 @@ actionable optimization opportunities to users.
 
 ### User Story 1 - Retrieve All Recommendations (Priority: P1)
 
-As a DevOps engineer using PulumiCost, I want to retrieve all cost optimization recommendations
+As a DevOps engineer using FinFocus, I want to retrieve all cost optimization recommendations
 from my connected cost sources so that I can identify opportunities to reduce cloud spending.
 
 **Why this priority**: This is the core functionality - without the ability to retrieve
@@ -253,7 +253,7 @@ correctly for each recommendation type.
 
 ## Out of Scope
 
-- CLI output formatting (follow-up in pulumicost-core)
+- CLI output formatting (follow-up in finfocus-core)
 - Aggregation logic for combining recommendations from multiple plugins
 - Caching of recommendations
 - State management for tracking applied/dismissed recommendations

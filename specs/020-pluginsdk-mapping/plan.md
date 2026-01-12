@@ -8,7 +8,7 @@
 Create a `pluginsdk/mapping/` subpackage providing shared helper functions for extracting SKU,
 region, and other pricing-relevant fields from Pulumi resource properties. The package will
 support AWS, Azure, and GCP cloud providers with provider-specific extraction logic, plus
-generic fallback extractors for custom use cases. This enables pulumicost-core to delegate
+generic fallback extractors for custom use cases. This enables finfocus-core to delegate
 cloud-specific property mapping to the canonical spec repository, keeping the core cloud-agnostic.
 
 ## Technical Context

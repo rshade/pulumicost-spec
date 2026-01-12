@@ -14,7 +14,7 @@ consists of metric types, their labels, and configuration structures.
 
 Tracks total gRPC requests received by the plugin.
 
-**Metric Name**: `pulumicost_plugin_requests_total`
+**Metric Name**: `finfocus_plugin_requests_total`
 
 **Fields/Labels**:
 
@@ -40,7 +40,7 @@ Tracks total gRPC requests received by the plugin.
 
 Tracks request latency distribution.
 
-**Metric Name**: `pulumicost_plugin_request_duration_seconds`
+**Metric Name**: `finfocus_plugin_request_duration_seconds`
 
 **Fields/Labels**:
 

@@ -16,7 +16,7 @@ costs. Two growth models are supported:
 
 ```go
 import (
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // Create a resource with 10% monthly linear growth
@@ -107,7 +107,7 @@ req := &pbc.GetProjectedCostRequest{
 The SDK validates growth parameters automatically:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pricing"
+import "github.com/rshade/finfocus-spec/sdk/go/pricing"
 
 // Validate before sending request
 err := pricing.ValidateGrowthParams(

@@ -4,12 +4,12 @@
 // These definitions will be merged into the appropriate proto files.
 //
 // Target files:
-//   - proto/pulumicost/v1/enums.proto (FieldSupportStatus)
-//   - proto/pulumicost/v1/costsource.proto (messages and RPC)
+//   - proto/finfocus/v1/enums.proto (FieldSupportStatus)
+//   - proto/finfocus/v1/costsource.proto (messages and RPC)
 
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 // =============================================================================
 // Addition to enums.proto

@@ -18,7 +18,7 @@ testing of each story.
 
 Based on plan.md project structure:
 
-- **Proto**: `proto/pulumicost/v1/costsource.proto`
+- **Proto**: `proto/finfocus/v1/costsource.proto`
 - **SDK**: `sdk/go/proto/`, `sdk/go/pluginsdk/`, `sdk/go/testing/`
 - **Examples**: `examples/recommendations/`
 
@@ -42,63 +42,63 @@ Based on plan.md project structure:
 
 ### Proto Definitions
 
-- [ ] T010 Add RecommendationCategory enum to proto/pulumicost/v1/costsource.proto (values:
+- [ ] T010 Add RecommendationCategory enum to proto/finfocus/v1/costsource.proto (values:
       UNSPECIFIED, COST, PERFORMANCE, SECURITY, RELIABILITY)
-- [ ] T011 [P] Add RecommendationActionType enum to proto/pulumicost/v1/costsource.proto
+- [ ] T011 [P] Add RecommendationActionType enum to proto/finfocus/v1/costsource.proto
       (values: UNSPECIFIED, RIGHTSIZE, TERMINATE, PURCHASE_COMMITMENT, ADJUST_REQUESTS, MODIFY,
       DELETE_UNUSED)
-- [ ] T012 [P] Add RecommendationPriority enum to proto/pulumicost/v1/costsource.proto
+- [ ] T012 [P] Add RecommendationPriority enum to proto/finfocus/v1/costsource.proto
       (values: UNSPECIFIED, LOW, MEDIUM, HIGH, CRITICAL)
-- [ ] T013 Add ResourceUtilization message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T013 Add ResourceUtilization message to proto/finfocus/v1/costsource.proto (fields:
       cpu_percent, memory_percent, storage_percent, network_in_mbps, network_out_mbps,
       custom_metrics)
-- [ ] T014 [P] Add ResourceRecommendationInfo message to proto/pulumicost/v1/costsource.proto
+- [ ] T014 [P] Add ResourceRecommendationInfo message to proto/finfocus/v1/costsource.proto
       (fields: id, name, provider, resource_type, region, sku, tags, utilization)
-- [ ] T015 Add RecommendationImpact message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T015 Add RecommendationImpact message to proto/finfocus/v1/costsource.proto (fields:
       estimated_savings, currency, projection_period, current_cost, projected_cost,
       savings_percentage, implementation_cost, migration_effort_hours)
-- [ ] T016 Add RecommendationSummary message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T016 Add RecommendationSummary message to proto/finfocus/v1/costsource.proto (fields:
       total_recommendations, total_estimated_savings, currency, projection_period,
       count_by_category, savings_by_category, count_by_action_type, savings_by_action_type)
 
 ### Action Detail Messages
 
-- [ ] T017 Add RightsizeAction message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T017 Add RightsizeAction message to proto/finfocus/v1/costsource.proto (fields:
       current_sku, recommended_sku, current_instance_type, recommended_instance_type,
       projected_utilization)
-- [ ] T018 [P] Add TerminateAction message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T018 [P] Add TerminateAction message to proto/finfocus/v1/costsource.proto (fields:
       termination_reason, idle_days)
-- [ ] T019 [P] Add CommitmentAction message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T019 [P] Add CommitmentAction message to proto/finfocus/v1/costsource.proto (fields:
       commitment_type, term, payment_option, recommended_quantity, scope)
-- [ ] T020 [P] Add KubernetesResources message to proto/pulumicost/v1/costsource.proto
+- [ ] T020 [P] Add KubernetesResources message to proto/finfocus/v1/costsource.proto
       (fields: cpu, memory)
-- [ ] T021 Add KubernetesAction message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T021 Add KubernetesAction message to proto/finfocus/v1/costsource.proto (fields:
       cluster_id, namespace, controller_kind, controller_name, container_name, current_requests,
       recommended_requests, current_limits, recommended_limits, algorithm) - depends on T020
-- [ ] T022 [P] Add ModifyAction message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T022 [P] Add ModifyAction message to proto/finfocus/v1/costsource.proto (fields:
       modification_type, current_config, recommended_config)
 
 ### Core Recommendation Message
 
 - [ ] T023 Add Recommendation message with oneof action_detail to
-      proto/pulumicost/v1/costsource.proto (all fields from data-model.md including oneof for
+      proto/finfocus/v1/costsource.proto (all fields from data-model.md including oneof for
       rightsize, terminate, commitment, kubernetes, modify) - depends on T010-T022
 
 ### Request/Response Messages
 
-- [ ] T024 Add RecommendationFilter message to proto/pulumicost/v1/costsource.proto (fields:
+- [ ] T024 Add RecommendationFilter message to proto/finfocus/v1/costsource.proto (fields:
       provider, region, resource_type, category, action_type)
-- [ ] T025 Add GetRecommendationsRequest message to proto/pulumicost/v1/costsource.proto
+- [ ] T025 Add GetRecommendationsRequest message to proto/finfocus/v1/costsource.proto
       (fields: filter, projection_period, page_size, page_token) - depends on T024
-- [ ] T026 Add GetRecommendationsResponse message to proto/pulumicost/v1/costsource.proto
+- [ ] T026 Add GetRecommendationsResponse message to proto/finfocus/v1/costsource.proto
       (fields: recommendations, summary, next_page_token) - depends on T023, T016
 
 ### Service Method
 
 - [ ] T027 Add GetRecommendations RPC method to CostSourceService in
-      proto/pulumicost/v1/costsource.proto - depends on T025, T026
+      proto/finfocus/v1/costsource.proto - depends on T025, T026
 - [ ] T028 Add capabilities field (map<string, bool>) to SupportsResponse message in
-      proto/pulumicost/v1/costsource.proto
+      proto/finfocus/v1/costsource.proto
 
 ### Code Generation
 
@@ -306,8 +306,8 @@ recommendation type
 ### Prometheus Metrics
 
 - [ ] T092 Add recommendations-specific metrics in sdk/go/pluginsdk/metrics.go
-      (pulumicost_plugin_recommendations_returned_total counter,
-      pulumicost_plugin_recommendations_per_response histogram)
+      (finfocus_plugin_recommendations_returned_total counter,
+      finfocus_plugin_recommendations_per_response histogram)
 - [ ] T093 Add GetRecommendations metrics recording in MetricsUnaryServerInterceptor
 
 ### Tracing

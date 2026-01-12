@@ -37,7 +37,7 @@
 
 ```go
 type contextKey string
-const traceIDKey contextKey = "pulumicost-trace-id"
+const traceIDKey contextKey = "finfocus-trace-id"
 ```
 
 ### 3. gRPC Interceptor Pattern
@@ -49,7 +49,7 @@ const traceIDKey contextKey = "pulumicost-trace-id"
 - Standard gRPC pattern for cross-cutting concerns
 - Metadata extraction is well-documented
 - Supports both client and server-side propagation
-- Works with existing PulumiCost gRPC infrastructure
+- Works with existing FinFocus gRPC infrastructure
 
 **Pattern**:
 

@@ -66,7 +66,7 @@ as PORT. Supporting fallback enables gradual migration of existing plugins.
 
 **Decision**: Use strict `"true"`/`"false"` string matching with warning logging
 
-**Rationale**: Follows existing pattern in `pulumicost-plugin-aws-public/internal/plugin
+**Rationale**: Follows existing pattern in `finfocus-plugin-aws-public/internal/plugin
 /testmode.go`. Strict matching prevents accidental test mode activation from typos like
 `"yes"` or `"1"`.
 
@@ -128,7 +128,7 @@ func resolvePort(requested int) (int, error) {
 - Logs to stderr on parse error
 - Will be modified to use `GetPort()` which adds canonical variable
 
-### Existing Test Mode Pattern (`pulumicost-plugin-aws-public`)
+### Existing Test Mode Pattern (`finfocus-plugin-aws-public`)
 
 ```go
 const testModeEnvVar = "PULUMICOST_TEST_MODE"
@@ -147,7 +147,7 @@ func ValidateTestModeEnv() {
 
 **Analysis**: This pattern will be adopted in the SDK with minor modifications.
 
-### Logging Pattern (`pulumicost-core`)
+### Logging Pattern (`finfocus-core`)
 
 Uses `zerolog` for structured logging. The SDK already imports zerolog (see `sdk.go:12`).
 
@@ -155,7 +155,7 @@ Uses `zerolog` for structured logging. The SDK already imports zerolog (see `sdk
 
 ### Environment Variable Constants
 
-All constants follow the `PULUMICOST_` prefix convention established by pulumicost-core:
+All constants follow the `PULUMICOST_` prefix convention established by finfocus-core:
 
 | Constant | Value | Type |
 |----------|-------|------|

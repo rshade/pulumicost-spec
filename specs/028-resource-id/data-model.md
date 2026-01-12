@@ -32,7 +32,7 @@ The `ResourceDescriptor` protobuf message is extended with two new optional fiel
 #### `id` (field 7)
 
 - **Purpose**: Request/response correlation in batch operations
-- **Set by**: Client (pulumicost-core)
+- **Set by**: Client (finfocus-core)
 - **Validated by**: None (opaque)
 - **Pass-through**: Plugins MUST copy to response unchanged
 - **Default**: Empty string (no correlation)
@@ -135,7 +135,7 @@ transitions apply.
 | id | None | N/A (always valid) |
 | arn | Optional format check | Log warning, fall back to fuzzy match |
 
-### Client Layer (pulumicost-core)
+### Client Layer (finfocus-core)
 
 | Field | Validation | On Invalid |
 |-------|------------|------------|

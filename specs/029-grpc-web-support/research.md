@@ -99,12 +99,12 @@
 
 ```bash
 # JSON request (Connect protocol)
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/Name \
   -H "Content-Type: application/json" \
   -d '{}'
 
 # Binary protobuf request
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/Name \
   -H "Content-Type: application/proto" \
   --data-binary @request.bin
 ```

@@ -56,7 +56,7 @@ specs/030-forecasting-primitives/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 ├── costsource.proto     # Extended: ResourceDescriptor, GetProjectedCostRequest
 └── enums.proto          # New: GrowthType enum
 
@@ -70,7 +70,7 @@ examples/
 ```
 
 **Structure Decision**: Single project (gRPC spec repo). Proto changes in
-`proto/pulumicost/v1/`, generated SDK in `sdk/go/proto/`, helper code in `sdk/go/pricing/`.
+`proto/finfocus/v1/`, generated SDK in `sdk/go/proto/`, helper code in `sdk/go/pricing/`.
 
 ## Complexity Tracking
 

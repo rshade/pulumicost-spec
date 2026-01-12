@@ -1,11 +1,11 @@
 # Quickstart: ISO 4217 Currency Package
 
-**Package**: `github.com/rshade/pulumicost-spec/sdk/go/currency`
+**Package**: `github.com/rshade/finfocus-spec/sdk/go/currency`
 
 ## Installation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/currency"
+import "github.com/rshade/finfocus-spec/sdk/go/currency"
 ```
 
 ## Basic Usage
@@ -17,7 +17,7 @@ package main
 
 import (
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/currency"
+    "github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 func main() {
@@ -45,7 +45,7 @@ package main
 
 import (
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/currency"
+    "github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 func main() {
@@ -77,7 +77,7 @@ package main
 
 import (
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/currency"
+    "github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 func main() {
@@ -103,7 +103,7 @@ package pluginsdk
 
 import (
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/currency"
+    "github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 // validateCurrency checks if a currency code is a valid ISO 4217 code.
@@ -125,7 +125,7 @@ package main
 
 import (
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/currency"
+    "github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 func formatAmount(amount float64, currencyCode string) string {
@@ -153,7 +153,7 @@ package main
 import (
     "errors"
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/currency"
+    "github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 func main() {

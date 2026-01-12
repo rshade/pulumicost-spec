@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document consolidates research findings for the project rename from PulumiCost to
+This document consolidates research findings for the project rename from FinFocus to
 FinFocus. All clarifications from the feature specification have been resolved.
 
 ## Research Decisions
@@ -85,8 +85,8 @@ FinFocus. All clarifications from the feature specification have been resolved.
 
 **Examples of Contextual Replacement**:
 
-- In CHANGELOG.md: Keep historical entries mentioning "PulumiCost" unchanged
-- In docs/: Preserve legacy notes like "formerly known as PulumiCost" in migration guides
+- In CHANGELOG.md: Keep historical entries mentioning "FinFocus" unchanged
+- In docs/: Preserve legacy notes like "formerly known as FinFocus" in migration guides
 - In README.md: Update active branding but keep acknowledgments of original project name
 - In specs/: Leave historical references in feature specifications unchanged
 
@@ -99,18 +99,18 @@ FinFocus. All clarifications from the feature specification have been resolved.
 
 ### Global Rename Strategy
 
-We will perform a contextual find/replace of "PulumiCost" and "pulumicost" across the
+We will perform a contextual find/replace of "FinFocus" and "finfocus" across the
 codebase, documentation, and CI/CD configurations.
 
 **Replacements Map**:
 
 | Category      | Search Term                         | Replace With                            | Notes                              |
 | ------------- | ----------------------------------- | --------------------------------------- | ---------------------------------- |
-| Proto Package | `pulumicost.v1`                     | `finfocus.v1`                           | Wire breaking change               |
-| Go Module     | `github.com/rshade/pulumicost-spec` | `github.com/rshade/finfocus-spec`       | Import breaking change             |
-| Brand (Title) | `PulumiCost`                        | `FinFocus`                              |                                    |
+| Proto Package | `finfocus.v1`                     | `finfocus.v1`                           | Wire breaking change               |
+| Go Module     | `github.com/rshade/finfocus-spec` | `github.com/rshade/finfocus-spec`       | Import breaking change             |
+| Brand (Title) | `FinFocus`                        | `FinFocus`                              |                                    |
 | Path Alias    | `pbc`                               | `pbc`                                   | Preserved for internal consistency |
-| Directory     | `proto/pulumicost`                  | `proto/finfocus`                        |                                    |
+| Directory     | `proto/finfocus`                  | `proto/finfocus`                        |                                    |
 | Tagline       | `Production-ready specification...` | `FinFocus: Focusing your finances left` |                                    |
 
 **Rationale**: To establish the "FinFocus" identity, a complete transition is required for
@@ -123,8 +123,8 @@ a clean brand for all active development.
 Based on best practices for Go module and protobuf package renames, the optimal order is:
 
 1. **Protobuf package rename** (first)
-   - Update `package pulumicost.v1` to `package finfocus.v1` in all `.proto` files
-   - Move `proto/pulumicost/` directory to `proto/finfocus/`
+   - Update `package finfocus.v1` to `package finfocus.v1` in all `.proto` files
+   - Move `proto/finfocus/` directory to `proto/finfocus/`
    - Update `go_package` options to reference new paths
 
 2. **Go module rename**
@@ -132,8 +132,8 @@ Based on best practices for Go module and protobuf package renames, the optimal 
    - Update all internal imports to match the new module path
 
 3. **Global text replacement**
-   - Case-sensitive find/replace of `pulumicost` → `finfocus` (lowercase)
-   - Case-sensitive find/replace of `PulumiCost` → `FinFocus` (PascalCase)
+   - Case-sensitive find/replace of `finfocus` → `finfocus` (lowercase)
+   - Case-sensitive find/replace of `FinFocus` → `FinFocus` (PascalCase)
    - Case-sensitive find/replace of `PULUMICOST` → `FINFOCUS` (UPPERCASE)
    - Preserve historical context in documentation
 
@@ -181,7 +181,7 @@ This justifies the version bump to v0.5.0 (MINOR version in pre-1.0 semantic ver
 | Risk                                       | Likelihood | Impact | Mitigation                                                         |
 | ------------------------------------------ | ---------- | ------ | ------------------------------------------------------------------ |
 | Missed imports causing build failures      | Medium     | High   | Run `go test ./...` and `make validate` before committing          |
-| Documentation drift (old brand references) | High       | Low    | Use `rg` (ripgrep) to search for remaining `pulumicost` references |
+| Documentation drift (old brand references) | High       | Low    | Use `rg` (ripgrep) to search for remaining `finfocus` references |
 | Release-please version confusion           | Low        | Medium | Test with `release-please` dry-run mode before merging             |
 | Generated code conflicts                   | Low        | High   | Ensure `make clean` is run before `make generate`                  |
 

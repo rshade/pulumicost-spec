@@ -209,7 +209,7 @@ func IsValidProvider(p string) bool {
 
 ### Consistency Guideline
 
-**For pulumicost-spec**: All registry enums (4-14 values) fall into "< 20 values" category. Use **optimized
+**For finfocus-spec**: All registry enums (4-14 values) fall into "< 20 values" category. Use **optimized
 slice pattern** for:
 
 - Consistency with pricing package (38 values currently uses slice)

@@ -1,10 +1,10 @@
 // FOCUS 1.2 Column Audit - Proto Field Additions
 // This file documents the proto field additions required for full FOCUS 1.2 compliance.
-// These definitions should be merged into proto/pulumicost/v1/focus.proto and enums.proto.
+// These definitions should be merged into proto/finfocus/v1/focus.proto and enums.proto.
 
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 // =============================================================================
 // NEW ENUM TYPES (add to enums.proto)

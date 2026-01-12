@@ -22,7 +22,7 @@ func TestManifestSaveLoad(t *testing.T) {
 		Metadata: &pbc.PluginMetadata{
 			Name:        "test-plugin",
 			Version:     "1.0.0",
-			Description: "A test plugin for PulumiCost",
+			Description: "A test plugin for FinFocus",
 			Author:      "Test Author",
 			Homepage:    "https://example.com",
 			Repository:  "https://github.com/example/test-plugin",

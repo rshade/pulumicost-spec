@@ -67,7 +67,7 @@ hyphens, underscores, and repo can also contain dots.
 
 **Examples**:
 
-- `rshade/pulumicost-plugin-kubecost` - Valid
+- `rshade/finfocus-plugin-kubecost` - Valid
 - `my-org/my.repo.name` - Valid
 - `invalid` - Invalid (no slash)
 

@@ -5,10 +5,10 @@
 **Status**: Draft
 **Input**: User description:
 
-> The `pulumicost-spec` currently serves as a high-level query API for cloud costs.
+> The `finfocus-spec` currently serves as a high-level query API for cloud costs.
 > To achieve the project's vision of becoming the universal, open-source standard
 > for cloud cost observability, it must align with the industry-standard FinOps
-> FOCUS 1.2 Specification. Adopting FOCUS 1.2 will transform `pulumicost` from
+> FOCUS 1.2 Specification. Adopting FOCUS 1.2 will transform `finfocus` from
 > a simple cost summarizer into a forensic-grade cost analysis tool. To ensure
 > this is sustainable and upgradeable (e.g., to FOCUS 1.3), we will employ a
 > "Backpack & Builder" strategy to insulate plugin developers from schema complexity.

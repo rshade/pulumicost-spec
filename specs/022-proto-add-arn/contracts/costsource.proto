@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 import "google/protobuf/timestamp.proto";
 

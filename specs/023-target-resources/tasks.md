@@ -15,9 +15,9 @@
 
 ## Path Conventions
 
-- **Proto**: `proto/pulumicost/v1/costsource.proto`
+- **Proto**: `proto/finfocus/v1/costsource.proto`
 - **SDK Testing**: `sdk/go/testing/`
-- **Generated Code**: `sdk/go/proto/pulumicost/v1/` (via `make generate`)
+- **Generated Code**: `sdk/go/proto/finfocus/v1/` (via `make generate`)
 
 ---
 
@@ -25,8 +25,8 @@
 
 **Purpose**: Add target_resources field to proto and regenerate SDK
 
-- [x] T001 Add target_resources field to GetRecommendationsRequest in proto/pulumicost/v1/costsource.proto
-- [x] T002 Run `make generate` to regenerate Go SDK code in sdk/go/proto/pulumicost/v1/
+- [x] T001 Add target_resources field to GetRecommendationsRequest in proto/finfocus/v1/costsource.proto
+- [x] T002 Run `make generate` to regenerate Go SDK code in sdk/go/proto/finfocus/v1/
 - [x] T003 Run `make lint` to validate proto with buf lint and Go linting
 
 ---

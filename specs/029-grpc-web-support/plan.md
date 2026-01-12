@@ -6,7 +6,7 @@
 
 ## Summary
 
-Enable multi-protocol support for PulumiCost plugins using connect-go, allowing:
+Enable multi-protocol support for FinFocus plugins using connect-go, allowing:
 
 - **gRPC**: Existing clients continue to work unchanged
 - **gRPC-Web**: Direct browser connectivity
@@ -60,8 +60,8 @@ specs/029-grpc-web-support/
 buf.gen.yaml                    # Add connect-go plugin
 
 # Generated files (new)
-sdk/go/proto/pulumicost/v1/
-└── pulumicostv1connect/
+sdk/go/proto/finfocus/v1/
+└── finfocusv1connect/
     └── costsource.connect.go   # Connect handlers (generated)
 
 # SDK changes

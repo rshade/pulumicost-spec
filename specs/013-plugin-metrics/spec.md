@@ -97,7 +97,7 @@ histogram shows distinct latency data per method label.
   (TracingUnaryServerInterceptor and custom interceptors).
 - **FR-006**: System MUST record metrics for all outcomes including successful responses, errors,
   and panics.
-- **FR-007**: System MUST use consistent metric naming with the `pulumicost_plugin_` prefix for all
+- **FR-007**: System MUST use consistent metric naming with the `finfocus_plugin_` prefix for all
   metrics.
 - **FR-008**: System MUST record accurate latency measurements from request start to response
   completion.

@@ -9,7 +9,7 @@
 
 ### User Story 1 - Secure Trace ID Processing (Priority: P1)
 
-As a plugin developer using the PulumiCost SDK, I want the tracing interceptor to
+As a plugin developer using the FinFocus SDK, I want the tracing interceptor to
 validate incoming trace_id values so that malicious or malformed trace IDs cannot
 cause log injection attacks or corrupt my log aggregation systems.
 

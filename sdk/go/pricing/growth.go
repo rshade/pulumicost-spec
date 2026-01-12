@@ -1,4 +1,4 @@
-// Package pricing provides domain types and validation for PulumiCost pricing specifications.
+// Package pricing provides domain types and validation for FinFocus pricing specifications.
 package pricing
 
 import (

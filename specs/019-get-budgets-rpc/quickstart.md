@@ -6,7 +6,7 @@
 ## Overview
 
 This guide provides a quick start for implementing the GetBudgets RPC in plugins and integrating
-budget functionality into pulumicost-core.
+budget functionality into finfocus-core.
 
 ## For Plugin Developers
 
@@ -50,7 +50,7 @@ budget := &pbc.Budget{
 
 ### 1. Update Proto Definitions
 
-Add budget messages to `proto/pulumicost/v1/budget.proto`:
+Add budget messages to `proto/finfocus/v1/budget.proto`:
 
 ```protobuf
 message Budget {
@@ -61,7 +61,7 @@ message Budget {
 }
 ```
 
-Add RPC to `proto/pulumicost/v1/costsource.proto`:
+Add RPC to `proto/finfocus/v1/costsource.proto`:
 
 ```protobuf
 service CostSource {

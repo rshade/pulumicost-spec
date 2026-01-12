@@ -38,7 +38,7 @@ If you're already using `TracingUnaryServerInterceptor()`, validation is
 automatically enabled when you upgrade the SDK:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 // Your existing code continues to work unchanged
 server := grpc.NewServer(
@@ -67,7 +67,7 @@ func (s *myPlugin) GetActualCost(ctx context.Context, req *pb.GetActualCostReque
 If you need to generate a trace ID on the client side:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 // Generate a valid trace ID
 traceID := pluginsdk.GenerateTraceID()
@@ -109,7 +109,7 @@ Without validation, attackers could inject malicious trace IDs:
 
 ```text
 # Malicious input
-x-pulumicost-trace-id: fake\nERROR: System compromised\ntrace_id=
+x-finfocus-trace-id: fake\nERROR: System compromised\ntrace_id=
 
 # Would appear in logs as:
 INFO trace_id=fake
@@ -121,7 +121,7 @@ With validation, the malicious input is replaced:
 
 ```text
 # Same malicious input
-x-pulumicost-trace-id: fake\nERROR: System compromised\ntrace_id=
+x-finfocus-trace-id: fake\nERROR: System compromised\ntrace_id=
 
 # Now appears in logs as:
 INFO trace_id=a1b2c3d4e5f6789012345678abcdef01 processing request

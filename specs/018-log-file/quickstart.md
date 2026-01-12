@@ -4,7 +4,7 @@
 
 ## Overview
 
-The PulumiCost SDK supports redirecting plugin logs to a file via the `PULUMICOST_LOG_FILE`
+The FinFocus SDK supports redirecting plugin logs to a file via the `PULUMICOST_LOG_FILE`
 environment variable. This enables the Core CLI to orchestrate plugins without log output
 polluting the user-facing interface.
 
@@ -36,15 +36,15 @@ Set the environment variable before spawning plugins:
 
 ```bash
 # Direct all plugin logs to a single file
-export PULUMICOST_LOG_FILE=/var/log/pulumicost/plugins.log
+export PULUMICOST_LOG_FILE=/var/log/finfocus/plugins.log
 ./my-plugin
 ```
 
 Or set per-plugin for separate log files:
 
 ```bash
-PULUMICOST_LOG_FILE=/var/log/pulumicost/aws.log ./aws-plugin &
-PULUMICOST_LOG_FILE=/var/log/pulumicost/azure.log ./azure-plugin &
+PULUMICOST_LOG_FILE=/var/log/finfocus/aws.log ./aws-plugin &
+PULUMICOST_LOG_FILE=/var/log/finfocus/azure.log ./azure-plugin &
 ```
 
 ## Custom Logger Configuration
@@ -54,7 +54,7 @@ If you create a custom logger, use `NewLogWriter()` to respect the environment v
 ```go
 import (
     "github.com/rs/zerolog"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {

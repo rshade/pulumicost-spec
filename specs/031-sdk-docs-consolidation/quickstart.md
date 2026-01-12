@@ -25,7 +25,7 @@ Start with inline code documentation changes that require minimal effort:
 **Action**: Add ownership semantics documentation
 
 ```go
-// NewClient creates a new PulumiCost client with the given configuration.
+// NewClient creates a new FinFocus client with the given configuration.
 //
 // HTTP Client Ownership:
 //   - If HTTPClient is nil, an internal HTTP client is created and owned by
@@ -78,7 +78,7 @@ package pluginsdk_test
 import (
     "context"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func ExampleClient_Close() {
@@ -127,8 +127,8 @@ import (
     "context"
     "testing"
 
-    plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 ```
 

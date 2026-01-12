@@ -8,7 +8,7 @@ No new data model entities are introduced. This feature extends the *transport l
 
 ## API Contracts
 
-The API contract remains defined by `proto/pulumicost/v1/costsource.proto`.
+The API contract remains defined by `proto/finfocus/v1/costsource.proto`.
 
 ### Protocol Support
 

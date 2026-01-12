@@ -51,7 +51,7 @@ specs/029-plugin-info-rpc/
 ```text
 # Single project structure
 proto/
-└── pulumicost/
+└── finfocus/
     └── v1/
         └── costsource.proto # RPC definition
 

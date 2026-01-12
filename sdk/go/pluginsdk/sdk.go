@@ -1,4 +1,4 @@
-// Package pluginsdk provides a development SDK for PulumiCost plugins.
+// Package pluginsdk provides a development SDK for FinFocus plugins.
 package pluginsdk
 
 import (
@@ -32,7 +32,7 @@ const maxPayloadSize = 1 << 20 // 1MB
 // This is registered at package initialization time.
 //
 //nolint:gochecknoglobals // Package-level flag required for command-line parsing
-var portFlag = flag.Int("port", 0, "TCP port for gRPC server (overrides PULUMICOST_PLUGIN_PORT)")
+var portFlag = flag.Int("port", 0, "TCP port for gRPC server (overrides FINFOCUS_PLUGIN_PORT)")
 
 // ParsePortFlag returns the value of the --port command-line flag.
 // Returns 0 if the flag was not specified or if flag.Parse() has not been called.
@@ -144,7 +144,7 @@ func (t ServerTimeouts) applyDefaults() ServerTimeouts {
 	return t
 }
 
-// Plugin represents a PulumiCost plugin implementation.
+// Plugin represents a FinFocus plugin implementation.
 type Plugin interface {
 	// Name returns the plugin name identifier.
 	Name() string
@@ -641,37 +641,43 @@ func (s *Server) DismissRecommendation(
 
 // ServeConfig holds configuration for serving a plugin.
 type ServeConfig struct {
-	Plugin   Plugin
-	Port     int             // If 0, will use PULUMICOST_PLUGIN_PORT env var or random port
-	Registry RegistryLookup  // Optional; if nil, DefaultRegistryLookup is used
-	Logger   *zerolog.Logger // Optional; if nil, a default logger is used
-	// Listener is an optional pre-configured listener.
-	// If provided, Port is ignored and this listener is used for serving.
-	Listener net.Listener
-	// UnaryInterceptors is an optional list of gRPC unary server interceptors
-	// to chain after the built-in TracingUnaryServerInterceptor.
-	// Interceptors execute in order: tracing first, then each interceptor
-	// in the order provided. If nil or empty, only the tracing interceptor runs.
-	// Note: Passing nil elements in the slice will cause a panic (standard gRPC behavior).
-	UnaryInterceptors []grpc.UnaryServerInterceptor
-	// Web holds configuration for gRPC-Web and CORS support.
-	// When Web.Enabled is true, the server accepts both native gRPC and
-	// gRPC-Web requests on the same port.
-	Web WebConfig
-	// Timeouts configures HTTP server timeouts.
-	// If nil, sensible defaults are used (see DefaultServerTimeouts).
-	// Consider increasing WriteTimeout for plugins with long-running operations.
-	Timeouts *ServerTimeouts
+	// Plugin is the implementation of the cost source service.
+	Plugin Plugin
+
+	// Registry is an optional registry lookup for validating supports requests.
+	Registry RegistryLookup
+
 	// PluginInfo is optional plugin metadata returned by GetPluginInfo RPC.
 	// If set, the Server will return this information when GetPluginInfo is called.
 	// If the Plugin implements PluginInfoProvider interface, that takes precedence.
 	// If neither is set, GetPluginInfo returns Unimplemented (graceful degradation).
 	PluginInfo *PluginInfo
+
+	// Port is the TCP port to listen on. If 0, it reads from FINFOCUS_PLUGIN_PORT
+	// environment variable or assigns a random available port if that's also 0.
+	Port int
+
+	// Listener is an optional pre-configured listener.
+	// If provided, Port is ignored and this listener is used for serving.
+	Listener net.Listener
+
+	// Logger is an optional custom logger. If nil, a default logger is used.
+	Logger *zerolog.Logger
+
+	// UnaryInterceptors is an optional list of gRPC unary server interceptors
+	// to chain after the built-in TracingUnaryServerInterceptor.
+	UnaryInterceptors []grpc.UnaryServerInterceptor
+
+	// Web holds configuration for gRPC-Web and CORS support.
+	Web WebConfig
+
+	// Timeouts configures HTTP server timeouts.
+	Timeouts *ServerTimeouts
 }
 
 // resolvePort determines the port to use with the following priority:
 //  1. requested (set from --port flag via ParsePortFlag(), or explicitly configured in ServeConfig.Port)
-//  2. PULUMICOST_PLUGIN_PORT env var (via GetPort())
+//  2. FINFOCUS_PLUGIN_PORT env var (via GetPort())
 //  3. 0 (ephemeral port - OS assigns available port)
 //
 // Note: The generic PORT env var is NOT supported to avoid multi-plugin conflicts.
@@ -681,7 +687,7 @@ func resolvePort(requested int) int {
 	if requested > 0 {
 		return requested
 	}
-	// Use centralized GetPort() which reads PULUMICOST_PLUGIN_PORT only (no fallback)
+	// Use centralized GetPort() which reads FINFOCUS_PLUGIN_PORT only (no fallback)
 	return GetPort()
 }
 
@@ -764,7 +770,7 @@ func validateCORSConfig(web WebConfig) error {
 // When config.Web.Enabled is true, it starts a connect-go server that supports
 // gRPC, gRPC-Web, and Connect protocols simultaneously on the same port.
 //
-// It uses config.Port when > 0; if config.Port is 0 it reads the PULUMICOST_PLUGIN_PORT environment variable
+// It uses config.Port when > 0; if config.Port is 0 it reads the FINFOCUS_PLUGIN_PORT environment variable
 // and falls back to an ephemeral port when none is provided. The function registers the plugin's service, begins
 // serving on the selected port, and performs a graceful stop when the context is cancelled.
 //
@@ -776,6 +782,11 @@ func Serve(ctx context.Context, config ServeConfig) error {
 		if valErr := config.PluginInfo.Validate(); valErr != nil {
 			return fmt.Errorf("invalid PluginInfo in ServeConfig: %w", valErr)
 		}
+	}
+
+	// Validate CORS configuration early (before acquiring resources)
+	if corsErr := validateCORSConfig(config.Web); corsErr != nil {
+		return corsErr
 	}
 
 	var listener net.Listener
@@ -803,11 +814,6 @@ func Serve(ctx context.Context, config ServeConfig) error {
 
 	// Create the core server that wraps the plugin (pluginInfo set at construction)
 	server := NewServerWithOptions(config.Plugin, config.Registry, config.Logger, config.PluginInfo)
-
-	// Validate CORS configuration
-	if corsErr := validateCORSConfig(config.Web); corsErr != nil {
-		return corsErr
-	}
 
 	// Choose serving mode based on WebConfig
 	if config.Web.Enabled {

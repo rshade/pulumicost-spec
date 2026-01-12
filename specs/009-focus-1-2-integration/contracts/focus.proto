@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 import "google/protobuf/timestamp.proto";
-import "pulumicost/v1/enums.proto";
+import "finfocus/v1/enums.proto";
 
-option go_package = "github.com/pulumi/pulumicost-spec/sdk/go/pulumicost/v1;pulumicostv1";
+option go_package = "github.com/pulumi/finfocus-spec/sdk/go/finfocus/v1;finfocusv1";
 
 // FocusCostRecord represents a single cost line item normalized to the
 // FinOps FOCUS 1.2 specification.

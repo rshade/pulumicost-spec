@@ -63,7 +63,7 @@ Go context carrying the validated trace ID through the request handler.
 
 ```go
 type contextKey string
-const traceIDKey contextKey = "pulumicost-trace-id"
+const traceIDKey contextKey = "finfocus-trace-id"
 ```
 
 ### gRPC Metadata
@@ -72,7 +72,7 @@ Incoming request metadata containing trace ID header.
 
 | Attribute | Type     | Description                                                |
 | --------- | -------- | ---------------------------------------------------------- |
-| key       | string   | `"x-pulumicost-trace-id"` (constant: `TraceIDMetadataKey`) |
+| key       | string   | `"x-finfocus-trace-id"` (constant: `TraceIDMetadataKey`) |
 | values    | []string | Header values (first value used if multiple)               |
 
 ## Data Flow
@@ -83,7 +83,7 @@ Client Request
      ▼
 ┌────────────────────────────────────────┐
 │         gRPC Metadata Headers          │
-│  x-pulumicost-trace-id: <trace_id>     │
+│  x-finfocus-trace-id: <trace_id>     │
 └────────────────┬───────────────────────┘
                  │
                  ▼
@@ -176,6 +176,6 @@ func ValidateTraceID(traceID string) error
 
 | Constant             | Value                     | Package   | Description              |
 | -------------------- | ------------------------- | --------- | ------------------------ |
-| `TraceIDMetadataKey` | `"x-pulumicost-trace-id"` | pluginsdk | gRPC metadata header key |
+| `TraceIDMetadataKey` | `"x-finfocus-trace-id"` | pluginsdk | gRPC metadata header key |
 | `FieldTraceID`       | `"trace_id"`              | pluginsdk | Logging field name       |
-| `traceIDKey`         | `"pulumicost-trace-id"`   | pluginsdk | Context key (private)    |
+| `traceIDKey`         | `"finfocus-trace-id"`   | pluginsdk | Context key (private)    |

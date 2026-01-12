@@ -19,7 +19,7 @@ Go SDK utilities that wrap existing functionality.
 
 The adapter functions delegate to existing contracts:
 
-- **Proto Contract**: `proto/pulumicost/v1/costsource.proto` (unchanged)
+- **Proto Contract**: `proto/finfocus/v1/costsource.proto` (unchanged)
 - **Testing Contract**: `sdk/go/testing/conformance.go` function signatures (consumed)
 
 ## Go API Contract (Documentation)

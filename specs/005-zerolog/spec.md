@@ -20,7 +20,7 @@
 ### User Story 1 - Plugin Developer Creates Standardized Logger (Priority: P1)
 
 A plugin developer wants to create a consistent, well-configured logger for their
-PulumiCost plugin that includes standard metadata fields and follows ecosystem
+FinFocus plugin that includes standard metadata fields and follows ecosystem
 conventions.
 
 **Why this priority**: This is the foundation - without a standard logger
@@ -46,7 +46,7 @@ name/version and verifying it outputs structured JSON with required base fields.
 
 ### User Story 2 - Core System Traces Requests Through Plugin Calls (Priority: P1)
 
-A system operator needs to trace a single request through the entire PulumiCost
+A system operator needs to trace a single request through the entire FinFocus
 system, including into plugin RPC calls, to debug issues or analyze performance.
 
 **Why this priority**: Distributed tracing is essential for debugging production
@@ -60,7 +60,7 @@ available in the handler context.
 **Acceptance Scenarios**:
 
 1. **Given** a gRPC server configured with TracingUnaryServerInterceptor, **When**
-   a client sends a request with `x-pulumicost-trace-id` metadata header, **Then**
+   a client sends a request with `x-finfocus-trace-id` metadata header, **Then**
    the handler can retrieve the trace_id from context using TraceIDFromContext
 2. **Given** a gRPC request arrives without trace_id metadata, **When** the
    interceptor processes it, **Then** TraceIDFromContext returns an empty string
@@ -96,7 +96,7 @@ calling the returned function, and verifying duration_ms appears in log output.
 ### User Story 4 - Plugin Developer Uses Standard Field Names (Priority: P2)
 
 A plugin developer needs to use consistent field names when logging so that log
-aggregation and analysis tools can easily parse logs from any PulumiCost plugin.
+aggregation and analysis tools can easily parse logs from any FinFocus plugin.
 
 **Why this priority**: Standardization enables ecosystem-wide log analysis but
 individual plugins can function without it.
@@ -109,7 +109,7 @@ statements and verifying the resulting JSON uses those exact field names.
 1. **Given** a developer imports the logging package, **When** they use
    FieldTraceID, FieldOperation, FieldResourceType constants, **Then** logs
    contain fields named exactly "trace_id", "operation", "resource_type"
-2. **Given** all PulumiCost plugins use the standard field constants, **When**
+2. **Given** all FinFocus plugins use the standard field constants, **When**
    logs are aggregated, **Then** they can be queried consistently across all
    plugins
 
@@ -140,7 +140,7 @@ statements and verifying the resulting JSON uses those exact field names.
 - **FR-002**: System MUST export TracingUnaryServerInterceptor function that
   returns a gRPC UnaryServerInterceptor
 - **FR-003**: Interceptor MUST extract trace_id from gRPC metadata key
-  "x-pulumicost-trace-id" and add it to request context
+  "x-finfocus-trace-id" and add it to request context
 - **FR-004**: System MUST provide TraceIDFromContext function that extracts
   trace_id string from context
 - **FR-005**: System MUST provide ContextWithTraceID function that adds trace_id

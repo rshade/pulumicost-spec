@@ -4,14 +4,14 @@
 
 | Component | Old Package | New Package |
 |-----------|-------------|-------------|
-| Core | `pulumicost.v1` | `finfocus.v1` |
+| Core | `finfocus.v1` | `finfocus.v1` |
 
 ## Go Module Mapping
 
 | Component | Old Path | New Path |
 |-----------|----------|----------|
-| Root Module | `github.com/rshade/pulumicost-spec` | `github.com/rshade/finfocus-spec` |
-| Proto SDK | `.../sdk/go/proto/pulumicost/v1` | `.../sdk/go/proto/finfocus/v1` |
+| Root Module | `github.com/rshade/finfocus-spec` | `github.com/rshade/finfocus-spec` |
+| Proto SDK | `.../sdk/go/proto/finfocus/v1` | `.../sdk/go/proto/finfocus/v1` |
 | Go Alias | `pbc` | `pbc` (Unchanged) |
 
 ## Implementation Constants

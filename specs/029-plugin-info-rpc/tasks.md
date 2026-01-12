@@ -18,7 +18,7 @@ each story.
 
 ## Path Conventions
 
-- **Proto definitions**: `proto/pulumicost/v1/`
+- **Proto definitions**: `proto/finfocus/v1/`
 - **Generated code**: `sdk/go/proto/`
 - **SDK implementation**: `sdk/go/pluginsdk/`
 - **Testing framework**: `sdk/go/testing/`
@@ -29,10 +29,10 @@ each story.
 
 **Purpose**: Update protocol buffer definitions and regenerate Go SDK
 
-- [x] T001 Add GetPluginInfoRequest message to proto/pulumicost/v1/costsource.proto
-- [x] T002 Add GetPluginInfoResponse message to proto/pulumicost/v1/costsource.proto
+- [x] T001 Add GetPluginInfoRequest message to proto/finfocus/v1/costsource.proto
+- [x] T002 Add GetPluginInfoResponse message to proto/finfocus/v1/costsource.proto
   - Fields: name, version, spec_version, providers, metadata
-- [x] T003 Add GetPluginInfo RPC to CostSourceService in proto/pulumicost/v1/costsource.proto
+- [x] T003 Add GetPluginInfo RPC to CostSourceService in proto/finfocus/v1/costsource.proto
 - [x] T004 Run `make generate` to regenerate sdk/go/proto/ from updated proto definitions
 - [x] T005 Verify generated code compiles with `go build ./sdk/go/proto/...`
 

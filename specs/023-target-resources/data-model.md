@@ -11,7 +11,7 @@ This feature extends an existing message rather than introducing new entities.
 
 ### GetRecommendationsRequest (Extended)
 
-**File**: `proto/pulumicost/v1/costsource.proto`
+**File**: `proto/finfocus/v1/costsource.proto`
 **Lines**: 652-667 (current), adding field 6
 
 ```protobuf
@@ -30,7 +30,7 @@ message GetRecommendationsRequest {
 
 ### ResourceDescriptor (Reused)
 
-**File**: `proto/pulumicost/v1/costsource.proto`
+**File**: `proto/finfocus/v1/costsource.proto`
 **Lines**: 181-218 (unchanged)
 
 | Field | Type | Required | Description |

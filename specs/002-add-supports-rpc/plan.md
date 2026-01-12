@@ -5,17 +5,17 @@
 
 ## Summary
 
-**FINDING: The Supports() RPC method is fully implemented in pulumicost-spec v0.1.0.**
+**FINDING: The Supports() RPC method is fully implemented in finfocus-spec v0.1.0.**
 
 ### Verified Components
 
-The proto file `proto/pulumicost/v1/costsource.proto` contains:
+The proto file `proto/finfocus/v1/costsource.proto` contains:
 
 - `rpc Supports(SupportsRequest) returns (SupportsResponse);` (line 17)
 - `SupportsRequest` message with `ResourceDescriptor resource` field (lines 38-42)
 - `SupportsResponse` message with `supported` and `reason` fields (lines 44-50)
 
-The generated Go SDK in `sdk/go/proto/pulumicost/v1/` includes:
+The generated Go SDK in `sdk/go/proto/finfocus/v1/` includes:
 
 - `CostSourceServiceClient.Supports()` method (line 67 in costsource_grpc.pb.go)
 - `CostSourceServiceServer.Supports()` interface method (line 118)
@@ -32,21 +32,21 @@ The testing framework includes:
 
 ### Root Cause Analysis
 
-The issue **is NOT in pulumicost-spec**. The Supports RPC was included in the v0.1.0 release.
+The issue **is NOT in finfocus-spec**. The Supports RPC was included in the v0.1.0 release.
 
 Per the issue's "Related Issues" section:
 
-> "After this is implemented, pulumicost-core#TBD needs to be completed to actually register
+> "After this is implemented, finfocus-core#TBD needs to be completed to actually register
 > and implement the handler in `pluginsdk`."
 
-**The actual problem is in pulumicost-core's pluginsdk**, which likely doesn't expose the
+**The actual problem is in finfocus-core's pluginsdk**, which likely doesn't expose the
 Supports method to plugin implementations. When a plugin calls `client.Supports()`, the
 pluginsdk needs to forward this to the plugin's implementation.
 
 ### Conclusion
 
-GitHub Issue #64 should be closed as "Already Complete" for pulumicost-spec. A new issue
-should be created in pulumicost-core to update the pluginsdk to expose the Supports method.
+GitHub Issue #64 should be closed as "Already Complete" for finfocus-spec. A new issue
+should be created in finfocus-core to update the pluginsdk to expose the Supports method.
 
 ## Technical Context
 
@@ -91,10 +91,10 @@ specs/002-add-supports-rpc/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 └── costsource.proto     # Already contains Supports RPC (lines 15-17, 38-50)
 
-sdk/go/proto/pulumicost/v1/
+sdk/go/proto/finfocus/v1/
 ├── costsource.pb.go     # Already contains SupportsRequest/Response types
 └── costsource_grpc.pb.go # Already contains Supports client/server methods
 ```
@@ -108,41 +108,41 @@ No violations - feature already exists in codebase.
 ## Recommended Actions
 
 1. **Close GitHub Issue #64** with comment explaining:
-   - The Supports RPC is fully implemented in pulumicost-spec v0.1.0
+   - The Supports RPC is fully implemented in finfocus-spec v0.1.0
    - All components verified: proto, messages, handlers, service descriptor, testing framework
-   - The actual issue is in pulumicost-core pluginsdk
+   - The actual issue is in finfocus-core pluginsdk
 
-2. **Unblock pulumicost-core#160** by commenting:
-   - Issue: <https://github.com/rshade/pulumicost-core/issues/160>
-   - The dependency (pulumicost-spec#64) is already complete
+2. **Unblock finfocus-core#160** by commenting:
+   - Issue: <https://github.com/rshade/finfocus-core/issues/160>
+   - The dependency (finfocus-spec#64) is already complete
    - Supports RPC has been in v0.1.0 since release
    - Issue #160 can now proceed with pluginsdk implementation
    - Suggested comment:
 
    ```text
-   This issue is now unblocked. pulumicost-spec#64 is already complete - the Supports()
-   RPC method has been in pulumicost-spec since v0.1.0 release:
+   This issue is now unblocked. finfocus-spec#64 is already complete - the Supports()
+   RPC method has been in finfocus-spec since v0.1.0 release:
 
    - Proto: `rpc Supports(SupportsRequest) returns (SupportsResponse);`
    - Messages: SupportsRequest, SupportsResponse
    - Generated code: Client/Server interfaces, handlers, service descriptor
    - Testing: ValidateSupportsResponse, MockPlugin.Supports, integration tests
 
-   Update pulumicost-core to use v0.1.0 or later and proceed with pluginsdk implementation.
+   Update finfocus-core to use v0.1.0 or later and proceed with pluginsdk implementation.
    ```
 
-3. **Verify pulumicost-plugin-aws-public** is using:
-   - `github.com/rshade/pulumicost-spec v0.1.0` or later
-   - Run `go get github.com/rshade/pulumicost-spec@v0.1.0` if needed
+3. **Verify finfocus-plugin-aws-public** is using:
+   - `github.com/rshade/finfocus-spec v0.1.0` or later
+   - Run `go get github.com/rshade/finfocus-spec@v0.1.0` if needed
 
 ## Verification Commands
 
 ```bash
 # Verify proto contains Supports RPC
-grep -n "rpc Supports" proto/pulumicost/v1/costsource.proto
+grep -n "rpc Supports" proto/finfocus/v1/costsource.proto
 
 # Verify generated code contains Supports method
-grep "func.*Supports" sdk/go/proto/pulumicost/v1/*.go
+grep "func.*Supports" sdk/go/proto/finfocus/v1/*.go
 
 # Build and test
 make test

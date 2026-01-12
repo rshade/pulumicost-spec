@@ -11,8 +11,8 @@ helpers are used by both the Core (before sending requests) and Plugins (defense
 
 ```go
 import (
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pb "github.com/rshade/pulumicost-spec/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pb "github.com/rshade/finfocus-spec/proto/finfocus/v1"
     "google.golang.org/grpc/codes"
     "google.golang.org/grpc/status"
 )

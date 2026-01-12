@@ -191,4 +191,4 @@ No new external dependencies required. The mapping package uses only Go stdlib:
 | GCP regions list becomes outdated | Include last-updated date; document refresh process |
 | New property naming conventions | Generic extractors accept custom key lists |
 | Performance regression | Benchmark tests with CI enforcement |
-| Breaking pulumicost-core integration | Document migration path; maintain backward compat |
+| Breaking finfocus-core integration | Document migration path; maintain backward compat |

@@ -15,7 +15,7 @@
 
 ## Path Conventions
 
-- **Proto definition**: `proto/pulumicost/v1/costsource.proto`
+- **Proto definition**: `proto/finfocus/v1/costsource.proto`
 - **SDK helpers**: `sdk/go/pluginsdk/`
 - **Generated code**: `sdk/go/proto/` (regenerated, do not edit manually)
 - **Spec contracts**: `specs/001-fallback-hint/contracts/costsource.proto`
@@ -38,9 +38,9 @@
 
 **⚠️ CRITICAL**: No SDK or user story work can begin until proto changes are complete and regenerated
 
-- [x] T003 Add FallbackHint enum to proto/pulumicost/v1/costsource.proto with four values
+- [x] T003 Add FallbackHint enum to proto/finfocus/v1/costsource.proto with four values
 - [x] T004 Add fallback_hint field to GetActualCostResponse message in
-      proto/pulumicost/v1/costsource.proto
+      proto/finfocus/v1/costsource.proto
 - [x] T005 Run `make generate` to regenerate Go bindings in sdk/go/proto/
 - [x] T006 Run `buf lint` to validate proto changes
 - [x] T007 Verify generated code compiles with `go build ./...`

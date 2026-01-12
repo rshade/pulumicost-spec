@@ -58,7 +58,7 @@ specs/032-plugin-dry-run/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 ├── costsource.proto     # Add DryRun RPC, DryRunRequest/Response messages,
 │                        # FieldMapping message, FieldSupportStatus enum,
 │                        # dry_run flag to GetActualCostRequest/GetProjectedCostRequest
@@ -66,7 +66,7 @@ proto/pulumicost/v1/
 
 sdk/go/
 ├── proto/               # Generated code (buf generate)
-│   └── pulumicost/v1/
+│   └── finfocus/v1/
 │       └── costsource.pb.go
 ├── pluginsdk/           # SDK helpers for dry-run implementation
 │   ├── dry_run.go       # DryRunHandler helper, field mapping utilities

@@ -26,7 +26,7 @@
 ```go
 reg := prometheus.NewRegistry()
 counter := prometheus.NewCounterVec(prometheus.CounterOpts{
-    Name: "pulumicost_plugin_requests_total",
+    Name: "finfocus_plugin_requests_total",
     Help: "Total gRPC requests",
 }, []string{"grpc_method", "grpc_code", "plugin_name"})
 reg.MustRegister(counter)
@@ -45,7 +45,7 @@ reg.MustRegister(counter)
 - Well-established patterns from [go-grpc-prometheus](https://github.com/grpc-ecosystem/go-grpc-prometheus)
 - Standard labels: `grpc_method`, `grpc_code` are industry conventions
 - Interceptor pattern integrates cleanly with existing `TracingUnaryServerInterceptor`
-- Unary interceptor sufficient (PulumiCost uses unary RPCs only)
+- Unary interceptor sufficient (FinFocus uses unary RPCs only)
 
 **Alternatives Considered**:
 
@@ -101,7 +101,7 @@ func MetricsUnaryServerInterceptor(pluginName string) grpc.UnaryServerIntercepto
 var defaultBuckets = []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0}
 
 requestDuration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
-    Name:    "pulumicost_plugin_request_duration_seconds",
+    Name:    "finfocus_plugin_request_duration_seconds",
     Help:    "Request duration histogram",
     Buckets: defaultBuckets,
 }, []string{"grpc_method", "plugin_name"})

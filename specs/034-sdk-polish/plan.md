@@ -8,7 +8,7 @@
 
 ## Summary
 
-SDK Polish v0.4.15 enhances the PulumiCost Go SDK with configurable per-client timeouts, user-friendly error
+SDK Polish v0.4.15 enhances the FinFocus Go SDK with configurable per-client timeouts, user-friendly error
 messages for GetPluginInfo RPC calls, and performance conformance testing. Technical approach involves
 extending ClientConfig with timeout support, improving error message formatting in Server.GetPluginInfo,
 and adding performance validation to the conformance test framework.

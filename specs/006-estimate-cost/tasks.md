@@ -21,7 +21,7 @@ are REQUIRED per the TDD approach.
 - [x] T001 Verify Go 1.24+ toolchain and Protocol Buffers v3 installation
 - [x] T002 Verify buf v1.32.1 is installed in bin/ (run `make generate` if needed)
 - [x] T003 [P] Verify zerolog v1.34.0+ dependency in go.mod
-- [x] T004 [P] Review existing proto/pulumicost/v1/costsource.proto to identify cost field type
+- [x] T004 [P] Review existing proto/finfocus/v1/costsource.proto to identify cost field type
       pattern (examine GetActualCost and GetProjectedCost response messages - likely double, string,
       or custom decimal type - document findings in comment for T013)
 
@@ -62,12 +62,12 @@ cost estimate is returned. Tests: TestEstimateCostBasicConformance must pass.
 
 ### Protocol Definition for User Story 1
 
-- [x] T012 [US1] Add EstimateCostRequest message to proto/pulumicost/v1/costsource.proto
+- [x] T012 [US1] Add EstimateCostRequest message to proto/finfocus/v1/costsource.proto
       (fields: resource_type string=1, attributes google.protobuf.Struct=2)
-- [x] T013 [US1] Add EstimateCostResponse message to proto/pulumicost/v1/costsource.proto
+- [x] T013 [US1] Add EstimateCostResponse message to proto/finfocus/v1/costsource.proto
       (fields: currency string=1, cost_monthly [USE TYPE FROM T004 - double/string/custom decimal]=2)
 - [x] T014 [US1] Add EstimateCost RPC method to CostSource service in
-      proto/pulumicost/v1/costsource.proto (method signature with inline documentation)
+      proto/finfocus/v1/costsource.proto (method signature with inline documentation)
 - [x] T015 [US1] Add comprehensive proto comments for EstimateCost RPC, request, and response
       messages per Constitution Principle V
 - [x] T016 [US1] Run `make generate` to regenerate Go SDK from proto definitions in sdk/go/proto/
@@ -155,13 +155,13 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 - [x] T040 [P] [US3] Add structured logging example in sdk/go/testing/integration_test.go
       (demonstrate zerolog integration per NFR-001) -
-      [Issue #83](https://github.com/rshade/pulumicost-spec/issues/83)
+      [Issue #83](https://github.com/rshade/finfocus-spec/issues/83)
 - [x] T041 [P] [US3] Add metrics tracking example in sdk/go/testing/integration_test.go
       (demonstrate latency/success rate tracking per NFR-002) -
-      [Issue #84](https://github.com/rshade/pulumicost-spec/issues/84)
+      [Issue #84](https://github.com/rshade/finfocus-spec/issues/84)
 - [x] T042 [P] [US3] Add tracing support example in sdk/go/testing/integration_test.go
       (demonstrate correlation ID handling per NFR-003) -
-      [Issue #85](https://github.com/rshade/pulumicost-spec/issues/85)
+      [Issue #85](https://github.com/rshade/finfocus-spec/issues/85)
 
 **Checkpoint**: Error handling complete - all error scenarios return appropriate gRPC status codes and messages
 
@@ -173,14 +173,14 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 
 - [x] T043 [P] Run benchmarks with `go test -bench=BenchmarkEstimateCost -benchmem ./sdk/go/testing/`
       and verify <500ms response time (SC-002) - PASS: ~95µs average (4,400x under target)
-      [Issue #86](https://github.com/rshade/pulumicost-spec/issues/86)
+      [Issue #86](https://github.com/rshade/finfocus-spec/issues/86)
       See [performance-baseline.md](./performance-baseline.md) for full analysis
 - [x] T044 [P] Run concurrent benchmark with 50+ requests per Advanced conformance and verify
       <500ms under load - PASS: 50+ concurrent requests, max ~8ms per request, all <500ms verified
-      [Issue #87](https://github.com/rshade/pulumicost-spec/issues/87)
+      [Issue #87](https://github.com/rshade/finfocus-spec/issues/87)
       See [performance-baseline.md](./performance-baseline.md#concurrent-benchmark-results-t044) for details
 - [x] T045 Add performance regression tests to CI in .github/workflows/ (benchmark comparison between commits)
-      [Issue #88](https://github.com/rshade/pulumicost-spec/issues/88)
+      [Issue #88](https://github.com/rshade/finfocus-spec/issues/88)
 
 ---
 
@@ -197,7 +197,7 @@ error responses. Tests: TestEstimateCostAdvancedConformance must pass.
 - [x] T052 Run `make validate` to verify complete validation pipeline (tests + linting + npm validations)
 - [x] T053 Verify buf breaking check passes in CI (non-breaking change per Constitution Principle IV)
 - [x] T054 Update data-model.md line 56 to replace "[decimal type TBD]" with actual type determined in T004
-      [Issue #89](https://github.com/rshade/pulumicost-spec/issues/89)
+      [Issue #89](https://github.com/rshade/finfocus-spec/issues/89)
 
 ---
 

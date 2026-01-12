@@ -66,7 +66,7 @@ import (
     "database/sql"
     "fmt"
 
-    "github.com/rshade/pulumicost-sdk/pluginsdk"
+    "github.com/rshade/finfocus-sdk/pluginsdk"
 )
 
 type MyPlugin struct {

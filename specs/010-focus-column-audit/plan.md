@@ -89,13 +89,13 @@ specs/010-focus-column-audit/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 ├── focus.proto          # Add 19 missing FOCUS columns
 └── enums.proto          # Add new enum types (CommitmentDiscountStatus, etc.)
 
 sdk/go/
 ├── proto/               # Generated protobuf code (via buf generate)
-│   └── pulumicost/v1/
+│   └── finfocus/v1/
 │       ├── focus.pb.go
 │       └── enums.pb.go
 └── pluginsdk/

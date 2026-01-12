@@ -3,7 +3,7 @@
 **Feature Branch**: `010-focus-column-audit`
 **Created**: 2025-11-28
 **Status**: Draft
-**Input**: User description: "Pulumicost Spec - FinOps FOCUS 1.2 Column Audit"
+**Input**: User description: "FinFocus Spec - FinOps FOCUS 1.2 Column Audit"
 
 ## Clarifications
 
@@ -23,7 +23,7 @@ A plugin developer wants to ensure their FOCUS 1.2 implementation covers all man
 columns defined by the FinOps Foundation, so they can certify their plugin's compliance.
 
 **Why this priority**: Without complete column coverage, plugins cannot claim FOCUS 1.2
-compliance, which is a core value proposition of PulumiCost.
+compliance, which is a core value proposition of FinFocus.
 
 **Independent Test**: Can be verified by comparing the proto definition against the official
 FOCUS 1.2 specification and running an automated audit script.

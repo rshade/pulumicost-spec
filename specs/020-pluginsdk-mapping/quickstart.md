@@ -5,10 +5,10 @@
 
 ## Installation
 
-The mapping package is part of the pulumicost-spec SDK:
+The mapping package is part of the finfocus-spec SDK:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping"
 ```
 
 ## Basic Usage
@@ -20,7 +20,7 @@ package main
 
 import (
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping"
 )
 
 func main() {
@@ -85,8 +85,8 @@ region := mapping.ExtractRegion(customProps, "customRegionField", "fallbackRegio
 package myplugin
 
 import (
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
-    pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping"
+    pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func (p *MyPlugin) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostRequest) (

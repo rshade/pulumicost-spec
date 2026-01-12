@@ -103,7 +103,7 @@ PluginMetadata, and PluginRequirements messages
 
 - [x] T010 [US2] Document proto alignment in schema field descriptions
 - [x] T011 [US2] Add examples array to schema fields that have specific formats
-  - repository: `"rshade/pulumicost-plugin-kubecost"`
+  - repository: `"rshade/finfocus-plugin-kubecost"`
   - schema_version: `"1.0.0"`
   - min_spec_version: `"0.1.0"`
 

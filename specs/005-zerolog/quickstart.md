@@ -1,13 +1,13 @@
 # Quickstart: Zerolog SDK Logging Utilities
 
-**Feature**: 005-zerolog | **SDK Package**: `github.com/rshade/pulumicost-spec/sdk/go/pluginsdk`
+**Feature**: 005-zerolog | **SDK Package**: `github.com/rshade/finfocus-spec/sdk/go/pluginsdk`
 
 ## Installation
 
 Add the SDK to your plugin's dependencies:
 
 ```bash
-go get github.com/rshade/pulumicost-spec/sdk/go@latest
+go get github.com/rshade/finfocus-spec/sdk/go@latest
 ```
 
 ## Basic Usage
@@ -20,7 +20,7 @@ package main
 import (
     "os"
     "github.com/rs/zerolog"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
 ```go
 import (
     "google.golang.org/grpc"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {
@@ -109,8 +109,8 @@ import (
     "github.com/rs/zerolog"
     "google.golang.org/grpc"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pb "github.com/rshade/pulumicost-spec/sdk/go/proto"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pb "github.com/rshade/finfocus-spec/sdk/go/proto"
 )
 
 type awsPlugin struct {
@@ -212,7 +212,7 @@ For production deployments with file output:
 ```go
 // Open log file
 logFile, err := os.OpenFile(
-    "/var/log/pulumicost/aws-public.log",
+    "/var/log/finfocus/aws-public.log",
     os.O_APPEND|os.O_CREATE|os.O_WRONLY,
     0644,
 )

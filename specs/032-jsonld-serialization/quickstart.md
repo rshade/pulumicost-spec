@@ -4,10 +4,10 @@ Get started with JSON-LD serialization for FOCUS cost data in under 5 minutes.
 
 ## Installation
 
-The jsonld package is part of the pulumicost-spec Go SDK:
+The jsonld package is part of the finfocus-spec Go SDK:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/jsonld"
+import "github.com/rshade/finfocus-spec/sdk/go/jsonld"
 ```
 
 ## Basic Usage
@@ -21,9 +21,9 @@ import (
     "fmt"
     "time"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/jsonld"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/jsonld"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func main() {

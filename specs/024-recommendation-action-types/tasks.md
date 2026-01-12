@@ -17,8 +17,8 @@
 
 This is a proto-first specification repository:
 
-- **Proto definitions**: `proto/pulumicost/v1/`
-- **Generated Go SDK**: `sdk/go/proto/pulumicost/v1/`
+- **Proto definitions**: `proto/finfocus/v1/`
+- **Generated Go SDK**: `sdk/go/proto/finfocus/v1/`
 - **Testing framework**: `sdk/go/testing/`
 - **Documentation**: `PLUGIN_DEVELOPER_GUIDE.md`, `CHANGELOG.md`
 
@@ -29,7 +29,7 @@ This is a proto-first specification repository:
 **Purpose**: Verify current state and prepare for changes
 
 - [ ] T001 Verify buf CLI is available via `make generate` dry-run
-- [ ] T002 Run `buf lint` to confirm current proto is valid in proto/pulumicost/v1/
+- [ ] T002 Run `buf lint` to confirm current proto is valid in proto/finfocus/v1/
 - [ ] T003 Run `buf breaking` baseline to establish compatibility reference
 - [ ] T004 Run existing tests via `make test` to confirm green baseline
 
@@ -70,19 +70,19 @@ serializes/deserializes them
 ### Implementation for User Story 1
 
 - [ ] T012 [US1] Add RECOMMENDATION_ACTION_TYPE_MIGRATE = 7 with documentation comments in
-  proto/pulumicost/v1/costsource.proto (line ~621)
+  proto/finfocus/v1/costsource.proto (line ~621)
 - [ ] T013 [US1] Add RECOMMENDATION_ACTION_TYPE_CONSOLIDATE = 8 with documentation comments in
-  proto/pulumicost/v1/costsource.proto
+  proto/finfocus/v1/costsource.proto
 - [ ] T014 [US1] Add RECOMMENDATION_ACTION_TYPE_SCHEDULE = 9 with documentation comments in
-  proto/pulumicost/v1/costsource.proto
+  proto/finfocus/v1/costsource.proto
 - [ ] T015 [US1] Add RECOMMENDATION_ACTION_TYPE_REFACTOR = 10 with documentation comments in
-  proto/pulumicost/v1/costsource.proto
+  proto/finfocus/v1/costsource.proto
 - [ ] T016 [US1] Add RECOMMENDATION_ACTION_TYPE_OTHER = 11 with documentation comments in
-  proto/pulumicost/v1/costsource.proto
-- [ ] T017 [US1] Run `buf lint` to validate proto syntax in proto/pulumicost/v1/
-- [ ] T018 [US1] Run `make generate` to regenerate Go SDK in sdk/go/proto/pulumicost/v1/
+  proto/finfocus/v1/costsource.proto
+- [ ] T017 [US1] Run `buf lint` to validate proto syntax in proto/finfocus/v1/
+- [ ] T018 [US1] Run `make generate` to regenerate Go SDK in sdk/go/proto/finfocus/v1/
 - [ ] T019 [US1] Verify generated Go constants exist for all 5 new values in
-  sdk/go/proto/pulumicost/v1/costsource.pb.go
+  sdk/go/proto/finfocus/v1/costsource.pb.go
 - [ ] T020 [US1] Run tests T005-T010 - verify they now PASS
 - [ ] T021 [US1] Update mock plugin to support new action types in sdk/go/testing/mock_plugin.go
 
@@ -125,7 +125,7 @@ existing functionality works unchanged
 **Independent Test**: Mock plugin responses with various action types, CLI correctly groups
 and labels recommendations
 
-**Note**: CLI implementation is out of scope for this repository (handled in pulumicost-core).
+**Note**: CLI implementation is out of scope for this repository (handled in finfocus-core).
 This phase focuses on SDK support for CLI integration.
 
 ### Implementation for User Story 3

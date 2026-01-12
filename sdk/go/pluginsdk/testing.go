@@ -1,6 +1,6 @@
 package pluginsdk
 
-// Testing Utilities for PulumiCost Plugins
+// Testing Utilities for FinFocus Plugins
 //
 // This file provides simple testing utilities for plugins using the pluginsdk.Plugin interface.
 // For more comprehensive testing including conformance tests, mock plugins with error injection,

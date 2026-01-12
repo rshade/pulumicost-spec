@@ -89,7 +89,7 @@ Plugin security trust levels.
 | `untrusted` | Untrusted, requires explicit approval | SECURITY_LEVEL_UNTRUSTED |
 | `community` | Community verified (default)          | SECURITY_LEVEL_COMMUNITY |
 | `verified`  | Officially verified                   | SECURITY_LEVEL_VERIFIED  |
-| `official`  | Official PulumiCost plugin            | SECURITY_LEVEL_OFFICIAL  |
+| `official`  | Official FinFocus plugin            | SECURITY_LEVEL_OFFICIAL  |
 
 ## Relationships
 
@@ -124,7 +124,7 @@ RegistryIndex
 ## Validation Rules (Consumer Responsibility)
 
 These validations cannot be enforced by JSON Schema and must be validated by consuming
-applications (e.g., pulumicost-core):
+applications (e.g., finfocus-core):
 
 1. **Name/key match**: Plugin `name` must match its key in the `plugins` map
 2. **Version ordering**: `max_spec_version` >= `min_spec_version` when both specified

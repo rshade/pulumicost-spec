@@ -15,7 +15,7 @@
 
 ## Path Conventions
 
-- **Proto definitions**: `proto/pulumicost/v1/`
+- **Proto definitions**: `proto/finfocus/v1/`
 - **Generated SDK**: `sdk/go/proto/`
 - **Plugin SDK**: `sdk/go/pluginsdk/`
 - **Testing**: `sdk/go/testing/`
@@ -26,8 +26,8 @@
 
 **Purpose**: Proto definitions and basic project structure for budget functionality
 
-- [x] T001 Create budget.proto with core message definitions in proto/pulumicost/v1/budget.proto
-- [x] T002 Add GetBudgets RPC to CostSource service in proto/pulumicost/v1/costsource.proto
+- [x] T001 Create budget.proto with core message definitions in proto/finfocus/v1/budget.proto
+- [x] T002 Add GetBudgets RPC to CostSource service in proto/finfocus/v1/costsource.proto
 - [x] T003 [P] Validate proto syntax with buf lint
 - [x] T004 [P] Create budget_spec.schema.json for JSON validation in schemas/budget_spec.schema.json
 
@@ -68,15 +68,15 @@ output with correct provider attribution
 ### Implementation for User Story 1
 
 - [ ] T013 [US1] Implement AWS budget mapping in aws-cost-plugin repository
-  - Issue: [rshade/pulumicost-plugin-aws-ce#4](https://github.com/rshade/pulumicost-plugin-aws-ce/issues/4)
+  - Issue: [rshade/finfocus-plugin-aws-ce#4](https://github.com/rshade/finfocus-plugin-aws-ce/issues/4)
 - [ ] T014 [US1] Implement GCP budget mapping in gcp-cost-plugin repository
 - [ ] T015 [US1] Implement Azure budget mapping in azure-cost-plugin repository
 - [ ] T016 [US1] Add provider filtering support in GetBudgets RPC
-  - Issue: [rshade/pulumicost-core#263](https://github.com/rshade/pulumicost-core/issues/263)
+  - Issue: [rshade/finfocus-core#263](https://github.com/rshade/finfocus-core/issues/263)
 - [ ] T017 [US1] Add currency handling for multi-provider budgets
-  - Issue: [rshade/pulumicost-core#263](https://github.com/rshade/pulumicost-core/issues/263)
+  - Issue: [rshade/finfocus-core#263](https://github.com/rshade/finfocus-core/issues/263)
 - [ ] T018 [US1] Update budget summary calculation for cross-provider aggregation
-  - Issue: [rshade/pulumicost-core#263](https://github.com/rshade/pulumicost-core/issues/263)
+  - Issue: [rshade/finfocus-core#263](https://github.com/rshade/finfocus-core/issues/263)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -91,22 +91,22 @@ output with correct provider attribution
 ### Tests for User Story 2 ⚠️
 
 - [ ] T019 [P] [US2] Kubecost budget mapping validation test
-  - Issue: [rshade/pulumicost-core#264](https://github.com/rshade/pulumicost-core/issues/264)
+  - Issue: [rshade/finfocus-core#264](https://github.com/rshade/finfocus-core/issues/264)
 - [ ] T020 [P] [US2] Namespace-level budget filtering test
-  - Issue: [rshade/pulumicost-core#264](https://github.com/rshade/pulumicost-core/issues/264)
+  - Issue: [rshade/finfocus-core#264](https://github.com/rshade/finfocus-core/issues/264)
 
 ### Implementation for User Story 2
 
 - [ ] T021 [US2] Implement Kubecost budget mapping in kubecost-cost-plugin repository
-  - Issue: [rshade/pulumicost-plugin-kubecost#38](https://github.com/rshade/pulumicost-plugin-kubecost/issues/38)
+  - Issue: [rshade/finfocus-plugin-kubecost#38](https://github.com/rshade/finfocus-plugin-kubecost/issues/38)
 - [ ] T022 [US2] Add namespace filtering support to BudgetFilter
-  - Issue: [rshade/pulumicost-core#266](https://github.com/rshade/pulumicost-core/issues/266)
+  - Issue: [rshade/finfocus-core#266](https://github.com/rshade/finfocus-core/issues/266)
 - [ ] T023 [US2] Implement namespace-specific budget status tracking
-  - Issue: [rshade/pulumicost-core#266](https://github.com/rshade/pulumicost-core/issues/266)
+  - Issue: [rshade/finfocus-core#266](https://github.com/rshade/finfocus-core/issues/266)
 - [ ] T024 [US2] Add Kubecost-specific metadata handling
-  - Issue: [rshade/pulumicost-core#266](https://github.com/rshade/pulumicost-core/issues/266)
+  - Issue: [rshade/finfocus-core#266](https://github.com/rshade/finfocus-core/issues/266)
 - [ ] T025 [US2] Update budget summary for namespace aggregation
-  - Issue: [rshade/pulumicost-core#266](https://github.com/rshade/pulumicost-core/issues/266)
+  - Issue: [rshade/finfocus-core#266](https://github.com/rshade/finfocus-core/issues/266)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -121,22 +121,22 @@ output with correct provider attribution
 ### Tests for User Story 3 ⚠️
 
 - [ ] T026 [P] [US3] Budget health aggregation test
-  - Issue: [rshade/pulumicost-core#265](https://github.com/rshade/pulumicost-core/issues/265)
+  - Issue: [rshade/finfocus-core#265](https://github.com/rshade/finfocus-core/issues/265)
 - [ ] T027 [P] [US3] Multi-provider summary calculation test
-  - Issue: [rshade/pulumicost-core#265](https://github.com/rshade/pulumicost-core/issues/265)
+  - Issue: [rshade/finfocus-core#265](https://github.com/rshade/finfocus-core/issues/265)
 
 ### Implementation for User Story 3
 
 - [ ] T028 [US3] Implement budget health status calculation logic
-  - Issue: [rshade/pulumicost-core#267](https://github.com/rshade/pulumicost-core/issues/267)
+  - Issue: [rshade/finfocus-core#267](https://github.com/rshade/finfocus-core/issues/267)
 - [ ] T029 [US3] Add threshold-based alerting for budget warnings
-  - Issue: [rshade/pulumicost-core#267](https://github.com/rshade/pulumicost-core/issues/267)
+  - Issue: [rshade/finfocus-core#267](https://github.com/rshade/finfocus-core/issues/267)
 - [ ] T030 [US3] Implement forecasted spending calculations
-  - Issue: [rshade/pulumicost-core#267](https://github.com/rshade/pulumicost-core/issues/267)
+  - Issue: [rshade/finfocus-core#267](https://github.com/rshade/finfocus-core/issues/267)
 - [ ] T031 [US3] Add budget health aggregation across providers
-  - Issue: [rshade/pulumicost-core#267](https://github.com/rshade/pulumicost-core/issues/267)
+  - Issue: [rshade/finfocus-core#267](https://github.com/rshade/finfocus-core/issues/267)
 - [ ] T032 [US3] Update summary statistics for health status breakdown
-  - Issue: [rshade/pulumicost-core#267](https://github.com/rshade/pulumicost-core/issues/267)
+  - Issue: [rshade/finfocus-core#267](https://github.com/rshade/finfocus-core/issues/267)
 
 **Checkpoint**: All user stories should now be independently functional
 

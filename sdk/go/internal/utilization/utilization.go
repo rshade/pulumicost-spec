@@ -1,4 +1,4 @@
-// Package utilization provides shared utilization extraction logic for the PulumiCost SDK.
+// Package utilization provides shared utilization extraction logic for the FinFocus SDK.
 //
 // This package exists to break circular dependencies between sdk/go/pluginsdk and
 // sdk/go/testing. Both packages need utilization extraction logic, but pluginsdk

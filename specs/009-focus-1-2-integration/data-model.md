@@ -1,6 +1,6 @@
 # Data Model: FinOps FOCUS 1.2 Integration
 
-## Enums (`proto/pulumicost/v1/enums.proto`)
+## Enums (`proto/finfocus/v1/enums.proto`)
 
 ### FocusServiceCategory
 
@@ -40,7 +40,7 @@
 | `PRICING_CATEGORY_DYNAMIC`     | 3     | Spot / Preemptible      |
 | `PRICING_CATEGORY_OTHER`       | 4     | Fallback                |
 
-## Messages (`proto/pulumicost/v1/focus.proto`)
+## Messages (`proto/finfocus/v1/focus.proto`)
 
 ### FocusCostRecord
 

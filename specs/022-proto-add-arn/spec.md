@@ -3,7 +3,7 @@
 **Feature Branch**: `018-proto-add-arn`  
 **Created**: 2025-12-14
 **Status**: Implemented  
-**Input**: See [GitHub Issue #157](https://github.com/rshade/pulumicost-spec/issues/157) - Add
+**Input**: See [GitHub Issue #157](https://github.com/rshade/finfocus-spec/issues/157) - Add
 dedicated `arn` field to `GetActualCostRequest` for canonical cloud identifier support.
 
 ## User Scenarios & Testing

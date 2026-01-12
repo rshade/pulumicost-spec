@@ -1,7 +1,7 @@
 # Advanced Implementation Examples
 
 This directory contains runnable Go examples demonstrating advanced plugin
-implementation patterns for the PulumiCost ecosystem.
+implementation patterns for the FinFocus ecosystem.
 
 ## Examples
 

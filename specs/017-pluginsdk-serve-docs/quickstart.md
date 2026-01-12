@@ -4,7 +4,7 @@
 **Date**: 2025-12-08
 
 This quickstart provides copy-paste-ready examples for using `pluginsdk.Serve()` to start a
-PulumiCost plugin gRPC server.
+FinFocus plugin gRPC server.
 
 ## Minimal Plugin Example
 
@@ -21,8 +21,8 @@ import (
     "os/signal"
     "syscall"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // MyPlugin implements the pluginsdk.Plugin interface.
@@ -168,7 +168,7 @@ func main() {
 ## Why PORT is Not Supported
 
 The generic `PORT` environment variable is intentionally not supported to prevent multi-plugin
-port conflicts. When pulumicost-core spawns multiple plugins (e.g., aws-public + aws-ce), each
+port conflicts. When finfocus-core spawns multiple plugins (e.g., aws-public + aws-ce), each
 needs a unique port. Using `--port` flag allows the core to allocate distinct ports for each
 plugin subprocess.
 

@@ -9,7 +9,7 @@
 ## Steps
 
 1. **Update Proto Definition**:
-   - Modify `proto/pulumicost/v1/costsource.proto` to include `GetPluginInfo` RPC and messages.
+   - Modify `proto/finfocus/v1/costsource.proto` to include `GetPluginInfo` RPC and messages.
 
 2. **Regenerate SDK**:
    - Run `make generate` (or `buf generate`) to update `sdk/go/proto/`.

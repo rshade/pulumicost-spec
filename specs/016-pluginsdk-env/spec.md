@@ -16,13 +16,13 @@
 
 ### User Story 1 - Plugin Developer Uses Standard Port Configuration (Priority: P1)
 
-A plugin developer building a new PulumiCost plugin needs their plugin to automatically bind to
+A plugin developer building a new FinFocus plugin needs their plugin to automatically bind to
 the correct gRPC port. They set `PULUMICOST_PLUGIN_PORT=8080` in their environment and their
 plugin correctly binds to port 8080 without any code changes.
 
 **Why this priority**: This is the core problem that caused E2E testing failures. Plugin port
 configuration must work consistently across all plugins to enable reliable plugin orchestration
-by pulumicost-core.
+by finfocus-core.
 
 **Independent Test**: Can be fully tested by setting `PULUMICOST_PLUGIN_PORT=8080`, starting a
 plugin, and verifying it binds to port 8080. Delivers immediate value by fixing the port
@@ -156,7 +156,7 @@ calling `pluginsdk.GetLogLevel()`, and verifying it returns "debug".
 
 #### Port Configuration
 
-- **FR-001**: Plugin SDK MUST provide exported constants for all standard PulumiCost
+- **FR-001**: Plugin SDK MUST provide exported constants for all standard FinFocus
   environment variable names
 - **FR-002**: Plugin SDK MUST provide a `GetPort()` function that reads
   `PULUMICOST_PLUGIN_PORT` only (no fallback to PORT)
@@ -214,7 +214,7 @@ calling `pluginsdk.GetLogLevel()`, and verifying it returns "debug".
   `PULUMICOST_PLUGIN_PORT` on first attempt
 - **SC-002**: Plugin developers can configure all standard environment variables by
   referencing a single source of truth in `pluginsdk/env.go`
-- **SC-003**: E2E tests between pulumicost-core and plugins pass when core sets
+- **SC-003**: E2E tests between finfocus-core and plugins pass when core sets
   `PULUMICOST_PLUGIN_PORT` (fixing the original issue)
 - **SC-004**: Documentation clearly shows plugin developers how to use environment
   configuration functions
@@ -229,12 +229,12 @@ calling `pluginsdk.GetLogLevel()`, and verifying it returns "debug".
 - Port validation beyond positive integer check is delegated to the network layer
 - Log level and format values are passed through as strings; semantic validation is the
   plugin's responsibility
-- Test mode validation (strict "true"/"false") follows the pattern in pulumicost-plugin-
+- Test mode validation (strict "true"/"false") follows the pattern in finfocus-plugin-
   aws-public
 
 ## Cross-Repository Consistency Notes
 
-Based on analysis of pulumicost-core, pulumicost-plugin-aws-public, and pulumicost-plugin-
+Based on analysis of finfocus-core, finfocus-plugin-aws-public, and finfocus-plugin-
 aws-ce:
 
 ### Variables Used Consistently
@@ -246,13 +246,13 @@ aws-ce:
 
 ### Variables Requiring Migration
 
-- `LOG_LEVEL` in pulumicost-plugin-aws-public should migrate to `PULUMICOST_LOG_LEVEL`
+- `LOG_LEVEL` in finfocus-plugin-aws-public should migrate to `PULUMICOST_LOG_LEVEL`
   (fallback supported for backward compatibility)
 - `PORT` usage must be replaced with `PULUMICOST_PLUGIN_PORT` (no fallback - breaking change)
 
 ### Core-Only Variables (Not in Plugin SDK)
 
-The following are used by pulumicost-core only and should NOT be in the plugin SDK:
+The following are used by finfocus-core only and should NOT be in the plugin SDK:
 
 - `PULUMICOST_OUTPUT_FORMAT` - CLI output formatting
 - `PULUMICOST_OUTPUT_PRECISION` - Decimal precision for CLI output

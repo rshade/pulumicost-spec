@@ -1,18 +1,18 @@
-# CloudWatch Dashboard Template for PulumiCost Plugin Observability
+# CloudWatch Dashboard Template for FinFocus Plugin Observability
 # Deploy using AWS CloudFormation or CDK
 
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudWatch Dashboard for PulumiCost Plugin Observability'
+Description: 'CloudWatch Dashboard for FinFocus Plugin Observability'
 
 Parameters:
   PluginName:
     Type: String
-    Default: pulumicost-plugin
-    Description: Name of the PulumiCost plugin
+    Default: finfocus-plugin
+    Description: Name of the FinFocus plugin
   
   LogGroupName:
     Type: String
-    Default: /aws/lambda/pulumicost-plugin
+    Default: /aws/lambda/finfocus-plugin
     Description: CloudWatch Log Group for the plugin
   
   Environment:
@@ -22,7 +22,7 @@ Parameters:
     Description: Deployment environment
 
 Resources:
-  PulumiCostObservabilityDashboard:
+  FinFocusObservabilityDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
       DashboardName: !Sub '${PluginName}-observability-${Environment}'
@@ -191,7 +191,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub '${PluginName}-high-error-rate-${Environment}'
-      AlarmDescription: 'High error rate detected in PulumiCost plugin'
+      AlarmDescription: 'High error rate detected in FinFocus plugin'
       MetricName: Errors
       Namespace: AWS/Lambda
       Statistic: Sum
@@ -209,7 +209,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub '${PluginName}-high-latency-${Environment}'
-      AlarmDescription: 'High latency detected in PulumiCost plugin'
+      AlarmDescription: 'High latency detected in FinFocus plugin'
       MetricName: Duration
       Namespace: AWS/Lambda
       Statistic: Average
@@ -229,7 +229,7 @@ Resources:
       AlarmName: !Sub '${PluginName}-low-cache-hit-rate-${Environment}'
       AlarmDescription: 'Low cache hit rate detected'
       MetricName: CacheHitRate
-      Namespace: PulumiCost/Plugin
+      Namespace: FinFocus/Plugin
       Statistic: Average
       Period: 600
       EvaluationPeriods: 2
@@ -243,7 +243,7 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub '${PluginName}-alerts-${Environment}'
-      DisplayName: PulumiCost Plugin Alerts
+      DisplayName: FinFocus Plugin Alerts
 
   # Custom metrics filter for structured logs
   ErrorCountMetricFilter:
@@ -252,7 +252,7 @@ Resources:
       LogGroupName: !Ref LogGroupName
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
-        - MetricNamespace: PulumiCost/Plugin
+        - MetricNamespace: FinFocus/Plugin
           MetricName: ErrorCount
           MetricValue: '1'
           DefaultValue: 0
@@ -263,7 +263,7 @@ Resources:
       LogGroupName: !Ref LogGroupName
       FilterPattern: '{ $.fields.cache_hit = "true" }'
       MetricTransformations:
-        - MetricNamespace: PulumiCost/Plugin
+        - MetricNamespace: FinFocus/Plugin
           MetricName: CacheHits
           MetricValue: '1'
           DefaultValue: 0
@@ -274,7 +274,7 @@ Resources:
       LogGroupName: !Ref LogGroupName
       FilterPattern: '{ $.message = "Processing cost query request" }'
       MetricTransformations:
-        - MetricNamespace: PulumiCost/Plugin
+        - MetricNamespace: FinFocus/Plugin
           MetricName: RequestProcessingTime
           MetricValue: $.fields.processing_time_ms
           DefaultValue: 0

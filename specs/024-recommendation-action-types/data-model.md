@@ -119,7 +119,7 @@ to be used in:
 
 After `make generate`:
 
-### Go Constants (sdk/go/proto/pulumicost/v1/costsource.pb.go)
+### Go Constants (sdk/go/proto/finfocus/v1/costsource.pb.go)
 
 ```go
 const (

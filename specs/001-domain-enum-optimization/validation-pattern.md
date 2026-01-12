@@ -7,7 +7,7 @@
 ## Pattern Overview
 
 This document defines the **zero-allocation enum validation pattern** established in the registry package and recommended
-for consistent implementation across the PulumiCost SDK.
+for consistent implementation across the FinFocus SDK.
 
 ## Pattern Definition
 
@@ -457,5 +457,5 @@ The **optimized slice-based enum validation pattern** provides:
 - ✅ Type safety (Go enum pattern)
 - ✅ Maintainability (single source of truth)
 
-**Recommendation**: Use this pattern as the standard approach for all enum validation in the PulumiCost SDK when
+**Recommendation**: Use this pattern as the standard approach for all enum validation in the FinFocus SDK when
 enum size is < 40 values.

@@ -10,7 +10,7 @@ detailing its startup behavior, environment variable usage, and expected flags."
 
 ### User Story 1 - Plugin Developer Learns Serve() Usage (Priority: P1)
 
-A plugin developer building a new PulumiCost plugin needs to understand how to configure and start
+A plugin developer building a new FinFocus plugin needs to understand how to configure and start
 the gRPC server using `pluginsdk.Serve()`. They need clear documentation explaining the function
 signature, configuration options, and expected behavior.
 
@@ -22,7 +22,7 @@ implementing a minimal plugin that starts and accepts gRPC connections.
 
 **Acceptance Scenarios**:
 
-1. **Given** a developer new to PulumiCost, **When** they read the Serve() documentation,
+1. **Given** a developer new to FinFocus, **When** they read the Serve() documentation,
    **Then** they can write a minimal main() function that starts a plugin server without errors.
 2. **Given** a developer reading the documentation, **When** they look for configuration options,
    **Then** they find a complete list of ServeConfig fields with descriptions.
@@ -75,7 +75,7 @@ matches documented behavior.
 
 ### User Story 4 - DevOps Engineer Deploys Multiple Plugins (Priority: P2)
 
-A DevOps engineer deploying pulumicost-core needs to understand how to orchestrate multiple plugins
+A DevOps engineer deploying finfocus-core needs to understand how to orchestrate multiple plugins
 (e.g., aws-public + aws-ce) with unique ports. They need documentation explaining why
 PORT fallback is not supported.
 

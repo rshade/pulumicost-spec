@@ -61,7 +61,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 ### I. gRPC Proto Specification-First Development ✅ PASS
 
 - ✅ Proto definitions are source of truth: New EstimateCost RPC will be defined in
-  `proto/pulumicost/v1/costsource.proto`
+  `proto/finfocus/v1/costsource.proto`
 - ✅ SDK code generated from proto: Go SDK will be regenerated via buf after proto updates
 - ✅ Comprehensive validation: EstimateCostRequest and EstimateCostResponse will have full validation
 - ✅ Breaking changes detected: buf lint/breaking checks in CI
@@ -129,12 +129,12 @@ specs/[###-feature]/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 └── costsource.proto          # Add EstimateCost RPC and messages here
 
 sdk/go/
 ├── proto/                     # Generated code (regenerated via buf)
-│   └── pulumicost/v1/
+│   └── finfocus/v1/
 │       ├── costsource.pb.go
 │       └── costsource_grpc.pb.go
 ├── pricing/                   # Domain types and validation
@@ -218,7 +218,7 @@ N/A - All constitutional requirements passed. No violations to justify.
 **Implementation Order** (from tasks.md):
 
 1. Write conformance tests for EstimateCost (RED phase)
-2. Update proto/pulumicost/v1/costsource.proto
+2. Update proto/finfocus/v1/costsource.proto
 3. Run `make generate` to regenerate Go SDK
 4. Implement validation functions in sdk/go/pricing/
 5. Extend testing framework in sdk/go/testing/

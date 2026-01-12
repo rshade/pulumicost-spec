@@ -1,4 +1,4 @@
-// Package pluginsdk provides a development SDK for PulumiCost plugins.
+// Package pluginsdk provides a development SDK for FinFocus plugins.
 package pluginsdk
 
 // DefaultAllowedHeaders contains the CORS allowed headers for Connect/gRPC-Web.

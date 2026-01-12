@@ -13,7 +13,7 @@ Add two new fields to the `ResourceDescriptor` protobuf message:
   GCP Full Resource Name, etc.) for exact resource matching
 
 This is a backward-compatible protocol addition (minor version bump) enabling
-pulumicost-core to correlate batch recommendation responses and plugins to perform
+finfocus-core to correlate batch recommendation responses and plugins to perform
 precise resource lookups.
 
 ## Technical Context
@@ -26,7 +26,7 @@ precise resource lookups.
 **Project Type**: Single (gRPC specification + Go SDK)
 **Performance Goals**: Zero-allocation field access, O(1) correlation lookup
 **Constraints**: Backward-compatible proto changes only, no breaking wire format
-**Scale/Scope**: Used by all PulumiCost plugins and core
+**Scale/Scope**: Used by all FinFocus plugins and core
 
 ## Constitution Check
 
@@ -61,12 +61,12 @@ specs/028-resource-id/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 └── costsource.proto     # Add id (field 7) and arn (field 8) to ResourceDescriptor
 
 sdk/go/
 ├── proto/               # Regenerated gRPC code (make generate)
-│   └── pulumicost/v1/
+│   └── finfocus/v1/
 │       └── costsource.pb.go
 ├── pluginsdk/
 │   └── helpers.go       # Add WithID/WithARN builder methods (if needed)

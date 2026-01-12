@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "gRPC-Web support for browser-based plugin access enabling
 full lifecycle management, plus Go-based client support for batch resource queries"
-**Related Issue**: [#189](https://github.com/rshade/pulumicost-spec/issues/189)
+**Related Issue**: [#189](https://github.com/rshade/finfocus-spec/issues/189)
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -13,7 +13,7 @@ full lifecycle management, plus Go-based client support for batch resource queri
 
 A developer using the Pulumi Insights web dashboard wants to get a cost estimate for a
 resource they're about to deploy. The browser-based application needs to communicate
-directly with a running PulumiCost plugin to retrieve pricing information without
+directly with a running FinFocus plugin to retrieve pricing information without
 requiring a separate backend proxy.
 
 **Why this priority**: This is the core value proposition - enabling browser-based cost
@@ -25,7 +25,7 @@ EstimateCost RPC via gRPC-Web protocol and displays the returned cost estimate.
 
 **Acceptance Scenarios**:
 
-1. **Given** a PulumiCost plugin is running and accessible,
+1. **Given** a FinFocus plugin is running and accessible,
    **When** a browser client sends an EstimateCost request via gRPC-Web protocol,
    **Then** the plugin returns cost estimate data in a format the browser can parse.
 2. **Given** a browser client on a different origin than the plugin,
@@ -156,7 +156,7 @@ check endpoint and displaying status indicators.
 
 ### User Story 6 - Go Client Library for Plugin Integration (Priority: P2)
 
-A developer building a Go-based service that needs to integrate with PulumiCost plugins
+A developer building a Go-based service that needs to integrate with FinFocus plugins
 wants a simple client library that handles connection management, protocol negotiation,
 and error handling. The SDK should provide a typed Go client that makes plugin
 integration straightforward.
@@ -340,7 +340,7 @@ plugins and displays their status information.
 ### Key Entities
 
 - **Browser Client**: A web application running in a user's browser that needs to
-  communicate with PulumiCost plugins. Communicates via HTTP-based protocols.
+  communicate with FinFocus plugins. Communicates via HTTP-based protocols.
 - **Go Client**: A Go-based service or application (e.g., Pulumi Insights backend) that
   queries plugins programmatically. Uses the SDK-provided client library.
 - **Plugin Endpoint**: The network address and port where a plugin serves requests. May
@@ -417,7 +417,7 @@ plugins and displays their status information.
 - Plugin credentials are passed via environment variables at launch time, not via
   request headers. This ensures compatibility with standard cloud SDK credential chains.
 - The orchestrator is a web platform concern (e.g., Pulumi Insights), not part of
-  pulumicost-core. pulumicost-core is a CLI that launches plugins locally via command
+  finfocus-core. finfocus-core is a CLI that launches plugins locally via command
   line; multi-tenant orchestration is implemented by the consuming web service.
 
 ## Scope Boundaries
@@ -462,4 +462,4 @@ plugins and displays their status information.
 - Existing CostSourceService proto definitions (no changes required for this spec)
 - Current pluginsdk.Serve() implementation (will be extended)
 - gRPC reflection support (already implemented via #181)
-- Orchestrator implementation (web platform responsibility, not pulumicost-core)
+- Orchestrator implementation (web platform responsibility, not finfocus-core)

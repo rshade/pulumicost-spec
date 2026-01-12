@@ -5,7 +5,7 @@
 
 ## New Message: PricingTier
 
-Add after existing PricingSpec message in `proto/pulumicost/v1/costsource.proto`:
+Add after existing PricingSpec message in `proto/finfocus/v1/costsource.proto`:
 
 ```protobuf
 // PricingTier represents one tier in a tiered pricing model.

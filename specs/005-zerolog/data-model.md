@@ -66,7 +66,7 @@ gRPC metadata keys for trace propagation.
 
 | Constant           | Value                   | Description               |
 | ------------------ | ----------------------- | ------------------------- |
-| TraceIDMetadataKey | "x-pulumicost-trace-id" | gRPC metadata header name |
+| TraceIDMetadataKey | "x-finfocus-trace-id" | gRPC metadata header name |
 
 ### 5. Context Keys
 
@@ -78,7 +78,7 @@ Internal context keys for value storage.
 
 | Key        | Value                 | Description              |
 | ---------- | --------------------- | ------------------------ |
-| traceIDKey | "pulumicost-trace-id" | Context key for trace ID |
+| traceIDKey | "finfocus-trace-id" | Context key for trace ID |
 
 ## State Transitions
 
@@ -121,7 +121,7 @@ Plugin main() → NewPluginLogger(name, version, level, writer)
 ### Request Handling
 
 ```text
-gRPC Request with x-pulumicost-trace-id header
+gRPC Request with x-finfocus-trace-id header
           ↓
 TracingUnaryServerInterceptor extracts trace_id
           ↓

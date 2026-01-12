@@ -188,6 +188,6 @@ type and comparing the returned field lists.
 
 ## Dependencies
 
-- Existing CostSource gRPC service definition (proto/pulumicost/v1/costsource.proto)
+- Existing CostSource gRPC service definition (proto/finfocus/v1/costsource.proto)
 - FOCUS field definitions in the SDK
 - Plugin registry for resource type identification

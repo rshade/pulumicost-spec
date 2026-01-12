@@ -81,7 +81,7 @@
 **Alternatives Considered**:
 
 - `urn:focus:v1:`: URN scheme, less web-friendly
-- `https://pulumicost.dev/focus/`: Project-specific, not spec-aligned
+- `https://finfocus.dev/focus/`: Project-specific, not spec-aligned
 - No namespace: Breaks RDF semantics
 
 ### 5. ID Generation Strategy
