@@ -7,8 +7,8 @@
 // # Usage
 //
 // This is an internal package. External consumers should use:
-//   - [github.com/rshade/pulumicost-spec/sdk/go/pluginsdk.ValidateSpecVersion]
-//   - [github.com/rshade/pulumicost-spec/sdk/go/testing.IsValidSemVer]
+//   - [github.com/rshade/finfocus-spec/sdk/go/pluginsdk.ValidateSpecVersion]
+//   - [github.com/rshade/finfocus-spec/sdk/go/testing.IsValidSemVer]
 package semver
 
 import "regexp"

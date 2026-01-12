@@ -1,11 +1,11 @@
-# PulumiCost Web Client Example
+# FinFocus Web Client Example
 
-This example demonstrates how to call PulumiCost plugins from a web browser using the Connect
+This example demonstrates how to call FinFocus plugins from a web browser using the Connect
 protocol.
 
 ## Overview
 
-The Connect protocol enables browser-based applications to communicate with PulumiCost plugins using
+The Connect protocol enables browser-based applications to communicate with FinFocus plugins using
 simple JSON over HTTP - no special client libraries required.
 
 ## Key Benefits
@@ -19,7 +19,7 @@ simple JSON over HTTP - no special client libraries required.
 
 ### 1. Start a Plugin Server
 
-First, start a PulumiCost plugin server with web support enabled:
+First, start a FinFocus plugin server with web support enabled:
 
 ```go
 package main
@@ -27,7 +27,7 @@ package main
 import (
     "context"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {
@@ -73,7 +73,7 @@ Enter your plugin server URL (e.g., `http://localhost:8080`) in the Server Confi
 The Connect protocol sends JSON POST requests to predictable URL paths:
 
 ```text
-POST /pulumicost.v1.CostSourceService/Name
+POST /finfocus.v1.CostSourceService/Name
 Content-Type: application/json
 
 {}
@@ -90,7 +90,7 @@ Response:
 ### Example: Estimate Cost
 
 ```javascript
-const response = await fetch('http://localhost:8080/pulumicost.v1.CostSourceService/EstimateCost', {
+const response = await fetch('http://localhost:8080/finfocus.v1.CostSourceService/EstimateCost', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
@@ -112,12 +112,12 @@ console.log(`Monthly cost: ${data.currency} ${data.cost_monthly}`);
 
 ```bash
 # Get plugin name
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/Name \
   -H "Content-Type: application/json" \
   -d '{}'
 
 # Estimate cost
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/EstimateCost \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/EstimateCost \
   -H "Content-Type: application/json" \
   -d '{
     "resource_type": "aws:ec2/instance:Instance",
@@ -172,4 +172,4 @@ Or simply define your own types based on the protobuf definitions.
 ## See Also
 
 - [Connect Protocol Documentation](https://connectrpc.com/docs/protocol)
-- [PulumiCost SDK Documentation](../../../sdk/go/pluginsdk/README.md)
+- [FinFocus SDK Documentation](../../../sdk/go/pluginsdk/README.md)

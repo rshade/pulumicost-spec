@@ -4,7 +4,7 @@ package pluginsdk
 //
 // This file provides simple testing utilities for plugins using the pluginsdk.Plugin interface.
 // For more comprehensive testing including conformance tests, mock plugins with error injection,
-// and performance benchmarks, use the github.com/rshade/pulumicost-spec/sdk/go/testing package.
+// and performance benchmarks, use the github.com/rshade/finfocus-spec/sdk/go/testing package.
 //
 // Comparison:
 //   - pluginsdk (this file): Simple TestServer and TestPlugin for quick unit tests
@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"

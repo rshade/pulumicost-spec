@@ -3,7 +3,7 @@ package testing_test
 import (
 	"testing"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // TestPerformanceReturnsLatencyMetrics validates that benchmarks return latency metrics (T039).

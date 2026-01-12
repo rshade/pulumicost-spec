@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // TestFullSuiteReturnsConsolidatedReport validates that the full suite returns a report (T059).

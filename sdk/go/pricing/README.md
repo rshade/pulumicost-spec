@@ -1,7 +1,7 @@
 # Pricing Package
 
 Package `pricing` provides domain types, validation, and growth calculation helpers for the
-PulumiCost SDK.
+FinFocus SDK.
 
 ## Features
 
@@ -13,7 +13,7 @@ PulumiCost SDK.
 ## Installation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pricing"
+import "github.com/rshade/finfocus-spec/sdk/go/pricing"
 ```
 
 ## Growth Projection Helpers
@@ -34,8 +34,8 @@ assumptions.
 
 ```go
 import (
-    "github.com/rshade/pulumicost-spec/sdk/go/pricing"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pricing"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // Apply linear growth: 10% per period for 12 periods
@@ -320,6 +320,6 @@ if err != nil {
 
 ## References
 
-- [GrowthType Proto Definition](../../../proto/pulumicost/v1/enums.proto)
-- [ResourceDescriptor Proto](../../../proto/pulumicost/v1/costsource.proto)
+- [GrowthType Proto Definition](../../../proto/finfocus/v1/enums.proto)
+- [ResourceDescriptor Proto](../../../proto/finfocus/v1/costsource.proto)
 - [Forecasting Primitives Spec](../../../specs/030-forecasting-primitives/)

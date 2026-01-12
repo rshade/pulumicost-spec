@@ -1,4 +1,4 @@
-# Agent Guidelines for PulumiCost Spec
+# Agent Guidelines for FinFocus Spec
 
 ## Build/Test Commands
 
@@ -29,6 +29,10 @@
 - Sanitize secrets in examples
 
 ## Active Technologies
+
+- Go 1.25.5+ + gRPC, Protobuf, Buf, ConnectRPC, RS/Zerolog (035-project-rename-finfocus)
+- N/A (Protobuf definitions and Go SDK) (035-project-rename-finfocus)
+
 - Go 1.25.5 + gRPC, protobuf, buf v1.32.1 (034-sdk-polish)
 
 - Go 1.25.5 (as specified in go.mod) + gRPC/protobuf (existing), buf v1.32.1 (existing for proto management) (001-sdk-polish-release)

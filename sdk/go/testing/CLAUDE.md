@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is the **testing package** of the PulumiCost Go SDK, providing a comprehensive testing framework for plugin
+This is the **testing package** of the FinFocus Go SDK, providing a comprehensive testing framework for plugin
 implementations. The package enables in-memory gRPC testing, conformance validation, performance benchmarking, and integration
 testing for CostSource plugins.
 
@@ -69,7 +69,7 @@ testing for CostSource plugins.
 
 **Educational Reference for Plugin Developers**:
 
-This test serves as the canonical reference for implementing structured logging with zerolog in PulumiCost plugins.
+This test serves as the canonical reference for implementing structured logging with zerolog in FinFocus plugins.
 It demonstrates NFR-001 compliance patterns from spec 006-estimate-cost.
 
 **Subtests**:

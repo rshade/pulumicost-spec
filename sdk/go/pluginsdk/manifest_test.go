@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -44,7 +44,7 @@ func TestManifestSaveLoad(t *testing.T) {
 			Capabilities: []string{"projected_cost", "actual_cost"},
 			ServiceDefinition: &pbc.ServiceDefinition{
 				ServiceName:     "CostSourceService",
-				PackageName:     "pulumicost.v1",
+				PackageName:     "finfocus.v1",
 				Methods:         []string{"GetProjectedCost", "GetActualCost"},
 				Port:            50051,
 				HealthCheckPath: "/healthz",

@@ -3,7 +3,7 @@ package testing_test
 import (
 	"testing"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // TestSpecValidationPassesForValidPricingSpec validates that spec validation passes

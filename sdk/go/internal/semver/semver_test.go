@@ -3,7 +3,7 @@ package semver_test
 import (
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/internal/semver"
+	"github.com/rshade/finfocus-spec/sdk/go/internal/semver"
 )
 
 func TestIsValid(t *testing.T) {

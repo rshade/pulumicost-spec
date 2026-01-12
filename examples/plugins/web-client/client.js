@@ -1,7 +1,7 @@
 /**
- * PulumiCost Connect Client - Browser Example
+ * FinFocus Connect Client - Browser Example
  *
- * This file demonstrates how to call PulumiCost plugins using the Connect protocol.
+ * This file demonstrates how to call FinFocus plugins using the Connect protocol.
  * The Connect protocol uses JSON over HTTP, making it trivial to call from browsers
  * without any special client libraries.
  *
@@ -25,7 +25,7 @@ function getServerUrl() {
  * @returns {Promise<object>} - The response payload
  */
 async function connectRpc(method, request = {}) {
-    const url = `${getServerUrl()}/pulumicost.v1.CostSourceService/${method}`;
+    const url = `${getServerUrl()}/finfocus.v1.CostSourceService/${method}`;
 
     const response = await fetch(url, {
         method: 'POST',

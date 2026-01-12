@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: pulumicost/v1/focus.proto
+// source: finfocus/v1/focus.proto
 
 package pbc
 
@@ -61,11 +61,11 @@ func (x FocusContractCommitmentCategory) String() string {
 }
 
 func (FocusContractCommitmentCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_focus_proto_enumTypes[0].Descriptor()
+	return file_finfocus_v1_focus_proto_enumTypes[0].Descriptor()
 }
 
 func (FocusContractCommitmentCategory) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_focus_proto_enumTypes[0]
+	return &file_finfocus_v1_focus_proto_enumTypes[0]
 }
 
 func (x FocusContractCommitmentCategory) Number() protoreflect.EnumNumber {
@@ -74,7 +74,7 @@ func (x FocusContractCommitmentCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusContractCommitmentCategory.Descriptor instead.
 func (FocusContractCommitmentCategory) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_focus_proto_rawDescGZIP(), []int{0}
+	return file_finfocus_v1_focus_proto_rawDescGZIP(), []int{0}
 }
 
 // FocusCostRecord represents a single cost line item normalized to the
@@ -88,7 +88,7 @@ type FocusCostRecord struct {
 	// DEPRECATED in FOCUS 1.3: Use service_provider_name instead.
 	// Will be removed in FOCUS 1.4.
 	//
-	// Deprecated: Marked as deprecated in pulumicost/v1/focus.proto.
+	// Deprecated: Marked as deprecated in finfocus/v1/focus.proto.
 	ProviderName string `protobuf:"bytes,1,opt,name=provider_name,json=providerName,proto3" json:"provider_name,omitempty"`
 	// BillingAccountId: The identifier for the billing account.
 	BillingAccountId string `protobuf:"bytes,2,opt,name=billing_account_id,json=billingAccountId,proto3" json:"billing_account_id,omitempty"`
@@ -116,16 +116,16 @@ type FocusCostRecord struct {
 	// ChargePeriodEnd: The end date/time when the charge was incurred.
 	ChargePeriodEnd *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=charge_period_end,json=chargePeriodEnd,proto3" json:"charge_period_end,omitempty"`
 	// ChargeCategory: The nature of the charge (Usage, Purchase, Credit, etc.).
-	ChargeCategory FocusChargeCategory `protobuf:"varint,8,opt,name=charge_category,json=chargeCategory,proto3,enum=pulumicost.v1.FocusChargeCategory" json:"charge_category,omitempty"`
+	ChargeCategory FocusChargeCategory `protobuf:"varint,8,opt,name=charge_category,json=chargeCategory,proto3,enum=finfocus.v1.FocusChargeCategory" json:"charge_category,omitempty"`
 	// ChargeClass: Classification of the charge (Regular, Correction).
 	// New in FOCUS 1.0+.
-	ChargeClass FocusChargeClass `protobuf:"varint,28,opt,name=charge_class,json=chargeClass,proto3,enum=pulumicost.v1.FocusChargeClass" json:"charge_class,omitempty"`
+	ChargeClass FocusChargeClass `protobuf:"varint,28,opt,name=charge_class,json=chargeClass,proto3,enum=finfocus.v1.FocusChargeClass" json:"charge_class,omitempty"`
 	// ChargeDescription: A human-readable description of the charge.
 	ChargeDescription string `protobuf:"bytes,29,opt,name=charge_description,json=chargeDescription,proto3" json:"charge_description,omitempty"`
 	// ChargeFrequency: How often the charge is applied (OneTime, Recurring, UsageBased).
-	ChargeFrequency FocusChargeFrequency `protobuf:"varint,30,opt,name=charge_frequency,json=chargeFrequency,proto3,enum=pulumicost.v1.FocusChargeFrequency" json:"charge_frequency,omitempty"`
+	ChargeFrequency FocusChargeFrequency `protobuf:"varint,30,opt,name=charge_frequency,json=chargeFrequency,proto3,enum=finfocus.v1.FocusChargeFrequency" json:"charge_frequency,omitempty"`
 	// PricingCategory: The pricing model applied (Standard, Committed, Dynamic).
-	PricingCategory FocusPricingCategory `protobuf:"varint,9,opt,name=pricing_category,json=pricingCategory,proto3,enum=pulumicost.v1.FocusPricingCategory" json:"pricing_category,omitempty"`
+	PricingCategory FocusPricingCategory `protobuf:"varint,9,opt,name=pricing_category,json=pricingCategory,proto3,enum=finfocus.v1.FocusPricingCategory" json:"pricing_category,omitempty"`
 	// PricingQuantity: The quantity used for pricing calculations.
 	PricingQuantity float64 `protobuf:"fixed64,31,opt,name=pricing_quantity,json=pricingQuantity,proto3" json:"pricing_quantity,omitempty"`
 	// PricingUnit: The unit of measure for pricing (e.g., "Hours", "GB").
@@ -146,7 +146,7 @@ type FocusCostRecord struct {
 	// currency. FOCUS 1.2 Section 3.37 (CONDITIONAL).
 	PricingCurrencyListUnitPrice float64 `protobuf:"fixed64,54,opt,name=pricing_currency_list_unit_price,json=pricingCurrencyListUnitPrice,proto3" json:"pricing_currency_list_unit_price,omitempty"`
 	// ServiceCategory: The category of the service (Compute, Storage, Network, etc.).
-	ServiceCategory FocusServiceCategory `protobuf:"varint,6,opt,name=service_category,json=serviceCategory,proto3,enum=pulumicost.v1.FocusServiceCategory" json:"service_category,omitempty"`
+	ServiceCategory FocusServiceCategory `protobuf:"varint,6,opt,name=service_category,json=serviceCategory,proto3,enum=finfocus.v1.FocusServiceCategory" json:"service_category,omitempty"`
 	// ServiceName: The name of the service (e.g., "Amazon EC2", "Azure VMs").
 	ServiceName string `protobuf:"bytes,7,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
 	// ServiceSubcategory: Granular service classification supporting functional
@@ -157,7 +157,7 @@ type FocusCostRecord struct {
 	// DEPRECATED in FOCUS 1.3: Use host_provider_name instead.
 	// Will be removed in FOCUS 1.4.
 	//
-	// Deprecated: Marked as deprecated in pulumicost/v1/focus.proto.
+	// Deprecated: Marked as deprecated in finfocus/v1/focus.proto.
 	Publisher string `protobuf:"bytes,55,opt,name=publisher,proto3" json:"publisher,omitempty"`
 	// ResourceId: The unique identifier for the resource.
 	ResourceId string `protobuf:"bytes,12,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
@@ -200,7 +200,7 @@ type FocusCostRecord struct {
 	// ConsumedUnit: The unit of measure for consumption (e.g., "Hours", "GB").
 	ConsumedUnit string `protobuf:"bytes,21,opt,name=consumed_unit,json=consumedUnit,proto3" json:"consumed_unit,omitempty"`
 	// CommitmentDiscountCategory: The type of commitment discount (Spend, Usage).
-	CommitmentDiscountCategory FocusCommitmentDiscountCategory `protobuf:"varint,37,opt,name=commitment_discount_category,json=commitmentDiscountCategory,proto3,enum=pulumicost.v1.FocusCommitmentDiscountCategory" json:"commitment_discount_category,omitempty"`
+	CommitmentDiscountCategory FocusCommitmentDiscountCategory `protobuf:"varint,37,opt,name=commitment_discount_category,json=commitmentDiscountCategory,proto3,enum=finfocus.v1.FocusCommitmentDiscountCategory" json:"commitment_discount_category,omitempty"`
 	// CommitmentDiscountId: The identifier for the commitment discount.
 	CommitmentDiscountId string `protobuf:"bytes,38,opt,name=commitment_discount_id,json=commitmentDiscountId,proto3" json:"commitment_discount_id,omitempty"`
 	// CommitmentDiscountName: The display name of the commitment discount.
@@ -211,7 +211,7 @@ type FocusCostRecord struct {
 	// CommitmentDiscountStatus: Utilization status of commitment discount.
 	// FOCUS 1.2 Section 3.17 (CONDITIONAL). Required when CommitmentDiscountId
 	// is not null and ChargeCategory is "Usage".
-	CommitmentDiscountStatus FocusCommitmentDiscountStatus `protobuf:"varint,47,opt,name=commitment_discount_status,json=commitmentDiscountStatus,proto3,enum=pulumicost.v1.FocusCommitmentDiscountStatus" json:"commitment_discount_status,omitempty"`
+	CommitmentDiscountStatus FocusCommitmentDiscountStatus `protobuf:"varint,47,opt,name=commitment_discount_status,json=commitmentDiscountStatus,proto3,enum=finfocus.v1.FocusCommitmentDiscountStatus" json:"commitment_discount_status,omitempty"`
 	// CommitmentDiscountType: Provider-assigned identifier for the type of
 	// commitment discount applied. FOCUS 1.2 Section 3.18 (CONDITIONAL).
 	CommitmentDiscountType string `protobuf:"bytes,48,opt,name=commitment_discount_type,json=commitmentDiscountType,proto3" json:"commitment_discount_type,omitempty"`
@@ -224,7 +224,7 @@ type FocusCostRecord struct {
 	// CapacityReservationStatus: Utilization status of capacity reservation.
 	// FOCUS 1.2 Section 3.7 (CONDITIONAL). Required when CapacityReservationId
 	// is not null and ChargeCategory is "Usage".
-	CapacityReservationStatus FocusCapacityReservationStatus `protobuf:"varint,45,opt,name=capacity_reservation_status,json=capacityReservationStatus,proto3,enum=pulumicost.v1.FocusCapacityReservationStatus" json:"capacity_reservation_status,omitempty"`
+	CapacityReservationStatus FocusCapacityReservationStatus `protobuf:"varint,45,opt,name=capacity_reservation_status,json=capacityReservationStatus,proto3,enum=finfocus.v1.FocusCapacityReservationStatus" json:"capacity_reservation_status,omitempty"`
 	// InvoiceId: The identifier for the invoice. Critical for reconciliation.
 	InvoiceId string `protobuf:"bytes,19,opt,name=invoice_id,json=invoiceId,proto3" json:"invoice_id,omitempty"`
 	// InvoiceIssuer: The entity that issued the invoice.
@@ -274,7 +274,7 @@ type FocusCostRecord struct {
 
 func (x *FocusCostRecord) Reset() {
 	*x = FocusCostRecord{}
-	mi := &file_pulumicost_v1_focus_proto_msgTypes[0]
+	mi := &file_finfocus_v1_focus_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -286,7 +286,7 @@ func (x *FocusCostRecord) String() string {
 func (*FocusCostRecord) ProtoMessage() {}
 
 func (x *FocusCostRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_focus_proto_msgTypes[0]
+	mi := &file_finfocus_v1_focus_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -299,10 +299,10 @@ func (x *FocusCostRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FocusCostRecord.ProtoReflect.Descriptor instead.
 func (*FocusCostRecord) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_focus_proto_rawDescGZIP(), []int{0}
+	return file_finfocus_v1_focus_proto_rawDescGZIP(), []int{0}
 }
 
-// Deprecated: Marked as deprecated in pulumicost/v1/focus.proto.
+// Deprecated: Marked as deprecated in finfocus/v1/focus.proto.
 func (x *FocusCostRecord) GetProviderName() string {
 	if x != nil {
 		return x.ProviderName
@@ -492,7 +492,7 @@ func (x *FocusCostRecord) GetServiceSubcategory() string {
 	return ""
 }
 
-// Deprecated: Marked as deprecated in pulumicost/v1/focus.proto.
+// Deprecated: Marked as deprecated in finfocus/v1/focus.proto.
 func (x *FocusCostRecord) GetPublisher() string {
 	if x != nil {
 		return x.Publisher
@@ -785,7 +785,7 @@ type ContractCommitment struct {
 	ContractId string `protobuf:"bytes,2,opt,name=contract_id,json=contractId,proto3" json:"contract_id,omitempty"`
 	// ContractCommitmentCategory: Category of commitment (SPEND or USAGE).
 	// FOCUS 1.3 Contract Commitment Category (CONDITIONAL).
-	ContractCommitmentCategory FocusContractCommitmentCategory `protobuf:"varint,3,opt,name=contract_commitment_category,json=contractCommitmentCategory,proto3,enum=pulumicost.v1.FocusContractCommitmentCategory" json:"contract_commitment_category,omitempty"`
+	ContractCommitmentCategory FocusContractCommitmentCategory `protobuf:"varint,3,opt,name=contract_commitment_category,json=contractCommitmentCategory,proto3,enum=finfocus.v1.FocusContractCommitmentCategory" json:"contract_commitment_category,omitempty"`
 	// ContractCommitmentType: Provider-specific type of commitment.
 	// Free-form string (e.g., "Reserved Instance", "Savings Plan", "CUD").
 	// FOCUS 1.3 Contract Commitment Type (CONDITIONAL).
@@ -828,7 +828,7 @@ type ContractCommitment struct {
 
 func (x *ContractCommitment) Reset() {
 	*x = ContractCommitment{}
-	mi := &file_pulumicost_v1_focus_proto_msgTypes[1]
+	mi := &file_finfocus_v1_focus_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -840,7 +840,7 @@ func (x *ContractCommitment) String() string {
 func (*ContractCommitment) ProtoMessage() {}
 
 func (x *ContractCommitment) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_focus_proto_msgTypes[1]
+	mi := &file_finfocus_v1_focus_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -853,7 +853,7 @@ func (x *ContractCommitment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContractCommitment.ProtoReflect.Descriptor instead.
 func (*ContractCommitment) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_focus_proto_rawDescGZIP(), []int{1}
+	return file_finfocus_v1_focus_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ContractCommitment) GetContractCommitmentId() string {
@@ -940,11 +940,11 @@ func (x *ContractCommitment) GetBillingCurrency() string {
 	return ""
 }
 
-var File_pulumicost_v1_focus_proto protoreflect.FileDescriptor
+var File_finfocus_v1_focus_proto protoreflect.FileDescriptor
 
-const file_pulumicost_v1_focus_proto_rawDesc = "" +
+const file_finfocus_v1_focus_proto_rawDesc = "" +
 	"\n" +
-	"\x19pulumicost/v1/focus.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19pulumicost/v1/enums.proto\"\xbe\x1d\n" +
+	"\x17finfocus/v1/focus.proto\x12\vfinfocus.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17finfocus/v1/enums.proto\"\xa8\x1d\n" +
 	"\x0fFocusCostRecord\x12'\n" +
 	"\rprovider_name\x18\x01 \x01(\tB\x02\x18\x01R\fproviderName\x12,\n" +
 	"\x12billing_account_id\x18\x02 \x01(\tR\x10billingAccountId\x120\n" +
@@ -957,20 +957,20 @@ const file_pulumicost_v1_focus_proto_rawDesc = "" +
 	"\x12billing_period_end\x18\x1b \x01(\v2\x1a.google.protobuf.TimestampR\x10billingPeriodEnd\x12)\n" +
 	"\x10billing_currency\x18\x12 \x01(\tR\x0fbillingCurrency\x12J\n" +
 	"\x13charge_period_start\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x11chargePeriodStart\x12F\n" +
-	"\x11charge_period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0fchargePeriodEnd\x12K\n" +
-	"\x0fcharge_category\x18\b \x01(\x0e2\".pulumicost.v1.FocusChargeCategoryR\x0echargeCategory\x12B\n" +
-	"\fcharge_class\x18\x1c \x01(\x0e2\x1f.pulumicost.v1.FocusChargeClassR\vchargeClass\x12-\n" +
-	"\x12charge_description\x18\x1d \x01(\tR\x11chargeDescription\x12N\n" +
-	"\x10charge_frequency\x18\x1e \x01(\x0e2#.pulumicost.v1.FocusChargeFrequencyR\x0fchargeFrequency\x12N\n" +
-	"\x10pricing_category\x18\t \x01(\x0e2#.pulumicost.v1.FocusPricingCategoryR\x0fpricingCategory\x12)\n" +
+	"\x11charge_period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0fchargePeriodEnd\x12I\n" +
+	"\x0fcharge_category\x18\b \x01(\x0e2 .finfocus.v1.FocusChargeCategoryR\x0echargeCategory\x12@\n" +
+	"\fcharge_class\x18\x1c \x01(\x0e2\x1d.finfocus.v1.FocusChargeClassR\vchargeClass\x12-\n" +
+	"\x12charge_description\x18\x1d \x01(\tR\x11chargeDescription\x12L\n" +
+	"\x10charge_frequency\x18\x1e \x01(\x0e2!.finfocus.v1.FocusChargeFrequencyR\x0fchargeFrequency\x12L\n" +
+	"\x10pricing_category\x18\t \x01(\x0e2!.finfocus.v1.FocusPricingCategoryR\x0fpricingCategory\x12)\n" +
 	"\x10pricing_quantity\x18\x1f \x01(\x01R\x0fpricingQuantity\x12!\n" +
 	"\fpricing_unit\x18  \x01(\tR\vpricingUnit\x12&\n" +
 	"\x0flist_unit_price\x18! \x01(\x01R\rlistUnitPrice\x12)\n" +
 	"\x10pricing_currency\x183 \x01(\tR\x0fpricingCurrency\x12R\n" +
 	"&pricing_currency_contracted_unit_price\x184 \x01(\x01R\"pricingCurrencyContractedUnitPrice\x12E\n" +
 	"\x1fpricing_currency_effective_cost\x185 \x01(\x01R\x1cpricingCurrencyEffectiveCost\x12F\n" +
-	" pricing_currency_list_unit_price\x186 \x01(\x01R\x1cpricingCurrencyListUnitPrice\x12N\n" +
-	"\x10service_category\x18\x06 \x01(\x0e2#.pulumicost.v1.FocusServiceCategoryR\x0fserviceCategory\x12!\n" +
+	" pricing_currency_list_unit_price\x186 \x01(\x01R\x1cpricingCurrencyListUnitPrice\x12L\n" +
+	"\x10service_category\x18\x06 \x01(\x0e2!.finfocus.v1.FocusServiceCategoryR\x0fserviceCategory\x12!\n" +
 	"\fservice_name\x18\a \x01(\tR\vserviceName\x12/\n" +
 	"\x13service_subcategory\x188 \x01(\tR\x12serviceSubcategory\x12 \n" +
 	"\tpublisher\x187 \x01(\tB\x02\x18\x01R\tpublisher\x12\x1f\n" +
@@ -995,28 +995,28 @@ const file_pulumicost_v1_focus_proto_rawDesc = "" +
 	"\x0fcontracted_cost\x18) \x01(\x01R\x0econtractedCost\x122\n" +
 	"\x15contracted_unit_price\x182 \x01(\x01R\x13contractedUnitPrice\x12+\n" +
 	"\x11consumed_quantity\x18\x14 \x01(\x01R\x10consumedQuantity\x12#\n" +
-	"\rconsumed_unit\x18\x15 \x01(\tR\fconsumedUnit\x12p\n" +
-	"\x1ccommitment_discount_category\x18% \x01(\x0e2..pulumicost.v1.FocusCommitmentDiscountCategoryR\x1acommitmentDiscountCategory\x124\n" +
+	"\rconsumed_unit\x18\x15 \x01(\tR\fconsumedUnit\x12n\n" +
+	"\x1ccommitment_discount_category\x18% \x01(\x0e2,.finfocus.v1.FocusCommitmentDiscountCategoryR\x1acommitmentDiscountCategory\x124\n" +
 	"\x16commitment_discount_id\x18& \x01(\tR\x14commitmentDiscountId\x128\n" +
 	"\x18commitment_discount_name\x18' \x01(\tR\x16commitmentDiscountName\x12@\n" +
-	"\x1ccommitment_discount_quantity\x18. \x01(\x01R\x1acommitmentDiscountQuantity\x12j\n" +
-	"\x1acommitment_discount_status\x18/ \x01(\x0e2,.pulumicost.v1.FocusCommitmentDiscountStatusR\x18commitmentDiscountStatus\x128\n" +
+	"\x1ccommitment_discount_quantity\x18. \x01(\x01R\x1acommitmentDiscountQuantity\x12h\n" +
+	"\x1acommitment_discount_status\x18/ \x01(\x0e2*.finfocus.v1.FocusCommitmentDiscountStatusR\x18commitmentDiscountStatus\x128\n" +
 	"\x18commitment_discount_type\x180 \x01(\tR\x16commitmentDiscountType\x128\n" +
 	"\x18commitment_discount_unit\x181 \x01(\tR\x16commitmentDiscountUnit\x126\n" +
-	"\x17capacity_reservation_id\x18, \x01(\tR\x15capacityReservationId\x12m\n" +
-	"\x1bcapacity_reservation_status\x18- \x01(\x0e2-.pulumicost.v1.FocusCapacityReservationStatusR\x19capacityReservationStatus\x12\x1d\n" +
+	"\x17capacity_reservation_id\x18, \x01(\tR\x15capacityReservationId\x12k\n" +
+	"\x1bcapacity_reservation_status\x18- \x01(\x0e2+.finfocus.v1.FocusCapacityReservationStatusR\x19capacityReservationStatus\x12\x1d\n" +
 	"\n" +
 	"invoice_id\x18\x13 \x01(\tR\tinvoiceId\x12%\n" +
-	"\x0einvoice_issuer\x18( \x01(\tR\rinvoiceIssuer\x12<\n" +
-	"\x04tags\x18\x16 \x03(\v2(.pulumicost.v1.FocusCostRecord.TagsEntryR\x04tags\x12^\n" +
-	"\x10extended_columns\x18\x17 \x03(\v23.pulumicost.v1.FocusCostRecord.ExtendedColumnsEntryR\x0fextendedColumns\x122\n" +
+	"\x0einvoice_issuer\x18( \x01(\tR\rinvoiceIssuer\x12:\n" +
+	"\x04tags\x18\x16 \x03(\v2&.finfocus.v1.FocusCostRecord.TagsEntryR\x04tags\x12\\\n" +
+	"\x10extended_columns\x18\x17 \x03(\v21.finfocus.v1.FocusCostRecord.ExtendedColumnsEntryR\x0fextendedColumns\x122\n" +
 	"\x15service_provider_name\x18; \x01(\tR\x13serviceProviderName\x12,\n" +
 	"\x12host_provider_name\x18< \x01(\tR\x10hostProviderName\x12.\n" +
 	"\x13allocated_method_id\x18= \x01(\tR\x11allocatedMethodId\x128\n" +
 	"\x18allocated_method_details\x18> \x01(\tR\x16allocatedMethodDetails\x122\n" +
 	"\x15allocated_resource_id\x18? \x01(\tR\x13allocatedResourceId\x126\n" +
-	"\x17allocated_resource_name\x18@ \x01(\tR\x15allocatedResourceName\x12X\n" +
-	"\x0eallocated_tags\x18A \x03(\v21.pulumicost.v1.FocusCostRecord.AllocatedTagsEntryR\rallocatedTags\x12)\n" +
+	"\x17allocated_resource_name\x18@ \x01(\tR\x15allocatedResourceName\x12V\n" +
+	"\x0eallocated_tags\x18A \x03(\v2/.finfocus.v1.FocusCostRecord.AllocatedTagsEntryR\rallocatedTags\x12)\n" +
 	"\x10contract_applied\x18B \x01(\tR\x0fcontractApplied\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
@@ -1026,12 +1026,12 @@ const file_pulumicost_v1_focus_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a@\n" +
 	"\x12AllocatedTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xda\x06\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd8\x06\n" +
 	"\x12ContractCommitment\x124\n" +
 	"\x16contract_commitment_id\x18\x01 \x01(\tR\x14contractCommitmentId\x12\x1f\n" +
 	"\vcontract_id\x18\x02 \x01(\tR\n" +
-	"contractId\x12p\n" +
-	"\x1ccontract_commitment_category\x18\x03 \x01(\x0e2..pulumicost.v1.FocusContractCommitmentCategoryR\x1acontractCommitmentCategory\x128\n" +
+	"contractId\x12n\n" +
+	"\x1ccontract_commitment_category\x18\x03 \x01(\x0e2,.finfocus.v1.FocusContractCommitmentCategoryR\x1acontractCommitmentCategory\x128\n" +
 	"\x18contract_commitment_type\x18\x04 \x01(\tR\x16contractCommitmentType\x12c\n" +
 	" contract_commitment_period_start\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x1dcontractCommitmentPeriodStart\x12_\n" +
 	"\x1econtract_commitment_period_end\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x1bcontractCommitmentPeriodEnd\x12N\n" +
@@ -1045,60 +1045,60 @@ const file_pulumicost_v1_focus_proto_rawDesc = "" +
 	"\x1fFocusContractCommitmentCategory\x122\n" +
 	".FOCUS_CONTRACT_COMMITMENT_CATEGORY_UNSPECIFIED\x10\x00\x12,\n" +
 	"(FOCUS_CONTRACT_COMMITMENT_CATEGORY_SPEND\x10\x01\x12,\n" +
-	"(FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE\x10\x02BBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
+	"(FOCUS_CONTRACT_COMMITMENT_CATEGORY_USAGE\x10\x02B>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
 
 var (
-	file_pulumicost_v1_focus_proto_rawDescOnce sync.Once
-	file_pulumicost_v1_focus_proto_rawDescData []byte
+	file_finfocus_v1_focus_proto_rawDescOnce sync.Once
+	file_finfocus_v1_focus_proto_rawDescData []byte
 )
 
-func file_pulumicost_v1_focus_proto_rawDescGZIP() []byte {
-	file_pulumicost_v1_focus_proto_rawDescOnce.Do(func() {
-		file_pulumicost_v1_focus_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_pulumicost_v1_focus_proto_rawDesc), len(file_pulumicost_v1_focus_proto_rawDesc)))
+func file_finfocus_v1_focus_proto_rawDescGZIP() []byte {
+	file_finfocus_v1_focus_proto_rawDescOnce.Do(func() {
+		file_finfocus_v1_focus_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_finfocus_v1_focus_proto_rawDesc), len(file_finfocus_v1_focus_proto_rawDesc)))
 	})
-	return file_pulumicost_v1_focus_proto_rawDescData
+	return file_finfocus_v1_focus_proto_rawDescData
 }
 
-var file_pulumicost_v1_focus_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_pulumicost_v1_focus_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
-var file_pulumicost_v1_focus_proto_goTypes = []any{
-	(FocusContractCommitmentCategory)(0), // 0: pulumicost.v1.FocusContractCommitmentCategory
-	(*FocusCostRecord)(nil),              // 1: pulumicost.v1.FocusCostRecord
-	(*ContractCommitment)(nil),           // 2: pulumicost.v1.ContractCommitment
-	nil,                                  // 3: pulumicost.v1.FocusCostRecord.TagsEntry
-	nil,                                  // 4: pulumicost.v1.FocusCostRecord.ExtendedColumnsEntry
-	nil,                                  // 5: pulumicost.v1.FocusCostRecord.AllocatedTagsEntry
+var file_finfocus_v1_focus_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_finfocus_v1_focus_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_finfocus_v1_focus_proto_goTypes = []any{
+	(FocusContractCommitmentCategory)(0), // 0: finfocus.v1.FocusContractCommitmentCategory
+	(*FocusCostRecord)(nil),              // 1: finfocus.v1.FocusCostRecord
+	(*ContractCommitment)(nil),           // 2: finfocus.v1.ContractCommitment
+	nil,                                  // 3: finfocus.v1.FocusCostRecord.TagsEntry
+	nil,                                  // 4: finfocus.v1.FocusCostRecord.ExtendedColumnsEntry
+	nil,                                  // 5: finfocus.v1.FocusCostRecord.AllocatedTagsEntry
 	(*timestamppb.Timestamp)(nil),        // 6: google.protobuf.Timestamp
-	(FocusChargeCategory)(0),             // 7: pulumicost.v1.FocusChargeCategory
-	(FocusChargeClass)(0),                // 8: pulumicost.v1.FocusChargeClass
-	(FocusChargeFrequency)(0),            // 9: pulumicost.v1.FocusChargeFrequency
-	(FocusPricingCategory)(0),            // 10: pulumicost.v1.FocusPricingCategory
-	(FocusServiceCategory)(0),            // 11: pulumicost.v1.FocusServiceCategory
-	(FocusCommitmentDiscountCategory)(0), // 12: pulumicost.v1.FocusCommitmentDiscountCategory
-	(FocusCommitmentDiscountStatus)(0),   // 13: pulumicost.v1.FocusCommitmentDiscountStatus
-	(FocusCapacityReservationStatus)(0),  // 14: pulumicost.v1.FocusCapacityReservationStatus
+	(FocusChargeCategory)(0),             // 7: finfocus.v1.FocusChargeCategory
+	(FocusChargeClass)(0),                // 8: finfocus.v1.FocusChargeClass
+	(FocusChargeFrequency)(0),            // 9: finfocus.v1.FocusChargeFrequency
+	(FocusPricingCategory)(0),            // 10: finfocus.v1.FocusPricingCategory
+	(FocusServiceCategory)(0),            // 11: finfocus.v1.FocusServiceCategory
+	(FocusCommitmentDiscountCategory)(0), // 12: finfocus.v1.FocusCommitmentDiscountCategory
+	(FocusCommitmentDiscountStatus)(0),   // 13: finfocus.v1.FocusCommitmentDiscountStatus
+	(FocusCapacityReservationStatus)(0),  // 14: finfocus.v1.FocusCapacityReservationStatus
 }
-var file_pulumicost_v1_focus_proto_depIdxs = []int32{
-	6,  // 0: pulumicost.v1.FocusCostRecord.billing_period_start:type_name -> google.protobuf.Timestamp
-	6,  // 1: pulumicost.v1.FocusCostRecord.billing_period_end:type_name -> google.protobuf.Timestamp
-	6,  // 2: pulumicost.v1.FocusCostRecord.charge_period_start:type_name -> google.protobuf.Timestamp
-	6,  // 3: pulumicost.v1.FocusCostRecord.charge_period_end:type_name -> google.protobuf.Timestamp
-	7,  // 4: pulumicost.v1.FocusCostRecord.charge_category:type_name -> pulumicost.v1.FocusChargeCategory
-	8,  // 5: pulumicost.v1.FocusCostRecord.charge_class:type_name -> pulumicost.v1.FocusChargeClass
-	9,  // 6: pulumicost.v1.FocusCostRecord.charge_frequency:type_name -> pulumicost.v1.FocusChargeFrequency
-	10, // 7: pulumicost.v1.FocusCostRecord.pricing_category:type_name -> pulumicost.v1.FocusPricingCategory
-	11, // 8: pulumicost.v1.FocusCostRecord.service_category:type_name -> pulumicost.v1.FocusServiceCategory
-	12, // 9: pulumicost.v1.FocusCostRecord.commitment_discount_category:type_name -> pulumicost.v1.FocusCommitmentDiscountCategory
-	13, // 10: pulumicost.v1.FocusCostRecord.commitment_discount_status:type_name -> pulumicost.v1.FocusCommitmentDiscountStatus
-	14, // 11: pulumicost.v1.FocusCostRecord.capacity_reservation_status:type_name -> pulumicost.v1.FocusCapacityReservationStatus
-	3,  // 12: pulumicost.v1.FocusCostRecord.tags:type_name -> pulumicost.v1.FocusCostRecord.TagsEntry
-	4,  // 13: pulumicost.v1.FocusCostRecord.extended_columns:type_name -> pulumicost.v1.FocusCostRecord.ExtendedColumnsEntry
-	5,  // 14: pulumicost.v1.FocusCostRecord.allocated_tags:type_name -> pulumicost.v1.FocusCostRecord.AllocatedTagsEntry
-	0,  // 15: pulumicost.v1.ContractCommitment.contract_commitment_category:type_name -> pulumicost.v1.FocusContractCommitmentCategory
-	6,  // 16: pulumicost.v1.ContractCommitment.contract_commitment_period_start:type_name -> google.protobuf.Timestamp
-	6,  // 17: pulumicost.v1.ContractCommitment.contract_commitment_period_end:type_name -> google.protobuf.Timestamp
-	6,  // 18: pulumicost.v1.ContractCommitment.contract_period_start:type_name -> google.protobuf.Timestamp
-	6,  // 19: pulumicost.v1.ContractCommitment.contract_period_end:type_name -> google.protobuf.Timestamp
+var file_finfocus_v1_focus_proto_depIdxs = []int32{
+	6,  // 0: finfocus.v1.FocusCostRecord.billing_period_start:type_name -> google.protobuf.Timestamp
+	6,  // 1: finfocus.v1.FocusCostRecord.billing_period_end:type_name -> google.protobuf.Timestamp
+	6,  // 2: finfocus.v1.FocusCostRecord.charge_period_start:type_name -> google.protobuf.Timestamp
+	6,  // 3: finfocus.v1.FocusCostRecord.charge_period_end:type_name -> google.protobuf.Timestamp
+	7,  // 4: finfocus.v1.FocusCostRecord.charge_category:type_name -> finfocus.v1.FocusChargeCategory
+	8,  // 5: finfocus.v1.FocusCostRecord.charge_class:type_name -> finfocus.v1.FocusChargeClass
+	9,  // 6: finfocus.v1.FocusCostRecord.charge_frequency:type_name -> finfocus.v1.FocusChargeFrequency
+	10, // 7: finfocus.v1.FocusCostRecord.pricing_category:type_name -> finfocus.v1.FocusPricingCategory
+	11, // 8: finfocus.v1.FocusCostRecord.service_category:type_name -> finfocus.v1.FocusServiceCategory
+	12, // 9: finfocus.v1.FocusCostRecord.commitment_discount_category:type_name -> finfocus.v1.FocusCommitmentDiscountCategory
+	13, // 10: finfocus.v1.FocusCostRecord.commitment_discount_status:type_name -> finfocus.v1.FocusCommitmentDiscountStatus
+	14, // 11: finfocus.v1.FocusCostRecord.capacity_reservation_status:type_name -> finfocus.v1.FocusCapacityReservationStatus
+	3,  // 12: finfocus.v1.FocusCostRecord.tags:type_name -> finfocus.v1.FocusCostRecord.TagsEntry
+	4,  // 13: finfocus.v1.FocusCostRecord.extended_columns:type_name -> finfocus.v1.FocusCostRecord.ExtendedColumnsEntry
+	5,  // 14: finfocus.v1.FocusCostRecord.allocated_tags:type_name -> finfocus.v1.FocusCostRecord.AllocatedTagsEntry
+	0,  // 15: finfocus.v1.ContractCommitment.contract_commitment_category:type_name -> finfocus.v1.FocusContractCommitmentCategory
+	6,  // 16: finfocus.v1.ContractCommitment.contract_commitment_period_start:type_name -> google.protobuf.Timestamp
+	6,  // 17: finfocus.v1.ContractCommitment.contract_commitment_period_end:type_name -> google.protobuf.Timestamp
+	6,  // 18: finfocus.v1.ContractCommitment.contract_period_start:type_name -> google.protobuf.Timestamp
+	6,  // 19: finfocus.v1.ContractCommitment.contract_period_end:type_name -> google.protobuf.Timestamp
 	20, // [20:20] is the sub-list for method output_type
 	20, // [20:20] is the sub-list for method input_type
 	20, // [20:20] is the sub-list for extension type_name
@@ -1106,28 +1106,28 @@ var file_pulumicost_v1_focus_proto_depIdxs = []int32{
 	0,  // [0:20] is the sub-list for field type_name
 }
 
-func init() { file_pulumicost_v1_focus_proto_init() }
-func file_pulumicost_v1_focus_proto_init() {
-	if File_pulumicost_v1_focus_proto != nil {
+func init() { file_finfocus_v1_focus_proto_init() }
+func file_finfocus_v1_focus_proto_init() {
+	if File_finfocus_v1_focus_proto != nil {
 		return
 	}
-	file_pulumicost_v1_enums_proto_init()
+	file_finfocus_v1_enums_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_focus_proto_rawDesc), len(file_pulumicost_v1_focus_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_finfocus_v1_focus_proto_rawDesc), len(file_finfocus_v1_focus_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_pulumicost_v1_focus_proto_goTypes,
-		DependencyIndexes: file_pulumicost_v1_focus_proto_depIdxs,
-		EnumInfos:         file_pulumicost_v1_focus_proto_enumTypes,
-		MessageInfos:      file_pulumicost_v1_focus_proto_msgTypes,
+		GoTypes:           file_finfocus_v1_focus_proto_goTypes,
+		DependencyIndexes: file_finfocus_v1_focus_proto_depIdxs,
+		EnumInfos:         file_finfocus_v1_focus_proto_enumTypes,
+		MessageInfos:      file_finfocus_v1_focus_proto_msgTypes,
 	}.Build()
-	File_pulumicost_v1_focus_proto = out.File
-	file_pulumicost_v1_focus_proto_goTypes = nil
-	file_pulumicost_v1_focus_proto_depIdxs = nil
+	File_finfocus_v1_focus_proto = out.File
+	file_finfocus_v1_focus_proto_goTypes = nil
+	file_finfocus_v1_focus_proto_depIdxs = nil
 }

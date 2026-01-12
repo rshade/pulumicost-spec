@@ -10,7 +10,7 @@ import (
 // Embedded schema content (generated from ../../../schemas/pricing_spec.schema.json).
 const schemaJSON = `{
 "$schema": "https://json-schema.org/draft/2020-12/schema",
-"$id": "https://spec.pulumicost.dev/schemas/pricing_spec.schema.json",
+"$id": "https://spec.finfocus.dev/schemas/pricing_spec.schema.json",
 "title": "PricingSpec v0.1.0",
 "description": "Comprehensive pricing specification schema for cloud resource cost calculation",
 "version": "0.1.0",

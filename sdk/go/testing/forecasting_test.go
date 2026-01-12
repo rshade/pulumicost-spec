@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/pricing"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // tolerance defines the acceptable delta for floating point comparisons.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Basic Plugin Metrics Example",
-  "description": "Example of basic metrics that all PulumiCost plugins should expose",
+  "description": "Example of basic metrics that all FinFocus plugins should expose",
   "type": "object",
   "properties": {
     "metrics": {
@@ -67,7 +67,7 @@
     {
       "metrics": [
         {
-          "name": "pulumicost_requests_total",
+          "name": "finfocus_requests_total",
           "help": "Total number of requests processed by the plugin",
           "type": "counter",
           "samples": [
@@ -101,7 +101,7 @@
           ]
         },
         {
-          "name": "pulumicost_request_duration_seconds",
+          "name": "finfocus_request_duration_seconds",
           "help": "Request processing duration in seconds",
           "type": "histogram",
           "samples": [
@@ -144,7 +144,7 @@
           ]
         },
         {
-          "name": "pulumicost_errors_total",
+          "name": "finfocus_errors_total",
           "help": "Total number of errors encountered",
           "type": "counter",
           "samples": [
@@ -178,7 +178,7 @@
           ]
         },
         {
-          "name": "pulumicost_cache_hit_rate_percent",
+          "name": "finfocus_cache_hit_rate_percent",
           "help": "Percentage of requests served from cache",
           "type": "gauge",
           "samples": [
@@ -201,7 +201,7 @@
           ]
         },
         {
-          "name": "pulumicost_active_connections",
+          "name": "finfocus_active_connections",
           "help": "Number of active connections to external services",
           "type": "gauge",
           "samples": [

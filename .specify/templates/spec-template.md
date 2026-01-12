@@ -9,6 +9,12 @@
 
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
+  ...
+  Verification Requirements:
+  - No placeholder or template-like values ("TODO", "example-value", "xxx")
+  - Summary calculations MUST be mathematically correct and verifiable
+  - Real cloud provider pricing data SHOULD be used
+-->
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
 

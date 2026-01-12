@@ -31,7 +31,11 @@
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-[Gates determined based on constitution file]
+- [ ] **Contract First**: Does this change start with Proto definitions?
+- [ ] **Spec Consumes**: Does implementation avoid embedding complex pricing logic/calculators?
+- [ ] **Multi-Provider**: Are examples/patterns provider-agnostic?
+- [ ] **FinFocus Alignment**: Does this respect the identity transition to FinFocus?
+- [ ] [Additional gates determined based on constitution file]
 
 ## Project Structure
 

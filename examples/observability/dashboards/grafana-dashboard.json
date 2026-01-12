@@ -1,9 +1,9 @@
 {
   "dashboard": {
     "id": null,
-    "title": "PulumiCost Plugin Observability",
-    "description": "Comprehensive monitoring dashboard for PulumiCost plugins",
-    "tags": ["pulumicost", "observability", "cost-management"],
+    "title": "FinFocus Plugin Observability",
+    "description": "Comprehensive monitoring dashboard for FinFocus plugins",
+    "tags": ["finfocus", "observability", "cost-management"],
     "style": "dark",
     "timezone": "browser",
     "editable": true,
@@ -26,7 +26,7 @@
         "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
         "targets": [
           {
-            "expr": "up{job=\"pulumicost-plugin\"}",
+            "expr": "up{job=\"finfocus-plugin\"}",
             "legendFormat": "{{instance}}",
             "refId": "A"
           }
@@ -58,7 +58,7 @@
         "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
         "targets": [
           {
-            "expr": "rate(pulumicost_requests_total[5m])",
+            "expr": "rate(finfocus_requests_total[5m])",
             "legendFormat": "{{method}} - {{provider}}",
             "refId": "A"
           }
@@ -85,7 +85,7 @@
         "gridPos": {"h": 8, "w": 3, "x": 15, "y": 0},
         "targets": [
           {
-            "expr": "rate(pulumicost_errors_total[5m]) / rate(pulumicost_requests_total[5m]) * 100",
+            "expr": "rate(finfocus_errors_total[5m]) / rate(finfocus_requests_total[5m]) * 100",
             "refId": "A"
           }
         ],
@@ -103,17 +103,17 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
         "targets": [
           {
-            "expr": "histogram_quantile(0.50, rate(pulumicost_request_duration_seconds_bucket[5m]))",
+            "expr": "histogram_quantile(0.50, rate(finfocus_request_duration_seconds_bucket[5m]))",
             "legendFormat": "p50",
             "refId": "A"
           },
           {
-            "expr": "histogram_quantile(0.95, rate(pulumicost_request_duration_seconds_bucket[5m]))",
+            "expr": "histogram_quantile(0.95, rate(finfocus_request_duration_seconds_bucket[5m]))",
             "legendFormat": "p95",
             "refId": "B"
           },
           {
-            "expr": "histogram_quantile(0.99, rate(pulumicost_request_duration_seconds_bucket[5m]))",
+            "expr": "histogram_quantile(0.99, rate(finfocus_request_duration_seconds_bucket[5m]))",
             "legendFormat": "p99",
             "refId": "C"
           }
@@ -135,7 +135,7 @@
         "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
         "targets": [
           {
-            "expr": "avg(pulumicost_cache_hit_rate_percent)",
+            "expr": "avg(finfocus_cache_hit_rate_percent)",
             "refId": "A"
           }
         ],
@@ -153,7 +153,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
         "targets": [
           {
-            "expr": "pulumicost_active_connections",
+            "expr": "finfocus_active_connections",
             "legendFormat": "{{service}}",
             "refId": "A"
           }
@@ -175,7 +175,7 @@
         "gridPos": {"h": 8, "w": 6, "x": 12, "y": 16},
         "targets": [
           {
-            "expr": "pulumicost_memory_usage_bytes / 1024 / 1024",
+            "expr": "finfocus_memory_usage_bytes / 1024 / 1024",
             "legendFormat": "Memory (MB)",
             "refId": "A"
           }
@@ -197,7 +197,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
         "targets": [
           {
-            "expr": "topk(5, rate(pulumicost_errors_total[5m]))",
+            "expr": "topk(5, rate(finfocus_errors_total[5m]))",
             "legendFormat": "{{error_type}} - {{method}}",
             "refId": "A"
           }
@@ -219,7 +219,7 @@
         "gridPos": {"h": 8, "w": 6, "x": 12, "y": 24},
         "targets": [
           {
-            "expr": "avg(pulumicost_data_source_latency_seconds) by (provider)",
+            "expr": "avg(finfocus_data_source_latency_seconds) by (provider)",
             "legendFormat": "{{provider}}",
             "refId": "A"
           }
@@ -241,19 +241,19 @@
         "gridPos": {"h": 8, "w": 18, "x": 0, "y": 32},
         "targets": [
           {
-            "expr": "pulumicost_sli_availability",
+            "expr": "finfocus_sli_availability",
             "legendFormat": "Availability",
             "refId": "A",
             "format": "table"
           },
           {
-            "expr": "pulumicost_sli_error_rate",
+            "expr": "finfocus_sli_error_rate",
             "legendFormat": "Error Rate",
             "refId": "B",
             "format": "table"
           },
           {
-            "expr": "pulumicost_sli_latency_p95",
+            "expr": "finfocus_sli_latency_p95",
             "legendFormat": "P95 Latency",
             "refId": "C",
             "format": "table"
@@ -276,7 +276,7 @@
         {
           "name": "instance",
           "type": "query",
-          "query": "label_values(pulumicost_requests_total, instance)",
+          "query": "label_values(finfocus_requests_total, instance)",
           "refresh": 1,
           "includeAll": true,
           "multi": true
@@ -284,7 +284,7 @@
         {
           "name": "provider",
           "type": "query", 
-          "query": "label_values(pulumicost_requests_total, provider)",
+          "query": "label_values(finfocus_requests_total, provider)",
           "refresh": 1,
           "includeAll": true,
           "multi": true
@@ -296,7 +296,7 @@
         {
           "name": "Deployments",
           "datasource": "prometheus",
-          "expr": "changes(up{job=\"pulumicost-plugin\"}[1m])",
+          "expr": "changes(up{job=\"finfocus-plugin\"}[1m])",
           "titleFormat": "Deployment",
           "textFormat": "Instance {{instance}} changed state"
         }

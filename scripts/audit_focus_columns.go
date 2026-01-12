@@ -14,7 +14,7 @@ import (
 	"reflect"
 	"strings"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // Column represents a FOCUS 1.2 column specification.

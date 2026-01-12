@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
+	"github.com/rshade/finfocus-spec/sdk/go/pricing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -17,10 +17,10 @@ import (
 // contextKey is the type for context keys to avoid collisions.
 type contextKey string
 
-const traceIDKey contextKey = "pulumicost-trace-id"
+const traceIDKey contextKey = "finfocus-trace-id"
 
 // TraceIDMetadataKey is the gRPC metadata header for trace ID propagation.
-const TraceIDMetadataKey = "x-pulumicost-trace-id"
+const TraceIDMetadataKey = "x-finfocus-trace-id"
 
 // Log file configuration constants.
 const (

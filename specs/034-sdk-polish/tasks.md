@@ -8,7 +8,8 @@ description: "Task list for SDK Polish v0.4.15 feature implementation"
 **Feature Branch**: `034-sdk-polish`
 **Tech Stack**: Go 1.25.5, gRPC, protobuf, buf v1.32.1
 
-**Summary**: SDK Polish v0.4.15 is primarily a verification and testing task. All three features are already implemented in the codebase. The work focuses on:
+**Summary**: SDK Polish v0.4.15 is primarily a verification and testing task. All three features are already
+implemented in the codebase. The work focuses on:
 
 1. Verifying existing implementations match requirements
 2. Adding missing integration/conformance tests
@@ -51,7 +52,8 @@ description: "Task list for SDK Polish v0.4.15 feature implementation"
 
 **Goal**: Verify error messages match user-friendly format requirements
 
-**Independent Test**: Configure mock plugin to return nil/incomplete/invalid responses, verify client receives correct error messages
+**Independent Test**: Configure mock plugin to return nil/incomplete/invalid responses,
+verify client receives correct error messages
 
 #### Error Message Conformance Tests
 
@@ -64,7 +66,8 @@ description: "Task list for SDK Polish v0.4.15 feature implementation"
 
 **Goal**: Verify performance test handles legacy plugins gracefully (FR-011)
 
-**Independent Test**: Run performance test against legacy plugin (no GetPluginInfo), verify Unimplemented handled gracefully
+**Independent Test**: Run performance test against legacy plugin (no GetPluginInfo),
+verify Unimplemented handled gracefully
 
 #### Legacy Plugin Performance Test
 
@@ -111,7 +114,8 @@ description: "Task list for SDK Polish v0.4.15 feature implementation"
 - [x] T027 [P] [US2] Run existing TestGetPluginInfo tests in sdk/go/pluginsdk/sdk_test.go:1014-1105
 - [x] T028 [US2] Run new TestGetPluginInfoError_NilResponse and verify "unable to retrieve plugin metadata" message
 - [x] T029 [US2] Run new TestGetPluginInfoError_IncompleteMetadata and verify "plugin metadata is incomplete" message
-- [x] T030 [US2] Run new TestGetPluginInfoError_InvalidSpecVersion and verify "plugin reported an invalid specification version" message
+- [x] T030 [US2] Run new TestGetPluginInfoError_InvalidSpecVersion and verify
+  "plugin reported an invalid specification version" message
 
 ### Implementation Verification
 
@@ -154,9 +158,12 @@ description: "Task list for SDK Polish v0.4.15 feature implementation"
 
 ### Documentation Updates (Required per Constitution Check)
 
-- [x] T043 [P] Update SDK README.md with timeout configuration examples (maps to FR-001, FR-002, FR-003, FR-004, Constitution V)
-- [x] T044 [P] Update SDK README.md with GetPluginInfo error message documentation (maps to FR-006, FR-007, FR-008, Constitution V)
-- [x] T045 [P] Update SDK README.md with performance conformance test documentation (maps to FR-009, FR-010, FR-011, Constitution V)
+- [x] T043 [P] Update SDK README.md with timeout configuration examples
+  (maps to FR-001, FR-002, FR-003, FR-004, Constitution V)
+- [x] T044 [P] Update SDK README.md with GetPluginInfo error message documentation
+  (maps to FR-006, FR-007, FR-008, Constitution V)
+- [x] T045 [P] Update SDK README.md with performance conformance test documentation
+  (maps to FR-009, FR-010, FR-011, Constitution V)
 - [x] T046 Add conformance testing documentation to docs/conformance.md (maps to FR-009, FR-010, FR-011, Constitution V)
 
 ### Final Validation

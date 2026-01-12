@@ -25,7 +25,7 @@
 package pluginsdk
 
 import (
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // focusFieldNames contains all FOCUS 1.2/1.3 field names from FocusCostRecord.

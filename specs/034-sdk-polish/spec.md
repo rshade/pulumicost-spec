@@ -97,10 +97,15 @@ against any plugin implementation and verifying all iterations complete within 1
 
 ### Edge Cases
 
-- **Zero Timeout Behavior**: When ClientConfig.Timeout is set to 0, the default 30-second timeout is applied. **Test Criteria**: Client times out after exactly 30 seconds when no custom timeout is set.
-- **Custom HTTPClient Precedence**: When both HTTPClient and Timeout are set in ClientConfig, HTTPClient.Timeout takes precedence. **Test Criteria**: RPC calls respect HTTPClient.Timeout value over ClientConfig.Timeout.
-- **Empty Strings in Metadata**: When GetPluginInfo returns empty strings for required fields, it's treated as incomplete metadata. **Test Criteria**: Empty strings trigger "plugin metadata is incomplete" error.
-- **Connection Errors in Performance Tests**: When performance test cannot connect to the plugin, it fails with connection error (not performance failure). **Test Criteria**: Test exits with connection error before measuring latency.
+- **Zero Timeout Behavior**: When ClientConfig.Timeout is set to 0, the default 30-second timeout is applied.
+  **Test Criteria**: Client times out after exactly 30 seconds when no custom timeout is set.
+- **Custom HTTPClient Precedence**: When both HTTPClient and Timeout are set in ClientConfig, HTTPClient.Timeout
+  takes precedence. **Test Criteria**: RPC calls respect HTTPClient.Timeout value over ClientConfig.Timeout.
+- **Empty Strings in Metadata**: When GetPluginInfo returns empty strings for required fields, it's treated as
+  incomplete metadata. **Test Criteria**: Empty strings trigger "plugin metadata is incomplete" error.
+- **Connection Errors in Performance Tests**: When performance test cannot connect to the plugin, it fails with
+  connection error (not performance failure). **Test Criteria**: Test exits with connection error before
+  measuring latency.
 
 ## Requirements _(mandatory)_
 

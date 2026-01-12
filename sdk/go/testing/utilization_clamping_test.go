@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // TestUtilizationPassthrough verifies that out-of-range utilization values pass through

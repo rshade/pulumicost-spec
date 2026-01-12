@@ -3,7 +3,7 @@ package registry_test
 import (
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/registry"
+	"github.com/rshade/finfocus-spec/sdk/go/registry"
 )
 
 func TestDiscoverySource(t *testing.T) {

@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 import "google/protobuf/timestamp.proto";
-import "pulumicost/v1/enums.proto";
+import "finfocus/v1/enums.proto";
 
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbc";
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
 
 // =============================================================================
 // FOCUS 1.3 Contract Commitment Category Enum

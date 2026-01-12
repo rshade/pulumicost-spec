@@ -16,10 +16,10 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pricing"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // TestBasicPluginFunctionality tests all basic RPC methods of a plugin.
@@ -612,7 +612,7 @@ func TestDataConsistency(t *testing.T) {
 //
 // This example serves as the canonical reference for plugin developers to
 // understand how to properly integrate zerolog structured logging with
-// PulumiCost plugin operations.
+// FinFocus plugin operations.
 //
 // Key patterns demonstrated:
 //   - Creating a configured logger with plugin metadata (FR-001)
@@ -978,7 +978,7 @@ func assertLogNotContains(t *testing.T, logOutput, unexpected, errMsg string) {
 // EstimateCost RPC, per NFR-002 of spec 006-estimate-cost.
 //
 // This example serves as the canonical reference for plugin developers to
-// understand how to properly implement metrics tracking for PulumiCost plugin
+// understand how to properly implement metrics tracking for FinFocus plugin
 // operations.
 //
 // Key patterns demonstrated:
@@ -1484,7 +1484,7 @@ func sortDurations(durations []time.Duration) {
 // EstimateCost RPC, per NFR-003 of spec 006-estimate-cost.
 //
 // This example serves as the canonical reference for plugin developers to
-// understand how to properly implement distributed tracing for PulumiCost
+// understand how to properly implement distributed tracing for FinFocus
 // plugin operations.
 //
 // Key patterns demonstrated:
@@ -1935,8 +1935,8 @@ func testTracingBestPractices(t *testing.T) {
 
 	// Best Practice 2: Use standard metadata key for gRPC propagation
 	t.Logf("Standard gRPC metadata key: %s", pluginsdk.TraceIDMetadataKey)
-	if pluginsdk.TraceIDMetadataKey != "x-pulumicost-trace-id" {
-		t.Errorf("Expected metadata key 'x-pulumicost-trace-id', got '%s'",
+	if pluginsdk.TraceIDMetadataKey != "x-finfocus-trace-id" {
+		t.Errorf("Expected metadata key 'x-finfocus-trace-id', got '%s'",
 			pluginsdk.TraceIDMetadataKey)
 	}
 
@@ -1960,7 +1960,7 @@ func testTracingBestPractices(t *testing.T) {
 
 	// Best Practice 5: Use TracingUnaryServerInterceptor for automatic extraction
 	t.Log("Server interceptor automatically:")
-	t.Log("  - Extracts trace_id from x-pulumicost-trace-id header")
+	t.Log("  - Extracts trace_id from x-finfocus-trace-id header")
 	t.Log("  - Validates the trace ID format")
 	t.Log("  - Generates new trace ID if missing or invalid")
 	t.Log("  - Stores trace ID in context for handler access")

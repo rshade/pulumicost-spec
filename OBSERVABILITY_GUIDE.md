@@ -1,6 +1,6 @@
-# PulumiCost Plugin Observability Implementation Guide
+# FinFocus Plugin Observability Implementation Guide
 
-This guide provides comprehensive instructions for implementing observability features in PulumiCost plugins,
+This guide provides comprehensive instructions for implementing observability features in FinFocus plugins,
 including telemetry, health checks, metrics, and distributed tracing.
 
 ## Table of Contents
@@ -20,7 +20,7 @@ including telemetry, health checks, metrics, and distributed tracing.
 
 ## Overview
 
-Observability enables monitoring, debugging, and performance optimization of PulumiCost plugins. The specification
+Observability enables monitoring, debugging, and performance optimization of FinFocus plugins. The specification
 defines three conformance levels with increasing requirements:
 
 - **Basic**: Essential observability for all plugins
@@ -39,9 +39,9 @@ defines three conformance levels with increasing requirements:
 
 **Required Metrics:**
 
-- `pulumicost_requests_total` - Total requests processed
-- `pulumicost_errors_total` - Total errors encountered
-- `pulumicost_request_duration_seconds` - Request processing time
+- `finfocus_requests_total` - Total requests processed
+- `finfocus_errors_total` - Total errors encountered
+- `finfocus_request_duration_seconds` - Request processing time
 
 **Required SLIs:**
 
@@ -59,9 +59,9 @@ defines three conformance levels with increasing requirements:
 
 **Additional Metrics:**
 
-- `pulumicost_latency_p95_seconds` - 95th percentile latency
-- `pulumicost_cache_hit_rate_percent` - Cache effectiveness
-- `pulumicost_active_connections` - Active external connections
+- `finfocus_latency_p95_seconds` - 95th percentile latency
+- `finfocus_cache_hit_rate_percent` - Cache effectiveness
+- `finfocus_active_connections` - Active external connections
 
 **Additional SLIs:**
 
@@ -79,10 +79,10 @@ defines three conformance levels with increasing requirements:
 
 **Additional Metrics:**
 
-- `pulumicost_latency_p99_seconds` - 99th percentile latency
-- `pulumicost_memory_usage_bytes` - Memory consumption
-- `pulumicost_cpu_usage_percent` - CPU utilization
-- `pulumicost_data_source_latency_seconds` - External API latency
+- `finfocus_latency_p99_seconds` - 99th percentile latency
+- `finfocus_memory_usage_bytes` - Memory consumption
+- `finfocus_cpu_usage_percent` - CPU utilization
+- `finfocus_data_source_latency_seconds` - External API latency
 
 **Additional SLIs:**
 
@@ -248,9 +248,9 @@ All plugins must implement these core metrics:
 
 | Metric Name                           | Type      | Description              | Labels                             |
 | ------------------------------------- | --------- | ------------------------ | ---------------------------------- |
-| `pulumicost_requests_total`           | Counter   | Total requests processed | `method`, `provider`, `status`     |
-| `pulumicost_errors_total`             | Counter   | Total errors encountered | `method`, `provider`, `error_type` |
-| `pulumicost_request_duration_seconds` | Histogram | Request processing time  | `method`, `provider`               |
+| `finfocus_requests_total`           | Counter   | Total requests processed | `method`, `provider`, `status`     |
+| `finfocus_errors_total`             | Counter   | Total errors encountered | `method`, `provider`, `error_type` |
+| `finfocus_request_duration_seconds` | Histogram | Request processing time  | `method`, `provider`               |
 
 ### Advanced Metrics
 
@@ -258,9 +258,9 @@ For Standard and Advanced conformance:
 
 | Metric Name                         | Type  | Description                 | Labels                   |
 | ----------------------------------- | ----- | --------------------------- | ------------------------ |
-| `pulumicost_cache_hit_rate_percent` | Gauge | Cache effectiveness         | `provider`, `cache_type` |
-| `pulumicost_active_connections`     | Gauge | Active external connections | `service`                |
-| `pulumicost_memory_usage_bytes`     | Gauge | Memory consumption          | `component`              |
+| `finfocus_cache_hit_rate_percent` | Gauge | Cache effectiveness         | `provider`, `cache_type` |
+| `finfocus_active_connections`     | Gauge | Active external connections | `service`                |
+| `finfocus_memory_usage_bytes`     | Gauge | Memory consumption          | `component`              |
 
 ### Metric Implementation Best Practices
 
@@ -323,7 +323,7 @@ import (
 )
 
 func (p *Plugin) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest) (*pb.GetActualCostResponse, error) {
-    tracer := otel.Tracer("pulumicost-plugin")
+    tracer := otel.Tracer("finfocus-plugin")
     ctx, span := tracer.Start(ctx, "GetActualCost")
     defer span.End()
 
@@ -495,14 +495,14 @@ func TestObservabilityConformance(t *testing.T) {
 ```json
 {
   "dashboard": {
-    "title": "PulumiCost Plugin Observability",
+    "title": "FinFocus Plugin Observability",
     "panels": [
       {
         "title": "Request Rate",
         "type": "graph",
         "targets": [
           {
-            "expr": "rate(pulumicost_requests_total[5m])",
+            "expr": "rate(finfocus_requests_total[5m])",
             "legendFormat": "{{method}} - {{provider}}"
           }
         ]
@@ -512,7 +512,7 @@ func TestObservabilityConformance(t *testing.T) {
         "type": "singlestat",
         "targets": [
           {
-            "expr": "rate(pulumicost_errors_total[5m]) / rate(pulumicost_requests_total[5m]) * 100"
+            "expr": "rate(finfocus_errors_total[5m]) / rate(finfocus_requests_total[5m]) * 100"
           }
         ]
       },
@@ -521,7 +521,7 @@ func TestObservabilityConformance(t *testing.T) {
         "type": "heatmap",
         "targets": [
           {
-            "expr": "histogram_quantile(0.95, rate(pulumicost_request_duration_seconds_bucket[5m]))"
+            "expr": "histogram_quantile(0.95, rate(finfocus_request_duration_seconds_bucket[5m]))"
           }
         ]
       }
@@ -534,10 +534,10 @@ func TestObservabilityConformance(t *testing.T) {
 
 ```yaml
 Resources:
-  PulumiCostDashboard:
+  FinFocusDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
-      DashboardName: PulumiCost-Plugin-Observability
+      DashboardName: FinFocus-Plugin-Observability
       DashboardBody: !Sub |
         {
           "widgets": [
@@ -564,7 +564,7 @@ Resources:
 
 ### 1. Metric Naming and Labeling
 
-- Use consistent metric naming: `pulumicost_<component>_<metric>_<unit>`
+- Use consistent metric naming: `finfocus_<component>_<metric>_<unit>`
 - Apply standard labels: `method`, `provider`, `resource_type`, `region`
 - Avoid high-cardinality labels (e.g., user IDs, request IDs)
 - Validate metric names and label values
@@ -616,10 +616,10 @@ Resources:
 
    ```bash
    # Test health check
-   grpcurl -plaintext localhost:8080 pulumicost.v1.ObservabilityService/HealthCheck
+   grpcurl -plaintext localhost:8080 finfocus.v1.ObservabilityService/HealthCheck
 
    # Test metrics collection
-   grpcurl -plaintext localhost:8080 pulumicost.v1.ObservabilityService/GetMetrics
+   grpcurl -plaintext localhost:8080 finfocus.v1.ObservabilityService/GetMetrics
    ```
 
 2. **Check Metric Values**
@@ -661,6 +661,6 @@ if overhead > 5.0 {
 }
 ```
 
-This guide provides a comprehensive foundation for implementing observability in PulumiCost plugins. Follow the
+This guide provides a comprehensive foundation for implementing observability in FinFocus plugins. Follow the
 conformance levels appropriate for your deployment environment and continuously monitor the effectiveness of your
 observability implementation.

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // PerformanceBaseline defines latency thresholds for performance conformance.

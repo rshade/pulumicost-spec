@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: pulumicost/v1/registry.proto
+// source: finfocus/v1/registry.proto
 
 package pbc
 
@@ -62,11 +62,11 @@ func (x DiscoverySource) String() string {
 }
 
 func (DiscoverySource) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_registry_proto_enumTypes[0].Descriptor()
+	return file_finfocus_v1_registry_proto_enumTypes[0].Descriptor()
 }
 
 func (DiscoverySource) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_registry_proto_enumTypes[0]
+	return &file_finfocus_v1_registry_proto_enumTypes[0]
 }
 
 func (x DiscoverySource) Number() protoreflect.EnumNumber {
@@ -75,7 +75,7 @@ func (x DiscoverySource) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DiscoverySource.Descriptor instead.
 func (DiscoverySource) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{0}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{0}
 }
 
 // PluginStatus represents the current status of a plugin.
@@ -124,11 +124,11 @@ func (x PluginStatus) String() string {
 }
 
 func (PluginStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_registry_proto_enumTypes[1].Descriptor()
+	return file_finfocus_v1_registry_proto_enumTypes[1].Descriptor()
 }
 
 func (PluginStatus) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_registry_proto_enumTypes[1]
+	return &file_finfocus_v1_registry_proto_enumTypes[1]
 }
 
 func (x PluginStatus) Number() protoreflect.EnumNumber {
@@ -137,7 +137,7 @@ func (x PluginStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PluginStatus.Descriptor instead.
 func (PluginStatus) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{1}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{1}
 }
 
 // SecurityLevel defines plugin security trust levels.
@@ -148,7 +148,7 @@ const (
 	SecurityLevel_SECURITY_LEVEL_UNTRUSTED   SecurityLevel = 1 // Untrusted, requires explicit approval
 	SecurityLevel_SECURITY_LEVEL_COMMUNITY   SecurityLevel = 2 // Community verified
 	SecurityLevel_SECURITY_LEVEL_VERIFIED    SecurityLevel = 3 // Officially verified
-	SecurityLevel_SECURITY_LEVEL_OFFICIAL    SecurityLevel = 4 // Official PulumiCost plugin
+	SecurityLevel_SECURITY_LEVEL_OFFICIAL    SecurityLevel = 4 // Official FinFocus plugin
 )
 
 // Enum value maps for SecurityLevel.
@@ -180,11 +180,11 @@ func (x SecurityLevel) String() string {
 }
 
 func (SecurityLevel) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_registry_proto_enumTypes[2].Descriptor()
+	return file_finfocus_v1_registry_proto_enumTypes[2].Descriptor()
 }
 
 func (SecurityLevel) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_registry_proto_enumTypes[2]
+	return &file_finfocus_v1_registry_proto_enumTypes[2]
 }
 
 func (x SecurityLevel) Number() protoreflect.EnumNumber {
@@ -193,7 +193,7 @@ func (x SecurityLevel) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SecurityLevel.Descriptor instead.
 func (SecurityLevel) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{2}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{2}
 }
 
 // InstallationMethod defines how to install the plugin.
@@ -236,11 +236,11 @@ func (x InstallationMethod) String() string {
 }
 
 func (InstallationMethod) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_registry_proto_enumTypes[3].Descriptor()
+	return file_finfocus_v1_registry_proto_enumTypes[3].Descriptor()
 }
 
 func (InstallationMethod) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_registry_proto_enumTypes[3]
+	return &file_finfocus_v1_registry_proto_enumTypes[3]
 }
 
 func (x InstallationMethod) Number() protoreflect.EnumNumber {
@@ -249,7 +249,7 @@ func (x InstallationMethod) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use InstallationMethod.Descriptor instead.
 func (InstallationMethod) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{3}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{3}
 }
 
 // ErrorSeverity defines validation error severity levels.
@@ -292,11 +292,11 @@ func (x ErrorSeverity) String() string {
 }
 
 func (ErrorSeverity) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_registry_proto_enumTypes[4].Descriptor()
+	return file_finfocus_v1_registry_proto_enumTypes[4].Descriptor()
 }
 
 func (ErrorSeverity) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_registry_proto_enumTypes[4]
+	return &file_finfocus_v1_registry_proto_enumTypes[4]
 }
 
 func (x ErrorSeverity) Number() protoreflect.EnumNumber {
@@ -305,14 +305,14 @@ func (x ErrorSeverity) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ErrorSeverity.Descriptor instead.
 func (ErrorSeverity) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{4}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{4}
 }
 
 // DiscoverPluginsRequest contains parameters for plugin discovery.
 type DiscoverPluginsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// sources specifies which discovery sources to search (empty for all configured)
-	Sources []DiscoverySource `protobuf:"varint,1,rep,packed,name=sources,proto3,enum=pulumicost.v1.DiscoverySource" json:"sources,omitempty"`
+	Sources []DiscoverySource `protobuf:"varint,1,rep,packed,name=sources,proto3,enum=finfocus.v1.DiscoverySource" json:"sources,omitempty"`
 	// filter optionally filters results by plugin name pattern
 	Filter string `protobuf:"bytes,2,opt,name=filter,proto3" json:"filter,omitempty"`
 	// include_installed includes already installed plugins in results
@@ -323,7 +323,7 @@ type DiscoverPluginsRequest struct {
 
 func (x *DiscoverPluginsRequest) Reset() {
 	*x = DiscoverPluginsRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[0]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -335,7 +335,7 @@ func (x *DiscoverPluginsRequest) String() string {
 func (*DiscoverPluginsRequest) ProtoMessage() {}
 
 func (x *DiscoverPluginsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[0]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -348,7 +348,7 @@ func (x *DiscoverPluginsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiscoverPluginsRequest.ProtoReflect.Descriptor instead.
 func (*DiscoverPluginsRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{0}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *DiscoverPluginsRequest) GetSources() []DiscoverySource {
@@ -385,7 +385,7 @@ type DiscoverPluginsResponse struct {
 
 func (x *DiscoverPluginsResponse) Reset() {
 	*x = DiscoverPluginsResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[1]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -397,7 +397,7 @@ func (x *DiscoverPluginsResponse) String() string {
 func (*DiscoverPluginsResponse) ProtoMessage() {}
 
 func (x *DiscoverPluginsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[1]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -410,7 +410,7 @@ func (x *DiscoverPluginsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiscoverPluginsResponse.ProtoReflect.Descriptor instead.
 func (*DiscoverPluginsResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{1}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *DiscoverPluginsResponse) GetPlugins() []*PluginInfo {
@@ -439,13 +439,13 @@ type PluginInfo struct {
 	// author identifies the plugin author/organization
 	Author string `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`
 	// source indicates where the plugin was discovered
-	Source DiscoverySource `protobuf:"varint,5,opt,name=source,proto3,enum=pulumicost.v1.DiscoverySource" json:"source,omitempty"`
+	Source DiscoverySource `protobuf:"varint,5,opt,name=source,proto3,enum=finfocus.v1.DiscoverySource" json:"source,omitempty"`
 	// location provides the plugin location (path, URL, etc.)
 	Location string `protobuf:"bytes,6,opt,name=location,proto3" json:"location,omitempty"`
 	// status indicates the current plugin status
-	Status PluginStatus `protobuf:"varint,7,opt,name=status,proto3,enum=pulumicost.v1.PluginStatus" json:"status,omitempty"`
+	Status PluginStatus `protobuf:"varint,7,opt,name=status,proto3,enum=finfocus.v1.PluginStatus" json:"status,omitempty"`
 	// security_level indicates the plugin security trust level
-	SecurityLevel SecurityLevel `protobuf:"varint,8,opt,name=security_level,json=securityLevel,proto3,enum=pulumicost.v1.SecurityLevel" json:"security_level,omitempty"`
+	SecurityLevel SecurityLevel `protobuf:"varint,8,opt,name=security_level,json=securityLevel,proto3,enum=finfocus.v1.SecurityLevel" json:"security_level,omitempty"`
 	// capabilities lists the plugin's supported capabilities
 	Capabilities []string `protobuf:"bytes,9,rep,name=capabilities,proto3" json:"capabilities,omitempty"`
 	// requirements lists the plugin's system requirements
@@ -460,7 +460,7 @@ type PluginInfo struct {
 
 func (x *PluginInfo) Reset() {
 	*x = PluginInfo{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[2]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -472,7 +472,7 @@ func (x *PluginInfo) String() string {
 func (*PluginInfo) ProtoMessage() {}
 
 func (x *PluginInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[2]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -485,7 +485,7 @@ func (x *PluginInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PluginInfo.ProtoReflect.Descriptor instead.
 func (*PluginInfo) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{2}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *PluginInfo) GetName() string {
@@ -591,7 +591,7 @@ type PluginRequirements struct {
 
 func (x *PluginRequirements) Reset() {
 	*x = PluginRequirements{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[3]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -603,7 +603,7 @@ func (x *PluginRequirements) String() string {
 func (*PluginRequirements) ProtoMessage() {}
 
 func (x *PluginRequirements) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[3]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -616,7 +616,7 @@ func (x *PluginRequirements) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PluginRequirements.ProtoReflect.Descriptor instead.
 func (*PluginRequirements) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{3}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *PluginRequirements) GetMinSpecVersion() string {
@@ -669,7 +669,7 @@ type PluginDependency struct {
 
 func (x *PluginDependency) Reset() {
 	*x = PluginDependency{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[4]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -681,7 +681,7 @@ func (x *PluginDependency) String() string {
 func (*PluginDependency) ProtoMessage() {}
 
 func (x *PluginDependency) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[4]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -694,7 +694,7 @@ func (x *PluginDependency) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PluginDependency.ProtoReflect.Descriptor instead.
 func (*PluginDependency) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{4}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *PluginDependency) GetName() string {
@@ -735,7 +735,7 @@ type SystemRequirements struct {
 
 func (x *SystemRequirements) Reset() {
 	*x = SystemRequirements{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[5]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -747,7 +747,7 @@ func (x *SystemRequirements) String() string {
 func (*SystemRequirements) ProtoMessage() {}
 
 func (x *SystemRequirements) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[5]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +760,7 @@ func (x *SystemRequirements) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SystemRequirements.ProtoReflect.Descriptor instead.
 func (*SystemRequirements) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{5}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *SystemRequirements) GetMinMemoryMb() int64 {
@@ -808,7 +808,7 @@ type RuntimeRequirements struct {
 
 func (x *RuntimeRequirements) Reset() {
 	*x = RuntimeRequirements{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[6]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -820,7 +820,7 @@ func (x *RuntimeRequirements) String() string {
 func (*RuntimeRequirements) ProtoMessage() {}
 
 func (x *RuntimeRequirements) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[6]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -833,7 +833,7 @@ func (x *RuntimeRequirements) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RuntimeRequirements.ProtoReflect.Descriptor instead.
 func (*RuntimeRequirements) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{6}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RuntimeRequirements) GetGrpcVersion() string {
@@ -872,7 +872,7 @@ type GetPluginManifestRequest struct {
 	// version of the plugin (empty for latest)
 	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	// source specifies where to retrieve the manifest
-	Source DiscoverySource `protobuf:"varint,3,opt,name=source,proto3,enum=pulumicost.v1.DiscoverySource" json:"source,omitempty"`
+	Source DiscoverySource `protobuf:"varint,3,opt,name=source,proto3,enum=finfocus.v1.DiscoverySource" json:"source,omitempty"`
 	// location provides the plugin location
 	Location      string `protobuf:"bytes,4,opt,name=location,proto3" json:"location,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -881,7 +881,7 @@ type GetPluginManifestRequest struct {
 
 func (x *GetPluginManifestRequest) Reset() {
 	*x = GetPluginManifestRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[7]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -893,7 +893,7 @@ func (x *GetPluginManifestRequest) String() string {
 func (*GetPluginManifestRequest) ProtoMessage() {}
 
 func (x *GetPluginManifestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[7]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -906,7 +906,7 @@ func (x *GetPluginManifestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPluginManifestRequest.ProtoReflect.Descriptor instead.
 func (*GetPluginManifestRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{7}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetPluginManifestRequest) GetName() string {
@@ -948,7 +948,7 @@ type GetPluginManifestResponse struct {
 
 func (x *GetPluginManifestResponse) Reset() {
 	*x = GetPluginManifestResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[8]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -960,7 +960,7 @@ func (x *GetPluginManifestResponse) String() string {
 func (*GetPluginManifestResponse) ProtoMessage() {}
 
 func (x *GetPluginManifestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[8]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -973,7 +973,7 @@ func (x *GetPluginManifestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPluginManifestResponse.ProtoReflect.Descriptor instead.
 func (*GetPluginManifestResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{8}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetPluginManifestResponse) GetManifest() *PluginManifest {
@@ -1002,7 +1002,7 @@ type PluginManifest struct {
 
 func (x *PluginManifest) Reset() {
 	*x = PluginManifest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[9]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1014,7 +1014,7 @@ func (x *PluginManifest) String() string {
 func (*PluginManifest) ProtoMessage() {}
 
 func (x *PluginManifest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[9]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1027,7 +1027,7 @@ func (x *PluginManifest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PluginManifest.ProtoReflect.Descriptor instead.
 func (*PluginManifest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{9}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PluginManifest) GetMetadata() *PluginMetadata {
@@ -1094,7 +1094,7 @@ type PluginMetadata struct {
 
 func (x *PluginMetadata) Reset() {
 	*x = PluginMetadata{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[10]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1106,7 +1106,7 @@ func (x *PluginMetadata) String() string {
 func (*PluginMetadata) ProtoMessage() {}
 
 func (x *PluginMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[10]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1119,7 +1119,7 @@ func (x *PluginMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PluginMetadata.ProtoReflect.Descriptor instead.
 func (*PluginMetadata) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{10}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *PluginMetadata) GetName() string {
@@ -1195,7 +1195,7 @@ func (x *PluginMetadata) GetUpdatedAt() *timestamppb.Timestamp {
 // PluginSpecification defines plugin capabilities and interface compliance.
 type PluginSpecification struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// spec_version indicates the PulumiCost spec version supported
+	// spec_version indicates the FinFocus spec version supported
 	SpecVersion string `protobuf:"bytes,1,opt,name=spec_version,json=specVersion,proto3" json:"spec_version,omitempty"`
 	// supported_providers lists supported cloud providers
 	SupportedProviders []string `protobuf:"bytes,2,rep,name=supported_providers,json=supportedProviders,proto3" json:"supported_providers,omitempty"`
@@ -1213,7 +1213,7 @@ type PluginSpecification struct {
 
 func (x *PluginSpecification) Reset() {
 	*x = PluginSpecification{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[11]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1225,7 +1225,7 @@ func (x *PluginSpecification) String() string {
 func (*PluginSpecification) ProtoMessage() {}
 
 func (x *PluginSpecification) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[11]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1238,7 +1238,7 @@ func (x *PluginSpecification) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PluginSpecification.ProtoReflect.Descriptor instead.
 func (*PluginSpecification) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{11}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *PluginSpecification) GetSpecVersion() string {
@@ -1298,7 +1298,7 @@ type ProviderResources struct {
 
 func (x *ProviderResources) Reset() {
 	*x = ProviderResources{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[12]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1310,7 +1310,7 @@ func (x *ProviderResources) String() string {
 func (*ProviderResources) ProtoMessage() {}
 
 func (x *ProviderResources) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[12]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1323,7 +1323,7 @@ func (x *ProviderResources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProviderResources.ProtoReflect.Descriptor instead.
 func (*ProviderResources) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{12}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ProviderResources) GetResourceTypes() []string {
@@ -1366,7 +1366,7 @@ type ServiceDefinition struct {
 
 func (x *ServiceDefinition) Reset() {
 	*x = ServiceDefinition{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[13]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1378,7 +1378,7 @@ func (x *ServiceDefinition) String() string {
 func (*ServiceDefinition) ProtoMessage() {}
 
 func (x *ServiceDefinition) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[13]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1391,7 +1391,7 @@ func (x *ServiceDefinition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceDefinition.ProtoReflect.Descriptor instead.
 func (*ServiceDefinition) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{13}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ServiceDefinition) GetServiceName() string {
@@ -1448,7 +1448,7 @@ type ObservabilitySupport struct {
 
 func (x *ObservabilitySupport) Reset() {
 	*x = ObservabilitySupport{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[14]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1460,7 +1460,7 @@ func (x *ObservabilitySupport) String() string {
 func (*ObservabilitySupport) ProtoMessage() {}
 
 func (x *ObservabilitySupport) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[14]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1473,7 +1473,7 @@ func (x *ObservabilitySupport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObservabilitySupport.ProtoReflect.Descriptor instead.
 func (*ObservabilitySupport) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{14}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ObservabilitySupport) GetMetricsEnabled() bool {
@@ -1521,7 +1521,7 @@ type PluginSecurity struct {
 	// certificate_chain provides certificate chain for verification
 	CertificateChain []string `protobuf:"bytes,3,rep,name=certificate_chain,json=certificateChain,proto3" json:"certificate_chain,omitempty"`
 	// security_level indicates the plugin trust level
-	SecurityLevel SecurityLevel `protobuf:"varint,4,opt,name=security_level,json=securityLevel,proto3,enum=pulumicost.v1.SecurityLevel" json:"security_level,omitempty"`
+	SecurityLevel SecurityLevel `protobuf:"varint,4,opt,name=security_level,json=securityLevel,proto3,enum=finfocus.v1.SecurityLevel" json:"security_level,omitempty"`
 	// permissions lists required system permissions
 	Permissions []string `protobuf:"bytes,5,rep,name=permissions,proto3" json:"permissions,omitempty"`
 	// sandbox_required indicates if sandboxing is required
@@ -1532,7 +1532,7 @@ type PluginSecurity struct {
 
 func (x *PluginSecurity) Reset() {
 	*x = PluginSecurity{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[15]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1544,7 +1544,7 @@ func (x *PluginSecurity) String() string {
 func (*PluginSecurity) ProtoMessage() {}
 
 func (x *PluginSecurity) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[15]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1557,7 +1557,7 @@ func (x *PluginSecurity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PluginSecurity.ProtoReflect.Descriptor instead.
 func (*PluginSecurity) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{15}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PluginSecurity) GetSignature() string {
@@ -1606,7 +1606,7 @@ func (x *PluginSecurity) GetSandboxRequired() bool {
 type InstallationSpec struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// installation_method specifies how to install the plugin
-	InstallationMethod InstallationMethod `protobuf:"varint,1,opt,name=installation_method,json=installationMethod,proto3,enum=pulumicost.v1.InstallationMethod" json:"installation_method,omitempty"`
+	InstallationMethod InstallationMethod `protobuf:"varint,1,opt,name=installation_method,json=installationMethod,proto3,enum=finfocus.v1.InstallationMethod" json:"installation_method,omitempty"`
 	// download_url provides the plugin download URL
 	DownloadUrl string `protobuf:"bytes,2,opt,name=download_url,json=downloadUrl,proto3" json:"download_url,omitempty"`
 	// checksum provides file integrity verification
@@ -1625,7 +1625,7 @@ type InstallationSpec struct {
 
 func (x *InstallationSpec) Reset() {
 	*x = InstallationSpec{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[16]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1637,7 +1637,7 @@ func (x *InstallationSpec) String() string {
 func (*InstallationSpec) ProtoMessage() {}
 
 func (x *InstallationSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[16]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1650,7 +1650,7 @@ func (x *InstallationSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstallationSpec.ProtoReflect.Descriptor instead.
 func (*InstallationSpec) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{16}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *InstallationSpec) GetInstallationMethod() InstallationMethod {
@@ -1719,7 +1719,7 @@ type ConfigurationSpec struct {
 
 func (x *ConfigurationSpec) Reset() {
 	*x = ConfigurationSpec{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[17]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1731,7 +1731,7 @@ func (x *ConfigurationSpec) String() string {
 func (*ConfigurationSpec) ProtoMessage() {}
 
 func (x *ConfigurationSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[17]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1744,7 +1744,7 @@ func (x *ConfigurationSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfigurationSpec.ProtoReflect.Descriptor instead.
 func (*ConfigurationSpec) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{17}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ConfigurationSpec) GetSchema() string {
@@ -1790,7 +1790,7 @@ type ConfigurationExample struct {
 
 func (x *ConfigurationExample) Reset() {
 	*x = ConfigurationExample{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[18]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1802,7 +1802,7 @@ func (x *ConfigurationExample) String() string {
 func (*ConfigurationExample) ProtoMessage() {}
 
 func (x *ConfigurationExample) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[18]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1815,7 +1815,7 @@ func (x *ConfigurationExample) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfigurationExample.ProtoReflect.Descriptor instead.
 func (*ConfigurationExample) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{18}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ConfigurationExample) GetName() string {
@@ -1854,7 +1854,7 @@ type ValidatePluginRequest struct {
 
 func (x *ValidatePluginRequest) Reset() {
 	*x = ValidatePluginRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[19]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1866,7 +1866,7 @@ func (x *ValidatePluginRequest) String() string {
 func (*ValidatePluginRequest) ProtoMessage() {}
 
 func (x *ValidatePluginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[19]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1879,7 +1879,7 @@ func (x *ValidatePluginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidatePluginRequest.ProtoReflect.Descriptor instead.
 func (*ValidatePluginRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{19}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ValidatePluginRequest) GetManifest() *PluginManifest {
@@ -1918,7 +1918,7 @@ type ValidatePluginResponse struct {
 
 func (x *ValidatePluginResponse) Reset() {
 	*x = ValidatePluginResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[20]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1930,7 +1930,7 @@ func (x *ValidatePluginResponse) String() string {
 func (*ValidatePluginResponse) ProtoMessage() {}
 
 func (x *ValidatePluginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[20]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1943,7 +1943,7 @@ func (x *ValidatePluginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidatePluginResponse.ProtoReflect.Descriptor instead.
 func (*ValidatePluginResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{20}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ValidatePluginResponse) GetValid() bool {
@@ -1977,14 +1977,14 @@ type ValidationError struct {
 	// field indicates the field that caused the error
 	Field string `protobuf:"bytes,3,opt,name=field,proto3" json:"field,omitempty"`
 	// severity indicates the error severity
-	Severity      ErrorSeverity `protobuf:"varint,4,opt,name=severity,proto3,enum=pulumicost.v1.ErrorSeverity" json:"severity,omitempty"`
+	Severity      ErrorSeverity `protobuf:"varint,4,opt,name=severity,proto3,enum=finfocus.v1.ErrorSeverity" json:"severity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ValidationError) Reset() {
 	*x = ValidationError{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[21]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1996,7 +1996,7 @@ func (x *ValidationError) String() string {
 func (*ValidationError) ProtoMessage() {}
 
 func (x *ValidationError) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[21]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2009,7 +2009,7 @@ func (x *ValidationError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidationError.ProtoReflect.Descriptor instead.
 func (*ValidationError) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{21}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ValidationError) GetCode() string {
@@ -2057,7 +2057,7 @@ type ValidationWarning struct {
 
 func (x *ValidationWarning) Reset() {
 	*x = ValidationWarning{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[22]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2069,7 +2069,7 @@ func (x *ValidationWarning) String() string {
 func (*ValidationWarning) ProtoMessage() {}
 
 func (x *ValidationWarning) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[22]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2082,7 +2082,7 @@ func (x *ValidationWarning) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidationWarning.ProtoReflect.Descriptor instead.
 func (*ValidationWarning) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{22}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ValidationWarning) GetCode() string {
@@ -2121,7 +2121,7 @@ type InstallPluginRequest struct {
 	// version of the plugin to install (empty for latest)
 	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	// source specifies the installation source
-	Source DiscoverySource `protobuf:"varint,3,opt,name=source,proto3,enum=pulumicost.v1.DiscoverySource" json:"source,omitempty"`
+	Source DiscoverySource `protobuf:"varint,3,opt,name=source,proto3,enum=finfocus.v1.DiscoverySource" json:"source,omitempty"`
 	// location provides the plugin location
 	Location string `protobuf:"bytes,4,opt,name=location,proto3" json:"location,omitempty"`
 	// force_install overwrites existing installation
@@ -2134,7 +2134,7 @@ type InstallPluginRequest struct {
 
 func (x *InstallPluginRequest) Reset() {
 	*x = InstallPluginRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[23]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2146,7 +2146,7 @@ func (x *InstallPluginRequest) String() string {
 func (*InstallPluginRequest) ProtoMessage() {}
 
 func (x *InstallPluginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[23]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2159,7 +2159,7 @@ func (x *InstallPluginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstallPluginRequest.ProtoReflect.Descriptor instead.
 func (*InstallPluginRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{23}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *InstallPluginRequest) GetName() string {
@@ -2221,7 +2221,7 @@ type InstallPluginResponse struct {
 
 func (x *InstallPluginResponse) Reset() {
 	*x = InstallPluginResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[24]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2233,7 +2233,7 @@ func (x *InstallPluginResponse) String() string {
 func (*InstallPluginResponse) ProtoMessage() {}
 
 func (x *InstallPluginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[24]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2246,7 +2246,7 @@ func (x *InstallPluginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstallPluginResponse.ProtoReflect.Descriptor instead.
 func (*InstallPluginResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{24}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *InstallPluginResponse) GetSuccess() bool {
@@ -2294,7 +2294,7 @@ type InstallationError struct {
 
 func (x *InstallationError) Reset() {
 	*x = InstallationError{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[25]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2306,7 +2306,7 @@ func (x *InstallationError) String() string {
 func (*InstallationError) ProtoMessage() {}
 
 func (x *InstallationError) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[25]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2319,7 +2319,7 @@ func (x *InstallationError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstallationError.ProtoReflect.Descriptor instead.
 func (*InstallationError) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{25}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *InstallationError) GetCode() string {
@@ -2367,7 +2367,7 @@ type UpdatePluginRequest struct {
 
 func (x *UpdatePluginRequest) Reset() {
 	*x = UpdatePluginRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[26]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2379,7 +2379,7 @@ func (x *UpdatePluginRequest) String() string {
 func (*UpdatePluginRequest) ProtoMessage() {}
 
 func (x *UpdatePluginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[26]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2392,7 +2392,7 @@ func (x *UpdatePluginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePluginRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePluginRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{26}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *UpdatePluginRequest) GetName() string {
@@ -2442,7 +2442,7 @@ type UpdatePluginResponse struct {
 
 func (x *UpdatePluginResponse) Reset() {
 	*x = UpdatePluginResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[27]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2454,7 +2454,7 @@ func (x *UpdatePluginResponse) String() string {
 func (*UpdatePluginResponse) ProtoMessage() {}
 
 func (x *UpdatePluginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[27]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2467,7 +2467,7 @@ func (x *UpdatePluginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePluginResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePluginResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{27}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *UpdatePluginResponse) GetSuccess() bool {
@@ -2520,7 +2520,7 @@ type RemovePluginRequest struct {
 
 func (x *RemovePluginRequest) Reset() {
 	*x = RemovePluginRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[28]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2532,7 +2532,7 @@ func (x *RemovePluginRequest) String() string {
 func (*RemovePluginRequest) ProtoMessage() {}
 
 func (x *RemovePluginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[28]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2545,7 +2545,7 @@ func (x *RemovePluginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemovePluginRequest.ProtoReflect.Descriptor instead.
 func (*RemovePluginRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{28}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *RemovePluginRequest) GetName() string {
@@ -2586,7 +2586,7 @@ type RemovePluginResponse struct {
 
 func (x *RemovePluginResponse) Reset() {
 	*x = RemovePluginResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[29]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2598,7 +2598,7 @@ func (x *RemovePluginResponse) String() string {
 func (*RemovePluginResponse) ProtoMessage() {}
 
 func (x *RemovePluginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[29]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2611,7 +2611,7 @@ func (x *RemovePluginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemovePluginResponse.ProtoReflect.Descriptor instead.
 func (*RemovePluginResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{29}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *RemovePluginResponse) GetSuccess() bool {
@@ -2655,7 +2655,7 @@ type ListInstalledPluginsRequest struct {
 
 func (x *ListInstalledPluginsRequest) Reset() {
 	*x = ListInstalledPluginsRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[30]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2667,7 +2667,7 @@ func (x *ListInstalledPluginsRequest) String() string {
 func (*ListInstalledPluginsRequest) ProtoMessage() {}
 
 func (x *ListInstalledPluginsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[30]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2680,7 +2680,7 @@ func (x *ListInstalledPluginsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListInstalledPluginsRequest.ProtoReflect.Descriptor instead.
 func (*ListInstalledPluginsRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{30}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ListInstalledPluginsRequest) GetFilter() string {
@@ -2708,7 +2708,7 @@ type ListInstalledPluginsResponse struct {
 
 func (x *ListInstalledPluginsResponse) Reset() {
 	*x = ListInstalledPluginsResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[31]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2720,7 +2720,7 @@ func (x *ListInstalledPluginsResponse) String() string {
 func (*ListInstalledPluginsResponse) ProtoMessage() {}
 
 func (x *ListInstalledPluginsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[31]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2733,7 +2733,7 @@ func (x *ListInstalledPluginsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListInstalledPluginsResponse.ProtoReflect.Descriptor instead.
 func (*ListInstalledPluginsResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{31}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ListInstalledPluginsResponse) GetPlugins() []*PluginInfo {
@@ -2756,7 +2756,7 @@ type CheckPluginHealthRequest struct {
 
 func (x *CheckPluginHealthRequest) Reset() {
 	*x = CheckPluginHealthRequest{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[32]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2768,7 +2768,7 @@ func (x *CheckPluginHealthRequest) String() string {
 func (*CheckPluginHealthRequest) ProtoMessage() {}
 
 func (x *CheckPluginHealthRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[32]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2781,7 +2781,7 @@ func (x *CheckPluginHealthRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckPluginHealthRequest.ProtoReflect.Descriptor instead.
 func (*CheckPluginHealthRequest) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{32}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *CheckPluginHealthRequest) GetName() string {
@@ -2815,7 +2815,7 @@ type CheckPluginHealthResponse struct {
 
 func (x *CheckPluginHealthResponse) Reset() {
 	*x = CheckPluginHealthResponse{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[33]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2827,7 +2827,7 @@ func (x *CheckPluginHealthResponse) String() string {
 func (*CheckPluginHealthResponse) ProtoMessage() {}
 
 func (x *CheckPluginHealthResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[33]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2840,7 +2840,7 @@ func (x *CheckPluginHealthResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckPluginHealthResponse.ProtoReflect.Descriptor instead.
 func (*CheckPluginHealthResponse) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{33}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *CheckPluginHealthResponse) GetHealthy() bool {
@@ -2881,14 +2881,14 @@ type HealthCheckError struct {
 	// component indicates which plugin component has the error
 	Component string `protobuf:"bytes,3,opt,name=component,proto3" json:"component,omitempty"`
 	// severity indicates the error severity
-	Severity      ErrorSeverity `protobuf:"varint,4,opt,name=severity,proto3,enum=pulumicost.v1.ErrorSeverity" json:"severity,omitempty"`
+	Severity      ErrorSeverity `protobuf:"varint,4,opt,name=severity,proto3,enum=finfocus.v1.ErrorSeverity" json:"severity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *HealthCheckError) Reset() {
 	*x = HealthCheckError{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[34]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2900,7 +2900,7 @@ func (x *HealthCheckError) String() string {
 func (*HealthCheckError) ProtoMessage() {}
 
 func (x *HealthCheckError) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[34]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2913,7 +2913,7 @@ func (x *HealthCheckError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckError.ProtoReflect.Descriptor instead.
 func (*HealthCheckError) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{34}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *HealthCheckError) GetCode() string {
@@ -2948,7 +2948,7 @@ func (x *HealthCheckError) GetSeverity() ErrorSeverity {
 type DiscoveryError struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// source indicates which discovery source had the error
-	Source DiscoverySource `protobuf:"varint,1,opt,name=source,proto3,enum=pulumicost.v1.DiscoverySource" json:"source,omitempty"`
+	Source DiscoverySource `protobuf:"varint,1,opt,name=source,proto3,enum=finfocus.v1.DiscoverySource" json:"source,omitempty"`
 	// location provides the location where error occurred
 	Location string `protobuf:"bytes,2,opt,name=location,proto3" json:"location,omitempty"`
 	// error_code is the error code
@@ -2961,7 +2961,7 @@ type DiscoveryError struct {
 
 func (x *DiscoveryError) Reset() {
 	*x = DiscoveryError{}
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[35]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2973,7 +2973,7 @@ func (x *DiscoveryError) String() string {
 func (*DiscoveryError) ProtoMessage() {}
 
 func (x *DiscoveryError) ProtoReflect() protoreflect.Message {
-	mi := &file_pulumicost_v1_registry_proto_msgTypes[35]
+	mi := &file_finfocus_v1_registry_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2986,7 +2986,7 @@ func (x *DiscoveryError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiscoveryError.ProtoReflect.Descriptor instead.
 func (*DiscoveryError) Descriptor() ([]byte, []int) {
-	return file_pulumicost_v1_registry_proto_rawDescGZIP(), []int{35}
+	return file_finfocus_v1_registry_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *DiscoveryError) GetSource() DiscoverySource {
@@ -3017,39 +3017,39 @@ func (x *DiscoveryError) GetErrorMessage() string {
 	return ""
 }
 
-var File_pulumicost_v1_registry_proto protoreflect.FileDescriptor
+var File_finfocus_v1_registry_proto protoreflect.FileDescriptor
 
-const file_pulumicost_v1_registry_proto_rawDesc = "" +
+const file_finfocus_v1_registry_proto_rawDesc = "" +
 	"\n" +
-	"\x1cpulumicost/v1/registry.proto\x12\rpulumicost.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x97\x01\n" +
-	"\x16DiscoverPluginsRequest\x128\n" +
-	"\asources\x18\x01 \x03(\x0e2\x1e.pulumicost.v1.DiscoverySourceR\asources\x12\x16\n" +
+	"\x1afinfocus/v1/registry.proto\x12\vfinfocus.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x95\x01\n" +
+	"\x16DiscoverPluginsRequest\x126\n" +
+	"\asources\x18\x01 \x03(\x0e2\x1c.finfocus.v1.DiscoverySourceR\asources\x12\x16\n" +
 	"\x06filter\x18\x02 \x01(\tR\x06filter\x12+\n" +
-	"\x11include_installed\x18\x03 \x01(\bR\x10includeInstalled\"\x98\x01\n" +
-	"\x17DiscoverPluginsResponse\x123\n" +
-	"\aplugins\x18\x01 \x03(\v2\x19.pulumicost.v1.PluginInfoR\aplugins\x12H\n" +
-	"\x10discovery_errors\x18\x02 \x03(\v2\x1d.pulumicost.v1.DiscoveryErrorR\x0fdiscoveryErrors\"\x91\x04\n" +
+	"\x11include_installed\x18\x03 \x01(\bR\x10includeInstalled\"\x94\x01\n" +
+	"\x17DiscoverPluginsResponse\x121\n" +
+	"\aplugins\x18\x01 \x03(\v2\x17.finfocus.v1.PluginInfoR\aplugins\x12F\n" +
+	"\x10discovery_errors\x18\x02 \x03(\v2\x1b.finfocus.v1.DiscoveryErrorR\x0fdiscoveryErrors\"\x89\x04\n" +
 	"\n" +
 	"PluginInfo\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x16\n" +
-	"\x06author\x18\x04 \x01(\tR\x06author\x126\n" +
-	"\x06source\x18\x05 \x01(\x0e2\x1e.pulumicost.v1.DiscoverySourceR\x06source\x12\x1a\n" +
-	"\blocation\x18\x06 \x01(\tR\blocation\x123\n" +
-	"\x06status\x18\a \x01(\x0e2\x1b.pulumicost.v1.PluginStatusR\x06status\x12C\n" +
-	"\x0esecurity_level\x18\b \x01(\x0e2\x1c.pulumicost.v1.SecurityLevelR\rsecurityLevel\x12\"\n" +
-	"\fcapabilities\x18\t \x03(\tR\fcapabilities\x12E\n" +
+	"\x06author\x18\x04 \x01(\tR\x06author\x124\n" +
+	"\x06source\x18\x05 \x01(\x0e2\x1c.finfocus.v1.DiscoverySourceR\x06source\x12\x1a\n" +
+	"\blocation\x18\x06 \x01(\tR\blocation\x121\n" +
+	"\x06status\x18\a \x01(\x0e2\x19.finfocus.v1.PluginStatusR\x06status\x12A\n" +
+	"\x0esecurity_level\x18\b \x01(\x0e2\x1a.finfocus.v1.SecurityLevelR\rsecurityLevel\x12\"\n" +
+	"\fcapabilities\x18\t \x03(\tR\fcapabilities\x12C\n" +
 	"\frequirements\x18\n" +
-	" \x01(\v2!.pulumicost.v1.PluginRequirementsR\frequirements\x12#\n" +
+	" \x01(\v2\x1f.finfocus.v1.PluginRequirementsR\frequirements\x12#\n" +
 	"\rmanifest_hash\x18\v \x01(\tR\fmanifestHash\x12=\n" +
-	"\flast_updated\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\vlastUpdated\"\xd8\x02\n" +
+	"\flast_updated\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\vlastUpdated\"\xd2\x02\n" +
 	"\x12PluginRequirements\x12(\n" +
 	"\x10min_spec_version\x18\x01 \x01(\tR\x0eminSpecVersion\x12(\n" +
-	"\x10max_spec_version\x18\x02 \x01(\tR\x0emaxSpecVersion\x12C\n" +
-	"\fdependencies\x18\x03 \x03(\v2\x1f.pulumicost.v1.PluginDependencyR\fdependencies\x12R\n" +
-	"\x13system_requirements\x18\x04 \x01(\v2!.pulumicost.v1.SystemRequirementsR\x12systemRequirements\x12U\n" +
-	"\x14runtime_requirements\x18\x05 \x01(\v2\".pulumicost.v1.RuntimeRequirementsR\x13runtimeRequirements\"q\n" +
+	"\x10max_spec_version\x18\x02 \x01(\tR\x0emaxSpecVersion\x12A\n" +
+	"\fdependencies\x18\x03 \x03(\v2\x1d.finfocus.v1.PluginDependencyR\fdependencies\x12P\n" +
+	"\x13system_requirements\x18\x04 \x01(\v2\x1f.finfocus.v1.SystemRequirementsR\x12systemRequirements\x12S\n" +
+	"\x14runtime_requirements\x18\x05 \x01(\v2 .finfocus.v1.RuntimeRequirementsR\x13runtimeRequirements\"q\n" +
 	"\x10PluginDependency\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12-\n" +
 	"\x12version_constraint\x18\x02 \x01(\tR\x11versionConstraint\x12\x1a\n" +
@@ -3063,20 +3063,20 @@ const file_pulumicost_v1_registry_proto_rawDesc = "" +
 	"\fgrpc_version\x18\x01 \x01(\tR\vgrpcVersion\x12!\n" +
 	"\ftls_required\x18\x02 \x01(\bR\vtlsRequired\x12!\n" +
 	"\fauth_methods\x18\x03 \x03(\tR\vauthMethods\x12'\n" +
-	"\x0ftimeout_seconds\x18\x04 \x01(\x05R\x0etimeoutSeconds\"\x9c\x01\n" +
+	"\x0ftimeout_seconds\x18\x04 \x01(\x05R\x0etimeoutSeconds\"\x9a\x01\n" +
 	"\x18GetPluginManifestRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x126\n" +
-	"\x06source\x18\x03 \x01(\x0e2\x1e.pulumicost.v1.DiscoverySourceR\x06source\x12\x1a\n" +
-	"\blocation\x18\x04 \x01(\tR\blocation\"V\n" +
-	"\x19GetPluginManifestResponse\x129\n" +
-	"\bmanifest\x18\x01 \x01(\v2\x1d.pulumicost.v1.PluginManifestR\bmanifest\"\xdd\x02\n" +
-	"\x0ePluginManifest\x129\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x1d.pulumicost.v1.PluginMetadataR\bmetadata\x12H\n" +
-	"\rspecification\x18\x02 \x01(\v2\".pulumicost.v1.PluginSpecificationR\rspecification\x129\n" +
-	"\bsecurity\x18\x03 \x01(\v2\x1d.pulumicost.v1.PluginSecurityR\bsecurity\x12C\n" +
-	"\finstallation\x18\x04 \x01(\v2\x1f.pulumicost.v1.InstallationSpecR\finstallation\x12F\n" +
-	"\rconfiguration\x18\x05 \x01(\v2 .pulumicost.v1.ConfigurationSpecR\rconfiguration\"\xe0\x02\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\x124\n" +
+	"\x06source\x18\x03 \x01(\x0e2\x1c.finfocus.v1.DiscoverySourceR\x06source\x12\x1a\n" +
+	"\blocation\x18\x04 \x01(\tR\blocation\"T\n" +
+	"\x19GetPluginManifestResponse\x127\n" +
+	"\bmanifest\x18\x01 \x01(\v2\x1b.finfocus.v1.PluginManifestR\bmanifest\"\xd3\x02\n" +
+	"\x0ePluginManifest\x127\n" +
+	"\bmetadata\x18\x01 \x01(\v2\x1b.finfocus.v1.PluginMetadataR\bmetadata\x12F\n" +
+	"\rspecification\x18\x02 \x01(\v2 .finfocus.v1.PluginSpecificationR\rspecification\x127\n" +
+	"\bsecurity\x18\x03 \x01(\v2\x1b.finfocus.v1.PluginSecurityR\bsecurity\x12A\n" +
+	"\finstallation\x18\x04 \x01(\v2\x1d.finfocus.v1.InstallationSpecR\finstallation\x12D\n" +
+	"\rconfiguration\x18\x05 \x01(\v2\x1e.finfocus.v1.ConfigurationSpecR\rconfiguration\"\xe0\x02\n" +
 	"\x0ePluginMetadata\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x12 \n" +
@@ -3092,17 +3092,17 @@ const file_pulumicost_v1_registry_proto_rawDesc = "" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8e\x04\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x86\x04\n" +
 	"\x13PluginSpecification\x12!\n" +
 	"\fspec_version\x18\x01 \x01(\tR\vspecVersion\x12/\n" +
-	"\x13supported_providers\x18\x02 \x03(\tR\x12supportedProviders\x12k\n" +
-	"\x13supported_resources\x18\x03 \x03(\v2:.pulumicost.v1.PluginSpecification.SupportedResourcesEntryR\x12supportedResources\x12\"\n" +
-	"\fcapabilities\x18\x04 \x03(\tR\fcapabilities\x12O\n" +
-	"\x12service_definition\x18\x05 \x01(\v2 .pulumicost.v1.ServiceDefinitionR\x11serviceDefinition\x12X\n" +
-	"\x15observability_support\x18\x06 \x01(\v2#.pulumicost.v1.ObservabilitySupportR\x14observabilitySupport\x1ag\n" +
+	"\x13supported_providers\x18\x02 \x03(\tR\x12supportedProviders\x12i\n" +
+	"\x13supported_resources\x18\x03 \x03(\v28.finfocus.v1.PluginSpecification.SupportedResourcesEntryR\x12supportedResources\x12\"\n" +
+	"\fcapabilities\x18\x04 \x03(\tR\fcapabilities\x12M\n" +
+	"\x12service_definition\x18\x05 \x01(\v2\x1e.finfocus.v1.ServiceDefinitionR\x11serviceDefinition\x12V\n" +
+	"\x15observability_support\x18\x06 \x01(\v2!.finfocus.v1.ObservabilitySupportR\x14observabilitySupport\x1ae\n" +
 	"\x17SupportedResourcesEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x126\n" +
-	"\x05value\x18\x02 \x01(\v2 .pulumicost.v1.ProviderResourcesR\x05value:\x028\x01\"y\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x124\n" +
+	"\x05value\x18\x02 \x01(\v2\x1e.finfocus.v1.ProviderResourcesR\x05value:\x028\x01\"y\n" +
 	"\x11ProviderResources\x12%\n" +
 	"\x0eresource_types\x18\x01 \x03(\tR\rresourceTypes\x12#\n" +
 	"\rbilling_modes\x18\x02 \x03(\tR\fbillingModes\x12\x18\n" +
@@ -3119,62 +3119,62 @@ const file_pulumicost_v1_registry_proto_rawDesc = "" +
 	"\x0flogging_enabled\x18\x03 \x01(\bR\x0eloggingEnabled\x122\n" +
 	"\x15health_checks_enabled\x18\x04 \x01(\bR\x13healthChecksEnabled\x12\x1f\n" +
 	"\vsli_support\x18\x05 \x01(\bR\n" +
-	"sliSupport\"\x8c\x02\n" +
+	"sliSupport\"\x8a\x02\n" +
 	"\x0ePluginSecurity\x12\x1c\n" +
 	"\tsignature\x18\x01 \x01(\tR\tsignature\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x02 \x01(\tR\tpublicKey\x12+\n" +
-	"\x11certificate_chain\x18\x03 \x03(\tR\x10certificateChain\x12C\n" +
-	"\x0esecurity_level\x18\x04 \x01(\x0e2\x1c.pulumicost.v1.SecurityLevelR\rsecurityLevel\x12 \n" +
+	"\x11certificate_chain\x18\x03 \x03(\tR\x10certificateChain\x12A\n" +
+	"\x0esecurity_level\x18\x04 \x01(\x0e2\x1a.finfocus.v1.SecurityLevelR\rsecurityLevel\x12 \n" +
 	"\vpermissions\x18\x05 \x03(\tR\vpermissions\x12)\n" +
-	"\x10sandbox_required\x18\x06 \x01(\bR\x0fsandboxRequired\"\xd7\x02\n" +
-	"\x10InstallationSpec\x12R\n" +
-	"\x13installation_method\x18\x01 \x01(\x0e2!.pulumicost.v1.InstallationMethodR\x12installationMethod\x12!\n" +
+	"\x10sandbox_required\x18\x06 \x01(\bR\x0fsandboxRequired\"\xd5\x02\n" +
+	"\x10InstallationSpec\x12P\n" +
+	"\x13installation_method\x18\x01 \x01(\x0e2\x1f.finfocus.v1.InstallationMethodR\x12installationMethod\x12!\n" +
 	"\fdownload_url\x18\x02 \x01(\tR\vdownloadUrl\x12\x1a\n" +
 	"\bchecksum\x18\x03 \x01(\tR\bchecksum\x12-\n" +
 	"\x12checksum_algorithm\x18\x04 \x01(\tR\x11checksumAlgorithm\x12%\n" +
 	"\x0einstall_script\x18\x05 \x01(\tR\rinstallScript\x12,\n" +
 	"\x12pre_install_checks\x18\x06 \x03(\tR\x10preInstallChecks\x12,\n" +
-	"\x12post_install_steps\x18\a \x03(\tR\x10postInstallSteps\"\xbc\x01\n" +
+	"\x12post_install_steps\x18\a \x03(\tR\x10postInstallSteps\"\xba\x01\n" +
 	"\x11ConfigurationSpec\x12\x16\n" +
 	"\x06schema\x18\x01 \x01(\tR\x06schema\x12%\n" +
 	"\x0edefault_config\x18\x02 \x01(\tR\rdefaultConfig\x12'\n" +
-	"\x0frequired_fields\x18\x03 \x03(\tR\x0erequiredFields\x12?\n" +
-	"\bexamples\x18\x04 \x03(\v2#.pulumicost.v1.ConfigurationExampleR\bexamples\"d\n" +
+	"\x0frequired_fields\x18\x03 \x03(\tR\x0erequiredFields\x12=\n" +
+	"\bexamples\x18\x04 \x03(\v2!.finfocus.v1.ConfigurationExampleR\bexamples\"d\n" +
 	"\x14ConfigurationExample\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x16\n" +
-	"\x06config\x18\x03 \x01(\tR\x06config\"\xbd\x01\n" +
-	"\x15ValidatePluginRequest\x129\n" +
-	"\bmanifest\x18\x01 \x01(\v2\x1d.pulumicost.v1.PluginManifestR\bmanifest\x12-\n" +
+	"\x06config\x18\x03 \x01(\tR\x06config\"\xbb\x01\n" +
+	"\x15ValidatePluginRequest\x127\n" +
+	"\bmanifest\x18\x01 \x01(\v2\x1b.finfocus.v1.PluginManifestR\bmanifest\x12-\n" +
 	"\x12check_dependencies\x18\x02 \x01(\bR\x11checkDependencies\x12:\n" +
-	"\x19check_system_requirements\x18\x03 \x01(\bR\x17checkSystemRequirements\"\xb9\x01\n" +
+	"\x19check_system_requirements\x18\x03 \x01(\bR\x17checkSystemRequirements\"\xb5\x01\n" +
 	"\x16ValidatePluginResponse\x12\x14\n" +
-	"\x05valid\x18\x01 \x01(\bR\x05valid\x12K\n" +
-	"\x11validation_errors\x18\x02 \x03(\v2\x1e.pulumicost.v1.ValidationErrorR\x10validationErrors\x12<\n" +
-	"\bwarnings\x18\x03 \x03(\v2 .pulumicost.v1.ValidationWarningR\bwarnings\"\x8f\x01\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\x12I\n" +
+	"\x11validation_errors\x18\x02 \x03(\v2\x1c.finfocus.v1.ValidationErrorR\x10validationErrors\x12:\n" +
+	"\bwarnings\x18\x03 \x03(\v2\x1e.finfocus.v1.ValidationWarningR\bwarnings\"\x8d\x01\n" +
 	"\x0fValidationError\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x14\n" +
-	"\x05field\x18\x03 \x01(\tR\x05field\x128\n" +
-	"\bseverity\x18\x04 \x01(\x0e2\x1c.pulumicost.v1.ErrorSeverityR\bseverity\"\x7f\n" +
+	"\x05field\x18\x03 \x01(\tR\x05field\x126\n" +
+	"\bseverity\x18\x04 \x01(\x0e2\x1a.finfocus.v1.ErrorSeverityR\bseverity\"\x7f\n" +
 	"\x11ValidationWarning\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x14\n" +
 	"\x05field\x18\x03 \x01(\tR\x05field\x12&\n" +
-	"\x0erecommendation\x18\x04 \x01(\tR\x0erecommendation\"\xe8\x01\n" +
+	"\x0erecommendation\x18\x04 \x01(\tR\x0erecommendation\"\xe6\x01\n" +
 	"\x14InstallPluginRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x126\n" +
-	"\x06source\x18\x03 \x01(\x0e2\x1e.pulumicost.v1.DiscoverySourceR\x06source\x12\x1a\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\x124\n" +
+	"\x06source\x18\x03 \x01(\x0e2\x1c.finfocus.v1.DiscoverySourceR\x06source\x12\x1a\n" +
 	"\blocation\x18\x04 \x01(\tR\blocation\x12#\n" +
 	"\rforce_install\x18\x05 \x01(\bR\fforceInstall\x12)\n" +
-	"\x10verify_signature\x18\x06 \x01(\bR\x0fverifySignature\"\xd4\x01\n" +
+	"\x10verify_signature\x18\x06 \x01(\bR\x0fverifySignature\"\xd2\x01\n" +
 	"\x15InstallPluginResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12+\n" +
 	"\x11installed_version\x18\x02 \x01(\tR\x10installedVersion\x12!\n" +
-	"\finstall_path\x18\x03 \x01(\tR\vinstallPath\x12Q\n" +
-	"\x13installation_errors\x18\x04 \x03(\v2 .pulumicost.v1.InstallationErrorR\x12installationErrors\"w\n" +
+	"\finstall_path\x18\x03 \x01(\tR\vinstallPath\x12O\n" +
+	"\x13installation_errors\x18\x04 \x03(\v2\x1e.finfocus.v1.InstallationErrorR\x12installationErrors\"w\n" +
 	"\x11InstallationError\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x12\n" +
@@ -3184,43 +3184,43 @@ const file_pulumicost_v1_registry_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12%\n" +
 	"\x0etarget_version\x18\x02 \x01(\tR\rtargetVersion\x12'\n" +
 	"\x0fallow_downgrade\x18\x03 \x01(\bR\x0eallowDowngrade\x12%\n" +
-	"\x0ebackup_current\x18\x04 \x01(\bR\rbackupCurrent\"\xec\x01\n" +
+	"\x0ebackup_current\x18\x04 \x01(\bR\rbackupCurrent\"\xea\x01\n" +
 	"\x14UpdatePluginResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12)\n" +
 	"\x10previous_version\x18\x02 \x01(\tR\x0fpreviousVersion\x12'\n" +
 	"\x0fupdated_version\x18\x03 \x01(\tR\x0eupdatedVersion\x12\x1f\n" +
 	"\vbackup_path\x18\x04 \x01(\tR\n" +
-	"backupPath\x12E\n" +
-	"\rupdate_errors\x18\x05 \x03(\v2 .pulumicost.v1.InstallationErrorR\fupdateErrors\"o\n" +
+	"backupPath\x12C\n" +
+	"\rupdate_errors\x18\x05 \x03(\v2\x1e.finfocus.v1.InstallationErrorR\fupdateErrors\"o\n" +
 	"\x13RemovePluginRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12!\n" +
 	"\fcleanup_data\x18\x02 \x01(\bR\vcleanupData\x12!\n" +
-	"\fforce_remove\x18\x03 \x01(\bR\vforceRemove\"\xc7\x01\n" +
+	"\fforce_remove\x18\x03 \x01(\bR\vforceRemove\"\xc5\x01\n" +
 	"\x14RemovePluginResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12'\n" +
 	"\x0fremoved_version\x18\x02 \x01(\tR\x0eremovedVersion\x12#\n" +
-	"\rcleanup_paths\x18\x03 \x03(\tR\fcleanupPaths\x12G\n" +
-	"\x0eremoval_errors\x18\x04 \x03(\v2 .pulumicost.v1.InstallationErrorR\rremovalErrors\"`\n" +
+	"\rcleanup_paths\x18\x03 \x03(\tR\fcleanupPaths\x12E\n" +
+	"\x0eremoval_errors\x18\x04 \x03(\v2\x1e.finfocus.v1.InstallationErrorR\rremovalErrors\"`\n" +
 	"\x1bListInstalledPluginsRequest\x12\x16\n" +
 	"\x06filter\x18\x01 \x01(\tR\x06filter\x12)\n" +
-	"\x10include_inactive\x18\x02 \x01(\bR\x0fincludeInactive\"S\n" +
-	"\x1cListInstalledPluginsResponse\x123\n" +
-	"\aplugins\x18\x01 \x03(\v2\x19.pulumicost.v1.PluginInfoR\aplugins\"W\n" +
+	"\x10include_inactive\x18\x02 \x01(\bR\x0fincludeInactive\"Q\n" +
+	"\x1cListInstalledPluginsResponse\x121\n" +
+	"\aplugins\x18\x01 \x03(\v2\x17.finfocus.v1.PluginInfoR\aplugins\"W\n" +
 	"\x18CheckPluginHealthRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12'\n" +
-	"\x0ftimeout_seconds\x18\x02 \x01(\x05R\x0etimeoutSeconds\"\xd7\x01\n" +
+	"\x0ftimeout_seconds\x18\x02 \x01(\x05R\x0etimeoutSeconds\"\xd5\x01\n" +
 	"\x19CheckPluginHealthResponse\x12\x18\n" +
 	"\ahealthy\x18\x01 \x01(\bR\ahealthy\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12B\n" +
-	"\x0flast_check_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\rlastCheckTime\x12D\n" +
-	"\rhealth_errors\x18\x04 \x03(\v2\x1f.pulumicost.v1.HealthCheckErrorR\fhealthErrors\"\x98\x01\n" +
+	"\x0flast_check_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\rlastCheckTime\x12B\n" +
+	"\rhealth_errors\x18\x04 \x03(\v2\x1d.finfocus.v1.HealthCheckErrorR\fhealthErrors\"\x96\x01\n" +
 	"\x10HealthCheckError\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
-	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x128\n" +
-	"\bseverity\x18\x04 \x01(\x0e2\x1c.pulumicost.v1.ErrorSeverityR\bseverity\"\xa8\x01\n" +
-	"\x0eDiscoveryError\x126\n" +
-	"\x06source\x18\x01 \x01(\x0e2\x1e.pulumicost.v1.DiscoverySourceR\x06source\x12\x1a\n" +
+	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x126\n" +
+	"\bseverity\x18\x04 \x01(\x0e2\x1a.finfocus.v1.ErrorSeverityR\bseverity\"\xa6\x01\n" +
+	"\x0eDiscoveryError\x124\n" +
+	"\x06source\x18\x01 \x01(\x0e2\x1c.finfocus.v1.DiscoverySourceR\x06source\x12\x1a\n" +
 	"\blocation\x18\x02 \x01(\tR\blocation\x12\x1d\n" +
 	"\n" +
 	"error_code\x18\x03 \x01(\tR\terrorCode\x12#\n" +
@@ -3256,133 +3256,133 @@ const file_pulumicost_v1_registry_proto_rawDesc = "" +
 	"\x13ERROR_SEVERITY_INFO\x10\x01\x12\x1a\n" +
 	"\x16ERROR_SEVERITY_WARNING\x10\x02\x12\x18\n" +
 	"\x14ERROR_SEVERITY_ERROR\x10\x03\x12\x1b\n" +
-	"\x17ERROR_SEVERITY_CRITICAL\x10\x042\xa7\x06\n" +
-	"\x15PluginRegistryService\x12`\n" +
-	"\x0fDiscoverPlugins\x12%.pulumicost.v1.DiscoverPluginsRequest\x1a&.pulumicost.v1.DiscoverPluginsResponse\x12f\n" +
-	"\x11GetPluginManifest\x12'.pulumicost.v1.GetPluginManifestRequest\x1a(.pulumicost.v1.GetPluginManifestResponse\x12]\n" +
-	"\x0eValidatePlugin\x12$.pulumicost.v1.ValidatePluginRequest\x1a%.pulumicost.v1.ValidatePluginResponse\x12Z\n" +
-	"\rInstallPlugin\x12#.pulumicost.v1.InstallPluginRequest\x1a$.pulumicost.v1.InstallPluginResponse\x12W\n" +
-	"\fUpdatePlugin\x12\".pulumicost.v1.UpdatePluginRequest\x1a#.pulumicost.v1.UpdatePluginResponse\x12W\n" +
-	"\fRemovePlugin\x12\".pulumicost.v1.RemovePluginRequest\x1a#.pulumicost.v1.RemovePluginResponse\x12o\n" +
-	"\x14ListInstalledPlugins\x12*.pulumicost.v1.ListInstalledPluginsRequest\x1a+.pulumicost.v1.ListInstalledPluginsResponse\x12f\n" +
-	"\x11CheckPluginHealth\x12'.pulumicost.v1.CheckPluginHealthRequest\x1a(.pulumicost.v1.CheckPluginHealthResponseBBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
+	"\x17ERROR_SEVERITY_CRITICAL\x10\x042\x87\x06\n" +
+	"\x15PluginRegistryService\x12\\\n" +
+	"\x0fDiscoverPlugins\x12#.finfocus.v1.DiscoverPluginsRequest\x1a$.finfocus.v1.DiscoverPluginsResponse\x12b\n" +
+	"\x11GetPluginManifest\x12%.finfocus.v1.GetPluginManifestRequest\x1a&.finfocus.v1.GetPluginManifestResponse\x12Y\n" +
+	"\x0eValidatePlugin\x12\".finfocus.v1.ValidatePluginRequest\x1a#.finfocus.v1.ValidatePluginResponse\x12V\n" +
+	"\rInstallPlugin\x12!.finfocus.v1.InstallPluginRequest\x1a\".finfocus.v1.InstallPluginResponse\x12S\n" +
+	"\fUpdatePlugin\x12 .finfocus.v1.UpdatePluginRequest\x1a!.finfocus.v1.UpdatePluginResponse\x12S\n" +
+	"\fRemovePlugin\x12 .finfocus.v1.RemovePluginRequest\x1a!.finfocus.v1.RemovePluginResponse\x12k\n" +
+	"\x14ListInstalledPlugins\x12(.finfocus.v1.ListInstalledPluginsRequest\x1a).finfocus.v1.ListInstalledPluginsResponse\x12b\n" +
+	"\x11CheckPluginHealth\x12%.finfocus.v1.CheckPluginHealthRequest\x1a&.finfocus.v1.CheckPluginHealthResponseB>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
 
 var (
-	file_pulumicost_v1_registry_proto_rawDescOnce sync.Once
-	file_pulumicost_v1_registry_proto_rawDescData []byte
+	file_finfocus_v1_registry_proto_rawDescOnce sync.Once
+	file_finfocus_v1_registry_proto_rawDescData []byte
 )
 
-func file_pulumicost_v1_registry_proto_rawDescGZIP() []byte {
-	file_pulumicost_v1_registry_proto_rawDescOnce.Do(func() {
-		file_pulumicost_v1_registry_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_pulumicost_v1_registry_proto_rawDesc), len(file_pulumicost_v1_registry_proto_rawDesc)))
+func file_finfocus_v1_registry_proto_rawDescGZIP() []byte {
+	file_finfocus_v1_registry_proto_rawDescOnce.Do(func() {
+		file_finfocus_v1_registry_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_finfocus_v1_registry_proto_rawDesc), len(file_finfocus_v1_registry_proto_rawDesc)))
 	})
-	return file_pulumicost_v1_registry_proto_rawDescData
+	return file_finfocus_v1_registry_proto_rawDescData
 }
 
-var file_pulumicost_v1_registry_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_pulumicost_v1_registry_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
-var file_pulumicost_v1_registry_proto_goTypes = []any{
-	(DiscoverySource)(0),                 // 0: pulumicost.v1.DiscoverySource
-	(PluginStatus)(0),                    // 1: pulumicost.v1.PluginStatus
-	(SecurityLevel)(0),                   // 2: pulumicost.v1.SecurityLevel
-	(InstallationMethod)(0),              // 3: pulumicost.v1.InstallationMethod
-	(ErrorSeverity)(0),                   // 4: pulumicost.v1.ErrorSeverity
-	(*DiscoverPluginsRequest)(nil),       // 5: pulumicost.v1.DiscoverPluginsRequest
-	(*DiscoverPluginsResponse)(nil),      // 6: pulumicost.v1.DiscoverPluginsResponse
-	(*PluginInfo)(nil),                   // 7: pulumicost.v1.PluginInfo
-	(*PluginRequirements)(nil),           // 8: pulumicost.v1.PluginRequirements
-	(*PluginDependency)(nil),             // 9: pulumicost.v1.PluginDependency
-	(*SystemRequirements)(nil),           // 10: pulumicost.v1.SystemRequirements
-	(*RuntimeRequirements)(nil),          // 11: pulumicost.v1.RuntimeRequirements
-	(*GetPluginManifestRequest)(nil),     // 12: pulumicost.v1.GetPluginManifestRequest
-	(*GetPluginManifestResponse)(nil),    // 13: pulumicost.v1.GetPluginManifestResponse
-	(*PluginManifest)(nil),               // 14: pulumicost.v1.PluginManifest
-	(*PluginMetadata)(nil),               // 15: pulumicost.v1.PluginMetadata
-	(*PluginSpecification)(nil),          // 16: pulumicost.v1.PluginSpecification
-	(*ProviderResources)(nil),            // 17: pulumicost.v1.ProviderResources
-	(*ServiceDefinition)(nil),            // 18: pulumicost.v1.ServiceDefinition
-	(*ObservabilitySupport)(nil),         // 19: pulumicost.v1.ObservabilitySupport
-	(*PluginSecurity)(nil),               // 20: pulumicost.v1.PluginSecurity
-	(*InstallationSpec)(nil),             // 21: pulumicost.v1.InstallationSpec
-	(*ConfigurationSpec)(nil),            // 22: pulumicost.v1.ConfigurationSpec
-	(*ConfigurationExample)(nil),         // 23: pulumicost.v1.ConfigurationExample
-	(*ValidatePluginRequest)(nil),        // 24: pulumicost.v1.ValidatePluginRequest
-	(*ValidatePluginResponse)(nil),       // 25: pulumicost.v1.ValidatePluginResponse
-	(*ValidationError)(nil),              // 26: pulumicost.v1.ValidationError
-	(*ValidationWarning)(nil),            // 27: pulumicost.v1.ValidationWarning
-	(*InstallPluginRequest)(nil),         // 28: pulumicost.v1.InstallPluginRequest
-	(*InstallPluginResponse)(nil),        // 29: pulumicost.v1.InstallPluginResponse
-	(*InstallationError)(nil),            // 30: pulumicost.v1.InstallationError
-	(*UpdatePluginRequest)(nil),          // 31: pulumicost.v1.UpdatePluginRequest
-	(*UpdatePluginResponse)(nil),         // 32: pulumicost.v1.UpdatePluginResponse
-	(*RemovePluginRequest)(nil),          // 33: pulumicost.v1.RemovePluginRequest
-	(*RemovePluginResponse)(nil),         // 34: pulumicost.v1.RemovePluginResponse
-	(*ListInstalledPluginsRequest)(nil),  // 35: pulumicost.v1.ListInstalledPluginsRequest
-	(*ListInstalledPluginsResponse)(nil), // 36: pulumicost.v1.ListInstalledPluginsResponse
-	(*CheckPluginHealthRequest)(nil),     // 37: pulumicost.v1.CheckPluginHealthRequest
-	(*CheckPluginHealthResponse)(nil),    // 38: pulumicost.v1.CheckPluginHealthResponse
-	(*HealthCheckError)(nil),             // 39: pulumicost.v1.HealthCheckError
-	(*DiscoveryError)(nil),               // 40: pulumicost.v1.DiscoveryError
-	nil,                                  // 41: pulumicost.v1.PluginSpecification.SupportedResourcesEntry
+var file_finfocus_v1_registry_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_finfocus_v1_registry_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
+var file_finfocus_v1_registry_proto_goTypes = []any{
+	(DiscoverySource)(0),                 // 0: finfocus.v1.DiscoverySource
+	(PluginStatus)(0),                    // 1: finfocus.v1.PluginStatus
+	(SecurityLevel)(0),                   // 2: finfocus.v1.SecurityLevel
+	(InstallationMethod)(0),              // 3: finfocus.v1.InstallationMethod
+	(ErrorSeverity)(0),                   // 4: finfocus.v1.ErrorSeverity
+	(*DiscoverPluginsRequest)(nil),       // 5: finfocus.v1.DiscoverPluginsRequest
+	(*DiscoverPluginsResponse)(nil),      // 6: finfocus.v1.DiscoverPluginsResponse
+	(*PluginInfo)(nil),                   // 7: finfocus.v1.PluginInfo
+	(*PluginRequirements)(nil),           // 8: finfocus.v1.PluginRequirements
+	(*PluginDependency)(nil),             // 9: finfocus.v1.PluginDependency
+	(*SystemRequirements)(nil),           // 10: finfocus.v1.SystemRequirements
+	(*RuntimeRequirements)(nil),          // 11: finfocus.v1.RuntimeRequirements
+	(*GetPluginManifestRequest)(nil),     // 12: finfocus.v1.GetPluginManifestRequest
+	(*GetPluginManifestResponse)(nil),    // 13: finfocus.v1.GetPluginManifestResponse
+	(*PluginManifest)(nil),               // 14: finfocus.v1.PluginManifest
+	(*PluginMetadata)(nil),               // 15: finfocus.v1.PluginMetadata
+	(*PluginSpecification)(nil),          // 16: finfocus.v1.PluginSpecification
+	(*ProviderResources)(nil),            // 17: finfocus.v1.ProviderResources
+	(*ServiceDefinition)(nil),            // 18: finfocus.v1.ServiceDefinition
+	(*ObservabilitySupport)(nil),         // 19: finfocus.v1.ObservabilitySupport
+	(*PluginSecurity)(nil),               // 20: finfocus.v1.PluginSecurity
+	(*InstallationSpec)(nil),             // 21: finfocus.v1.InstallationSpec
+	(*ConfigurationSpec)(nil),            // 22: finfocus.v1.ConfigurationSpec
+	(*ConfigurationExample)(nil),         // 23: finfocus.v1.ConfigurationExample
+	(*ValidatePluginRequest)(nil),        // 24: finfocus.v1.ValidatePluginRequest
+	(*ValidatePluginResponse)(nil),       // 25: finfocus.v1.ValidatePluginResponse
+	(*ValidationError)(nil),              // 26: finfocus.v1.ValidationError
+	(*ValidationWarning)(nil),            // 27: finfocus.v1.ValidationWarning
+	(*InstallPluginRequest)(nil),         // 28: finfocus.v1.InstallPluginRequest
+	(*InstallPluginResponse)(nil),        // 29: finfocus.v1.InstallPluginResponse
+	(*InstallationError)(nil),            // 30: finfocus.v1.InstallationError
+	(*UpdatePluginRequest)(nil),          // 31: finfocus.v1.UpdatePluginRequest
+	(*UpdatePluginResponse)(nil),         // 32: finfocus.v1.UpdatePluginResponse
+	(*RemovePluginRequest)(nil),          // 33: finfocus.v1.RemovePluginRequest
+	(*RemovePluginResponse)(nil),         // 34: finfocus.v1.RemovePluginResponse
+	(*ListInstalledPluginsRequest)(nil),  // 35: finfocus.v1.ListInstalledPluginsRequest
+	(*ListInstalledPluginsResponse)(nil), // 36: finfocus.v1.ListInstalledPluginsResponse
+	(*CheckPluginHealthRequest)(nil),     // 37: finfocus.v1.CheckPluginHealthRequest
+	(*CheckPluginHealthResponse)(nil),    // 38: finfocus.v1.CheckPluginHealthResponse
+	(*HealthCheckError)(nil),             // 39: finfocus.v1.HealthCheckError
+	(*DiscoveryError)(nil),               // 40: finfocus.v1.DiscoveryError
+	nil,                                  // 41: finfocus.v1.PluginSpecification.SupportedResourcesEntry
 	(*timestamppb.Timestamp)(nil),        // 42: google.protobuf.Timestamp
 }
-var file_pulumicost_v1_registry_proto_depIdxs = []int32{
-	0,  // 0: pulumicost.v1.DiscoverPluginsRequest.sources:type_name -> pulumicost.v1.DiscoverySource
-	7,  // 1: pulumicost.v1.DiscoverPluginsResponse.plugins:type_name -> pulumicost.v1.PluginInfo
-	40, // 2: pulumicost.v1.DiscoverPluginsResponse.discovery_errors:type_name -> pulumicost.v1.DiscoveryError
-	0,  // 3: pulumicost.v1.PluginInfo.source:type_name -> pulumicost.v1.DiscoverySource
-	1,  // 4: pulumicost.v1.PluginInfo.status:type_name -> pulumicost.v1.PluginStatus
-	2,  // 5: pulumicost.v1.PluginInfo.security_level:type_name -> pulumicost.v1.SecurityLevel
-	8,  // 6: pulumicost.v1.PluginInfo.requirements:type_name -> pulumicost.v1.PluginRequirements
-	42, // 7: pulumicost.v1.PluginInfo.last_updated:type_name -> google.protobuf.Timestamp
-	9,  // 8: pulumicost.v1.PluginRequirements.dependencies:type_name -> pulumicost.v1.PluginDependency
-	10, // 9: pulumicost.v1.PluginRequirements.system_requirements:type_name -> pulumicost.v1.SystemRequirements
-	11, // 10: pulumicost.v1.PluginRequirements.runtime_requirements:type_name -> pulumicost.v1.RuntimeRequirements
-	0,  // 11: pulumicost.v1.GetPluginManifestRequest.source:type_name -> pulumicost.v1.DiscoverySource
-	14, // 12: pulumicost.v1.GetPluginManifestResponse.manifest:type_name -> pulumicost.v1.PluginManifest
-	15, // 13: pulumicost.v1.PluginManifest.metadata:type_name -> pulumicost.v1.PluginMetadata
-	16, // 14: pulumicost.v1.PluginManifest.specification:type_name -> pulumicost.v1.PluginSpecification
-	20, // 15: pulumicost.v1.PluginManifest.security:type_name -> pulumicost.v1.PluginSecurity
-	21, // 16: pulumicost.v1.PluginManifest.installation:type_name -> pulumicost.v1.InstallationSpec
-	22, // 17: pulumicost.v1.PluginManifest.configuration:type_name -> pulumicost.v1.ConfigurationSpec
-	42, // 18: pulumicost.v1.PluginMetadata.created_at:type_name -> google.protobuf.Timestamp
-	42, // 19: pulumicost.v1.PluginMetadata.updated_at:type_name -> google.protobuf.Timestamp
-	41, // 20: pulumicost.v1.PluginSpecification.supported_resources:type_name -> pulumicost.v1.PluginSpecification.SupportedResourcesEntry
-	18, // 21: pulumicost.v1.PluginSpecification.service_definition:type_name -> pulumicost.v1.ServiceDefinition
-	19, // 22: pulumicost.v1.PluginSpecification.observability_support:type_name -> pulumicost.v1.ObservabilitySupport
-	2,  // 23: pulumicost.v1.PluginSecurity.security_level:type_name -> pulumicost.v1.SecurityLevel
-	3,  // 24: pulumicost.v1.InstallationSpec.installation_method:type_name -> pulumicost.v1.InstallationMethod
-	23, // 25: pulumicost.v1.ConfigurationSpec.examples:type_name -> pulumicost.v1.ConfigurationExample
-	14, // 26: pulumicost.v1.ValidatePluginRequest.manifest:type_name -> pulumicost.v1.PluginManifest
-	26, // 27: pulumicost.v1.ValidatePluginResponse.validation_errors:type_name -> pulumicost.v1.ValidationError
-	27, // 28: pulumicost.v1.ValidatePluginResponse.warnings:type_name -> pulumicost.v1.ValidationWarning
-	4,  // 29: pulumicost.v1.ValidationError.severity:type_name -> pulumicost.v1.ErrorSeverity
-	0,  // 30: pulumicost.v1.InstallPluginRequest.source:type_name -> pulumicost.v1.DiscoverySource
-	30, // 31: pulumicost.v1.InstallPluginResponse.installation_errors:type_name -> pulumicost.v1.InstallationError
-	30, // 32: pulumicost.v1.UpdatePluginResponse.update_errors:type_name -> pulumicost.v1.InstallationError
-	30, // 33: pulumicost.v1.RemovePluginResponse.removal_errors:type_name -> pulumicost.v1.InstallationError
-	7,  // 34: pulumicost.v1.ListInstalledPluginsResponse.plugins:type_name -> pulumicost.v1.PluginInfo
-	42, // 35: pulumicost.v1.CheckPluginHealthResponse.last_check_time:type_name -> google.protobuf.Timestamp
-	39, // 36: pulumicost.v1.CheckPluginHealthResponse.health_errors:type_name -> pulumicost.v1.HealthCheckError
-	4,  // 37: pulumicost.v1.HealthCheckError.severity:type_name -> pulumicost.v1.ErrorSeverity
-	0,  // 38: pulumicost.v1.DiscoveryError.source:type_name -> pulumicost.v1.DiscoverySource
-	17, // 39: pulumicost.v1.PluginSpecification.SupportedResourcesEntry.value:type_name -> pulumicost.v1.ProviderResources
-	5,  // 40: pulumicost.v1.PluginRegistryService.DiscoverPlugins:input_type -> pulumicost.v1.DiscoverPluginsRequest
-	12, // 41: pulumicost.v1.PluginRegistryService.GetPluginManifest:input_type -> pulumicost.v1.GetPluginManifestRequest
-	24, // 42: pulumicost.v1.PluginRegistryService.ValidatePlugin:input_type -> pulumicost.v1.ValidatePluginRequest
-	28, // 43: pulumicost.v1.PluginRegistryService.InstallPlugin:input_type -> pulumicost.v1.InstallPluginRequest
-	31, // 44: pulumicost.v1.PluginRegistryService.UpdatePlugin:input_type -> pulumicost.v1.UpdatePluginRequest
-	33, // 45: pulumicost.v1.PluginRegistryService.RemovePlugin:input_type -> pulumicost.v1.RemovePluginRequest
-	35, // 46: pulumicost.v1.PluginRegistryService.ListInstalledPlugins:input_type -> pulumicost.v1.ListInstalledPluginsRequest
-	37, // 47: pulumicost.v1.PluginRegistryService.CheckPluginHealth:input_type -> pulumicost.v1.CheckPluginHealthRequest
-	6,  // 48: pulumicost.v1.PluginRegistryService.DiscoverPlugins:output_type -> pulumicost.v1.DiscoverPluginsResponse
-	13, // 49: pulumicost.v1.PluginRegistryService.GetPluginManifest:output_type -> pulumicost.v1.GetPluginManifestResponse
-	25, // 50: pulumicost.v1.PluginRegistryService.ValidatePlugin:output_type -> pulumicost.v1.ValidatePluginResponse
-	29, // 51: pulumicost.v1.PluginRegistryService.InstallPlugin:output_type -> pulumicost.v1.InstallPluginResponse
-	32, // 52: pulumicost.v1.PluginRegistryService.UpdatePlugin:output_type -> pulumicost.v1.UpdatePluginResponse
-	34, // 53: pulumicost.v1.PluginRegistryService.RemovePlugin:output_type -> pulumicost.v1.RemovePluginResponse
-	36, // 54: pulumicost.v1.PluginRegistryService.ListInstalledPlugins:output_type -> pulumicost.v1.ListInstalledPluginsResponse
-	38, // 55: pulumicost.v1.PluginRegistryService.CheckPluginHealth:output_type -> pulumicost.v1.CheckPluginHealthResponse
+var file_finfocus_v1_registry_proto_depIdxs = []int32{
+	0,  // 0: finfocus.v1.DiscoverPluginsRequest.sources:type_name -> finfocus.v1.DiscoverySource
+	7,  // 1: finfocus.v1.DiscoverPluginsResponse.plugins:type_name -> finfocus.v1.PluginInfo
+	40, // 2: finfocus.v1.DiscoverPluginsResponse.discovery_errors:type_name -> finfocus.v1.DiscoveryError
+	0,  // 3: finfocus.v1.PluginInfo.source:type_name -> finfocus.v1.DiscoverySource
+	1,  // 4: finfocus.v1.PluginInfo.status:type_name -> finfocus.v1.PluginStatus
+	2,  // 5: finfocus.v1.PluginInfo.security_level:type_name -> finfocus.v1.SecurityLevel
+	8,  // 6: finfocus.v1.PluginInfo.requirements:type_name -> finfocus.v1.PluginRequirements
+	42, // 7: finfocus.v1.PluginInfo.last_updated:type_name -> google.protobuf.Timestamp
+	9,  // 8: finfocus.v1.PluginRequirements.dependencies:type_name -> finfocus.v1.PluginDependency
+	10, // 9: finfocus.v1.PluginRequirements.system_requirements:type_name -> finfocus.v1.SystemRequirements
+	11, // 10: finfocus.v1.PluginRequirements.runtime_requirements:type_name -> finfocus.v1.RuntimeRequirements
+	0,  // 11: finfocus.v1.GetPluginManifestRequest.source:type_name -> finfocus.v1.DiscoverySource
+	14, // 12: finfocus.v1.GetPluginManifestResponse.manifest:type_name -> finfocus.v1.PluginManifest
+	15, // 13: finfocus.v1.PluginManifest.metadata:type_name -> finfocus.v1.PluginMetadata
+	16, // 14: finfocus.v1.PluginManifest.specification:type_name -> finfocus.v1.PluginSpecification
+	20, // 15: finfocus.v1.PluginManifest.security:type_name -> finfocus.v1.PluginSecurity
+	21, // 16: finfocus.v1.PluginManifest.installation:type_name -> finfocus.v1.InstallationSpec
+	22, // 17: finfocus.v1.PluginManifest.configuration:type_name -> finfocus.v1.ConfigurationSpec
+	42, // 18: finfocus.v1.PluginMetadata.created_at:type_name -> google.protobuf.Timestamp
+	42, // 19: finfocus.v1.PluginMetadata.updated_at:type_name -> google.protobuf.Timestamp
+	41, // 20: finfocus.v1.PluginSpecification.supported_resources:type_name -> finfocus.v1.PluginSpecification.SupportedResourcesEntry
+	18, // 21: finfocus.v1.PluginSpecification.service_definition:type_name -> finfocus.v1.ServiceDefinition
+	19, // 22: finfocus.v1.PluginSpecification.observability_support:type_name -> finfocus.v1.ObservabilitySupport
+	2,  // 23: finfocus.v1.PluginSecurity.security_level:type_name -> finfocus.v1.SecurityLevel
+	3,  // 24: finfocus.v1.InstallationSpec.installation_method:type_name -> finfocus.v1.InstallationMethod
+	23, // 25: finfocus.v1.ConfigurationSpec.examples:type_name -> finfocus.v1.ConfigurationExample
+	14, // 26: finfocus.v1.ValidatePluginRequest.manifest:type_name -> finfocus.v1.PluginManifest
+	26, // 27: finfocus.v1.ValidatePluginResponse.validation_errors:type_name -> finfocus.v1.ValidationError
+	27, // 28: finfocus.v1.ValidatePluginResponse.warnings:type_name -> finfocus.v1.ValidationWarning
+	4,  // 29: finfocus.v1.ValidationError.severity:type_name -> finfocus.v1.ErrorSeverity
+	0,  // 30: finfocus.v1.InstallPluginRequest.source:type_name -> finfocus.v1.DiscoverySource
+	30, // 31: finfocus.v1.InstallPluginResponse.installation_errors:type_name -> finfocus.v1.InstallationError
+	30, // 32: finfocus.v1.UpdatePluginResponse.update_errors:type_name -> finfocus.v1.InstallationError
+	30, // 33: finfocus.v1.RemovePluginResponse.removal_errors:type_name -> finfocus.v1.InstallationError
+	7,  // 34: finfocus.v1.ListInstalledPluginsResponse.plugins:type_name -> finfocus.v1.PluginInfo
+	42, // 35: finfocus.v1.CheckPluginHealthResponse.last_check_time:type_name -> google.protobuf.Timestamp
+	39, // 36: finfocus.v1.CheckPluginHealthResponse.health_errors:type_name -> finfocus.v1.HealthCheckError
+	4,  // 37: finfocus.v1.HealthCheckError.severity:type_name -> finfocus.v1.ErrorSeverity
+	0,  // 38: finfocus.v1.DiscoveryError.source:type_name -> finfocus.v1.DiscoverySource
+	17, // 39: finfocus.v1.PluginSpecification.SupportedResourcesEntry.value:type_name -> finfocus.v1.ProviderResources
+	5,  // 40: finfocus.v1.PluginRegistryService.DiscoverPlugins:input_type -> finfocus.v1.DiscoverPluginsRequest
+	12, // 41: finfocus.v1.PluginRegistryService.GetPluginManifest:input_type -> finfocus.v1.GetPluginManifestRequest
+	24, // 42: finfocus.v1.PluginRegistryService.ValidatePlugin:input_type -> finfocus.v1.ValidatePluginRequest
+	28, // 43: finfocus.v1.PluginRegistryService.InstallPlugin:input_type -> finfocus.v1.InstallPluginRequest
+	31, // 44: finfocus.v1.PluginRegistryService.UpdatePlugin:input_type -> finfocus.v1.UpdatePluginRequest
+	33, // 45: finfocus.v1.PluginRegistryService.RemovePlugin:input_type -> finfocus.v1.RemovePluginRequest
+	35, // 46: finfocus.v1.PluginRegistryService.ListInstalledPlugins:input_type -> finfocus.v1.ListInstalledPluginsRequest
+	37, // 47: finfocus.v1.PluginRegistryService.CheckPluginHealth:input_type -> finfocus.v1.CheckPluginHealthRequest
+	6,  // 48: finfocus.v1.PluginRegistryService.DiscoverPlugins:output_type -> finfocus.v1.DiscoverPluginsResponse
+	13, // 49: finfocus.v1.PluginRegistryService.GetPluginManifest:output_type -> finfocus.v1.GetPluginManifestResponse
+	25, // 50: finfocus.v1.PluginRegistryService.ValidatePlugin:output_type -> finfocus.v1.ValidatePluginResponse
+	29, // 51: finfocus.v1.PluginRegistryService.InstallPlugin:output_type -> finfocus.v1.InstallPluginResponse
+	32, // 52: finfocus.v1.PluginRegistryService.UpdatePlugin:output_type -> finfocus.v1.UpdatePluginResponse
+	34, // 53: finfocus.v1.PluginRegistryService.RemovePlugin:output_type -> finfocus.v1.RemovePluginResponse
+	36, // 54: finfocus.v1.PluginRegistryService.ListInstalledPlugins:output_type -> finfocus.v1.ListInstalledPluginsResponse
+	38, // 55: finfocus.v1.PluginRegistryService.CheckPluginHealth:output_type -> finfocus.v1.CheckPluginHealthResponse
 	48, // [48:56] is the sub-list for method output_type
 	40, // [40:48] is the sub-list for method input_type
 	40, // [40:40] is the sub-list for extension type_name
@@ -3390,27 +3390,27 @@ var file_pulumicost_v1_registry_proto_depIdxs = []int32{
 	0,  // [0:40] is the sub-list for field type_name
 }
 
-func init() { file_pulumicost_v1_registry_proto_init() }
-func file_pulumicost_v1_registry_proto_init() {
-	if File_pulumicost_v1_registry_proto != nil {
+func init() { file_finfocus_v1_registry_proto_init() }
+func file_finfocus_v1_registry_proto_init() {
+	if File_finfocus_v1_registry_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_registry_proto_rawDesc), len(file_pulumicost_v1_registry_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_finfocus_v1_registry_proto_rawDesc), len(file_finfocus_v1_registry_proto_rawDesc)),
 			NumEnums:      5,
 			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_pulumicost_v1_registry_proto_goTypes,
-		DependencyIndexes: file_pulumicost_v1_registry_proto_depIdxs,
-		EnumInfos:         file_pulumicost_v1_registry_proto_enumTypes,
-		MessageInfos:      file_pulumicost_v1_registry_proto_msgTypes,
+		GoTypes:           file_finfocus_v1_registry_proto_goTypes,
+		DependencyIndexes: file_finfocus_v1_registry_proto_depIdxs,
+		EnumInfos:         file_finfocus_v1_registry_proto_enumTypes,
+		MessageInfos:      file_finfocus_v1_registry_proto_msgTypes,
 	}.Build()
-	File_pulumicost_v1_registry_proto = out.File
-	file_pulumicost_v1_registry_proto_goTypes = nil
-	file_pulumicost_v1_registry_proto_depIdxs = nil
+	File_finfocus_v1_registry_proto = out.File
+	file_finfocus_v1_registry_proto_goTypes = nil
+	file_finfocus_v1_registry_proto_depIdxs = nil
 }

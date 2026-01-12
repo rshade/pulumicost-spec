@@ -8,7 +8,7 @@ import (
 	"io"
 	"testing"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // Type aliases for convenient access to testing package types.

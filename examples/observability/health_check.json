@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Health Check Response Example",
-  "description": "Example health check responses for PulumiCost plugins",
+  "description": "Example health check responses for FinFocus plugins",
   "type": "object",
   "properties": {
     "status": {

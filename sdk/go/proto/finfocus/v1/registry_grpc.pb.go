@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             (unknown)
-// source: pulumicost/v1/registry.proto
+// source: finfocus/v1/registry.proto
 
 package pbc
 
@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PluginRegistryService_DiscoverPlugins_FullMethodName      = "/pulumicost.v1.PluginRegistryService/DiscoverPlugins"
-	PluginRegistryService_GetPluginManifest_FullMethodName    = "/pulumicost.v1.PluginRegistryService/GetPluginManifest"
-	PluginRegistryService_ValidatePlugin_FullMethodName       = "/pulumicost.v1.PluginRegistryService/ValidatePlugin"
-	PluginRegistryService_InstallPlugin_FullMethodName        = "/pulumicost.v1.PluginRegistryService/InstallPlugin"
-	PluginRegistryService_UpdatePlugin_FullMethodName         = "/pulumicost.v1.PluginRegistryService/UpdatePlugin"
-	PluginRegistryService_RemovePlugin_FullMethodName         = "/pulumicost.v1.PluginRegistryService/RemovePlugin"
-	PluginRegistryService_ListInstalledPlugins_FullMethodName = "/pulumicost.v1.PluginRegistryService/ListInstalledPlugins"
-	PluginRegistryService_CheckPluginHealth_FullMethodName    = "/pulumicost.v1.PluginRegistryService/CheckPluginHealth"
+	PluginRegistryService_DiscoverPlugins_FullMethodName      = "/finfocus.v1.PluginRegistryService/DiscoverPlugins"
+	PluginRegistryService_GetPluginManifest_FullMethodName    = "/finfocus.v1.PluginRegistryService/GetPluginManifest"
+	PluginRegistryService_ValidatePlugin_FullMethodName       = "/finfocus.v1.PluginRegistryService/ValidatePlugin"
+	PluginRegistryService_InstallPlugin_FullMethodName        = "/finfocus.v1.PluginRegistryService/InstallPlugin"
+	PluginRegistryService_UpdatePlugin_FullMethodName         = "/finfocus.v1.PluginRegistryService/UpdatePlugin"
+	PluginRegistryService_RemovePlugin_FullMethodName         = "/finfocus.v1.PluginRegistryService/RemovePlugin"
+	PluginRegistryService_ListInstalledPlugins_FullMethodName = "/finfocus.v1.PluginRegistryService/ListInstalledPlugins"
+	PluginRegistryService_CheckPluginHealth_FullMethodName    = "/finfocus.v1.PluginRegistryService/CheckPluginHealth"
 )
 
 // PluginRegistryServiceClient is the client API for PluginRegistryService service.
@@ -34,7 +34,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // PluginRegistryService provides gRPC interface for plugin discovery,
-// registration, and lifecycle management within the PulumiCost ecosystem.
+// registration, and lifecycle management within the FinFocus ecosystem.
 type PluginRegistryServiceClient interface {
 	// DiscoverPlugins discovers available plugins from configured sources.
 	DiscoverPlugins(ctx context.Context, in *DiscoverPluginsRequest, opts ...grpc.CallOption) (*DiscoverPluginsResponse, error)
@@ -147,7 +147,7 @@ func (c *pluginRegistryServiceClient) CheckPluginHealth(ctx context.Context, in 
 // for forward compatibility.
 //
 // PluginRegistryService provides gRPC interface for plugin discovery,
-// registration, and lifecycle management within the PulumiCost ecosystem.
+// registration, and lifecycle management within the FinFocus ecosystem.
 type PluginRegistryServiceServer interface {
 	// DiscoverPlugins discovers available plugins from configured sources.
 	DiscoverPlugins(context.Context, *DiscoverPluginsRequest) (*DiscoverPluginsResponse, error)
@@ -368,7 +368,7 @@ func _PluginRegistryService_CheckPluginHealth_Handler(srv interface{}, ctx conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var PluginRegistryService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pulumicost.v1.PluginRegistryService",
+	ServiceName: "finfocus.v1.PluginRegistryService",
 	HandlerType: (*PluginRegistryServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -405,5 +405,5 @@ var PluginRegistryService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pulumicost/v1/registry.proto",
+	Metadata: "finfocus/v1/registry.proto",
 }

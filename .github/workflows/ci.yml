@@ -126,7 +126,7 @@ jobs:
       - name: Buf breaking change detection
         run: |
           buf breaking --against \
-            'https://github.com/rshade/pulumicost-spec.git#branch=main'
+            'https://github.com/rshade/finfocus-spec.git#branch=main'
         if: github.event_name == 'pull_request'
 
   validate-schema:

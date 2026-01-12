@@ -3,7 +3,7 @@ package currency_test
 import (
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/currency"
+	"github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 // T014: Benchmark for currency.IsValid() targeting <15 ns/op.

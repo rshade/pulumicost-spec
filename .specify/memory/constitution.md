@@ -1,223 +1,146 @@
 <!--
-Sync Impact Report - Constitution v1.2.0
-========================================
-Version Change: 1.1.0 → 1.2.0
+Sync Impact Report - Constitution v1.3.2
+=======================================
+Version Change: 1.3.1 → 1.3.2
 Modified Principles:
-  - Section V (Comprehensive Documentation): Explicitly mandated updates to root README.md and docs/ directory to prevent
-    documentation drift.
-Added Sections: None
+  - Section XI (Mandatory Copyright Headers): Removed specific attribution text
+    requirement ("Copyright 2026 PulumiCost/FinFocus Authors").
 Removed Sections: None
-Templates Requiring Updates:
-  ✅ .specify/templates/plan-template.md - Constitution Check aligns.
-  ✅ .specify/templates/spec-template.md - Requirements align.
-  ✅ .specify/templates/tasks-template.md - Includes documentation tasks.
+Added Sections: None
+Templates Requiring Updates: None
 Follow-up TODOs: None
 -->
 
-# PulumiCost Specification Constitution
+# PulumiCost Specification Constitution (Transitioning to FinFocus)
 
 ## Core Principles
 
-### I. gRPC Proto Specification-First Development
+### I. gRPC Proto Specification-First Development (Contracts are Sacred)
 
 Every change to the protocol MUST begin with protobuf specification updates before implementation:
 
 - **Proto definitions are the source of truth**: All gRPC service definitions in
-  `proto/pulumicost/v1/costsource.proto` define the contract
-- Proto changes require corresponding JSON schema updates for PricingSpec messages
-- All protobuf message types MUST have comprehensive validation
-- Breaking changes MUST be detected via buf and documented
-- SDK code is generated from proto definitions, never hand-written
-- gRPC service methods MUST use proper status codes and error handling
+  `proto/pulumicost/v1/` define the canonical contract.
+- SDK code is generated from proto definitions; manual edits to generated code are FORBIDDEN.
+- Proto changes require corresponding JSON schema updates for PricingSpec messages.
+- All protobuf message types MUST have comprehensive validation.
 
 **Rationale**: As a gRPC protobuf specification repository, the proto files define the wire protocol and
-service contract. All implementation (Go SDK, other language bindings) is generated from these canonical proto
-definitions.
+service contract. Stable, well-documented contracts are the foundation of the ecosystem.
 
 ### II. Multi-Provider gRPC Consistency
 
 The gRPC service specification MUST maintain feature parity across all major cloud providers:
 
-- New billing modes in PricingSpec messages MUST include cross-provider examples (AWS, Azure, GCP, Kubernetes)
-- Proto message field additions MUST support existing provider patterns
-- Examples MUST demonstrate real-world provider use cases as gRPC request/response payloads
-- Provider-specific extensions allowed only via protobuf map fields and documented as such
-- ResourceDescriptor message fields MUST be provider-agnostic
+- New billing modes in PricingSpec messages MUST include cross-provider examples (AWS, Azure, GCP, Kubernetes).
+- Examples MUST demonstrate real-world provider use cases as gRPC request/payloads.
+- ResourceDescriptor message fields MUST be provider-agnostic.
 
-**Rationale**: Plugin developers implement the gRPC CostSourceService interface. Provider-specific proto fields
-fragment the ecosystem and break interoperability.
+**Rationale**: Plugin developers implement a universal interface. Provider-specific leakage fragments the
+ecosystem and breaks interoperability.
 
-### III. Test-First Protocol (NON-NEGOTIABLE)
+### III. The Spec Consumes, It Does Not Calculate
+
+The specification and its implementing plugins are NOT responsible for complex pricing logic (e.g., tiered
+pricing, committed-use discounts):
+
+- **Data is Pre-Calculated**: The spec's role is to consume final, _adjusted_ costs from upstream providers.
+- **No Complex Math**: Avoid embedding discount calculators or tiered-pricing engines in the SDK or plugins.
+- **Standardized Model**: Focus on providing a standardized model for the final cost data.
+
+**Rationale**: Complex pricing logic belongs to specialized data providers (e.g., Kubecost, Vantage). The
+spec's role is standardized observability, not financial calculation.
+
+### IV. Strict Separation of Concerns
+
+This repository defines the _specification_ and foundational tooling, not the end-user application:
+
+- **Spec vs. Core**: `pulumicost-spec` defines interfaces; `pulumicost-core` contains application logic.
+- **Plugin SDK focus**: The SDK is for plugin creators, not end-users.
+- **Minimal Dependencies**: Core spec files MUST NOT depend on higher-level application components.
+
+**Rationale**: Maintaining a clean separation ensures the specification remains a portable foundation for
+diverse implementations.
+
+### V. Test-First Protocol (NON-NEGOTIABLE)
 
 TDD is mandatory for all gRPC specification changes:
 
-1. Write conformance tests defining expected gRPC behavior (request → response)
-2. Tests MUST fail against current proto/implementation
-3. Update proto definitions to make tests pass
-4. Regenerate SDK via buf and validate examples
-5. Test gRPC error conditions and status codes
-6. Red-Green-Refactor cycle strictly enforced
+1. Write conformance tests defining expected gRPC behavior (request → response).
+2. Tests MUST fail against current proto/implementation.
+3. Update proto definitions to make tests pass.
+4. Regenerate SDK and validate all examples.
 
-**Rationale**: gRPC protocol specifications have high downstream impact on plugin implementations. Tests define
-the RPC contract before proto changes prevent breaking existing clients and servers.
+**Rationale**: gRPC protocol changes have high downstream impact. Tests define the RPC contract before
+implementation to prevent breaking existing clients.
 
-### IV. Protobuf Backward Compatibility
+### VI. Protobuf Backward Compatibility
 
 Breaking changes to protobuf definitions are strictly controlled:
 
-- MAJOR version bump required for breaking proto changes (field removals, type changes, renaming)
-- buf breaking change detection MUST pass in CI
-- Deprecated protobuf fields MUST remain for one MAJOR version
-- Use `reserved` keyword for removed fields to prevent field number reuse
-- Migration guides required for all breaking proto changes
-- `UnimplementedCostSourceServiceServer` embedding required for forward compatibility
-- Follow protobuf field numbering best practices (reserve 1-15 for frequent fields)
+- MAJOR version bump required for breaking proto changes (field removals, type changes, renaming).
+- buf breaking change detection MUST pass in CI.
+- Deprecated protobuf fields MUST remain for one MAJOR version.
+- Use `reserved` keyword for removed fields to prevent field number reuse.
 
 **Rationale**: Protobuf wire format compatibility is critical. Breaking changes cascade through all plugin
 implementations and client applications.
 
-### V. Comprehensive Documentation
+### VII. Comprehensive Documentation & Identity Transition
 
-Every gRPC specification element MUST be documented:
+Every gRPC specification element MUST be documented, and the project's identity must be preserved:
 
-- Proto messages and fields require inline comments (used for generated docs)
-- RPC methods require description of request/response contract
-- JSON schema fields require descriptions matching proto comments
-- Examples require README explanations with sample gRPC request/response payloads
-- Billing modes require cross-provider coverage matrix
-- API reference auto-generated from proto comments via protoc-gen-doc or buf
+- **FinFocus Rename (v0.2.0)**: As per `RENAME-PLAN.md`, the project is transitioning to the **FinFocus**
+  identity. All new documentation SHOULD acknowledge this transition.
+- Proto messages and fields require inline comments for documentation generation.
+- **Documentation Currency**: Documentation MUST be updated in the same PR as feature implementation. Stale
+  docs are blocking for PR approval.
+- Root `README.md`, `docs/`, and SDK `README.md` MUST stay in sync.
 
-**Documentation Currency (NON-NEGOTIABLE)**:
+**Rationale**: gRPC specifications are only useful if understood. The rename ensures alignment with the
+industry-standard FinOps FOCUS specification.
 
-- Documentation MUST be updated in the same PR as feature implementation
-- **Root `README.md`, `docs/` directory, and SDK `README.md` files MUST be updated to reflect specification changes**
-- Example files MUST be added for new RPC methods before merge
-- Stale or outdated documentation (including `docs/` drift) is a blocking issue for PR approval
-- CLAUDE.md files MUST be updated when new patterns are established
+### VIII. Performance as a gRPC Requirement (Performance is Paramount)
 
-**Rationale**: gRPC specifications are only useful if understood. Plugin developers need clear proto field
-semantics and RPC method contracts. Outdated documentation leads to implementation errors and ecosystem fragmentation.
+Code, especially within the Go SDK, must be highly performant and memory-efficient:
 
-### VI. Performance as a gRPC Requirement
+- **Zero-Allocation Goal**: Common operations (validation, enum lookups) should aim for zero-allocation.
+- Conformance tests include RPC response time requirements.
+- Benchmarks are required for all new core SDK logic.
 
-gRPC protocol design MUST consider performance implications:
+**Rationale**: Cloud cost data queries can involve large datasets. Inefficient designs degrade the entire
+observability pipeline.
 
-- Conformance tests include RPC response time requirements
-- Benchmarks track SDK generation, serialization, and gRPC call performance
-- Large dataset handling (30+ days) tested at Advanced conformance level
-- Concurrent RPC request requirements specified (10+ for Standard, 50+ for Advanced)
-- Consider streaming RPCs for large dataset queries in future versions
-- Protobuf message size considerations for network efficiency
+### IX. Observability & Validation (Maintainer Focused)
 
-**Rationale**: gRPC cost data queries can involve large datasets and high request volumes. Performance
-requirements prevent inefficient proto message designs and RPC patterns.
+Observability features are for plugin maintainers, not necessarily end-users:
 
-### VII. Validation at Multiple Levels
+- **Logging and Metrics are Separate**: `zerolog` for structured events, Prometheus for time-series metrics.
+- Metrics should be implemented as optional, distinct components (e.g., gRPC interceptors).
+- **Validation Layers**: Multi-layer validation (Proto, Schema, Service, SDK, CI) ensures quality.
 
-Multi-layer validation ensures gRPC specification quality:
+**Rationale**: Separating concerns allows maintainers to diagnose performance without cluttering core
+business logic or over-complicating the end-user data model.
 
-- **Protobuf layer**: Buf validates proto syntax, style, and breaking changes
-- **Data layer**: JSON Schema validates PricingSpec message JSON representation
-- **Service layer**: Conformance tests validate gRPC service behavior (Basic/Standard/Advanced)
-- **SDK layer**: Integration tests validate generated gRPC client/server code
-- **CI layer**: All validation layers run together in GitHub Actions
+### X. Follow Established Patterns
 
-**Rationale**: gRPC specifications require validation at protocol definition, data serialization, service
-behavior, and code generation levels. Each layer catches different proto error classes.
+New contributions MUST adhere to existing, documented patterns:
 
-## Quality Standards
+- **Standard Domain Enum Pattern**: Use the established pattern for high-performance validation.
+- **Design Docs Required**: Significant changes MUST be proposed via a design spec in `specs/`.
 
-### gRPC Code Generation
+**Rationale**: Consistency reduces cognitive load for maintainers and ensures the "zero-allocation" goals
+are met across the codebase.
 
-- Generated code (sdk/go/proto/) MUST NOT be manually edited
-- Generated gRPC service stubs and message types MUST be up-to-date in CI (verified via buf generate check)
-- buf CLI version pinned locally (bin/buf v1.32.1) to ensure consistent proto compilation
-- Proto changes automatically trigger gRPC SDK regeneration via `make generate`
-- Generated code includes both protobuf message types and gRPC service interfaces
+### XI. Mandatory Copyright Headers
 
-### Testing Requirements
+Every source file (Go, Proto, Script, Schema) MUST include the standard Apache 2.0 copyright header:
 
-- **Unit tests**: SDK helper code (types, validation, billing mode enums)
-- **Integration tests**: In-memory gRPC server/client via bufconn harness
-- **Conformance tests**: gRPC service behavior at three levels (Basic/Standard/Advanced)
-- **Performance benchmarks**: gRPC call latency and message serialization with memory profiling
-- **RPC error testing**: Proper gRPC status code handling for all error conditions
-- All tests MUST pass before merge
+- **License**: Explicitly state "Licensed under the Apache License, Version 2.0".
+- **Persistence**: Headers must be maintained during the transition to FinFocus.
 
-### Schema Validation
-
-- All JSON PricingSpec examples MUST validate against JSON schema
-- JSON schema MUST match protobuf PricingSpec message definition
-- Schema changes MUST maintain backward compatibility with existing proto messages
-- AJV validation in CI with strict mode disabled for protobuf compatibility
-- Cross-vendor example coverage required for all billing modes
-
-## Development Workflow
-
-### gRPC Specification Change Process
-
-1. **Identify Need**: Issue describes required RPC capability or protobuf message change
-2. **Research**: Analyze provider APIs and existing proto patterns
-3. **Propose**: Draft proto service/message changes with example payloads
-4. **Test**: Write conformance tests defining expected gRPC RPC behavior
-5. **Implement**: Update proto, regenerate gRPC SDK via buf, validate examples
-6. **Review**: PR includes proto changes, generated code diff, tests, examples, and documentation
-7. **Validate**: CI runs all validation layers (buf lint/breaking, schema, conformance, benchmarks)
-
-### Breaking Change Protocol (gRPC-specific)
-
-1. Buf detects breaking protobuf change in CI (field removal, type change, etc.)
-2. PR description documents proto breakage and migration path for plugin implementations
-3. CHANGELOG.md updated with MAJOR version entry
-4. Migration guide created in docs/ with before/after proto examples
-5. Deprecation notices added to proto comments with protobuf `deprecated` option
-6. Deprecated protobuf fields retained for one MAJOR version
-7. Use `reserved` keyword for permanently removed field numbers
-
-### Example Contribution Requirements
-
-- JSON files in examples/specs/ representing protobuf PricingSpec messages
-- Sample gRPC request payloads in examples/requests/
-- README.md entry documenting billing model and RPC usage
-- Proto validation passing (buf lint)
-- JSON schema validation passing for all examples
-- Cross-reference to related billing modes and RPC methods
-
-### Example Quality Standards (NON-NEGOTIABLE)
-
-Examples MUST be thorough, realistic, and production-quality:
-
-**Realism Requirements**:
-
-- Use actual cloud provider pricing data (within reasonable staleness)
-- Include realistic resource identifiers and metadata patterns
-- Demonstrate provider-specific nuances (AWS vs Azure vs GCP patterns)
-- Cover edge cases and complex scenarios, not just happy paths
-
-**Completeness Requirements**:
-
-- Multi-provider examples for each RPC method (AWS, Azure, GCP, Kubernetes minimum)
-- Mixed action type examples showing realistic portfolio analysis
-- Summary calculations MUST be mathematically correct and verifiable
-- All optional fields demonstrated in at least one example
-
-**Anti-Slop Standards**:
-
-- No placeholder or template-like values ("TODO", "example-value", "xxx")
-- No unrealistic pricing (e.g., $0.0001 or $999999.99)
-- No copy-paste duplicated content between examples
-- Each example MUST have distinct, meaningful data demonstrating specific use cases
-- Provider-specific metadata MUST reflect actual provider patterns (account IDs, regions, SKUs)
-
-**Verification Requirements**:
-
-- Numerical values MUST be mathematically consistent (totals = sum of components)
-- Date/time values MUST be logically valid (end > start, reasonable ranges)
-- Enum values MUST match proto definitions exactly
-- All JSON examples MUST pass schema validation
-
-**Rationale**: Low-quality or AI-generated "slop" examples mislead plugin developers and degrade
-ecosystem quality. Examples are documentation - they must be as rigorous as code.
+**Rationale**: Ensures license clarity even if files are separated from the repository and maintains a
+professional enterprise standard aligned with Apache 2.0 recommendations.
 
 ## Governance
 
@@ -225,42 +148,24 @@ ecosystem quality. Examples are documentation - they must be as rigorous as code
 
 Constitution changes require:
 
-1. Proposal documenting rationale and impact on gRPC development workflow
-2. Review of affected templates and proto practices
-3. Version bump per semantic versioning rules:
-   - MAJOR: Backward incompatible governance changes affecting proto development
-   - MINOR: New principles or sections added
-   - PATCH: Clarifications, wording, typo fixes
-4. Update to all dependent template files
-5. Sync Impact Report prepended to constitution
+1. Proposal documenting rationale and impact on gRPC development workflow.
+2. Version bump per semantic versioning (MAJOR/MINOR/PATCH).
+3. Update to all dependent template files.
+4. Sync Impact Report prepended to constitution.
 
 ### Compliance Review
 
-All PRs and reviews MUST verify:
+All PRs MUST verify:
 
-- **gRPC proto-first approach**: Proto definitions updated before SDK code
-- **Cross-provider consistency**: Protobuf messages support all major providers
-- **Test-first protocol**: gRPC conformance tests written and failed before proto changes
-- **Backward compatibility**: buf breaking check passes (or MAJOR version justified)
-- **Documentation complete**: Proto comments, examples, gRPC request/response docs, README
-- **Performance requirements**: Conformance level appropriate for RPC patterns
-- **Validation passing**: buf lint/breaking, JSON schema, conformance tests, benchmarks
-
-### Complexity Justification
-
-Any deviation from these principles MUST be justified:
-
-- Document in PR description why simpler proto approach insufficient
-- Review by maintainer required for principle violations
-- Consider if new RPC method needed vs extending existing messages
-- Complexity tracking in implementation plans when constitutional gates fail
-- Prefer simplicity: YAGNI principles apply to gRPC service design (avoid premature streaming, complex
-  message hierarchies)
+- **gRPC proto-first approach**: Proto updated before implementation.
+- **Spec Consumes**: No complex pricing logic added to the spec/SDK.
+- **Test-first protocol**: Conformance tests written and passed.
+- **Backward compatibility**: buf breaking check passes.
+- **Documentation complete**: Updated root docs and examples.
 
 ### Runtime Development Guidance
 
-For day-to-day gRPC development guidance not covered by this constitution, refer to `CLAUDE.md` in the repository
-root. The constitution defines non-negotiable protobuf and gRPC principles; CLAUDE.md provides practical buf
-commands, proto generation patterns, and workflow tips.
+For day-to-day development guidance, refer to `CLAUDE.md` or `GEMINI.md` in the repository root. The
+constitution defines non-negotiable principles; these files provide practical workflow tips.
 
-**Version**: 1.2.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-07
+**Version**: 1.3.2 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-11

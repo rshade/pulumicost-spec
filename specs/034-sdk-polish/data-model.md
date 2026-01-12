@@ -6,7 +6,8 @@
 
 ## Overview
 
-SDK Polish v0.4.15 is an enhancement feature that adds verification and testing for existing SDK functionality. No new data models or entities are introduced.
+SDK Polish v0.4.15 is an enhancement feature that adds verification and testing for existing SDK functionality.
+No new data models or entities are introduced.
 
 ## Entity Changes
 
@@ -109,7 +110,7 @@ SDK Polish v0.4.15 is an enhancement feature that adds verification and testing 
 
 **Transitions**:
 
-```
+```text
 Configured → Active (NewClient called)
 Active → Timed Out (timeout exceeded or context deadline)
 Active → Active (request completes within timeout)
@@ -136,7 +137,7 @@ Active → Active (request completes within timeout)
 
 **Transitions**:
 
-```
+```text
 Called → Plugin Info Provider Check
 Plugin Info Provider Check → [Branch]
   ├─ Implements → Delegate to plugin
@@ -168,7 +169,7 @@ Delegate to plugin → [Branch]
 
 **Transitions**:
 
-```
+```text
 Initialized → Measuring
 Measuring → Completed (all iterations done)
 Completed → Evaluated (compareToBaseline called)
@@ -194,7 +195,7 @@ Evaluated → [Branch]
 
 ### Timeout Configuration Flow
 
-```
+```text
 1. User creates ClientConfig
    ↓
 2. Calls WithTimeout(duration) [optional]
@@ -216,7 +217,7 @@ Evaluated → [Branch]
 
 ### GetPluginInfo Error Message Flow
 
-```
+```text
 1. Client calls GetPluginInfo
    ↓
 2. Server receives request
@@ -239,7 +240,7 @@ Evaluated → [Branch]
 
 ### Performance Test Execution Flow
 
-```
+```text
 1. Test harness creates client connection
    ↓
 2. Performance test starts

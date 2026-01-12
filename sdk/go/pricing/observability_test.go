@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
+	"github.com/rshade/finfocus-spec/sdk/go/pricing"
 )
 
 func TestValidateMetricName(t *testing.T) {
@@ -13,7 +13,7 @@ func TestValidateMetricName(t *testing.T) {
 		metricName  string
 		expectError bool
 	}{
-		{"valid metric name", "pulumicost_requests_total", false},
+		{"valid metric name", "finfocus_requests_total", false},
 		{"valid with underscore", "http_request_duration_seconds", false},
 		{"valid with colon", "http:request_duration_seconds", false},
 		{"empty name", "", true},
@@ -40,7 +40,7 @@ func TestValidateMetricNameStrict(t *testing.T) {
 		metricName  string
 		expectError bool
 	}{
-		{"valid metric name", "pulumicost_requests_total", false},
+		{"valid metric name", "finfocus_requests_total", false},
 		{"empty name", "", true},
 		{"reserved prefix __", "__internal_metric", true},
 		{"reserved prefix prometheus_", "prometheus_metric", true},

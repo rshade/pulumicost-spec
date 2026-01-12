@@ -3,7 +3,7 @@ package pricing_test
 import (
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pricing"
+	"github.com/rshade/finfocus-spec/sdk/go/pricing"
 )
 
 func TestValidBillingMode(t *testing.T) {

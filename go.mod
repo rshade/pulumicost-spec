@@ -1,4 +1,4 @@
-module github.com/rshade/pulumicost-spec
+module github.com/rshade/finfocus-spec
 
 go 1.25.5
 

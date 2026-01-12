@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -339,7 +339,7 @@ func TestFieldConstants_Values(t *testing.T) {
 
 // TestTraceIDMetadataKey_Value tests TraceIDMetadataKey constant value.
 func TestTraceIDMetadataKey_Value(t *testing.T) {
-	expected := "x-pulumicost-trace-id"
+	expected := "x-finfocus-trace-id"
 	if pluginsdk.TraceIDMetadataKey != expected {
 		t.Errorf(
 			"TraceIDMetadataKey mismatch: expected %q, got %q",

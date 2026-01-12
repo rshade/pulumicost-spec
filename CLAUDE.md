@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is **pulumicost-spec**, a repository that provides the canonical protocol and schemas for PulumiCost plugins. It defines:
+This is **finfocus-spec**, a repository that provides the canonical protocol and schemas for FinFocus plugins. It defines:
 
 - gRPC service definitions for cost source plugins
 - JSON schemas for pricing specifications
@@ -44,7 +44,7 @@ This is **pulumicost-spec**, a repository that provides the canonical protocol a
 
 ### Core Components
 
-**Proto Definition (`proto/pulumicost/v1/costsource.proto`)**
+**Proto Definition (`proto/finfocus/v1/costsource.proto`)**
 
 - Defines `CostSource` gRPC service with RPCs for: Name, Supports, GetActualCost, GetProjectedCost, GetPricingSpec
 - Contains message definitions for requests/responses
@@ -267,7 +267,7 @@ The project uses local tool installation to avoid version conflicts:
 ## Development Workflow
 
 1. **Setup**: Ensure Node.js >=22 and npm >=10 are installed, then run `npm install`
-2. **Modify Proto**: Edit `proto/pulumicost/costsource.proto`
+2. **Modify Proto**: Edit `proto/finfocus/costsource.proto`
 3. **Update Schema**: Edit `schemas/pricing_spec.schema.json` if PricingSpec message changes
 4. **Regenerate**: Run `make generate` to update Go bindings
 5. **Update Types**: Modify helper code in `sdk/go/pricing/` as needed
@@ -314,9 +314,9 @@ if result.FailedTests > 0 {
 ## Package Structure
 
 ```text
-github.com/rshade/pulumicost-spec/sdk/go/proto   # Generated protobuf code
-github.com/rshade/pulumicost-spec/sdk/go/pricing # Domain types and validation (formerly 'types')
-github.com/rshade/pulumicost-spec/sdk/go/testing # Plugin testing framework
+github.com/rshade/finfocus-spec/sdk/go/proto   # Generated protobuf code
+github.com/rshade/finfocus-spec/sdk/go/pricing # Domain types and validation (formerly 'types')
+github.com/rshade/finfocus-spec/sdk/go/testing # Plugin testing framework
 ```
 
 ## Schema Validation
@@ -649,7 +649,7 @@ The following directories contain specialized CLAUDE.md files:
 
 **Agent Configuration (`.claude/agents/`)**:
 
-- Custom agent configurations for PulumiCost ecosystem development
+- Custom agent configurations for FinFocus ecosystem development
 - Specialized prompts for technical writing, product management, and senior engineering
 - Agent invocation patterns and result expectations
 

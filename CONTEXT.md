@@ -1,8 +1,8 @@
-# Project Context: pulumicost-spec
+# Project Context: finfocus-spec
 
 ## Core Architectural Identity
 
-The `pulumicost-spec` is a **Universal Specification and SDK Layer** for cloud cost observability.
+The `finfocus-spec` is a **Universal Specification and SDK Layer** for cloud cost observability.
 It defines the standardized interfaces (Protobuf/gRPC) and provides the Go SDK (`pluginsdk`)
 required to build and integrate cost-estimation plugins. It acts as the "narrow waist"
 between cloud cost data sources and consumption layers.
@@ -16,7 +16,7 @@ between cloud cost data sources and consumption layers.
   migrations, or store historical cost data. It is a stateless interface and transport definition.
 - **No Direct Cloud API Consumption:** The SDK and spec do not talk directly to AWS, Azure,
   or GCP billing APIs. That responsibility is strictly delegated to individual
-  *plugin implementations* (e.g., `pulumicost-plugins-aws`).
+  *plugin implementations* (e.g., `finfocus-plugins-aws`).
 - **No Frontend/Visualization:** This is a backend/infrastructure-level specification.
   It does not contain UI components, dashboards, or graphing logic.
 - **Observability is for Diagnostics, not End-Users:** Features like Prometheus metrics
@@ -28,7 +28,7 @@ between cloud cost data sources and consumption layers.
 The **Source of Truth** resides entirely within **Upstream Data Providers**
 (e.g., Kubecost, Vantage, Cloud Provider Billing APIs).
 
-- `pulumicost-spec` is responsible for the **Standardized Model** (how data is structured).
+- `finfocus-spec` is responsible for the **Standardized Model** (how data is structured).
 - Plugin implementations are responsible for the **Data Retrieval** (fetching the data).
 - The upstream service is responsible for the **Financial Accuracy** (the actual numbers).
 

@@ -7,13 +7,13 @@
 // # Usage
 //
 // This is an internal package. External consumers should use:
-//   - [github.com/rshade/pulumicost-spec/sdk/go/pluginsdk.GetUtilization]
+//   - [github.com/rshade/finfocus-spec/sdk/go/pluginsdk.GetUtilization]
 package utilization
 
 import (
 	"math"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 const (

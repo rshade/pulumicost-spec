@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbc";
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
-import "pulumicost/v1/focus.proto";
-import "pulumicost/v1/budget.proto";
-import "pulumicost/v1/enums.proto";
+import "finfocus/v1/focus.proto";
+import "finfocus/v1/budget.proto";
+import "finfocus/v1/enums.proto";
 
 // CostSourceService provides gRPC interface for cost source plugins to implement.
 // This service defines the contract for retrieving actual costs, projected costs,
@@ -1341,7 +1341,7 @@ message GetPluginInfoResponse {
   // version is the semantic version of the plugin implementation (e.g., "v1.2.0").
   // Required field - must be non-empty.
   string version = 2;
-  // spec_version is the version of the pulumicost-spec protocol the plugin was
+  // spec_version is the version of the finfocus-spec protocol the plugin was
   // compiled against (e.g., "v0.4.11"). Must be a valid SemVer string.
   // Required field - used for compatibility verification.
   string spec_version = 3;

@@ -3,7 +3,7 @@ package jsonld_test
 import (
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/jsonld"
+	"github.com/rshade/finfocus-spec/sdk/go/jsonld"
 )
 
 func TestNewContext(t *testing.T) {

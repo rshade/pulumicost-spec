@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/currency"
+	"github.com/rshade/finfocus-spec/sdk/go/currency"
 )
 
 // T009: Table-driven tests for currency.IsValid() covering valid codes.

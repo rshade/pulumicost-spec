@@ -1,11 +1,11 @@
 # Plugin Startup Protocol
 
-This document defines the startup protocol for PulumiCost plugins, including port
+This document defines the startup protocol for FinFocus plugins, including port
 configuration, environment variables, command-line flags, and port announcement.
 
 ## Overview
 
-PulumiCost plugins are gRPC servers that the core orchestrator (`pulumicost-core`)
+FinFocus plugins are gRPC servers that the core orchestrator (`finfocus-core`)
 spawns and communicates with. The startup protocol ensures:
 
 1. **Port Discovery**: Core can discover which port the plugin is listening on
@@ -21,7 +21,7 @@ The plugin port is determined with the following priority:
 | Priority | Source | Description |
 |----------|--------|-------------|
 | 1 | `--port` flag | Command-line argument (highest priority) |
-| 2 | `PULUMICOST_PLUGIN_PORT` | Environment variable |
+| 2 | `FINFOCUS_PLUGIN_PORT` | Environment variable |
 | 3 | Ephemeral | OS assigns an available port |
 
 ### Command-Line Flag: `--port`
@@ -41,7 +41,7 @@ The `--port` flag is the recommended way for orchestrators to assign ports:
 ```go
 import (
     "flag"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {
@@ -58,12 +58,12 @@ func main() {
 }
 ```
 
-### Environment Variable: `PULUMICOST_PLUGIN_PORT`
+### Environment Variable: `FINFOCUS_PLUGIN_PORT`
 
-When `--port` is not specified, the plugin checks `PULUMICOST_PLUGIN_PORT`:
+When `--port` is not specified, the plugin checks `FINFOCUS_PLUGIN_PORT`:
 
 ```bash
-export PULUMICOST_PLUGIN_PORT=50052
+export FINFOCUS_PLUGIN_PORT=50052
 ./my-plugin
 
 # Plugin output:
@@ -76,7 +76,7 @@ a shared environment.
 
 ### Ephemeral Port (Default)
 
-When neither `--port` nor `PULUMICOST_PLUGIN_PORT` is set, the OS assigns an
+When neither `--port` nor `FINFOCUS_PLUGIN_PORT` is set, the OS assigns an
 available port:
 
 ```bash
@@ -131,18 +131,18 @@ if strings.HasPrefix(line, "PORT=") {
 
 | Variable | Purpose | Default | Example |
 |----------|---------|---------|---------|
-| `PULUMICOST_PLUGIN_PORT` | gRPC server port | Ephemeral | `50051` |
-| `PULUMICOST_LOG_LEVEL` | Log verbosity | `info` | `debug`, `info`, `warn`, `error` |
-| `PULUMICOST_LOG_FORMAT` | Log output format | `json` | `json`, `text` |
-| `PULUMICOST_LOG_FILE` | Log file path | stderr | `/var/log/plugin.log` |
-| `PULUMICOST_TRACE_ID` | Distributed trace ID | (none) | `abc123def456` |
-| `PULUMICOST_TEST_MODE` | Enable test mode | `false` | `true`, `false` |
+| `FINFOCUS_PLUGIN_PORT` | gRPC server port | Ephemeral | `50051` |
+| `FINFOCUS_LOG_LEVEL` | Log verbosity | `info` | `debug`, `info`, `warn`, `error` |
+| `FINFOCUS_LOG_FORMAT` | Log output format | `json` | `json`, `text` |
+| `FINFOCUS_LOG_FILE` | Log file path | stderr | `/var/log/plugin.log` |
+| `FINFOCUS_TRACE_ID` | Distributed trace ID | (none) | `abc123def456` |
+| `FINFOCUS_TEST_MODE` | Enable test mode | `false` | `true`, `false` |
 
 ### Port Configuration
 
 ```bash
 # Set plugin port via environment
-export PULUMICOST_PLUGIN_PORT=50051
+export FINFOCUS_PLUGIN_PORT=50051
 ./my-plugin
 ```
 
@@ -156,25 +156,25 @@ export PULUMICOST_PLUGIN_PORT=50051
 
 ```bash
 # Development setup
-export PULUMICOST_LOG_LEVEL=debug
-export PULUMICOST_LOG_FORMAT=text
+export FINFOCUS_LOG_LEVEL=debug
+export FINFOCUS_LOG_FORMAT=text
 ./my-plugin
 
 # Production setup
-export PULUMICOST_LOG_LEVEL=info
-export PULUMICOST_LOG_FORMAT=json
-export PULUMICOST_LOG_FILE=/var/log/pulumicost/aws-plugin.log
+export FINFOCUS_LOG_LEVEL=info
+export FINFOCUS_LOG_FORMAT=json
+export FINFOCUS_LOG_FILE=/var/log/finfocus/aws-plugin.log
 ./my-plugin
 ```
 
-**Log Level Fallback**: If `PULUMICOST_LOG_LEVEL` is not set, the SDK checks the
+**Log Level Fallback**: If `FINFOCUS_LOG_LEVEL` is not set, the SDK checks the
 legacy `LOG_LEVEL` environment variable for backwards compatibility.
 
 ### Distributed Tracing
 
 ```bash
 # Pass trace ID from orchestrator to plugin
-export PULUMICOST_TRACE_ID=abc123def456
+export FINFOCUS_TRACE_ID=abc123def456
 ./my-plugin
 ```
 
@@ -188,7 +188,7 @@ The trace ID is automatically:
 
 ```bash
 # Enable test mode
-export PULUMICOST_TEST_MODE=true
+export FINFOCUS_TEST_MODE=true
 ./my-plugin
 ```
 
@@ -230,9 +230,9 @@ The orchestrator reads each plugin's stdout to discover the assigned port.
 
 ```bash
 # Each plugin in its own environment
-PULUMICOST_PLUGIN_PORT=50051 ./aws-plugin &
-PULUMICOST_PLUGIN_PORT=50052 ./azure-plugin &
-PULUMICOST_PLUGIN_PORT=50053 ./gcp-plugin &
+FINFOCUS_PLUGIN_PORT=50051 ./aws-plugin &
+FINFOCUS_PLUGIN_PORT=50052 ./azure-plugin &
+FINFOCUS_PLUGIN_PORT=50053 ./gcp-plugin &
 ```
 
 ## Startup Sequence
@@ -312,7 +312,7 @@ import (
     "syscall"
 
     "github.com/rs/zerolog/log"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {
@@ -383,8 +383,8 @@ This ensures:
 ### Environment Variable Security
 
 - Avoid passing secrets via environment variables when possible
-- Use `PULUMICOST_TEST_MODE=true` only in test environments
-- Log files (`PULUMICOST_LOG_FILE`) should have appropriate permissions
+- Use `FINFOCUS_TEST_MODE=true` only in test environments
+- Log files (`FINFOCUS_LOG_FILE`) should have appropriate permissions
 
 ## Troubleshooting
 
@@ -427,7 +427,7 @@ When plugins fail to start or connect, verify:
 
 1. **Port availability**: `netstat -tlnp | grep <port>` (Linux) or `netstat -an | findstr <port>` (Windows)
 2. **Address resolution**: Ensure both sides use `127.0.0.1` explicitly
-3. **Environment variables**: `env | grep PULUMICOST` to check for conflicting settings
+3. **Environment variables**: `env | grep FINFOCUS` to check for conflicting settings
 4. **Flag parsing**: Ensure `flag.Parse()` is called before `ParsePortFlag()`
 5. **Firewall rules**: On Windows, check Windows Defender Firewall for localhost exceptions
 
@@ -446,8 +446,8 @@ import (
     "os/signal"
     "syscall"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 type MyPlugin struct{}
@@ -496,15 +496,15 @@ func main() {
 # setup-plugin-env.sh
 
 # Required
-export PULUMICOST_PLUGIN_PORT=50051
+export FINFOCUS_PLUGIN_PORT=50051
 
 # Logging (optional)
-export PULUMICOST_LOG_LEVEL=info
-export PULUMICOST_LOG_FORMAT=json
-export PULUMICOST_LOG_FILE=/var/log/pulumicost/plugin.log
+export FINFOCUS_LOG_LEVEL=info
+export FINFOCUS_LOG_FORMAT=json
+export FINFOCUS_LOG_FILE=/var/log/finfocus/plugin.log
 
 # Tracing (optional)
-export PULUMICOST_TRACE_ID=$(uuidgen)
+export FINFOCUS_TRACE_ID=$(uuidgen)
 
 # Start plugin
 exec ./my-plugin "$@"

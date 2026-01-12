@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // setEnv sets an environment variable and restores it on cleanup.

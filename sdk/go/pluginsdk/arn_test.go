@@ -3,7 +3,7 @@ package pluginsdk_test
 import (
 	"testing"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func TestDetectARNProvider(t *testing.T) {

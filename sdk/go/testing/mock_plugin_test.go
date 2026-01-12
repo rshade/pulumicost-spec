@@ -3,8 +3,8 @@ package testing_test
 import (
 	"testing"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	pktesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	pktesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // assertSummaryFields asserts scalar fields of RecommendationSummary using Get*() methods.

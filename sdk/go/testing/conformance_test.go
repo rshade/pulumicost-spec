@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // ConformanceLevel defines the level of conformance testing.

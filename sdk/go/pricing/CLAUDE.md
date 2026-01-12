@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is the **pricing package** of the PulumiCost Go SDK, containing core domain types, validation logic, and billing mode
-enumerations. The package provides the foundational types and validation for PulumiCost pricing specifications across all
+This is the **pricing package** of the FinFocus Go SDK, containing core domain types, validation logic, and billing mode
+enumerations. The package provides the foundational types and validation for FinFocus pricing specifications across all
 cloud providers.
 
 ## Core Components

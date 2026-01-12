@@ -15,7 +15,7 @@ mapping, and advanced usage of the SDK packages.
 ## Tiered Pricing Implementation
 
 Cloud providers often use tiered pricing where rates decrease as usage increases. The
-PulumiCost schema supports this via the `pricing_tiers` field.
+FinFocus schema supports this via the `pricing_tiers` field.
 
 ### Understanding the Tier Structure
 
@@ -206,9 +206,9 @@ import (
     "context"
     "fmt"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // ProviderHandler defines the interface for provider-specific cost calculations.
@@ -386,7 +386,7 @@ covers advanced patterns beyond basic usage.
 Use the generic extractors with custom key priorities for non-standard resources:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping"
 
 // For a custom resource with non-standard property names
 props := map[string]string{

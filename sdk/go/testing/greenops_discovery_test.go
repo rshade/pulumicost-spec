@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // countMatchingMetrics returns the number of expected metrics found in the supported list.

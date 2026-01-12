@@ -1,6 +1,6 @@
-# PulumiCost Plugin Observability Examples
+# FinFocus Plugin Observability Examples
 
-This directory contains comprehensive examples demonstrating observability implementation for PulumiCost plugins.
+This directory contains comprehensive examples demonstrating observability implementation for FinFocus plugins.
 
 ## Contents
 
@@ -73,7 +73,7 @@ This directory contains comprehensive examples demonstrating observability imple
 Use the provided test framework:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/testing"
+import "github.com/rshade/finfocus-spec/sdk/go/testing"
 
 func TestObservability(t *testing.T) {
     plugin := &MyPlugin{}
@@ -94,7 +94,7 @@ func TestObservability(t *testing.T) {
 
    ```yaml
    scrape_configs:
-     - job_name: "pulumicost-plugin"
+     - job_name: "finfocus-plugin"
        static_configs:
          - targets: ["plugin:8080"]
        metrics_path: "/metrics"
@@ -108,7 +108,7 @@ Deploy the CloudWatch dashboard using CloudFormation:
 
 ```bash
 aws cloudformation create-stack \
-  --stack-name pulumicost-observability \
+  --stack-name finfocus-observability \
   --template-body file://dashboards/cloudwatch-dashboard.yaml \
   --parameters ParameterKey=PluginName,ParameterValue=my-plugin
 ```
@@ -119,11 +119,11 @@ aws cloudformation create-stack \
 
 | Metric Name                           | Type      | Description                 | Labels                             |
 | ------------------------------------- | --------- | --------------------------- | ---------------------------------- |
-| `pulumicost_requests_total`           | Counter   | Total requests processed    | `method`, `provider`, `status`     |
-| `pulumicost_errors_total`             | Counter   | Total errors encountered    | `method`, `provider`, `error_type` |
-| `pulumicost_request_duration_seconds` | Histogram | Request processing time     | `method`, `provider`               |
-| `pulumicost_cache_hit_rate_percent`   | Gauge     | Cache effectiveness         | `provider`, `cache_type`           |
-| `pulumicost_active_connections`       | Gauge     | Active external connections | `service`                          |
+| `finfocus_requests_total`           | Counter   | Total requests processed    | `method`, `provider`, `status`     |
+| `finfocus_errors_total`             | Counter   | Total errors encountered    | `method`, `provider`, `error_type` |
+| `finfocus_request_duration_seconds` | Histogram | Request processing time     | `method`, `provider`               |
+| `finfocus_cache_hit_rate_percent`   | Gauge     | Cache effectiveness         | `provider`, `cache_type`           |
+| `finfocus_active_connections`       | Gauge     | Active external connections | `service`                          |
 
 ### Standard SLIs
 
@@ -140,7 +140,7 @@ aws cloudformation create-stack \
 
 ### Metric Naming
 
-- Use the `pulumicost_` prefix for all metrics
+- Use the `finfocus_` prefix for all metrics
 - Follow Prometheus naming conventions
 - Keep label cardinality low (<100 unique combinations)
 

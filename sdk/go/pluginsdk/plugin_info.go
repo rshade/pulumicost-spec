@@ -16,7 +16,7 @@ type PluginInfo struct {
 	// Example: "v1.0.0", "v2.1.3"
 	Version string
 
-	// SpecVersion is the pulumicost-spec version this plugin implements (required).
+	// SpecVersion is the finfocus-spec version this plugin implements (required).
 	// This value should match the SDK's SpecVersion constant unless the plugin
 	// is designed to work with a specific older/newer spec version.
 	// Example: "v0.4.11"

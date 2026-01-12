@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             (unknown)
-// source: pulumicost/v1/costsource.proto
+// source: finfocus/v1/costsource.proto
 
 package pbc
 
@@ -19,17 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CostSourceService_Name_FullMethodName                  = "/pulumicost.v1.CostSourceService/Name"
-	CostSourceService_Supports_FullMethodName              = "/pulumicost.v1.CostSourceService/Supports"
-	CostSourceService_GetActualCost_FullMethodName         = "/pulumicost.v1.CostSourceService/GetActualCost"
-	CostSourceService_GetProjectedCost_FullMethodName      = "/pulumicost.v1.CostSourceService/GetProjectedCost"
-	CostSourceService_GetPricingSpec_FullMethodName        = "/pulumicost.v1.CostSourceService/GetPricingSpec"
-	CostSourceService_EstimateCost_FullMethodName          = "/pulumicost.v1.CostSourceService/EstimateCost"
-	CostSourceService_GetRecommendations_FullMethodName    = "/pulumicost.v1.CostSourceService/GetRecommendations"
-	CostSourceService_DismissRecommendation_FullMethodName = "/pulumicost.v1.CostSourceService/DismissRecommendation"
-	CostSourceService_GetBudgets_FullMethodName            = "/pulumicost.v1.CostSourceService/GetBudgets"
-	CostSourceService_GetPluginInfo_FullMethodName         = "/pulumicost.v1.CostSourceService/GetPluginInfo"
-	CostSourceService_DryRun_FullMethodName                = "/pulumicost.v1.CostSourceService/DryRun"
+	CostSourceService_Name_FullMethodName                  = "/finfocus.v1.CostSourceService/Name"
+	CostSourceService_Supports_FullMethodName              = "/finfocus.v1.CostSourceService/Supports"
+	CostSourceService_GetActualCost_FullMethodName         = "/finfocus.v1.CostSourceService/GetActualCost"
+	CostSourceService_GetProjectedCost_FullMethodName      = "/finfocus.v1.CostSourceService/GetProjectedCost"
+	CostSourceService_GetPricingSpec_FullMethodName        = "/finfocus.v1.CostSourceService/GetPricingSpec"
+	CostSourceService_EstimateCost_FullMethodName          = "/finfocus.v1.CostSourceService/EstimateCost"
+	CostSourceService_GetRecommendations_FullMethodName    = "/finfocus.v1.CostSourceService/GetRecommendations"
+	CostSourceService_DismissRecommendation_FullMethodName = "/finfocus.v1.CostSourceService/DismissRecommendation"
+	CostSourceService_GetBudgets_FullMethodName            = "/finfocus.v1.CostSourceService/GetBudgets"
+	CostSourceService_GetPluginInfo_FullMethodName         = "/finfocus.v1.CostSourceService/GetPluginInfo"
+	CostSourceService_DryRun_FullMethodName                = "/finfocus.v1.CostSourceService/DryRun"
 )
 
 // CostSourceServiceClient is the client API for CostSourceService service.
@@ -694,7 +694,7 @@ func _CostSourceService_DryRun_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CostSourceService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pulumicost.v1.CostSourceService",
+	ServiceName: "finfocus.v1.CostSourceService",
 	HandlerType: (*CostSourceServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -743,13 +743,13 @@ var CostSourceService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pulumicost/v1/costsource.proto",
+	Metadata: "finfocus/v1/costsource.proto",
 }
 
 const (
-	ObservabilityService_HealthCheck_FullMethodName               = "/pulumicost.v1.ObservabilityService/HealthCheck"
-	ObservabilityService_GetMetrics_FullMethodName                = "/pulumicost.v1.ObservabilityService/GetMetrics"
-	ObservabilityService_GetServiceLevelIndicators_FullMethodName = "/pulumicost.v1.ObservabilityService/GetServiceLevelIndicators"
+	ObservabilityService_HealthCheck_FullMethodName               = "/finfocus.v1.ObservabilityService/HealthCheck"
+	ObservabilityService_GetMetrics_FullMethodName                = "/finfocus.v1.ObservabilityService/GetMetrics"
+	ObservabilityService_GetServiceLevelIndicators_FullMethodName = "/finfocus.v1.ObservabilityService/GetServiceLevelIndicators"
 )
 
 // ObservabilityServiceClient is the client API for ObservabilityService service.
@@ -918,7 +918,7 @@ func _ObservabilityService_GetServiceLevelIndicators_Handler(srv interface{}, ct
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ObservabilityService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pulumicost.v1.ObservabilityService",
+	ServiceName: "finfocus.v1.ObservabilityService",
 	HandlerType: (*ObservabilityServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -935,5 +935,5 @@ var ObservabilityService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pulumicost/v1/costsource.proto",
+	Metadata: "finfocus/v1/costsource.proto",
 }

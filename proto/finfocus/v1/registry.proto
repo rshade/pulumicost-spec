@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbc";
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
 
 import "google/protobuf/timestamp.proto";
 
 // PluginRegistryService provides gRPC interface for plugin discovery, 
-// registration, and lifecycle management within the PulumiCost ecosystem.
+// registration, and lifecycle management within the FinFocus ecosystem.
 service PluginRegistryService {
   // DiscoverPlugins discovers available plugins from configured sources.
   rpc DiscoverPlugins(DiscoverPluginsRequest) returns (DiscoverPluginsResponse);
@@ -60,7 +60,7 @@ enum SecurityLevel {
   SECURITY_LEVEL_UNTRUSTED = 1;       // Untrusted, requires explicit approval
   SECURITY_LEVEL_COMMUNITY = 2;       // Community verified
   SECURITY_LEVEL_VERIFIED = 3;        // Officially verified
-  SECURITY_LEVEL_OFFICIAL = 4;        // Official PulumiCost plugin
+  SECURITY_LEVEL_OFFICIAL = 4;        // Official FinFocus plugin
 }
 
 // DiscoverPluginsRequest contains parameters for plugin discovery.
@@ -215,7 +215,7 @@ message PluginMetadata {
 
 // PluginSpecification defines plugin capabilities and interface compliance.
 message PluginSpecification {
-  // spec_version indicates the PulumiCost spec version supported
+  // spec_version indicates the FinFocus spec version supported
   string spec_version = 1;
   // supported_providers lists supported cloud providers
   repeated string supported_providers = 2;

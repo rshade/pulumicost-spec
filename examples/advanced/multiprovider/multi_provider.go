@@ -16,8 +16,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping"
 )
 
 // ComputeDetails holds extracted compute resource information.

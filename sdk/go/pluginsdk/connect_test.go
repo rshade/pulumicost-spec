@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	"github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1/pbcconnect"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1/pbcconnect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -161,7 +161,7 @@ func TestServeConnect_ConnectProtocol(t *testing.T) {
 	waitForServer(t, addr)
 	reqBody := []byte(`{}`)
 	resp, err := http.Post(
-		"http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+		"http://"+addr+"/finfocus.v1.CostSourceService/Name",
 		"application/json",
 		bytes.NewReader(reqBody),
 	)
@@ -320,7 +320,7 @@ func TestServeConnect_CORS(t *testing.T) {
 	waitForServer(t, addr)
 
 	t.Run("preflight request returns CORS headers", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+		req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/finfocus.v1.CostSourceService/Name", nil)
 		req.Header.Set("Origin", "http://localhost:3000")
 		req.Header.Set("Access-Control-Request-Method", "POST")
 
@@ -337,7 +337,7 @@ func TestServeConnect_CORS(t *testing.T) {
 	t.Run("actual request includes CORS headers", func(t *testing.T) {
 		req, _ := http.NewRequest(
 			http.MethodPost,
-			"http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+			"http://"+addr+"/finfocus.v1.CostSourceService/Name",
 			bytes.NewReader([]byte(`{}`)),
 		)
 		req.Header.Set("Origin", "http://localhost:3000")
@@ -353,7 +353,7 @@ func TestServeConnect_CORS(t *testing.T) {
 	t.Run("disallowed origin gets no CORS headers", func(t *testing.T) {
 		req, _ := http.NewRequest(
 			http.MethodPost,
-			"http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+			"http://"+addr+"/finfocus.v1.CostSourceService/Name",
 			bytes.NewReader([]byte(`{}`)),
 		)
 		req.Header.Set("Origin", "http://evil.com")
@@ -470,7 +470,7 @@ func TestServe_CORS_NilAllowedHeaders_UsesDefaults(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send preflight request
-	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/finfocus.v1.CostSourceService/Name", nil)
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Access-Control-Request-Method", "POST")
 
@@ -514,7 +514,7 @@ func TestServe_CORS_CustomAllowedHeaders(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send preflight request
-	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/finfocus.v1.CostSourceService/Name", nil)
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Access-Control-Request-Method", "POST")
 
@@ -556,7 +556,7 @@ func TestServe_CORS_EmptyAllowedHeaders(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send preflight request
-	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/finfocus.v1.CostSourceService/Name", nil)
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Access-Control-Request-Method", "POST")
 
@@ -598,7 +598,7 @@ func TestServe_CORS_NilExposedHeaders_UsesDefaults(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send actual request (not preflight) to check Expose-Headers
-	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/finfocus.v1.CostSourceService/Name",
 		bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Content-Type", "application/json")
@@ -643,7 +643,7 @@ func TestServe_CORS_CustomExposedHeaders(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send actual request to check Expose-Headers
-	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/finfocus.v1.CostSourceService/Name",
 		bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Content-Type", "application/json")
@@ -686,7 +686,7 @@ func TestServe_CORS_EmptyExposedHeaders(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send actual request to check Expose-Headers
-	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+	req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/finfocus.v1.CostSourceService/Name",
 		bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Content-Type", "application/json")
@@ -728,7 +728,7 @@ func TestServeConnect_CustomMaxAge(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send preflight request and verify custom max-age
-	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/finfocus.v1.CostSourceService/Name", nil)
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Access-Control-Request-Method", "POST")
 
@@ -768,7 +768,7 @@ func TestServeConnect_MaxAgeZero(t *testing.T) {
 	waitForServer(t, addr)
 
 	// Send preflight request and verify zero max-age
-	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+	req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/finfocus.v1.CostSourceService/Name", nil)
 	req.Header.Set("Origin", "http://localhost:3000")
 	req.Header.Set("Access-Control-Request-Method", "POST")
 
@@ -834,7 +834,7 @@ func BenchmarkCORSMiddleware(b *testing.B) {
 	b.Run("preflight_request", func(b *testing.B) {
 		b.ReportAllocs()
 		for b.Loop() {
-			req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/pulumicost.v1.CostSourceService/Name", nil)
+			req, _ := http.NewRequest(http.MethodOptions, "http://"+addr+"/finfocus.v1.CostSourceService/Name", nil)
 			req.Header.Set("Origin", "http://localhost:3000")
 			req.Header.Set("Access-Control-Request-Method", "POST")
 
@@ -850,7 +850,7 @@ func BenchmarkCORSMiddleware(b *testing.B) {
 	b.Run("cors_request", func(b *testing.B) {
 		b.ReportAllocs()
 		for b.Loop() {
-			req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+			req, _ := http.NewRequest(http.MethodPost, "http://"+addr+"/finfocus.v1.CostSourceService/Name",
 				bytes.NewReader([]byte(`{}`)))
 			req.Header.Set("Origin", "http://localhost:3000")
 			req.Header.Set("Content-Type", "application/json")
@@ -951,7 +951,7 @@ func TestServeConnect_LargePayload(t *testing.T) {
 
 	// Send raw HTTP request to bypass client-side limits if any
 	resp, err := http.Post(
-		"http://"+addr+"/pulumicost.v1.CostSourceService/Name",
+		"http://"+addr+"/finfocus.v1.CostSourceService/Name",
 		"application/json",
 		reqBody,
 	)

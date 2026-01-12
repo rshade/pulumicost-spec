@@ -16,8 +16,8 @@ import (
 	"connectrpc.com/connect"
 	"connectrpc.com/grpchealth"
 	"github.com/rs/zerolog"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	"github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1/pbcconnect"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1/pbcconnect"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -675,7 +675,7 @@ type ServeConfig struct {
 //  3. 0 (ephemeral port - OS assigns available port)
 //
 // Note: The generic PORT env var is NOT supported to avoid multi-plugin conflicts.
-// When pulumicost-core spawns multiple plugins (e.g., aws-public + aws-ce), each
+// When finfocus-core spawns multiple plugins (e.g., aws-public + aws-ce), each
 // needs a unique port. Using --port flag allows the core to allocate distinct ports.
 func resolvePort(requested int) int {
 	if requested > 0 {

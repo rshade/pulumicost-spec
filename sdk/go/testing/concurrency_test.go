@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 // TestConcurrentRequestsCompleteSuccessfully validates that concurrent requests complete (T049).

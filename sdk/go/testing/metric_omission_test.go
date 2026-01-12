@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-	plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 )
 
 func TestMetricOmission(t *testing.T) {

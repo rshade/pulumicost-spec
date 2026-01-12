@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: pulumicost/v1/enums.proto
+// source: finfocus/v1/enums.proto
 
 package pbc
 
@@ -80,11 +80,11 @@ func (x FocusServiceCategory) String() string {
 }
 
 func (FocusServiceCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[0].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[0].Descriptor()
 }
 
 func (FocusServiceCategory) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[0]
+	return &file_finfocus_v1_enums_proto_enumTypes[0]
 }
 
 func (x FocusServiceCategory) Number() protoreflect.EnumNumber {
@@ -93,7 +93,7 @@ func (x FocusServiceCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusServiceCategory.Descriptor instead.
 func (FocusServiceCategory) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{0}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{0}
 }
 
 // FocusChargeCategory represents the nature of the charge.
@@ -142,11 +142,11 @@ func (x FocusChargeCategory) String() string {
 }
 
 func (FocusChargeCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[1].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[1].Descriptor()
 }
 
 func (FocusChargeCategory) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[1]
+	return &file_finfocus_v1_enums_proto_enumTypes[1]
 }
 
 func (x FocusChargeCategory) Number() protoreflect.EnumNumber {
@@ -155,7 +155,7 @@ func (x FocusChargeCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusChargeCategory.Descriptor instead.
 func (FocusChargeCategory) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{1}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{1}
 }
 
 // FocusPricingCategory represents the pricing model applied.
@@ -199,11 +199,11 @@ func (x FocusPricingCategory) String() string {
 }
 
 func (FocusPricingCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[2].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[2].Descriptor()
 }
 
 func (FocusPricingCategory) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[2]
+	return &file_finfocus_v1_enums_proto_enumTypes[2]
 }
 
 func (x FocusPricingCategory) Number() protoreflect.EnumNumber {
@@ -212,7 +212,7 @@ func (x FocusPricingCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusPricingCategory.Descriptor instead.
 func (FocusPricingCategory) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{2}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{2}
 }
 
 // FocusChargeClass represents the classification of charges.
@@ -250,11 +250,11 @@ func (x FocusChargeClass) String() string {
 }
 
 func (FocusChargeClass) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[3].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[3].Descriptor()
 }
 
 func (FocusChargeClass) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[3]
+	return &file_finfocus_v1_enums_proto_enumTypes[3]
 }
 
 func (x FocusChargeClass) Number() protoreflect.EnumNumber {
@@ -263,7 +263,7 @@ func (x FocusChargeClass) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusChargeClass.Descriptor instead.
 func (FocusChargeClass) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{3}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{3}
 }
 
 // FocusChargeFrequency represents how often a charge is applied.
@@ -304,11 +304,11 @@ func (x FocusChargeFrequency) String() string {
 }
 
 func (FocusChargeFrequency) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[4].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[4].Descriptor()
 }
 
 func (FocusChargeFrequency) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[4]
+	return &file_finfocus_v1_enums_proto_enumTypes[4]
 }
 
 func (x FocusChargeFrequency) Number() protoreflect.EnumNumber {
@@ -317,7 +317,7 @@ func (x FocusChargeFrequency) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusChargeFrequency.Descriptor instead.
 func (FocusChargeFrequency) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{4}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{4}
 }
 
 // FocusCommitmentDiscountCategory represents the type of commitment discount.
@@ -355,11 +355,11 @@ func (x FocusCommitmentDiscountCategory) String() string {
 }
 
 func (FocusCommitmentDiscountCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[5].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[5].Descriptor()
 }
 
 func (FocusCommitmentDiscountCategory) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[5]
+	return &file_finfocus_v1_enums_proto_enumTypes[5]
 }
 
 func (x FocusCommitmentDiscountCategory) Number() protoreflect.EnumNumber {
@@ -368,7 +368,7 @@ func (x FocusCommitmentDiscountCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusCommitmentDiscountCategory.Descriptor instead.
 func (FocusCommitmentDiscountCategory) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{5}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{5}
 }
 
 // FocusCommitmentDiscountStatus represents the utilization status of a
@@ -408,11 +408,11 @@ func (x FocusCommitmentDiscountStatus) String() string {
 }
 
 func (FocusCommitmentDiscountStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[6].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[6].Descriptor()
 }
 
 func (FocusCommitmentDiscountStatus) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[6]
+	return &file_finfocus_v1_enums_proto_enumTypes[6]
 }
 
 func (x FocusCommitmentDiscountStatus) Number() protoreflect.EnumNumber {
@@ -421,7 +421,7 @@ func (x FocusCommitmentDiscountStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusCommitmentDiscountStatus.Descriptor instead.
 func (FocusCommitmentDiscountStatus) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{6}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{6}
 }
 
 // FocusCapacityReservationStatus represents the utilization status of a
@@ -461,11 +461,11 @@ func (x FocusCapacityReservationStatus) String() string {
 }
 
 func (FocusCapacityReservationStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[7].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[7].Descriptor()
 }
 
 func (FocusCapacityReservationStatus) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[7]
+	return &file_finfocus_v1_enums_proto_enumTypes[7]
 }
 
 func (x FocusCapacityReservationStatus) Number() protoreflect.EnumNumber {
@@ -474,7 +474,7 @@ func (x FocusCapacityReservationStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FocusCapacityReservationStatus.Descriptor instead.
 func (FocusCapacityReservationStatus) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{7}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{7}
 }
 
 // FieldSupportStatus represents the support status of a FOCUS field for a given
@@ -537,11 +537,11 @@ func (x FieldSupportStatus) String() string {
 }
 
 func (FieldSupportStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[8].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[8].Descriptor()
 }
 
 func (FieldSupportStatus) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[8]
+	return &file_finfocus_v1_enums_proto_enumTypes[8]
 }
 
 func (x FieldSupportStatus) Number() protoreflect.EnumNumber {
@@ -550,7 +550,7 @@ func (x FieldSupportStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FieldSupportStatus.Descriptor instead.
 func (FieldSupportStatus) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{8}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{8}
 }
 
 // GrowthType represents the mathematical model used for projecting cost growth.
@@ -601,11 +601,11 @@ func (x GrowthType) String() string {
 }
 
 func (GrowthType) Descriptor() protoreflect.EnumDescriptor {
-	return file_pulumicost_v1_enums_proto_enumTypes[9].Descriptor()
+	return file_finfocus_v1_enums_proto_enumTypes[9].Descriptor()
 }
 
 func (GrowthType) Type() protoreflect.EnumType {
-	return &file_pulumicost_v1_enums_proto_enumTypes[9]
+	return &file_finfocus_v1_enums_proto_enumTypes[9]
 }
 
 func (x GrowthType) Number() protoreflect.EnumNumber {
@@ -614,14 +614,14 @@ func (x GrowthType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GrowthType.Descriptor instead.
 func (GrowthType) EnumDescriptor() ([]byte, []int) {
-	return file_pulumicost_v1_enums_proto_rawDescGZIP(), []int{9}
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{9}
 }
 
-var File_pulumicost_v1_enums_proto protoreflect.FileDescriptor
+var File_finfocus_v1_enums_proto protoreflect.FileDescriptor
 
-const file_pulumicost_v1_enums_proto_rawDesc = "" +
+const file_finfocus_v1_enums_proto_rawDesc = "" +
 	"\n" +
-	"\x19pulumicost/v1/enums.proto\x12\rpulumicost.v1*\xbc\x03\n" +
+	"\x17finfocus/v1/enums.proto\x12\vfinfocus.v1*\xbc\x03\n" +
 	"\x14FocusServiceCategory\x12&\n" +
 	"\"FOCUS_SERVICE_CATEGORY_UNSPECIFIED\x10\x00\x12\"\n" +
 	"\x1eFOCUS_SERVICE_CATEGORY_COMPUTE\x10\x01\x12\"\n" +
@@ -681,34 +681,34 @@ const file_pulumicost_v1_enums_proto_rawDesc = "" +
 	"\x17GROWTH_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10GROWTH_TYPE_NONE\x10\x01\x12\x16\n" +
 	"\x12GROWTH_TYPE_LINEAR\x10\x02\x12\x1b\n" +
-	"\x17GROWTH_TYPE_EXPONENTIAL\x10\x03BBZ@github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1;pbcb\x06proto3"
+	"\x17GROWTH_TYPE_EXPONENTIAL\x10\x03B>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
 
 var (
-	file_pulumicost_v1_enums_proto_rawDescOnce sync.Once
-	file_pulumicost_v1_enums_proto_rawDescData []byte
+	file_finfocus_v1_enums_proto_rawDescOnce sync.Once
+	file_finfocus_v1_enums_proto_rawDescData []byte
 )
 
-func file_pulumicost_v1_enums_proto_rawDescGZIP() []byte {
-	file_pulumicost_v1_enums_proto_rawDescOnce.Do(func() {
-		file_pulumicost_v1_enums_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_pulumicost_v1_enums_proto_rawDesc), len(file_pulumicost_v1_enums_proto_rawDesc)))
+func file_finfocus_v1_enums_proto_rawDescGZIP() []byte {
+	file_finfocus_v1_enums_proto_rawDescOnce.Do(func() {
+		file_finfocus_v1_enums_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_finfocus_v1_enums_proto_rawDesc), len(file_finfocus_v1_enums_proto_rawDesc)))
 	})
-	return file_pulumicost_v1_enums_proto_rawDescData
+	return file_finfocus_v1_enums_proto_rawDescData
 }
 
-var file_pulumicost_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
-var file_pulumicost_v1_enums_proto_goTypes = []any{
-	(FocusServiceCategory)(0),            // 0: pulumicost.v1.FocusServiceCategory
-	(FocusChargeCategory)(0),             // 1: pulumicost.v1.FocusChargeCategory
-	(FocusPricingCategory)(0),            // 2: pulumicost.v1.FocusPricingCategory
-	(FocusChargeClass)(0),                // 3: pulumicost.v1.FocusChargeClass
-	(FocusChargeFrequency)(0),            // 4: pulumicost.v1.FocusChargeFrequency
-	(FocusCommitmentDiscountCategory)(0), // 5: pulumicost.v1.FocusCommitmentDiscountCategory
-	(FocusCommitmentDiscountStatus)(0),   // 6: pulumicost.v1.FocusCommitmentDiscountStatus
-	(FocusCapacityReservationStatus)(0),  // 7: pulumicost.v1.FocusCapacityReservationStatus
-	(FieldSupportStatus)(0),              // 8: pulumicost.v1.FieldSupportStatus
-	(GrowthType)(0),                      // 9: pulumicost.v1.GrowthType
+var file_finfocus_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
+var file_finfocus_v1_enums_proto_goTypes = []any{
+	(FocusServiceCategory)(0),            // 0: finfocus.v1.FocusServiceCategory
+	(FocusChargeCategory)(0),             // 1: finfocus.v1.FocusChargeCategory
+	(FocusPricingCategory)(0),            // 2: finfocus.v1.FocusPricingCategory
+	(FocusChargeClass)(0),                // 3: finfocus.v1.FocusChargeClass
+	(FocusChargeFrequency)(0),            // 4: finfocus.v1.FocusChargeFrequency
+	(FocusCommitmentDiscountCategory)(0), // 5: finfocus.v1.FocusCommitmentDiscountCategory
+	(FocusCommitmentDiscountStatus)(0),   // 6: finfocus.v1.FocusCommitmentDiscountStatus
+	(FocusCapacityReservationStatus)(0),  // 7: finfocus.v1.FocusCapacityReservationStatus
+	(FieldSupportStatus)(0),              // 8: finfocus.v1.FieldSupportStatus
+	(GrowthType)(0),                      // 9: finfocus.v1.GrowthType
 }
-var file_pulumicost_v1_enums_proto_depIdxs = []int32{
+var file_finfocus_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -716,26 +716,26 @@ var file_pulumicost_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_pulumicost_v1_enums_proto_init() }
-func file_pulumicost_v1_enums_proto_init() {
-	if File_pulumicost_v1_enums_proto != nil {
+func init() { file_finfocus_v1_enums_proto_init() }
+func file_finfocus_v1_enums_proto_init() {
+	if File_finfocus_v1_enums_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pulumicost_v1_enums_proto_rawDesc), len(file_pulumicost_v1_enums_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_finfocus_v1_enums_proto_rawDesc), len(file_finfocus_v1_enums_proto_rawDesc)),
 			NumEnums:      10,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_pulumicost_v1_enums_proto_goTypes,
-		DependencyIndexes: file_pulumicost_v1_enums_proto_depIdxs,
-		EnumInfos:         file_pulumicost_v1_enums_proto_enumTypes,
+		GoTypes:           file_finfocus_v1_enums_proto_goTypes,
+		DependencyIndexes: file_finfocus_v1_enums_proto_depIdxs,
+		EnumInfos:         file_finfocus_v1_enums_proto_enumTypes,
 	}.Build()
-	File_pulumicost_v1_enums_proto = out.File
-	file_pulumicost_v1_enums_proto_goTypes = nil
-	file_pulumicost_v1_enums_proto_depIdxs = nil
+	File_finfocus_v1_enums_proto = out.File
+	file_finfocus_v1_enums_proto_goTypes = nil
+	file_finfocus_v1_enums_proto_depIdxs = nil
 }

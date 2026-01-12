@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spec.pulumicost.dev/schemas/plugin_manifest.schema.json",
+  "$id": "https://spec.finfocus.dev/schemas/plugin_manifest.schema.json",
   "title": "Plugin Manifest v0.1.0",
-  "description": "Comprehensive plugin manifest schema for PulumiCost plugin registration and management",
+  "description": "Comprehensive plugin manifest schema for FinFocus plugin registration and management",
   "type": "object",
   "required": ["metadata", "specification", "installation"],
   "properties": {
@@ -86,7 +86,7 @@
         "spec_version": {
           "type": "string",
           "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
-          "description": "PulumiCost specification version supported (e.g., '0.1.0')"
+          "description": "FinFocus specification version supported (e.g., '0.1.0')"
         },
         "supported_providers": {
           "type": "array",
@@ -183,7 +183,7 @@
             "package_name": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9]*(\\.v[0-9]+)?$",
-              "description": "Protobuf package name (e.g., 'pulumicost.v1')"
+              "description": "Protobuf package name (e.g., 'finfocus.v1')"
             },
             "methods": {
               "type": "array",
@@ -397,12 +397,12 @@
         "min_spec_version": {
           "type": "string",
           "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
-          "description": "Minimum required PulumiCost spec version"
+          "description": "Minimum required FinFocus spec version"
         },
         "max_spec_version": {
           "type": "string",
           "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
-          "description": "Maximum supported PulumiCost spec version"
+          "description": "Maximum supported FinFocus spec version"
         },
         "dependencies": {
           "type": "array",

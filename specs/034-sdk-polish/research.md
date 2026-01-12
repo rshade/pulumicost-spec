@@ -6,7 +6,9 @@
 
 ## Summary
 
-Research indicates that all three features specified in the SDK Polish v0.4.15 requirement are already implemented in the codebase. The work appears to be verification, testing, and ensuring these features work as specified.
+Research indicates that all three features specified in the SDK Polish v0.4.15 requirement are already
+implemented in the codebase. The work appears to be verification, testing, and ensuring these
+features work as specified.
 
 ## Decision Summary
 
@@ -216,6 +218,7 @@ The `Performance_GetPluginInfoLatency` conformance test already exists and measu
    ```
 
 4. **Latency Constants Defined** (`testing/harness.go`):
+
    ```go
    // GetPluginInfoStandardLatencyMs is the GetPluginInfo RPC standard latency threshold in milliseconds.
    GetPluginInfoStandardLatencyMs = 100
@@ -346,8 +349,10 @@ All three features are independent and can be verified/tested in isolation.
 
 All three SDK Polish v0.4.15 features are already implemented in the codebase:
 
-1. ✅ **Configurable Client Timeouts**: Fully implemented with `ClientConfig.Timeout`, `WithTimeout()`, and proper context deadline handling
-2. ✅ **User-Friendly GetPluginInfo Errors**: Fully implemented with exactly the error messages required by FR-006, FR-007, and FR-008
+1. ✅ **Configurable Client Timeouts**: Fully implemented with `ClientConfig.Timeout`, `WithTimeout()`, and
+   proper context deadline handling
+2. ✅ **User-Friendly GetPluginInfo Errors**: Fully implemented with exactly the error messages required
+   by FR-006, FR-007, and FR-008
 3. ✅ **GetPluginInfo Performance Conformance**: Fully implemented with 100ms Standard / 50ms Advanced thresholds
 
 The work for this feature is primarily:

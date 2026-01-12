@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spec.pulumicost.dev/schemas/plugin_registry.schema.json",
-  "title": "PulumiCost Plugin Registry Index",
+  "$id": "https://spec.finfocus.dev/schemas/plugin_registry.schema.json",
+  "title": "FinFocus Plugin Registry Index",
   "description": "Schema for plugin registry index files containing metadata for discoverable plugins",
   "type": "object",
   "required": ["schema_version", "plugins"],
@@ -52,7 +52,7 @@
           "type": "string",
           "description": "GitHub repository in owner/repo format",
           "pattern": "^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$",
-          "examples": ["rshade/pulumicost-plugin-kubecost"]
+          "examples": ["rshade/finfocus-plugin-kubecost"]
         },
         "author": {
           "type": "string",
@@ -112,13 +112,13 @@
         },
         "min_spec_version": {
           "type": "string",
-          "description": "Minimum PulumiCost spec version required",
+          "description": "Minimum FinFocus spec version required",
           "pattern": "^\\d+\\.\\d+\\.\\d+$",
           "examples": ["0.1.0"]
         },
         "max_spec_version": {
           "type": "string",
-          "description": "Maximum PulumiCost spec version supported",
+          "description": "Maximum FinFocus spec version supported",
           "pattern": "^\\d+\\.\\d+\\.\\d+$"
         },
         "keywords": {

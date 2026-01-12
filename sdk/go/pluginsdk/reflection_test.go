@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
@@ -140,7 +140,7 @@ func checkReflection(ctx context.Context, conn grpc.ClientConnInterface) error {
 	}
 
 	for _, svc := range listResp.GetService() {
-		if svc.GetName() == "pulumicost.v1.CostSourceService" {
+		if svc.GetName() == "finfocus.v1.CostSourceService" {
 			return nil
 		}
 	}

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/currency"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/currency"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // contractedCostTolerance defines the relative tolerance for ContractedCost validation.

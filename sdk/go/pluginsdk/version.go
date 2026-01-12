@@ -1,11 +1,11 @@
-// Package pluginsdk provides version information for the PulumiCost specification.
+// Package pluginsdk provides version information for the FinFocus specification.
 package pluginsdk
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/internal/semver"
+	"github.com/rshade/finfocus-spec/sdk/go/internal/semver"
 )
 
 // init validates the SpecVersion constant at package initialization.
@@ -19,7 +19,7 @@ func init() {
 	}
 }
 
-// SpecVersion is the version of the pulumicost-spec protocol that this SDK implements.
+// SpecVersion is the version of the finfocus-spec protocol that this SDK implements.
 // This constant is used by the default GetPluginInfo handler to report the spec version
 // that plugins were compiled against.
 //

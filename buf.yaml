@@ -18,5 +18,12 @@ breaking:
   #   - currency → billing_currency (field 18)
   #   - usage_quantity → consumed_quantity (field 20)
   #   - usage_unit → consumed_unit (field 21)
+  # Ignore project rename from pulumicost to finfocus (035-project-rename-finfocus).
+  # These files were moved from pulumicost/v1/ to finfocus/v1/ with package name changes.
   ignore:
-    - proto/pulumicost/v1/focus.proto
+    - proto/finfocus/v1/focus.proto
+    - pulumicost/v1/budget.proto
+    - pulumicost/v1/costsource.proto
+    - pulumicost/v1/enums.proto
+    - pulumicost/v1/focus.proto
+    - pulumicost/v1/registry.proto

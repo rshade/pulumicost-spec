@@ -1,11 +1,11 @@
 # Property Mapping: Pulumi Resources to Plugin Fields
 
 This document provides comprehensive mapping between Pulumi resource properties and
-PulumiCost plugin fields for all supported cloud providers.
+FinFocus plugin fields for all supported cloud providers.
 
 ## Overview
 
-PulumiCost plugins need to extract pricing-relevant information from Pulumi resource
+FinFocus plugins need to extract pricing-relevant information from Pulumi resource
 properties. The `sdk/go/pluginsdk/mapping` package provides helper functions for this
 purpose, but understanding the underlying mappings is essential for plugin development.
 
@@ -509,7 +509,7 @@ descriptor := &proto.ResourceDescriptor{
 
 ## API Reference
 
-### Package: `github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping`
+### Package: `github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping`
 
 | Function | Description |
 |----------|-------------|

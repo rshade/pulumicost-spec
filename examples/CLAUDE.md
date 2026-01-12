@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is the **examples directory** of the PulumiCost Specification repository, containing comprehensive examples of PricingSpec
+This is the **examples directory** of the FinFocus Specification repository, containing comprehensive examples of PricingSpec
 JSON documents and gRPC request samples. The examples serve as validation references, documentation resources, and integration
-test data for the PulumiCost ecosystem.
+test data for the FinFocus ecosystem.
 
 ## Directory Structure & Purpose
 
@@ -201,5 +201,5 @@ cd .. && npm run validate
 - Provider enum values consistent with schema definitions
 - Billing mode values from approved specification list
 
-This examples directory serves as the validation foundation and integration reference for the entire PulumiCost ecosystem,
+This examples directory serves as the validation foundation and integration reference for the entire FinFocus ecosystem,
 ensuring consistent pricing specification interpretation across all implementations.

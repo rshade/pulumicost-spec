@@ -17,8 +17,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/rshade/pulumicost-spec/sdk/go/internal/utilization"
-	pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+	"github.com/rshade/finfocus-spec/sdk/go/internal/utilization"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 const (
@@ -1424,8 +1424,8 @@ func NewActualCostResponseWithHint(
 
 // NOTE: ValidateActualCostResponseHelper was removed. Use pluginsdk.ValidateActualCostResponse
 // instead, which is the canonical implementation for validating GetActualCostResponse messages.
-// Import: "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+// Import: "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
-// NOTE: getUtilization was removed. Use github.com/rshade/pulumicost-spec/sdk/go/internal/utilization.Get()
+// NOTE: getUtilization was removed. Use github.com/rshade/finfocus-spec/sdk/go/internal/utilization.Get()
 // which is the shared implementation. The circular dependency that previously prevented this
 // import has been resolved by creating the internal/utilization package.

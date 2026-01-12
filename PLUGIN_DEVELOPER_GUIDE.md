@@ -1,6 +1,6 @@
-# PulumiCost Plugin Developer Guide
+# FinFocus Plugin Developer Guide
 
-This guide provides comprehensive instructions for developing PulumiCost plugins using the canonical protocol specification.
+This guide provides comprehensive instructions for developing FinFocus plugins using the canonical protocol specification.
 
 ## Table of Contents
 
@@ -33,7 +33,7 @@ This guide provides comprehensive instructions for developing PulumiCost plugins
 
 ## Overview
 
-PulumiCost plugins implement the `CostSourceService` gRPC interface to provide cost data from
+FinFocus plugins implement the `CostSourceService` gRPC interface to provide cost data from
 various sources (cloud providers, cost management tools, custom pricing models).
 This guide walks through the complete plugin development lifecycle from implementation to distribution.
 
@@ -41,7 +41,7 @@ This guide walks through the complete plugin development lifecycle from implemen
 
 ```text
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   PulumiCost    │    │   Your Plugin    │    │   Cost Source   │
+│   FinFocus    │    │   Your Plugin    │    │   Cost Source   │
 │     Core        │◄──►│  (gRPC Server)   │◄──►│  (AWS/GCP/etc)  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                               │
@@ -727,11 +727,11 @@ Plugins must follow a standardized packaging format for consistent deployment an
 
 ### Plugin Structure
 
-A PulumiCost plugin follows this directory structure:
+A FinFocus plugin follows this directory structure:
 
 ```text
 my-plugin/
-├── pulumicost-plugin.yaml    # Plugin manifest (required)
+├── finfocus-plugin.yaml    # Plugin manifest (required)
 ├── bin/                      # Plugin binaries
 │   ├── plugin-linux-amd64   # Linux x64 binary
 │   ├── plugin-darwin-amd64  # macOS x64 binary
@@ -747,7 +747,7 @@ my-plugin/
 
 ### Manifest Configuration
 
-The `pulumicost-plugin.yaml` file contains plugin metadata and configuration:
+The `finfocus-plugin.yaml` file contains plugin metadata and configuration:
 
 ```yaml
 # Plugin manifest version (required)
@@ -892,7 +892,7 @@ Plugins can be distributed in multiple formats:
    ```dockerfile
    FROM scratch
    COPY plugin-linux-amd64 /plugin
-   COPY pulumicost-plugin.yaml /pulumicost-plugin.yaml
+   COPY finfocus-plugin.yaml /finfocus-plugin.yaml
    ENTRYPOINT ["/plugin"]
    ```
 
@@ -902,10 +902,10 @@ Plugins can be published to registries for easy discovery:
 
 ```bash
 # Publish to plugin registry
-pulumicost plugin publish my-plugin-1.0.0.tar.gz
+finfocus plugin publish my-plugin-1.0.0.tar.gz
 
 # Install from registry
-pulumicost plugin install my-cost-plugin@1.0.0
+finfocus plugin install my-cost-plugin@1.0.0
 ```
 
 ### Validation
@@ -914,10 +914,10 @@ Validate your plugin package before distribution:
 
 ```bash
 # Validate manifest syntax
-pulumicost plugin validate pulumicost-plugin.yaml
+finfocus plugin validate finfocus-plugin.yaml
 
 # Test plugin package
-pulumicost plugin test my-plugin-1.0.0.tar.gz
+finfocus plugin test my-plugin-1.0.0.tar.gz
 ```
 
 The validation checks:
@@ -942,7 +942,7 @@ cd my-cost-plugin
 go mod init github.com/yourorg/my-cost-plugin
 
 # Add dependencies
-go get github.com/rshade/pulumicost-spec/sdk/go/proto@latest
+go get github.com/rshade/finfocus-spec/sdk/go/proto@latest
 go get google.golang.org/grpc@latest
 go get google.golang.org/protobuf@latest
 ```
@@ -965,8 +965,8 @@ import (
  "syscall"
  "time"
 
- pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
- "github.com/rshade/pulumicost-spec/sdk/go/pricing"
+ pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+ "github.com/rshade/finfocus-spec/sdk/go/pricing"
  "google.golang.org/grpc"
  "google.golang.org/grpc/codes"
  "google.golang.org/grpc/status"
@@ -1213,20 +1213,20 @@ module github.com/yourorg/my-cost-plugin
 go 1.25
 
 require (
- github.com/rshade/pulumicost-spec/sdk/go v0.4.6
+ github.com/rshade/finfocus-spec/sdk/go v0.4.6
  google.golang.org/grpc v1.68.0
  google.golang.org/protobuf v1.36.0
 )
 ```
 
-#### pulumicost-plugin.yaml
+#### finfocus-plugin.yaml
 
 ```yaml
 manifest_version: "1.0"
 
 name: "my-cost-plugin"
 version: "1.0.0"
-description: "Example cost plugin demonstrating PulumiCost plugin development"
+description: "Example cost plugin demonstrating FinFocus plugin development"
 author: "Your Name <you@example.com>"
 license: "Apache-2.0"
 homepage: "https://github.com/yourorg/my-cost-plugin"
@@ -1286,25 +1286,25 @@ You can test the plugin using grpcurl or any gRPC client:
 go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 # Test Name RPC
-grpcurl -plaintext -import-path . -proto proto/pulumicost/v1/costsource.proto \
-  localhost:50051 pulumicost.v1.CostSourceService.Name
+grpcurl -plaintext -import-path . -proto proto/finfocus/v1/costsource.proto \
+  localhost:50051 finfocus.v1.CostSourceService.Name
 
 # Test Supports RPC
-grpcurl -plaintext -import-path . -proto proto/pulumicost/v1/costsource.proto \
+grpcurl -plaintext -import-path . -proto proto/finfocus/v1/costsource.proto \
   -d '{"resource": {"provider": "custom", "resource_type": "vm"}}' \
-  localhost:50051 pulumicost.v1.CostSourceService.Supports
+  localhost:50051 finfocus.v1.CostSourceService.Supports
 
 # Test GetProjectedCost RPC
-grpcurl -plaintext -import-path . -proto proto/pulumicost/v1/costsource.proto \
+grpcurl -plaintext -import-path . -proto proto/finfocus/v1/costsource.proto \
   -d '{"resource": {"provider": "custom", "resource_type": "vm", "sku": "small", "region": "us-east-1"}}' \
-  localhost:50051 pulumicost.v1.CostSourceService.GetProjectedCost
+  localhost:50051 finfocus.v1.CostSourceService.GetProjectedCost
 ```
 
 ### Plugin Package Structure
 
 ```text
 my-cost-plugin-1.0.0/
-├── pulumicost-plugin.yaml
+├── finfocus-plugin.yaml
 ├── bin/
 │   ├── plugin-linux-amd64
 │   ├── plugin-darwin-amd64
@@ -1330,7 +1330,7 @@ my-cost-plugin-1.0.0/
 
 ## Testing and Validation
 
-Comprehensive testing ensures your plugin works correctly and integrates smoothly with the PulumiCost ecosystem.
+Comprehensive testing ensures your plugin works correctly and integrates smoothly with the FinFocus ecosystem.
 
 ### Unit Testing
 
@@ -1346,7 +1346,7 @@ import (
  "testing"
  "time"
 
- pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
  "github.com/stretchr/testify/assert"
  "google.golang.org/grpc/codes"
  "google.golang.org/grpc/status"
@@ -1611,7 +1611,7 @@ import (
  "testing"
  "time"
 
- pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
  "github.com/stretchr/testify/assert"
  "github.com/stretchr/testify/require"
  "google.golang.org/grpc"
@@ -1709,7 +1709,7 @@ import (
  "encoding/json"
  "testing"
 
- "github.com/rshade/pulumicost-spec/sdk/go/pricing"
+ "github.com/rshade/finfocus-spec/sdk/go/pricing"
  "github.com/stretchr/testify/assert"
  "github.com/stretchr/testify/require"
 )
@@ -1829,7 +1829,7 @@ import (
  "testing"
  "time"
 
- pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
  "github.com/stretchr/testify/assert"
 )
 
@@ -1954,7 +1954,7 @@ package test
 
 import (
  "time"
- pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+ pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
  "google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -1996,7 +1996,7 @@ func CreateTestActualCostRequest() *pb.GetActualCostRequest {
 
 ## Best Practices and Common Patterns
 
-Following established patterns ensures your plugin integrates well with the PulumiCost
+Following established patterns ensures your plugin integrates well with the FinFocus
 ecosystem and provides a consistent experience.
 
 ### Error Response Handling
@@ -2640,7 +2640,7 @@ This section covers common issues encountered during plugin development and thei
 
 #### Build and Compilation Issues
 
-**Issue**: `package github.com/rshade/pulumicost-spec/sdk/go/proto is not in GOROOT`
+**Issue**: `package github.com/rshade/finfocus-spec/sdk/go/proto is not in GOROOT`
 
 **Cause**: Missing or incorrect Go module dependencies.
 
@@ -2651,7 +2651,7 @@ This section covers common issues encountered during plugin development and thei
 go mod init your-plugin-name
 
 # Add the dependency
-go get github.com/rshade/pulumicost-spec/sdk/go/proto@latest
+go get github.com/rshade/finfocus-spec/sdk/go/proto@latest
 
 # Clean up dependencies
 go mod tidy
@@ -2933,17 +2933,17 @@ func (s *server) GetProjectedCost(ctx context.Context, req *pb.GetProjectedCostR
 grpcurl -plaintext localhost:50051 list
 
 # Test Name RPC
-grpcurl -plaintext localhost:50051 pulumicost.v1.CostSourceService.Name
+grpcurl -plaintext localhost:50051 finfocus.v1.CostSourceService.Name
 
 # Test with request data
 grpcurl -plaintext \
     -d '{"resource": {"provider": "aws", "resource_type": "ec2", "sku": "t3.micro", "region": "us-east-1"}}' \
     localhost:50051 \
-    pulumicost.v1.CostSourceService.GetProjectedCost
+    finfocus.v1.CostSourceService.GetProjectedCost
 
 # Test with file input
 echo '{"resource": {"provider": "aws", "resource_type": "ec2"}}' > request.json
-grpcurl -plaintext -d @ localhost:50051 pulumicost.v1.CostSourceService.Supports < request.json
+grpcurl -plaintext -d @ localhost:50051 finfocus.v1.CostSourceService.Supports < request.json
 ```
 
 #### Using gRPC Health Checks
@@ -3075,21 +3075,21 @@ func (s *server) GetActualCost(ctx context.Context, req *pb.GetActualCostRequest
 }
 ```
 
-#### Q: How do I test my plugin with PulumiCost?
+#### Q: How do I test my plugin with FinFocus?
 
 **A**: Use the integration testing approach:
 
 1. Start your plugin server
-2. Use PulumiCost CLI to connect to your plugin
+2. Use FinFocus CLI to connect to your plugin
 3. Run test queries against your plugin
 
 ```bash
 # Start your plugin
 ./my-plugin -port 50051
 
-# Test with PulumiCost (example commands)
-pulumicost plugin add my-plugin localhost:50051
-pulumicost cost get --provider custom --resource-type vm --sku small
+# Test with FinFocus (example commands)
+finfocus plugin add my-plugin localhost:50051
+finfocus cost get --provider custom --resource-type vm --sku small
 ```
 
 #### Q: What metrics should I monitor in production?
@@ -3179,7 +3179,7 @@ If you encounter issues not covered in this guide:
 1. **Check Logs**: Enable debug logging and examine error messages
 2. **Review Examples**: Compare your implementation with the working examples
 3. **Test Isolation**: Create minimal test cases to isolate the problem
-4. **Community Support**: Reach out to the PulumiCost community
+4. **Community Support**: Reach out to the FinFocus community
 5. **GitHub Issues**: Report bugs or request features in the spec repository
 
 ### Useful Commands Reference
