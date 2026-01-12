@@ -37,7 +37,7 @@
           "jsonpath": "$.packages[''].version"
         },
         {
-          "type": "txt",
+          "type": "generic",
           "path": "sdk/go/pluginsdk/version.go",
           "pattern": "const SpecVersion = \"{version}\""
         }
