@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.15](https://github.com/rshade/finfocus-spec/compare/v0.4.14...v0.4.15) (2026-01-12)
+
+
+### Changed
+
+* **sdk:** rename project from pulumicost to finfocus ([#273](https://github.com/rshade/finfocus-spec/issues/273)) ([eecdddb](https://github.com/rshade/finfocus-spec/commit/eecdddbdf8ea901f15c46658e8315dadbd4e58a0)), closes [#272](https://github.com/rshade/finfocus-spec/issues/272)
+
 ## [0.4.14](https://github.com/rshade/pulumicost-spec/compare/v0.4.13...v0.4.14) (2026-01-10)
 
 
