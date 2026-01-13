@@ -93,6 +93,12 @@ func addBasicConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 	})
 
 	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "GetPluginInfoPerformance",
+		Description: "Plugin must respond to GetPluginInfo within 100ms",
+		TestFunc:    createGetPluginInfoPerformanceTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
 		Name:        "SupportsHandlesValidInput",
 		Description: "Plugin must handle Supports requests correctly",
 		TestFunc:    createSupportsValidInputTest(),
@@ -2383,7 +2389,6 @@ func createGetRecommendationsCommitmentActionTest() func(*plugintesting.TestHarn
 // This test verifies FR-001 (RPC exists), FR-002 (response fields), FR-003 (SDK default),
 // and FR-007 (SemVer validation for spec_version).
 
-//nolint:gocognit
 func createGetPluginInfoValidResponseTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
 	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
 		start := time.Now()
@@ -2434,14 +2439,6 @@ func createGetPluginInfoValidResponseTest() func(*plugintesting.TestHarness) plu
 			}
 		}
 
-		// Validate response time (< 100ms per plan.md)
-		if duration > 100*time.Millisecond {
-			issues = append(issues, fmt.Sprintf(
-				"response time %v exceeds 100ms requirement",
-				duration,
-			))
-		}
-
 		if len(issues) > 0 {
 			return plugintesting.TestResult{
 				Method:   "GetPluginInfo",
@@ -2463,6 +2460,59 @@ func createGetPluginInfoValidResponseTest() func(*plugintesting.TestHarness) plu
 				resp.GetSpecVersion(),
 				resp.GetProviders(),
 			),
+		}
+	}
+}
+
+func createGetPluginInfoPerformanceTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		const maxDuration = 100 * time.Millisecond
+		const iterations = 10
+		ctx := context.Background()
+
+		var totalDuration time.Duration
+		for i := range iterations {
+			start := time.Now()
+			_, err := harness.Client().GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
+			duration := time.Since(start)
+
+			if err != nil {
+				// Check if it's an Unimplemented error (legacy plugin)
+				st, ok := status.FromError(err)
+				if ok && st.Code() == codes.Unimplemented {
+					return plugintesting.TestResult{
+						Method:   "GetPluginInfo",
+						Success:  true, // Unimplemented is acceptable for legacy plugins
+						Duration: duration,
+						Details:  "Legacy plugin: GetPluginInfo not implemented (graceful degradation)",
+					}
+				}
+				return plugintesting.TestResult{
+					Method:   "GetPluginInfo",
+					Success:  false,
+					Error:    err,
+					Duration: duration,
+					Details:  fmt.Sprintf("RPC call failed on iteration %d", i),
+				}
+			}
+
+			if duration > maxDuration {
+				return plugintesting.TestResult{
+					Method:   "GetPluginInfo",
+					Success:  false,
+					Error:    fmt.Errorf("iteration %d: %v exceeds %v", i, duration, maxDuration),
+					Duration: duration,
+					Details:  "Performance requirement not met",
+				}
+			}
+			totalDuration += duration
+		}
+
+		return plugintesting.TestResult{
+			Method:   "GetPluginInfo",
+			Success:  true,
+			Duration: totalDuration / iterations,
+			Details:  fmt.Sprintf("Average response time over %d iterations: %v", iterations, totalDuration/iterations),
 		}
 	}
 }

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is the **specs directory** containing the core PricingSpec JSON examples for the PulumiCost specification. These 10
+This is the **specs directory** containing the core PricingSpec JSON examples for the FinFocus specification. These 10
 production-quality examples serve as the canonical reference implementations demonstrating all major cloud provider billing
 models, advanced pricing features, and comprehensive metadata patterns.
 
@@ -200,5 +200,5 @@ cd sdk/go && go test -v -run TestValidatePricingSpec_ComplexValidExamples
 - Time aggregation: window/method/alignment combinations validated
 - Metric hints: metric/unit/aggregation_method triples complete
 
-This specs directory provides the foundational validation reference for the entire PulumiCost ecosystem, ensuring consistent
+This specs directory provides the foundational validation reference for the entire FinFocus ecosystem, ensuring consistent
 pricing specification interpretation across all cloud providers and resource types.

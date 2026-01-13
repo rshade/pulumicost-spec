@@ -53,7 +53,7 @@ specs/003-getpricingspec/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 └── costsource.proto     # Add PricingTier message, update PricingSpec
 
 sdk/go/

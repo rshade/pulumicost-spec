@@ -7,7 +7,7 @@
 
 ## Technical Context
 
-This feature upgrades the `pulumicost-spec` to align with FinOps FOCUS 1.2 by introducing
+This feature upgrades the `finfocus-spec` to align with FinOps FOCUS 1.2 by introducing
 a new `FocusCostRecord` Protobuf message, standardizing categorization via strict Enums
 (Vocabulary), and implementing a "Backpack & Builder" pattern in the Go SDK.
 
@@ -52,7 +52,7 @@ a new `FocusCostRecord` Protobuf message, standardizing categorization via stric
    - Action: Define Enum values in `enums.proto`.
    - Output: `specs/009-focus-1-2-integration/data-model.md`
 3. **Define Contracts**:
-   - Action: Draft `proto/pulumicost/v1/focus.proto` and `proto/pulumicost/v1/enums.proto`.
+   - Action: Draft `proto/finfocus/v1/focus.proto` and `proto/finfocus/v1/enums.proto`.
    - Output: `specs/009-focus-1-2-integration/contracts/focus.proto`
 
 ## Phase 1: Specification & SDK Core
@@ -60,8 +60,8 @@ a new `FocusCostRecord` Protobuf message, standardizing categorization via stric
 **Goal**: Implement the Protobuf spec and base SDK Builder.
 
 1. **Protobuf Implementation**:
-   - Create `proto/pulumicost/v1/enums.proto` (Vocabularies).
-   - Create `proto/pulumicost/v1/focus.proto` (`FocusCostRecord` message).
+   - Create `proto/finfocus/v1/enums.proto` (Vocabularies).
+   - Create `proto/finfocus/v1/focus.proto` (`FocusCostRecord` message).
    - Run `buf generate` to create Go code.
 2. **SDK Builder Implementation**:
    - Create `sdk/go/pluginsdk/focus_builder.go`.

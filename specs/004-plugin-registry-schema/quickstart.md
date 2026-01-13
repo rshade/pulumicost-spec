@@ -19,7 +19,7 @@ schema.
     "my-plugin": {
       "name": "my-plugin",
       "description": "A cost data plugin for my custom cost source",
-      "repository": "myorg/pulumicost-plugin-custom",
+      "repository": "myorg/finfocus-plugin-custom",
       "author": "My Organization",
       "supported_providers": ["custom"],
       "min_spec_version": "0.1.0"
@@ -37,10 +37,10 @@ schema.
     "kubecost": {
       "name": "kubecost",
       "description": "Kubernetes cost analysis via Kubecost API integration",
-      "repository": "rshade/pulumicost-plugin-kubecost",
-      "author": "PulumiCost Team",
+      "repository": "rshade/finfocus-plugin-kubecost",
+      "author": "FinFocus Team",
       "license": "Apache-2.0",
-      "homepage": "https://github.com/rshade/pulumicost-plugin-kubecost",
+      "homepage": "https://github.com/rshade/finfocus-plugin-kubecost",
       "supported_providers": ["kubernetes"],
       "capabilities": ["cost_retrieval", "cost_projection", "real_time_data"],
       "security_level": "official",
@@ -138,7 +138,7 @@ Error: must have required property 'deprecation_message'
 
 ## Consumer Validation
 
-The schema validates structure and patterns. Consuming applications (pulumicost-core)
+The schema validates structure and patterns. Consuming applications (finfocus-core)
 additionally validate:
 
 - Plugin name matches registry key
@@ -148,8 +148,8 @@ additionally validate:
 ## Version Compatibility
 
 - **schema_version**: Format version of the registry file
-- **min_spec_version**: Minimum PulumiCost spec version required by plugin
-- **max_spec_version**: Maximum PulumiCost spec version supported (optional)
+- **min_spec_version**: Minimum FinFocus spec version required by plugin
+- **max_spec_version**: Maximum FinFocus spec version supported (optional)
 
-When installing a plugin, pulumicost-core checks that the current spec version falls
+When installing a plugin, finfocus-core checks that the current spec version falls
 within the plugin's supported range.

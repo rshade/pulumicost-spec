@@ -920,7 +920,7 @@ func TestInterceptorChainBuilding(t *testing.T) {
 }
 
 // =============================================================================
-// Port Resolution Tests (--port flag, PULUMICOST_PLUGIN_PORT env var)
+// Port Resolution Tests (--port flag, FINFOCUS_PLUGIN_PORT env var)
 // =============================================================================
 
 // TestResolvePort_RequestedTakesPrecedence tests that config.Port takes precedence over env var.
@@ -933,13 +933,13 @@ func TestResolvePort_RequestedTakesPrecedence(t *testing.T) {
 	assert.Equal(t, 8080, got, "requested port should take precedence over env var")
 }
 
-// TestResolvePort_FallsBackToEnvVar tests that PULUMICOST_PLUGIN_PORT is used when no port requested.
+// TestResolvePort_FallsBackToEnvVar tests that FINFOCUS_PLUGIN_PORT is used when no port requested.
 func TestResolvePort_FallsBackToEnvVar(t *testing.T) {
 	t.Setenv(EnvPort, "7777")
 
 	got := resolvePort(0)
 
-	assert.Equal(t, 7777, got, "should fall back to PULUMICOST_PLUGIN_PORT when requested is 0")
+	assert.Equal(t, 7777, got, "should fall back to FINFOCUS_PLUGIN_PORT when requested is 0")
 }
 
 // TestResolvePort_ReturnsZeroWhenNeitherSet tests ephemeral port behavior.
@@ -967,7 +967,7 @@ func TestResolvePort_IgnoresGenericPORT(t *testing.T) {
 	got := resolvePort(0)
 
 	// PORT should be IGNORED - we should get 0 (ephemeral), not 5000
-	assert.Equal(t, 0, got, "PORT env var should be ignored; only PULUMICOST_PLUGIN_PORT is read")
+	assert.Equal(t, 0, got, "PORT env var should be ignored; only FINFOCUS_PLUGIN_PORT is read")
 }
 
 // TestServe_InvalidPluginInfoReturnsError tests T020: Serve returns error for invalid PluginInfo.

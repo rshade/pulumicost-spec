@@ -10,10 +10,10 @@ for a specific resource.
 
 ### 1. Regenerate SDK
 
-Ensure your plugin is using the latest `pulumicost` SDK (v1.x.x).
+Ensure your plugin is using the latest `finfocus` SDK (v1.x.x).
 
 ```bash
-go get github.com/rshade/pulumicost-spec/sdk/go@latest
+go get github.com/rshade/finfocus-spec/sdk/go@latest
 ```
 
 ### 2. Using Functional Options

@@ -14,7 +14,7 @@ surfaces and behavior.
 
 ### Provider Enum
 
-**Purpose**: Represents supported cloud providers in the PulumiCost ecosystem
+**Purpose**: Represents supported cloud providers in the FinFocus ecosystem
 
 **Values**:
 
@@ -69,7 +69,7 @@ surfaces and behavior.
 - `untrusted` - Unverified plugin requiring explicit approval
 - `community` - Community-verified plugin
 - `verified` - Officially verified plugin
-- `official` - Official PulumiCost plugin
+- `official` - Official FinFocus plugin
 
 **Validation**: Case-sensitive exact match against valid values
 

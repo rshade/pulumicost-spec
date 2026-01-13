@@ -43,7 +43,7 @@ The port is resolved via `resolvePort()` function with this priority:
 3. **Ephemeral (0)** - OS assigns available port
 
 **Decision**: PORT environment variable is NOT supported to avoid multi-plugin conflicts.
-**Rationale**: When pulumicost-core spawns multiple plugins (e.g., aws-public + aws-ce), each needs
+**Rationale**: When finfocus-core spawns multiple plugins (e.g., aws-public + aws-ce), each needs
 a unique port. Using --port flag allows the core to allocate distinct ports.
 **Source**: `sdk/go/pluginsdk/sdk.go:322-336`
 
@@ -200,7 +200,7 @@ Returns the underlying gRPC error if server fails for reasons other than context
 
 **Alternative**: Support generic PORT environment variable as fallback
 **Rejected Because**: Multi-plugin orchestration requires unique ports per plugin. Generic PORT
-would cause conflicts when pulumicost-core spawns multiple plugins.
+would cause conflicts when finfocus-core spawns multiple plugins.
 
 ### External Binding (Rejected)
 

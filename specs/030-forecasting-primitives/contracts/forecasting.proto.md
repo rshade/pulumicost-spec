@@ -4,7 +4,7 @@ This document defines the protocol buffer changes for the forecasting primitives
 
 ## New Enum: GrowthType
 
-**File**: `proto/pulumicost/v1/enums.proto`
+**File**: `proto/finfocus/v1/enums.proto`
 
 ```protobuf
 // GrowthType represents the mathematical model used for projecting cost growth.
@@ -32,7 +32,7 @@ enum GrowthType {
 
 ## Extended Message: ResourceDescriptor
 
-**File**: `proto/pulumicost/v1/costsource.proto`
+**File**: `proto/finfocus/v1/costsource.proto`
 
 Add the following fields after field 8 (arn):
 
@@ -69,7 +69,7 @@ message ResourceDescriptor {
 
 ## Extended Message: GetProjectedCostRequest
 
-**File**: `proto/pulumicost/v1/costsource.proto`
+**File**: `proto/finfocus/v1/costsource.proto`
 
 Add the following fields after field 2 (utilization_percentage):
 

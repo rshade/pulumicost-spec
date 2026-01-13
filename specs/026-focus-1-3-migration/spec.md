@@ -261,4 +261,4 @@ verifying they still pass.
 - [FOCUS Specification](https://focus.finops.org/)
 - [FOCUS GitHub Repository](https://github.com/FinOps-Open-Cost-and-Usage-Spec/FOCUS_Spec)
 - GitHub Issue #183: feat(focus): migrate to FOCUS 1.3 specification
-- Related PR: rshade/pulumicost-spec#99 - feat(focus): Implement FOCUS 1.2 integration [merged]
+- Related PR: rshade/finfocus-spec#99 - feat(focus): Implement FOCUS 1.2 integration [merged]

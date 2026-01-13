@@ -6,7 +6,7 @@
 ## Overview
 
 This research consolidates findings for implementing a structured logging example demonstrating
-zerolog integration for the EstimateCost RPC in the PulumiCost SDK testing package.
+zerolog integration for the EstimateCost RPC in the FinFocus SDK testing package.
 
 ## Dependencies Analysis
 
@@ -43,7 +43,7 @@ zerolog integration for the EstimateCost RPC in the PulumiCost SDK testing packa
 
 ### 006-estimate-cost EstimateCost RPC
 
-**Status**: Implemented in proto/pulumicost/v1/costsource.proto (lines 29-42, 440-484)
+**Status**: Implemented in proto/finfocus/v1/costsource.proto (lines 29-42, 440-484)
 
 **Key Types**:
 

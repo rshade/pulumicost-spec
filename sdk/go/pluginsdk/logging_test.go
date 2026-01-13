@@ -662,7 +662,7 @@ func TestNewLogWriter_ValidPath(t *testing.T) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
 	tmpFile := filepath.Join(t.TempDir(), "test.log")
-	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+	t.Setenv("FINFOCUS_LOG_FILE", tmpFile)
 
 	writer := pluginsdk.NewLogWriter()
 
@@ -691,7 +691,7 @@ func TestNewLogWriter_FileCreated(t *testing.T) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
 	tmpFile := filepath.Join(t.TempDir(), "new.log")
-	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+	t.Setenv("FINFOCUS_LOG_FILE", tmpFile)
 
 	// Verify file doesn't exist yet
 	if _, err := os.Stat(tmpFile); !os.IsNotExist(err) {
@@ -730,7 +730,7 @@ func TestNewLogWriter_FileAppended(t *testing.T) {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
-	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+	t.Setenv("FINFOCUS_LOG_FILE", tmpFile)
 
 	writer := pluginsdk.NewLogWriter()
 	logger := zerolog.New(writer).With().Timestamp().Logger()
@@ -755,7 +755,7 @@ func TestNewLogWriter_AllLogLevels(t *testing.T) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
 	tmpFile := filepath.Join(t.TempDir(), "levels.log")
-	t.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+	t.Setenv("FINFOCUS_LOG_FILE", tmpFile)
 
 	writer := pluginsdk.NewLogWriter()
 	logger := zerolog.New(writer).Level(zerolog.DebugLevel).With().Timestamp().Logger()
@@ -783,12 +783,12 @@ func TestNewLogWriter_EnvNotSet(t *testing.T) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
 	// Ensure env var is not set (empty string is treated as unset)
-	t.Setenv("PULUMICOST_LOG_FILE", "")
+	t.Setenv("FINFOCUS_LOG_FILE", "")
 
 	writer := pluginsdk.NewLogWriter()
 
 	if writer != os.Stderr {
-		t.Error("Expected os.Stderr when PULUMICOST_LOG_FILE is not set")
+		t.Error("Expected os.Stderr when FINFOCUS_LOG_FILE is not set")
 	}
 }
 
@@ -796,12 +796,12 @@ func TestNewLogWriter_EnvNotSet(t *testing.T) {
 func TestNewLogWriter_EmptyString(t *testing.T) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
-	t.Setenv("PULUMICOST_LOG_FILE", "")
+	t.Setenv("FINFOCUS_LOG_FILE", "")
 
 	writer := pluginsdk.NewLogWriter()
 
 	if writer != os.Stderr {
-		t.Error("Expected os.Stderr when PULUMICOST_LOG_FILE is empty string")
+		t.Error("Expected os.Stderr when FINFOCUS_LOG_FILE is empty string")
 	}
 }
 
@@ -810,12 +810,12 @@ func TestNewLogWriter_DirectoryPath(t *testing.T) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
 	tmpDir := t.TempDir()
-	t.Setenv("PULUMICOST_LOG_FILE", tmpDir)
+	t.Setenv("FINFOCUS_LOG_FILE", tmpDir)
 
 	writer := pluginsdk.NewLogWriter()
 
 	if writer != os.Stderr {
-		t.Error("Expected os.Stderr when PULUMICOST_LOG_FILE points to a directory")
+		t.Error("Expected os.Stderr when FINFOCUS_LOG_FILE points to a directory")
 	}
 }
 
@@ -824,7 +824,7 @@ func TestNewLogWriter_NonexistentParent(t *testing.T) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
 	nonexistentPath := filepath.Join(t.TempDir(), "nonexistent", "subdir", "test.log")
-	t.Setenv("PULUMICOST_LOG_FILE", nonexistentPath)
+	t.Setenv("FINFOCUS_LOG_FILE", nonexistentPath)
 
 	writer := pluginsdk.NewLogWriter()
 
@@ -836,7 +836,7 @@ func TestNewLogWriter_NonexistentParent(t *testing.T) {
 // TestNewLogWriter_BackwardCompatibility verifies existing plugins work without modification.
 func TestNewLogWriter_BackwardCompatibility(t *testing.T) {
 	// Clear the env var to simulate existing plugin behavior
-	t.Setenv("PULUMICOST_LOG_FILE", "")
+	t.Setenv("FINFOCUS_LOG_FILE", "")
 
 	// Create a plugin logger the "old way" - should still work
 	var buf bytes.Buffer
@@ -869,7 +869,7 @@ func BenchmarkNewLogWriter_File(b *testing.B) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
 	tmpFile := filepath.Join(b.TempDir(), "bench.log")
-	b.Setenv("PULUMICOST_LOG_FILE", tmpFile)
+	b.Setenv("FINFOCUS_LOG_FILE", tmpFile)
 	b.ResetTimer()
 	b.ReportAllocs()
 
@@ -882,7 +882,7 @@ func BenchmarkNewLogWriter_File(b *testing.B) {
 func BenchmarkNewLogWriter_Stderr(b *testing.B) {
 	pluginsdk.ResetLogWriter()
 	defer pluginsdk.ResetLogWriter()
-	b.Setenv("PULUMICOST_LOG_FILE", "")
+	b.Setenv("FINFOCUS_LOG_FILE", "")
 	b.ResetTimer()
 	b.ReportAllocs()
 

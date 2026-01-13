@@ -5,7 +5,7 @@
 ## Overview
 
 This feature adds centralized environment variable handling to the `pluginsdk` package,
-providing a standardized way for PulumiCost plugins to read configuration from the
+providing a standardized way for FinFocus plugins to read configuration from the
 environment.
 
 ## Installation
@@ -14,7 +14,7 @@ The environment handling is part of the existing `pluginsdk` package. No additio
 installation required:
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 ```
 
 ## Basic Usage
@@ -26,7 +26,7 @@ package main
 
 import (
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {

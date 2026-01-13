@@ -59,7 +59,7 @@ specs/013-recommendations-rpc/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 └── costsource.proto     # Add GetRecommendations RPC + all recommendation messages
                          # (single-file approach per research.md decision)
 

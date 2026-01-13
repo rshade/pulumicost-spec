@@ -93,17 +93,17 @@ specs/001-get-budgets-rpc/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 ├── budget.proto         # NEW: Budget message definitions
 └── costsource.proto     # UPDATED: Add GetBudgets RPC
 
 sdk/go/
 ├── proto/               # GENERATED: gRPC service and message types
-│   ├── pulumicost/
+│   ├── finfocus/
 │   │   └── v1/
 │   │       ├── budget.pb.go
 │   │       └── costsource.pb.go
-│   └── pulumicost/
+│   └── finfocus/
 │       └── v1/
 │           ├── budget_grpc.pb.go
 │           └── costsource_grpc.pb.go

@@ -6,7 +6,7 @@
 
 ## Overview
 
-This contract documents the PulumiCost Go SDK client configuration API for timeout handling and context management.
+This contract documents the FinFocus Go SDK client configuration API for timeout handling and context management.
 
 ---
 

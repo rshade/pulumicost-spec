@@ -6,13 +6,13 @@
 ## Overview
 
 This guide shows how to use the conformance testing adapter functions to validate your
-`pluginsdk.Plugin` implementation against the PulumiCost specification.
+`pluginsdk.Plugin` implementation against the FinFocus specification.
 
 ## Prerequisites
 
 - Go 1.20 or later
 - A plugin implementing `pluginsdk.Plugin` interface
-- Import: `github.com/rshade/pulumicost-spec/sdk/go/pluginsdk`
+- Import: `github.com/rshade/finfocus-spec/sdk/go/pluginsdk`
 
 ## Basic Usage
 
@@ -26,7 +26,7 @@ package myplugin_test
 import (
     "testing"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func TestPluginBasicConformance(t *testing.T) {
@@ -96,7 +96,7 @@ package myplugin_test
 import (
     "testing"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // TestConformance runs the full conformance suite
@@ -184,7 +184,7 @@ If you were previously using `sdk/go/testing` directly:
 **Before** (manual conversion):
 
 ```go
-import plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
+import plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
 
 plugin := NewMyPlugin()
 server := pluginsdk.NewServer(plugin)  // Manual conversion
@@ -194,7 +194,7 @@ result, err := plugintesting.RunStandardConformance(server)
 **After** (using adapters):
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 
 plugin := NewMyPlugin()
 result, err := pluginsdk.RunStandardConformance(plugin)  // Direct!

@@ -288,7 +288,7 @@ After implementing optimization, verify:
 ### Basic Validation
 
 ```go
-import "github.com/rshade/pulumicost-spec/sdk/go/registry"
+import "github.com/rshade/finfocus-spec/sdk/go/registry"
 
 // Validate provider
 if registry.IsValidProvider("aws") {

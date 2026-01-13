@@ -4,7 +4,7 @@
 
 ## Overview
 
-This guide covers implementing FOCUS 1.3 features in your PulumiCost plugin.
+This guide covers implementing FOCUS 1.3 features in your FinFocus plugin.
 
 ## New Capabilities
 

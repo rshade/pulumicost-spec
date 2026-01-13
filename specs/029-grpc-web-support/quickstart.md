@@ -9,7 +9,7 @@ package main
 
 import (
     "context"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {
@@ -36,12 +36,12 @@ The Connect protocol supports JSON, making debugging easy:
 
 ```bash
 # Get plugin name
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/Name \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/Name \
   -H "Content-Type: application/json" \
   -d '{}'
 
 # Estimate cost for a resource
-curl -X POST http://localhost:8080/pulumicost.v1.CostSourceService/EstimateCost \
+curl -X POST http://localhost:8080/finfocus.v1.CostSourceService/EstimateCost \
   -H "Content-Type: application/json" \
   -d '{
     "resource": {
@@ -64,8 +64,8 @@ package main
 import (
     "context"
     "fmt"
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/client"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk/client"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func main() {
@@ -113,7 +113,7 @@ For browser-based access, you can use:
 1. **Connect Protocol with fetch** (simplest):
 
 ```javascript
-const response = await fetch('http://localhost:8080/pulumicost.v1.CostSourceService/Name', {
+const response = await fetch('http://localhost:8080/finfocus.v1.CostSourceService/Name', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({})
@@ -127,7 +127,7 @@ console.log('Plugin name:', data.name);
 ```typescript
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { createClient } from "@connectrpc/connect";
-import { CostSourceService } from "./gen/pulumicost/v1/costsource_connect";
+import { CostSourceService } from "./gen/finfocus/v1/costsource_connect";
 
 const transport = createConnectTransport({
   baseUrl: "http://localhost:8080",

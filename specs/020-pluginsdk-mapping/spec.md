@@ -113,9 +113,9 @@ verifying the generic extractor finds values using fallback key lists.
 
 ### User Story 5 - Core System Decoupled from Cloud-Specific Logic (Priority: P1)
 
-The pulumicost-core maintainer needs to remove cloud-specific extraction logic from the core
+The finfocus-core maintainer needs to remove cloud-specific extraction logic from the core
 adapter to keep the core system cloud-agnostic. By importing the mapping package from
-pulumicost-spec, the core delegates all property extraction to the shared SDK.
+finfocus-spec, the core delegates all property extraction to the shared SDK.
 
 **Why this priority**: Decoupling is a primary architectural goal. Without this, the core
 remains tightly coupled to cloud-specific knowledge, making maintenance difficult.
@@ -126,11 +126,11 @@ replacing with mapping package imports while maintaining existing functionality.
 **Acceptance Scenarios**:
 
 1. **Given** the mapping package is published,
-   **When** pulumicost-core imports and uses mapping functions,
+   **When** finfocus-core imports and uses mapping functions,
    **Then** all existing extraction tests continue to pass
 2. **Given** a new cloud property naming convention is discovered,
    **When** the mapping package is updated,
-   **Then** pulumicost-core receives the fix without code changes
+   **Then** finfocus-core receives the fix without code changes
 
 ---
 
@@ -182,7 +182,7 @@ replacing with mapping package imports while maintaining existing functionality.
   or map is nil/empty
 - **FR-011**: All extraction functions MUST NOT panic on nil or empty input
 - **FR-012**: System MUST be importable as a Go package at
-  `github.com/rshade/pulumicost-spec/sdk/go/pluginsdk/mapping`
+  `github.com/rshade/finfocus-spec/sdk/go/pluginsdk/mapping`
 - **FR-013**: System MUST provide a known GCP regions list for validation during zone-to-region
   extraction; if derived region is not in list, return empty string
 - **FR-014**: System MUST provide `ExtractGCPRegionFromZone(zone string) string` function
@@ -209,7 +209,7 @@ replacing with mapping package imports while maintaining existing functionality.
 - **SC-002**: All extraction functions achieve 90%+ code coverage through unit tests
 - **SC-003**: Package provides complete documentation with usage examples for each cloud
   provider
-- **SC-004**: Existing pulumicost-core extraction logic can be fully replaced by mapping
+- **SC-004**: Existing finfocus-core extraction logic can be fully replaced by mapping
   package functions with no behavior change
 - **SC-005**: Zero panics occur when handling edge cases (nil input, empty maps, missing keys)
 - **SC-006**: Plugin developers can discover correct extraction function within 30 seconds
@@ -222,5 +222,5 @@ replacing with mapping package imports while maintaining existing functionality.
 - AWS availability zones follow the standard format of `{region}{letter}` (e.g., `us-east-1a`)
 - GCP zones follow the standard format of `{region}-{letter}` (e.g., `us-central1-a`)
 - Azure locations are direct region identifiers without transformation needed
-- The mapping package will be versioned and released alongside other pulumicost-spec SDK
+- The mapping package will be versioned and released alongside other finfocus-spec SDK
   components

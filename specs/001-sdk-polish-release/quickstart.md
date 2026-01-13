@@ -36,7 +36,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/rshade/pulumicost-sdk/pluginsdk"
+    "github.com/rshade/finfocus-sdk/pluginsdk"
 )
 
 type MyPlugin struct {
@@ -75,7 +75,7 @@ func main() {
 Validate contexts before RPC calls to catch errors early:
 
 ```go
-import "github.com/rshade/pulumicost-sdk/pluginsdk"
+import "github.com/rshade/finfocus-sdk/pluginsdk"
 
 // Before: Could panic or return cryptic errors
 resp, err := client.GetActualCost(ctx, req)
@@ -102,7 +102,7 @@ if remaining < 5*time.Second {
 Identify cloud provider from resource identifiers and validate consistency:
 
 ```go
-import "github.com/rshade/pulumicost-sdk/pluginsdk"
+import "github.com/rshade/finfocus-sdk/pluginsdk"
 
 // Detect provider from ARN
 arn := "arn:aws:ec2:us-east-1:123:instance/i-abc"
@@ -138,7 +138,7 @@ for _, arn := range providers {
 Override default 30-second timeout for operations that take longer:
 
 ```go
-import "github.com/rshade/pulumicost-sdk/pluginsdk"
+import "github.com/rshade/finfocus-sdk/pluginsdk"
 
 // Configure client with 2-minute default timeout
 client, err := pluginsdk.NewClient(ctx, pluginsdk.ClientConfig{
@@ -167,7 +167,7 @@ resp, err = client.GetActualCost(ctx, req) // Uses 5-minute timeout
 Provide plugin metadata for clients to discover capabilities:
 
 ```go
-import "github.com/rshade/pulumicost-sdk/pluginsdk"
+import "github.com/rshade/finfocus-sdk/pluginsdk"
 
 // Option 1: Static metadata (recommended for most plugins)
 info := pluginsdk.NewPluginInfo("my-cost-plugin", "v1.0.0",
@@ -407,7 +407,7 @@ func TestDetectARNProvider(t *testing.T) {
 - **Full Documentation**: See [contracts/README.md](./contracts/README.md) for detailed interface contracts
 - **Migration Guide**: See `sdk/go/pluginsdk/README.md` → "Migrating to GetPluginInfo" section
 - **Examples**: See `examples/` directory for complete plugin examples
-- **Issues**: Report bugs or request features at <https://github.com/rshade/pulumicost-spec/issues>
+- **Issues**: Report bugs or request features at <https://github.com/rshade/finfocus-spec/issues>
 
 ---
 

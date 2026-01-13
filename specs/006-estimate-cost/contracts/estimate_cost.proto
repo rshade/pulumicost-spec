@@ -1,15 +1,15 @@
 // EstimateCost RPC Contract Definition
 //
 // This file defines the protobuf contract for the EstimateCost RPC method
-// that will be added to the CostSource service in proto/pulumicost/v1/costsource.proto
+// that will be added to the CostSource service in proto/finfocus/v1/costsource.proto
 
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 import "google/protobuf/struct.proto";
 
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1";
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1";
 
 // EstimateCostRequest represents a request to estimate the cost of a Pulumi
 // resource before deployment. This enables "what-if" cost analysis for

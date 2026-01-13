@@ -79,7 +79,7 @@ all expected ISO 4217 currencies (180+ codes).
 
 ### User Story 4 - Migrate Existing Validation (Priority: P4)
 
-As a maintainer of the PulumiCost SDK, I need the existing `focus_conformance.go` to use the new
+As a maintainer of the FinFocus SDK, I need the existing `focus_conformance.go` to use the new
 currency package so that validation logic is centralized and maintainable.
 
 **Why this priority**: This is a refactoring task that depends on the new package being complete.

@@ -3,11 +3,11 @@
 // Date: 2025-12-17
 //
 // This file shows the proto definition changes for the RecommendationActionType enum.
-// The actual implementation will modify proto/pulumicost/v1/costsource.proto
+// The actual implementation will modify proto/finfocus/v1/costsource.proto
 
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 // RecommendationActionType indicates the type of action recommended.
 // Extended with 5 new values (7-11) for comprehensive FinOps platform coverage.

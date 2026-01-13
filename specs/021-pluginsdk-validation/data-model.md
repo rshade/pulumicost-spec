@@ -4,7 +4,7 @@
 
 ### ProjectedCostValidation
 
-Validates `pulumicost.v1.GetProjectedCostRequest`.
+Validates `finfocus.v1.GetProjectedCostRequest`.
 
 **Fields Checked**:
 
@@ -19,7 +19,7 @@ Validates `pulumicost.v1.GetProjectedCostRequest`.
 
 ### ActualCostValidation
 
-Validates `pulumicost.v1.GetActualCostRequest`.
+Validates `finfocus.v1.GetActualCostRequest`.
 
 **Fields Checked**:
 

@@ -53,7 +53,7 @@ specs/018-proto-add-arn/
 
 ```text
 proto/
-└── pulumicost/
+└── finfocus/
     └── v1/
         └── costsource.proto  # Target file for modification
 
@@ -63,7 +63,7 @@ sdk/
     └── testing/              # Test case location
 ```
 
-**Structure Decision**: Standard repository structure for `pulumicost-spec`.
+**Structure Decision**: Standard repository structure for `finfocus-spec`.
 
 ## Complexity Tracking
 

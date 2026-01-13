@@ -4,15 +4,15 @@
 
 ## Overview
 
-This guide shows how to implement the `GetRecommendations` RPC in a PulumiCost plugin.
+This guide shows how to implement the `GetRecommendations` RPC in a FinFocus plugin.
 The implementation is optional - plugins that don't support recommendations simply don't
 implement the `RecommendationsProvider` interface.
 
 ## Prerequisites
 
 - Go 1.25.4+
-- Existing PulumiCost plugin implementation
-- `pulumicost-spec` SDK imported
+- Existing FinFocus plugin implementation
+- `finfocus-spec` SDK imported
 
 ## Step 1: Implement the RecommendationsProvider Interface
 
@@ -22,10 +22,10 @@ package myplugin
 import (
     "context"
 
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
-// MyPlugin implements the PulumiCost Plugin interface
+// MyPlugin implements the FinFocus Plugin interface
 type MyPlugin struct {
     // ... existing fields ...
 }
@@ -196,8 +196,8 @@ config := pluginsdk.ServeConfig{
 
 The interceptor automatically records:
 
-- `pulumicost_plugin_requests_total{grpc_method="...",grpc_code="...",plugin_name="..."}`
-- `pulumicost_plugin_request_duration_seconds{grpc_method="...",plugin_name="..."}`
+- `finfocus_plugin_requests_total{grpc_method="...",grpc_code="...",plugin_name="..."}`
+- `finfocus_plugin_request_duration_seconds{grpc_method="...",plugin_name="..."}`
 
 ## Step 5: Test with Conformance Suite
 

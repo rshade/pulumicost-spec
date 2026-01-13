@@ -19,7 +19,7 @@
 **Purpose**: Environment verification and branch readiness
 
 - [X] T001 Verify `buf` CLI version and project dependencies in repository root
-- [X] T002 [P] Review `proto/pulumicost/v1/costsource.proto` for insertion points
+- [X] T002 [P] Review `proto/finfocus/v1/costsource.proto` for insertion points
 - [X] T003 [P] Ensure `make generate` environment is functional
 
 ---
@@ -30,10 +30,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until the protocol is updated and SDK is regenerated.
 
-- [X] T004 Define `MetricKind` enum in `proto/pulumicost/v1/costsource.proto`
-- [X] T005 Update `SupportsResponse` message with `supported_metrics` in `proto/pulumicost/v1/costsource.proto`
-- [X] T006 Update `GetProjectedCostRequest` message with `utilization_percentage` in `proto/pulumicost/v1/costsource.proto`
-- [X] T007 Update `ResourceDescriptor` message with `utilization_percentage` override in `proto/pulumicost/v1/costsource.proto`
+- [X] T004 Define `MetricKind` enum in `proto/finfocus/v1/costsource.proto`
+- [X] T005 Update `SupportsResponse` message with `supported_metrics` in `proto/finfocus/v1/costsource.proto`
+- [X] T006 Update `GetProjectedCostRequest` message with `utilization_percentage` in `proto/finfocus/v1/costsource.proto`
+- [X] T007 Update `ResourceDescriptor` message with `utilization_percentage` override in `proto/finfocus/v1/costsource.proto`
 - [X] T008 [P] Run `buf lint` on `proto/` directory
 - [X] T009 [P] Run `buf breaking --against .git#branch=main`
 - [X] T010 Regenerate Go SDK using `make generate`
@@ -96,7 +96,7 @@ utilization and verify the correct value is used.
 
 - [X] T022 [P] Update GreenOps examples in `examples/plugins/greenops-plugin.json`
 - [X] T023 [P] Update `examples/requests/projected-cost-with-utilization.json`
-- [X] T024 [P] Add documentation comments to `proto/pulumicost/v1/costsource.proto` for units (gCO2e, kWh, L)
+- [X] T024 [P] Add documentation comments to `proto/finfocus/v1/costsource.proto` for units (gCO2e, kWh, L)
 - [X] T025 [P] Run `make benchmarks` to ensure no regression in cost projection performance
 - [X] T026 Run `quickstart.md` validation tasks
 

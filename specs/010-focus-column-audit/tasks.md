@@ -22,8 +22,8 @@
 
 ## Path Conventions
 
-- **Proto definitions**: `proto/pulumicost/v1/`
-- **Generated code**: `sdk/go/proto/pulumicost/v1/`
+- **Proto definitions**: `proto/finfocus/v1/`
+- **Generated code**: `sdk/go/proto/finfocus/v1/`
 - **SDK code**: `sdk/go/pluginsdk/`
 - **Documentation**: `docs/`, `sdk/go/pluginsdk/README.md`
 - **Examples**: `examples/plugins/`
@@ -49,35 +49,35 @@
 
 ### New Enum Types
 
-- [x] T004 [P] Add `FocusCommitmentDiscountStatus` enum to `proto/pulumicost/v1/enums.proto`
-- [x] T005 [P] Add `FocusCapacityReservationStatus` enum to `proto/pulumicost/v1/enums.proto`
+- [x] T004 [P] Add `FocusCommitmentDiscountStatus` enum to `proto/finfocus/v1/enums.proto`
+- [x] T005 [P] Add `FocusCapacityReservationStatus` enum to `proto/finfocus/v1/enums.proto`
 
 ### Proto Field Additions (19 fields)
 
-- [x] T006 [P] Add `contracted_cost` (field 41) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T007 [P] Add `billing_account_type` (field 42) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T008 [P] Add `sub_account_type` (field 43) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T009 [P] Add `capacity_reservation_id` (field 44) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T010 [P] Add `capacity_reservation_status` (field 45) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T011 [P] Add `commitment_discount_quantity` (field 46) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T012 [P] Add `commitment_discount_status` (field 47) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T013 [P] Add `commitment_discount_type` (field 48) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T014 [P] Add `commitment_discount_unit` (field 49) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T015 [P] Add `contracted_unit_price` (field 50) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T016 [P] Add `pricing_currency` (field 51) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T017 [P] Add `pricing_currency_contracted_unit_price` (field 52) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T018 [P] Add `pricing_currency_effective_cost` (field 53) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T019 [P] Add `pricing_currency_list_unit_price` (field 54) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T020 [P] Add `publisher` (field 55) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T021 [P] Add `service_subcategory` (field 56) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T022 [P] Add `sku_meter` (field 57) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
-- [x] T023 [P] Add `sku_price_details` (field 58) to FocusCostRecord in `proto/pulumicost/v1/focus.proto`
+- [x] T006 [P] Add `contracted_cost` (field 41) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T007 [P] Add `billing_account_type` (field 42) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T008 [P] Add `sub_account_type` (field 43) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T009 [P] Add `capacity_reservation_id` (field 44) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T010 [P] Add `capacity_reservation_status` (field 45) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T011 [P] Add `commitment_discount_quantity` (field 46) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T012 [P] Add `commitment_discount_status` (field 47) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T013 [P] Add `commitment_discount_type` (field 48) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T014 [P] Add `commitment_discount_unit` (field 49) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T015 [P] Add `contracted_unit_price` (field 50) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T016 [P] Add `pricing_currency` (field 51) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T017 [P] Add `pricing_currency_contracted_unit_price` (field 52) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T018 [P] Add `pricing_currency_effective_cost` (field 53) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T019 [P] Add `pricing_currency_list_unit_price` (field 54) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T020 [P] Add `publisher` (field 55) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T021 [P] Add `service_subcategory` (field 56) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T022 [P] Add `sku_meter` (field 57) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
+- [x] T023 [P] Add `sku_price_details` (field 58) to FocusCostRecord in `proto/finfocus/v1/focus.proto`
 
 ### Proto Validation and Generation
 
-- [x] T024 Run `buf lint` to validate proto syntax in `proto/pulumicost/v1/`
+- [x] T024 Run `buf lint` to validate proto syntax in `proto/finfocus/v1/`
 - [x] T025 Run `buf breaking` to confirm backward compatibility
-- [x] T026 Run `make generate` to regenerate Go code in `sdk/go/proto/pulumicost/v1/`
+- [x] T026 Run `make generate` to regenerate Go code in `sdk/go/proto/finfocus/v1/`
 - [x] T027 Run `go build ./...` to verify generated code compiles
 
 **Checkpoint**: Proto definitions complete - SDK implementation can now begin
@@ -98,8 +98,8 @@
 ### Implementation for User Story 1
 
 - [x] T030 [US1] Create audit script `scripts/audit_focus_columns.go` to verify column coverage
-- [x] T031 [US1] Add FOCUS section reference comments to all 19 new fields in `proto/pulumicost/v1/focus.proto`
-- [x] T032 [US1] Add FOCUS section reference comments to new enums in `proto/pulumicost/v1/enums.proto`
+- [x] T031 [US1] Add FOCUS section reference comments to all 19 new fields in `proto/finfocus/v1/focus.proto`
+- [x] T032 [US1] Add FOCUS section reference comments to new enums in `proto/finfocus/v1/enums.proto`
 - [x] T033 [US1] Run audit script and verify 57/57 columns pass
 
 **Checkpoint**: All 57 FOCUS 1.2 columns verified in proto with correct types

@@ -5,7 +5,7 @@
 
 ## 1. Proto Definition
 
-**Decision**: Add `GetPluginInfo` to `CostSource` service in `proto/pulumicost/v1/costsource.proto`.
+**Decision**: Add `GetPluginInfo` to `CostSource` service in `proto/finfocus/v1/costsource.proto`.
 
 **Rationale**:
 

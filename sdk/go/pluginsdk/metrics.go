@@ -1,4 +1,4 @@
-// Package pluginsdk provides Prometheus metrics instrumentation for PulumiCost plugins.
+// Package pluginsdk provides Prometheus metrics instrumentation for FinFocus plugins.
 package pluginsdk
 
 import (

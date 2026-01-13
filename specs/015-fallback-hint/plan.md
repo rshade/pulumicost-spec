@@ -58,7 +58,7 @@ specs/001-fallback-hint/
 
 ```text
 proto/
-└── pulumicost/
+└── finfocus/
     └── v1/
         └── costsource.proto  # Primary modification target
 

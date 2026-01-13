@@ -1,4 +1,4 @@
-// Package registry provides domain types and validation for PulumiCost plugin registry management.
+// Package registry provides domain types and validation for FinFocus plugin registry management.
 // It defines enums for discovery sources, plugin statuses, security levels, installation methods,
 // capabilities, system permissions, authentication methods, and validation functions for plugin
 // manifests and names.
@@ -173,7 +173,7 @@ const (
 	SecurityLevelCommunity SecurityLevel = "community"
 	// SecurityLevelVerified indicates officially verified plugin.
 	SecurityLevelVerified SecurityLevel = "verified"
-	// SecurityLevelOfficial indicates official PulumiCost plugin.
+	// SecurityLevelOfficial indicates official FinFocus plugin.
 	SecurityLevelOfficial SecurityLevel = "official"
 )
 

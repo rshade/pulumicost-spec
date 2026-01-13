@@ -40,7 +40,7 @@ to planning
   - `arn` (field 8): Canonical cloud resource identifier for exact resource
     lookup
 - Technical Context section includes implementation guidance for dependent
-  repositories (pulumicost-core, pulumicost-plugin-aws-public, pluginsdk) - this
+  repositories (finfocus-core, finfocus-plugin-aws-public, pluginsdk) - this
   is intentional since protocol changes require coordinated implementation
 - Cross-provider ARN format examples included (AWS, Azure, GCP, Kubernetes,
   Cloudflare)

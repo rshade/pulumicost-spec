@@ -15,7 +15,7 @@ follows the existing builder pattern with `With*` methods and uses nil-defaults 
 **Primary Dependencies**: net/http (stdlib), strings (stdlib) - no new dependencies
 **Storage**: N/A (stateless configuration extension)
 **Testing**: Go testing package with table-driven tests, existing TestHarness for integration
-**Target Platform**: Linux/macOS/Windows servers running PulumiCost plugins
+**Target Platform**: Linux/macOS/Windows servers running FinFocus plugins
 **Project Type**: Single SDK package extension
 **Performance Goals**: <1 microsecond overhead per CORS request (SC-005)
 **Constraints**: 100% backward compatibility, defensive slice copying

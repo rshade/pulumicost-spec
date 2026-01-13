@@ -11,7 +11,7 @@
 
 As a plugin developer, I want to run automated tests that verify my plugin's `GetPricingSpec`
 response is valid, schema-compliant, and uses correct enums and data formats, so that I can be
-confident my plugin integrates correctly with the PulumiCost ecosystem.
+confident my plugin integrates correctly with the FinFocus ecosystem.
 
 **Why this priority**: Specification compliance is the foundation of plugin interoperability.
 Without valid responses, plugins cannot integrate with the core system at all. This is the most

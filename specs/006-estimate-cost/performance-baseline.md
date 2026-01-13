@@ -3,7 +3,7 @@
 **Purpose**: Document baseline performance metrics for EstimateCost RPC per SC-002
 **Created**: 2025-11-30
 **Task**: T043 - Performance Benchmarking
-**Issue**: [#86](https://github.com/rshade/pulumicost-spec/issues/86)
+**Issue**: [#86](https://github.com/rshade/finfocus-spec/issues/86)
 
 ## Executive Summary
 
@@ -205,6 +205,6 @@ go test -bench=BenchmarkEstimateCost -benchmem -memprofile=mem.prof ./sdk/go/tes
 
 ## Related Tasks
 
-- T043: Performance benchmarking (this document) - [#86](https://github.com/rshade/pulumicost-spec/issues/86)
-- T044: Concurrent benchmark verification - [#87](https://github.com/rshade/pulumicost-spec/issues/87)
-- T045: CI performance regression tests - [#88](https://github.com/rshade/pulumicost-spec/issues/88)
+- T043: Performance benchmarking (this document) - [#86](https://github.com/rshade/finfocus-spec/issues/86)
+- T044: Concurrent benchmark verification - [#87](https://github.com/rshade/finfocus-spec/issues/87)
+- T045: CI performance regression tests - [#88](https://github.com/rshade/finfocus-spec/issues/88)

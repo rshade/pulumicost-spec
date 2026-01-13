@@ -501,7 +501,7 @@ func TestMetrics_AllGRPCMethods(t *testing.T) {
 		return "response", nil
 	}
 
-	// All 6 PulumiCost gRPC methods
+	// All 6 FinFocus gRPC methods
 	methods := []string{
 		"/finfocus.v1.CostSource/Name",
 		"/finfocus.v1.CostSource/Supports",

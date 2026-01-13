@@ -9,7 +9,7 @@
 
 ### Existing Infrastructure
 
-- **Proto**: `proto/pulumicost/v1/costsource.proto` defines the core gRPC service and messages.
+- **Proto**: `proto/finfocus/v1/costsource.proto` defines the core gRPC service and messages.
 - **SDK**: Go SDK is generated from the proto definitions.
 - **Validation**: `buf` is used for linting and breaking change detection.
 
@@ -42,7 +42,7 @@
 
 - [x] Data Model: [data-model.md](data-model.md)
 - [x] Quickstart: [quickstart.md](quickstart.md)
-- [ ] Protobuf Updates: Modify `proto/pulumicost/v1/costsource.proto`
+- [ ] Protobuf Updates: Modify `proto/finfocus/v1/costsource.proto`
 - [ ] SDK Generation: Run `make generate`
 
 ### Phase 2: Testing & Validation

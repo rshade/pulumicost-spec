@@ -1,7 +1,7 @@
 # Validation API Contract
 
 **Feature**: Domain Enum Validation Performance Optimization
-**Package**: `github.com/rshade/pulumicost-spec/sdk/go/registry`
+**Package**: `github.com/rshade/finfocus-spec/sdk/go/registry`
 **Date**: 2025-11-17
 
 ## API Contract

@@ -32,9 +32,9 @@
 
 ## Cross-Repository Analysis
 
-- [x] Reviewed pulumicost-core environment variable usage
-- [x] Reviewed pulumicost-plugin-aws-public environment variable usage
-- [x] Reviewed pulumicost-plugin-aws-ce environment variable usage
+- [x] Reviewed finfocus-core environment variable usage
+- [x] Reviewed finfocus-plugin-aws-public environment variable usage
+- [x] Reviewed finfocus-plugin-aws-ce environment variable usage
 - [x] Documented variables used consistently across repos
 - [x] Documented variables requiring migration
 - [x] Documented core-only variables excluded from plugin SDK

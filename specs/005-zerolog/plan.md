@@ -7,7 +7,7 @@
 
 Add standardized logging utilities to the Plugin SDK using zerolog v1.34.0+ to
 enable consistent structured logging and distributed tracing across all
-PulumiCost plugins. The SDK will provide logger construction, gRPC interceptors
+FinFocus plugins. The SDK will provide logger construction, gRPC interceptors
 for trace ID propagation, standard field name constants, and operation timing
 helpers.
 

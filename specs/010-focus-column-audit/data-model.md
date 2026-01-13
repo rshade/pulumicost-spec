@@ -12,7 +12,7 @@ columns and adds 2 new enum types to achieve full FOCUS 1.2 compliance.
 
 ### Current State (38 fields)
 
-The existing `FocusCostRecord` message in `proto/pulumicost/v1/focus.proto` contains
+The existing `FocusCostRecord` message in `proto/finfocus/v1/focus.proto` contains
 38 fields covering 13 of 14 mandatory columns and 24 of 42 conditional columns.
 
 ### Target State (57 fields)

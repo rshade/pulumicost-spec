@@ -4,25 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is the **`.claude/agents/` directory** of the PulumiCost Specification repository, containing specialized agent
-configurations for the PulumiCost ecosystem. This directory houses three specialized agent configurations that enable
-context-aware assistance across the multi-repository PulumiCost ecosystem.
+This is the **`.claude/agents/` directory** of the FinFocus Specification repository, containing specialized agent
+configurations for the FinFocus ecosystem. This directory houses three specialized agent configurations that enable
+context-aware assistance across the multi-repository FinFocus ecosystem.
 
 ## Agent Configuration Architecture
 
 ### Agent System Design
 
-The PulumiCost ecosystem uses **specialized agents** to handle different aspects of development across three repository types:
+The FinFocus ecosystem uses **specialized agents** to handle different aspects of development across three repository types:
 
 **Repository Detection Pattern:**
 
-- **pulumicost-spec**: Contains `proto/pulumicost/costsource.proto` and `schemas/pricing_spec.schema.json`
-- **pulumicost-core**: Contains `cmd/pulumicost/` and `internal/{pluginhost,engine,ingest,spec,cli}/`
-- **pulumicost-plugin-\***: Contains `cmd/pulumicost-<name>/` and `plugin.manifest.json`
+- **finfocus-spec**: Contains `proto/finfocus/costsource.proto` and `schemas/pricing_spec.schema.json`
+- **finfocus-core**: Contains `cmd/finfocus/` and `internal/{pluginhost,engine,ingest,spec,cli}/`
+- **finfocus-plugin-\***: Contains `cmd/finfocus-<name>/` and `plugin.manifest.json`
 
 ### Three Specialized Agents
 
-### 1. PulumiCost Senior Engineer (`pulumicost-senior-engineer.md`)
+### 1. FinFocus Senior Engineer (`finfocus-senior-engineer.md`)
 
 **Primary Responsibilities:**
 
@@ -46,7 +46,7 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 4. Complete implementation with tests and documentation
 5. CI validation and PR documentation
 
-### 2. PulumiCost Technical Writer (`pulumicost-technical-writer.md`)
+### 2. FinFocus Technical Writer (`finfocus-technical-writer.md`)
 
 **Primary Responsibilities:**
 
@@ -69,7 +69,7 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 - Expected outputs and error scenario documentation
 - Mermaid diagrams for architecture illustrations
 
-### 3. PulumiCost Product Manager (`pulumicost-product-manager.md`)
+### 3. FinFocus Product Manager (`finfocus-product-manager.md`)
 
 **Primary Responsibilities:**
 
@@ -88,7 +88,7 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 **Program Invariants:**
 
 - No raw CUR parsing; vendor API integration only
-- Plugin discovery at `~/.pulumicost/plugins/<name>/<version>/<binary>`
+- Plugin discovery at `~/.finfocus/plugins/<name>/<version>/<binary>`
 - gRPC protocol as single source of truth
 - Apache-2.0 licensing across all repos
 
@@ -120,13 +120,13 @@ The PulumiCost ecosystem uses **specialized agents** to handle different aspects
 
 ## Development Context
 
-### Current Repository Status (pulumicost-spec)
+### Current Repository Status (finfocus-spec)
 
 **Repository Type**: Specification repository
 **Version**: v0.4.6 (production-ready)
 **Key Components**:
 
-- gRPC service definitions (`proto/pulumicost/v1/costsource.proto`)
+- gRPC service definitions (`proto/finfocus/v1/costsource.proto`)
 - JSON Schema validation (`schemas/pricing_spec.schema.json`)
 - Production Go SDK (`sdk/go/`)
 - Comprehensive testing framework (`sdk/go/testing/`)
@@ -183,7 +183,7 @@ I just finished implementing the AWS cost plugin. Can you help me create proper 
 **Product Manager Agent:**
 
 ```text
-I need to create issues for implementing the actual cost pipeline in pulumicost-core
+I need to create issues for implementing the actual cost pipeline in finfocus-core
 ```
 
 **Results in**: Structured issues, acceptance criteria, cross-repo dependencies
@@ -204,21 +204,21 @@ I need to create issues for implementing the actual cost pipeline in pulumicost-
 
 ## Repository-Specific Considerations
 
-### In pulumicost-spec (current repository)
+### In finfocus-spec (current repository)
 
 - Changes here ripple to core and plugin repositories
 - Breaking changes require coordinated releases across all repos
 - buf.yaml and protobuf management is critical for ecosystem consistency
 - Schema changes must maintain backward compatibility
 
-### When Working with pulumicost-core
+### When Working with finfocus-core
 
 - CLI changes need comprehensive documentation updates
 - Engine modifications require plugin compatibility checks
 - Integration tests span multiple repositories
 - Plugin host changes affect all plugin implementations
 
-### When Working with pulumicost-plugin-\*
+### When Working with finfocus-plugin-\*
 
 - Plugin manifest validation against spec requirements
 - Conformance testing requirements (Basic/Standard/Advanced)
@@ -322,5 +322,5 @@ npm run validate                              # Schema validation
 - **Breaking change**: Product Manager → Senior Engineer → Technical Writer (parallel execution)
 - **Documentation update**: Technical Writer (+ Senior Engineer for technical review)
 
-This agent configuration system ensures comprehensive coverage of the PulumiCost ecosystem development needs while maintaining
+This agent configuration system ensures comprehensive coverage of the FinFocus ecosystem development needs while maintaining
 high standards across technical implementation, documentation quality, and product delivery.

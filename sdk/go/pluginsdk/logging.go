@@ -74,7 +74,7 @@ var (
 	logWriter     io.Writer
 )
 
-// NewLogWriter returns an io.Writer configured based on the PULUMICOST_LOG_FILE
+// NewLogWriter returns an io.Writer configured based on the FINFOCUS_LOG_FILE
 // environment variable. The file is opened once on first call and reused for
 // subsequent calls (singleton pattern). The file remains open for the lifetime
 // of the process, which is intentional as plugins log continuously during their
@@ -94,7 +94,7 @@ var (
 //	logger := pluginsdk.NewPluginLogger("my-plugin", "v1.0.0", zerolog.InfoLevel, writer)
 //
 //	// Note: The SDK's internal default logger (used when no custom logger is
-//	// provided to ServeConfig) respects PULUMICOST_LOG_FILE automatically.
+//	// provided to ServeConfig) respects FINFOCUS_LOG_FILE automatically.
 func NewLogWriter() io.Writer {
 	logWriterOnce.Do(func() {
 		logFile := GetLogFile()
@@ -110,7 +110,7 @@ func NewLogWriter() io.Writer {
 		// Check for absolute path
 		if !filepath.IsAbs(logFile) {
 			warnLogger.Warn().Str("path", logFile).
-				Msg("PULUMICOST_LOG_FILE should be absolute path, falling back to stderr")
+				Msg("FINFOCUS_LOG_FILE should be absolute path, falling back to stderr")
 			logWriter = os.Stderr
 			return
 		}
@@ -122,7 +122,7 @@ func NewLogWriter() io.Writer {
 			if info, statErr := os.Stat(logFile); statErr == nil && info.IsDir() {
 				warnLogger.Warn().
 					Str("path", logFile).
-					Msg("PULUMICOST_LOG_FILE points to a directory, falling back to stderr")
+					Msg("FINFOCUS_LOG_FILE points to a directory, falling back to stderr")
 				logWriter = os.Stderr
 				return
 			}
@@ -151,7 +151,7 @@ func ResetLogWriter() {
 
 // newDefaultLogger creates a basic zerolog logger for internal SDK use.
 // This is used when no custom logger is provided.
-// It respects the PULUMICOST_LOG_FILE environment variable via NewLogWriter().
+// It respects the FINFOCUS_LOG_FILE environment variable via NewLogWriter().
 func newDefaultLogger() zerolog.Logger {
 	return zerolog.New(NewLogWriter()).
 		Level(zerolog.InfoLevel).

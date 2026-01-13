@@ -81,14 +81,14 @@ type RecommendationsProvider interface {
 
 - Existing `MetricsUnaryServerInterceptor` automatically captures request count and duration
 - Add recommendation-specific counter for items returned per response
-- Follow existing metric naming: `pulumicost_plugin_*`
+- Follow existing metric naming: `finfocus_plugin_*`
 
 **New Metrics**:
 
 ```go
 // In addition to automatic request_total and request_duration:
-pulumicost_plugin_recommendations_returned_total  // Counter: total recommendations
-pulumicost_plugin_recommendations_per_response    // Histogram: recommendations per call
+finfocus_plugin_recommendations_returned_total  // Counter: total recommendations
+finfocus_plugin_recommendations_per_response    // Histogram: recommendations per call
 ```
 
 **Alternatives Considered**:

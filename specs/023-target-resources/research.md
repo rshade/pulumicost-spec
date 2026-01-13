@@ -111,7 +111,7 @@ proto patterns and SDK conventions established in this repository.
 
 ## External References
 
-- Existing ResourceDescriptor usage: `proto/pulumicost/v1/costsource.proto:181-218`
+- Existing ResourceDescriptor usage: `proto/finfocus/v1/costsource.proto:181-218`
 - Existing validation patterns: `sdk/go/testing/contract.go`
 - Mock plugin patterns: `sdk/go/testing/mock_plugin.go`
 - Constitution requirements: `.specify/memory/constitution.md`

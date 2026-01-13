@@ -7,10 +7,10 @@
 
 **Goal**: Initialize new Protobuf contracts and prepare the project for FOCUS 1.2 integration.
 
-- [x] T001 Create `proto/pulumicost/v1/enums.proto` with Focus Service, Charge, and Pricing enums `specs/009-focus-1-2-integration/contracts/enums.proto`
-- [x] T002 Create `proto/pulumicost/v1/focus.proto` with `FocusCostRecord` message definition `specs/009-focus-1-2-integration/contracts/focus.proto`
-- [x] T003 Update `proto/pulumicost/v1/costsource.proto` to import `enums.proto`
-      and `focus.proto` `proto/pulumicost/v1/costsource.proto`
+- [x] T001 Create `proto/finfocus/v1/enums.proto` with Focus Service, Charge, and Pricing enums `specs/009-focus-1-2-integration/contracts/enums.proto`
+- [x] T002 Create `proto/finfocus/v1/focus.proto` with `FocusCostRecord` message definition `specs/009-focus-1-2-integration/contracts/focus.proto`
+- [x] T003 Update `proto/finfocus/v1/costsource.proto` to import `enums.proto`
+      and `focus.proto` `proto/finfocus/v1/costsource.proto`
 - [x] T004 Run `buf generate` to generate Go SDK code for new protos `Makefile`
 
 ## Phase 2: Foundational

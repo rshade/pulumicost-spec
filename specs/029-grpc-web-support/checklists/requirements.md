@@ -48,7 +48,7 @@ planning
   - Updated assumptions to document per-org instance model as default
   - Per-request credentials deferred to future issue #220
 - **2025-12-29 (Update 2)**: Architecture clarifications
-  - Clarified pulumicost-core is CLI only, orchestrator is web platform responsibility
+  - Clarified finfocus-core is CLI only, orchestrator is web platform responsibility
   - Batch RPC deferred to future issue #221 (use client-side parallelism for now)
   - No proto changes required for this spec
 
@@ -57,6 +57,6 @@ planning
 - **Multi-tenant model**: Per-org plugin instances (not per-request credentials)
 - **Credential passing**: Environment variables at launch time
 - **Rationale**: Cloud SDK compatibility, process isolation, simpler plugin code
-- **Orchestrator responsibility**: Web platforms (e.g., Pulumi Insights), NOT pulumicost-core
-- **pulumicost-core role**: CLI tool that launches plugins locally via command line
+- **Orchestrator responsibility**: Web platforms (e.g., Pulumi Insights), NOT finfocus-core
+- **finfocus-core role**: CLI tool that launches plugins locally via command line
 - **Future enhancement**: Per-request credentials tracked in issue #220

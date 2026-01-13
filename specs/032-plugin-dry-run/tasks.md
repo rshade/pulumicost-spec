@@ -18,8 +18,8 @@ testing of each story.
 
 Based on plan.md project structure:
 
-- **Proto definitions**: `proto/pulumicost/v1/`
-- **Generated code**: `sdk/go/proto/pulumicost/v1/`
+- **Proto definitions**: `proto/finfocus/v1/`
+- **Generated code**: `sdk/go/proto/finfocus/v1/`
 - **SDK helpers**: `sdk/go/pluginsdk/`
 - **Testing framework**: `sdk/go/testing/`
 - **Examples**: `examples/requests/dry_run/`
@@ -31,7 +31,7 @@ Based on plan.md project structure:
 **Purpose**: Project initialization and basic structure
 
 - [x] T001 Create examples directory structure at examples/requests/dry_run/
-- [x] T002 [P] Verify current field numbers in proto/pulumicost/v1/costsource.proto for
+- [x] T002 [P] Verify current field numbers in proto/finfocus/v1/costsource.proto for
       safe field additions
 
 ---
@@ -69,24 +69,24 @@ first and MUST FAIL because the proto messages don't exist yet. This defines the
 
 ### Proto Schema Changes
 
-- [x] T008 Add FieldSupportStatus enum to proto/pulumicost/v1/enums.proto with values:
+- [x] T008 Add FieldSupportStatus enum to proto/finfocus/v1/enums.proto with values:
       UNSPECIFIED, SUPPORTED, UNSUPPORTED, CONDITIONAL, DYNAMIC
-- [x] T009 [P] Add FieldMapping message to proto/pulumicost/v1/costsource.proto with
+- [x] T009 [P] Add FieldMapping message to proto/finfocus/v1/costsource.proto with
       fields: field_name, support_status, condition_description, expected_type
-- [x] T010 [P] Add DryRunRequest message to proto/pulumicost/v1/costsource.proto with
+- [x] T010 [P] Add DryRunRequest message to proto/finfocus/v1/costsource.proto with
       fields: resource (ResourceDescriptor), simulation_parameters (map)
-- [x] T011 [P] Add DryRunResponse message to proto/pulumicost/v1/costsource.proto with
+- [x] T011 [P] Add DryRunResponse message to proto/finfocus/v1/costsource.proto with
       fields: field_mappings, configuration_valid, configuration_errors, resource_type_supported
-- [x] T012 Add DryRun RPC to CostSourceService in proto/pulumicost/v1/costsource.proto
-- [x] T013 Add dry_run field to GetActualCostRequest in proto/pulumicost/v1/costsource.proto
+- [x] T012 Add DryRun RPC to CostSourceService in proto/finfocus/v1/costsource.proto
+- [x] T013 Add dry_run field to GetActualCostRequest in proto/finfocus/v1/costsource.proto
 - [x] T014 [P] Add dry_run_result field to GetActualCostResponse in
-      proto/pulumicost/v1/costsource.proto
+      proto/finfocus/v1/costsource.proto
 - [x] T015 [P] Add dry_run field to GetProjectedCostRequest in
-      proto/pulumicost/v1/costsource.proto
+      proto/finfocus/v1/costsource.proto
 - [x] T016 [P] Add dry_run_result field to GetProjectedCostResponse in
-      proto/pulumicost/v1/costsource.proto
+      proto/finfocus/v1/costsource.proto
 - [x] T017 Update SupportsResponse capabilities documentation in
-      proto/pulumicost/v1/costsource.proto to include "dry_run" key
+      proto/finfocus/v1/costsource.proto to include "dry_run" key
 
 ### Code Generation & Validation
 

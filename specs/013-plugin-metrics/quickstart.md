@@ -1,6 +1,6 @@
 # Quickstart: Plugin Metrics
 
-This guide shows how to add Prometheus metrics to your PulumiCost plugin in under 5 minutes.
+This guide shows how to add Prometheus metrics to your FinFocus plugin in under 5 minutes.
 
 ## Basic Usage (Recommended)
 
@@ -10,7 +10,7 @@ Add the metrics interceptor to your plugin's server configuration:
 package main
 
 import (
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
     "google.golang.org/grpc"
 )
 
@@ -72,22 +72,22 @@ After enabling, you'll see these metrics at `/metrics`:
 ### Request Counter
 
 ```text
-# HELP pulumicost_plugin_requests_total Total gRPC requests
-# TYPE pulumicost_plugin_requests_total counter
-pulumicost_plugin_requests_total{grpc_method="GetProjectedCost",grpc_code="OK",plugin_name="my-plugin"} 42
-pulumicost_plugin_requests_total{grpc_method="GetProjectedCost",grpc_code="Internal",plugin_name="my-plugin"} 3
+# HELP finfocus_plugin_requests_total Total gRPC requests
+# TYPE finfocus_plugin_requests_total counter
+finfocus_plugin_requests_total{grpc_method="GetProjectedCost",grpc_code="OK",plugin_name="my-plugin"} 42
+finfocus_plugin_requests_total{grpc_method="GetProjectedCost",grpc_code="Internal",plugin_name="my-plugin"} 3
 ```
 
 ### Request Duration
 
 ```text
-# HELP pulumicost_plugin_request_duration_seconds Request duration histogram
-# TYPE pulumicost_plugin_request_duration_seconds histogram
-pulumicost_plugin_request_duration_seconds_bucket{grpc_method="GetProjectedCost",plugin_name="my-plugin",le="0.005"} 10
-pulumicost_plugin_request_duration_seconds_bucket{grpc_method="GetProjectedCost",plugin_name="my-plugin",le="0.01"} 25
+# HELP finfocus_plugin_request_duration_seconds Request duration histogram
+# TYPE finfocus_plugin_request_duration_seconds histogram
+finfocus_plugin_request_duration_seconds_bucket{grpc_method="GetProjectedCost",plugin_name="my-plugin",le="0.005"} 10
+finfocus_plugin_request_duration_seconds_bucket{grpc_method="GetProjectedCost",plugin_name="my-plugin",le="0.01"} 25
 ...
-pulumicost_plugin_request_duration_seconds_sum{grpc_method="GetProjectedCost",plugin_name="my-plugin"} 1.234
-pulumicost_plugin_request_duration_seconds_count{grpc_method="GetProjectedCost",plugin_name="my-plugin"} 45
+finfocus_plugin_request_duration_seconds_sum{grpc_method="GetProjectedCost",plugin_name="my-plugin"} 1.234
+finfocus_plugin_request_duration_seconds_count{grpc_method="GetProjectedCost",plugin_name="my-plugin"} 45
 ```
 
 ## Prometheus Configuration
@@ -96,7 +96,7 @@ Add to your `prometheus.yml`:
 
 ```yaml
 scrape_configs:
-  - job_name: 'pulumicost-plugins'
+  - job_name: 'finfocus-plugins'
     static_configs:
       - targets: ['localhost:9090']
 ```
@@ -106,20 +106,20 @@ scrape_configs:
 ### Request Rate by Method
 
 ```promql
-sum(rate(pulumicost_plugin_requests_total[5m])) by (grpc_method)
+sum(rate(finfocus_plugin_requests_total[5m])) by (grpc_method)
 ```
 
 ### Error Rate
 
 ```promql
-sum(rate(pulumicost_plugin_requests_total{grpc_code!="OK"}[5m]))
-/ sum(rate(pulumicost_plugin_requests_total[5m]))
+sum(rate(finfocus_plugin_requests_total{grpc_code!="OK"}[5m]))
+/ sum(rate(finfocus_plugin_requests_total[5m]))
 ```
 
 ### P99 Latency
 
 ```promql
-histogram_quantile(0.99, sum(rate(pulumicost_plugin_request_duration_seconds_bucket[5m])) by (le, grpc_method))
+histogram_quantile(0.99, sum(rate(finfocus_plugin_request_duration_seconds_bucket[5m])) by (le, grpc_method))
 ```
 
 ## Complete Example
@@ -134,7 +134,7 @@ import (
     "os/signal"
     "syscall"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
     "google.golang.org/grpc"
 )
 

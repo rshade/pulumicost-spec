@@ -19,15 +19,15 @@
 
 **Goal**: Ensure environment is ready for proto modification.
 
-- [X] T001 Verify existence and content of proto/pulumicost/v1/costsource.proto
+- [X] T001 Verify existence and content of proto/finfocus/v1/costsource.proto
 - [X] T002 Verify buf CLI is installed and configured (run `buf --version`)
 
 ## Phase 2: Protocol Definition (Foundational)
 
 **Goal**: Update the source of truth (protobuf) with the new field.
 
-- [X] T003 [US1] Add `string arn = 5;` field to `GetActualCostRequest` message in proto/pulumicost/v1/costsource.proto
-- [X] T004 [US1] Add comments to the new `arn` field in proto/pulumicost/v1/costsource.proto
+- [X] T003 [US1] Add `string arn = 5;` field to `GetActualCostRequest` message in proto/finfocus/v1/costsource.proto
+- [X] T004 [US1] Add comments to the new `arn` field in proto/finfocus/v1/costsource.proto
   describing its purpose (Canonical Cloud Identifier)
 - [X] T005 [US1] Run `buf lint` to ensure proto style compliance
 - [X] T006 [US1] Run `buf breaking --against .git#branch=main` to ensure backward compatibility

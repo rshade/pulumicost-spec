@@ -14,7 +14,7 @@
 
 **Goal**: Establish common dependencies and testing infrastructure.
 
-- [X] T003 Import `github.com/rshade/pulumicost-spec/proto/pulumicost/v1` in `sdk/go/pluginsdk/validation.go`
+- [X] T003 Import `github.com/rshade/finfocus-spec/proto/finfocus/v1` in `sdk/go/pluginsdk/validation.go`
 - [X] T004 [P] Define `TestValidateProjectedCostRequest` function in `sdk/go/pluginsdk/validation_test.go`
 - [X] T005 [P] Define `TestValidateActualCostRequest` function in `sdk/go/pluginsdk/validation_test.go`
 

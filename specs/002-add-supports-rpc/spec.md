@@ -6,13 +6,13 @@
 **Input**: GitHub Issue #64 - Add Supports() RPC method to CostSourceService
 
 **Note**: Analysis revealed Supports() RPC was fully implemented in v0.1.0. This spec
-documents requirements for verification purposes. Actual work needed is in pulumicost-core.
+documents requirements for verification purposes. Actual work needed is in finfocus-core.
 
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Query Plugin Capabilities (Priority: P1)
 
-As a PulumiCost client, I need to query a plugin to determine if it supports a specific
+As a FinFocus client, I need to query a plugin to determine if it supports a specific
 resource type and region before making cost requests, so I can provide meaningful feedback
 to users and avoid unnecessary API calls.
 
@@ -126,6 +126,6 @@ verifying it responds correctly via gRPC test harness.
 ## Out of Scope
 
 - Changes to SupportsRequest or SupportsResponse message definitions
-- Implementation of the handler in pulumicost-core pluginsdk (separate issue)
+- Implementation of the handler in finfocus-core pluginsdk (separate issue)
 - Plugin-specific implementation of the Supports() method
 - Performance optimization of the Supports() RPC

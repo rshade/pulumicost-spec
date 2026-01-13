@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto;pbc";
 
 // ... (existing imports and messages) ...
 

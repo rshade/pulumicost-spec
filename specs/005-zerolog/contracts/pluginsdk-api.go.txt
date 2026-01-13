@@ -15,7 +15,7 @@ import (
 // Metadata keys for gRPC trace propagation
 const (
 	// TraceIDMetadataKey is the gRPC metadata header for trace ID propagation
-	TraceIDMetadataKey = "x-pulumicost-trace-id"
+	TraceIDMetadataKey = "x-finfocus-trace-id"
 )
 
 // Standard field names for structured logging consistency across plugins

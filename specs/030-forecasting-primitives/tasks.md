@@ -16,7 +16,7 @@ proto implementation.
 
 ## Path Conventions
 
-- **Proto definitions**: `proto/pulumicost/v1/`
+- **Proto definitions**: `proto/finfocus/v1/`
 - **Generated code**: `sdk/go/proto/` (via buf generate)
 - **SDK helpers**: `sdk/go/pricing/`
 - **Conformance tests**: `sdk/go/testing/`
@@ -48,10 +48,10 @@ exist for tests to compile. This is an acceptable deviation: the enum is a found
 required for test compilation, not business logic. Tests will fail at runtime (missing fields)
 not compile time, satisfying the TDD spirit.
 
-- [X] T004 Add GrowthType enum to `proto/pulumicost/v1/enums.proto` with values:
+- [X] T004 Add GrowthType enum to `proto/finfocus/v1/enums.proto` with values:
   GROWTH_TYPE_UNSPECIFIED (0), GROWTH_TYPE_NONE (1), GROWTH_TYPE_LINEAR (2),
   GROWTH_TYPE_EXPONENTIAL (3)
-- [X] T005 Add import for enums.proto in `proto/pulumicost/v1/costsource.proto` if not present
+- [X] T005 Add import for enums.proto in `proto/finfocus/v1/costsource.proto` if not present
 - [X] T006 Run `buf lint` to validate new enum follows style conventions
 - [X] T007 Run `buf breaking` to confirm no breaking changes introduced
 - [X] T008 Run `make generate` to regenerate Go SDK code in `sdk/go/proto/`
@@ -85,9 +85,9 @@ response incorporates growth model
 ### Implementation for User Story 1
 
 - [X] T014 [US1] Add growth_type (field 9) and growth_rate (field 10) to ResourceDescriptor
-  message in `proto/pulumicost/v1/costsource.proto` per contracts/forecasting.proto.md
+  message in `proto/finfocus/v1/costsource.proto` per contracts/forecasting.proto.md
 - [X] T015 [US1] Add growth_type (field 3) and growth_rate (field 4) to GetProjectedCostRequest
-  message in `proto/pulumicost/v1/costsource.proto` per contracts/forecasting.proto.md
+  message in `proto/finfocus/v1/costsource.proto` per contracts/forecasting.proto.md
 - [X] T016 [US1] Add comprehensive proto comments to growth_type and growth_rate fields
   documenting semantics, valid ranges, and examples per Constitution V
 - [X] T017 [US1] Run `buf lint` to validate proto changes

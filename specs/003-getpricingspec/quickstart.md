@@ -35,7 +35,7 @@ make generate
 
 ```go
 import (
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto"
     "google.golang.org/grpc/codes"
     "google.golang.org/grpc/status"
 )
@@ -139,8 +139,8 @@ return &pbc.GetPricingSpecResponse{
 
 ```go
 import (
-    plugintesting "github.com/rshade/pulumicost-spec/sdk/go/testing"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto"
+    plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto"
 )
 
 func TestGetPricingSpec(t *testing.T) {

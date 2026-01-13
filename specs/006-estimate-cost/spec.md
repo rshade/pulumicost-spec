@@ -29,7 +29,7 @@
 
 ### User Story 1 - Basic Cost Estimation (Priority: P1)
 
-As a developer using PulumiCost, I want to get a cost estimate for a resource before
+As a developer using FinFocus, I want to get a cost estimate for a resource before
 deploying it, so that I can make informed decisions about resource configurations during
 development.
 

@@ -1,7 +1,7 @@
 # Proto Contract Changes: Target Resources
 
 **Feature**: 019-target-resources
-**File**: `proto/pulumicost/v1/costsource.proto`
+**File**: `proto/finfocus/v1/costsource.proto`
 
 ## Change Summary
 

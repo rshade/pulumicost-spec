@@ -34,9 +34,9 @@ work.
 
 **Purpose**: Project analysis and preparation
 
-- [ ] T001 Verify current state: list all `.proto` files in proto/pulumicost/v1/
+- [ ] T001 Verify current state: list all `.proto` files in proto/finfocus/v1/
 - [ ] T002 Verify current state: check go.mod module name is
-      github.com/rshade/pulumicost-spec
+      github.com/rshade/finfocus-spec
 - [ ] T003 Verify current state: identify all CI/CD workflow files in .github/workflows/
 - [ ] T004 Backup current release-please configurations: copy release-please-config.json
       and .release-please-manifest.json to /tmp/
@@ -62,21 +62,21 @@ work.
 ## Phase 3: User Story 1 - Protocol Branding (Priority: P1) 🎯 MVP
 
 **Goal**: Rename all gRPC definitions to reflect the FinFocus brand (package
-pulumicost.v1 → finfocus.v1)
+finfocus.v1 → finfocus.v1)
 
 **Independent Test**: Verify that `.proto` files use `package finfocus.v1` and gRPC
 services are correctly named (services remain generic)
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Update package declaration in proto/pulumicost/v1/costsource.proto from `pulumicost.v1` to `finfocus.v1`
-- [ ] T010 [P] [US1] Update go_package option in proto/pulumicost/v1/costsource.proto to `github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc`
-- [ ] T011 [P] [US1] Update package declaration in proto/pulumicost/v1/budget.proto from `pulumicost.v1` to `finfocus.v1`
-- [ ] T012 [P] [US1] Update go_package option in proto/pulumicost/v1/budget.proto to `github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc`
-- [ ] T013 [US1] Move proto/pulumicost/v1/costsource.proto to proto/finfocus/v1/costsource.proto
-- [ ] T014 [US1] Move proto/pulumicost/v1/budget.proto to proto/finfocus/v1/budget.proto
-- [ ] T015 [US1] Remove empty proto/pulumicost/v1/ directory: rmdir proto/pulumicost/v1 proto/pulumicost
-- [ ] T016 [P] [US1] Update buf.yaml to reference proto/finfocus/v1 instead of proto/pulumicost/v1 (if applicable)
+- [ ] T009 [P] [US1] Update package declaration in proto/finfocus/v1/costsource.proto from `finfocus.v1` to `finfocus.v1`
+- [ ] T010 [P] [US1] Update go_package option in proto/finfocus/v1/costsource.proto to `github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc`
+- [ ] T011 [P] [US1] Update package declaration in proto/finfocus/v1/budget.proto from `finfocus.v1` to `finfocus.v1`
+- [ ] T012 [P] [US1] Update go_package option in proto/finfocus/v1/budget.proto to `github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc`
+- [ ] T013 [US1] Move proto/finfocus/v1/costsource.proto to proto/finfocus/v1/costsource.proto
+- [ ] T014 [US1] Move proto/finfocus/v1/budget.proto to proto/finfocus/v1/budget.proto
+- [ ] T015 [US1] Remove empty proto/finfocus/v1/ directory: rmdir proto/finfocus/v1 proto/finfocus
+- [ ] T016 [P] [US1] Update buf.yaml to reference proto/finfocus/v1 instead of proto/finfocus/v1 (if applicable)
 - [ ] T017 [P] [US1] Update .github/workflows/proto.yml to use proto/finfocus/v1
       paths for buf lint/breaking checks
 - [ ] T018 [US1] Regenerate proto code: run `make generate` to populate sdk/go/proto/finfocus/v1/
@@ -95,32 +95,32 @@ services are correctly named (services remain generic)
 **Goal**: Update Go module to github.com/rshade/finfocus-spec and update all internal imports
 
 **Independent Test**: Run `go test ./...` and verify all imports use the new
-finfocus-spec path (zero pulumicost-spec imports remain)
+finfocus-spec path (zero finfocus-spec imports remain)
 
 ### Implementation for User Story 2
 
 - [ ] T021 [US2] Update go.mod module declaration from
-      `github.com/rshade/pulumicost-spec` to `github.com/rshade/finfocus-spec`
+      `github.com/rshade/finfocus-spec` to `github.com/rshade/finfocus-spec`
 - [ ] T022 [P] [US2] Update internal imports in sdk/go/pulumiapi/\*.go from
-      `github.com/rshade/pulumicost-spec/sdk/go/` to
+      `github.com/rshade/finfocus-spec/sdk/go/` to
       `github.com/rshade/finfocus-spec/sdk/go/`
 - [ ] T023 [P] [US2] Update internal imports in sdk/go/pluginsdk/\*.go from
-      `github.com/rshade/pulumicost-spec/sdk/go/` to
+      `github.com/rshade/finfocus-spec/sdk/go/` to
       `github.com/rshade/finfocus-spec/sdk/go/`
 - [ ] T024 [P] [US2] Update internal imports in sdk/go/internal/\*.go from
-      `github.com/rshade/pulumicost-spec/sdk/go/` to
+      `github.com/rshade/finfocus-spec/sdk/go/` to
       `github.com/rshade/finfocus-spec/sdk/go/`
 - [ ] T025 [P] [US2] Update proto import in sdk/go/\*_/_\_test.go from
-      `pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"` to
+      `pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"` to
       `pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"`
 - [ ] T026 [P] [US2] Update examples/\*_/_.go imports from
-      `github.com/rshade/pulumicost-spec/sdk/go/` to
+      `github.com/rshade/finfocus-spec/sdk/go/` to
       `github.com/rshade/finfocus-spec/sdk/go/`
 - [ ] T027 [US2] Run go mod tidy to resolve dependencies: `go mod tidy` at repository root
 - [ ] T028 [US2] Verify module rename: run `go list -m` and confirm output is
       `github.com/rshade/finfocus-spec`
-- [ ] T029 [US2] Search for remaining pulumicost-spec imports: run
-      `rg "github.com/rshade/pulumicost-spec"` and verify only historical
+- [ ] T029 [US2] Search for remaining finfocus-spec imports: run
+      `rg "github.com/rshade/finfocus-spec"` and verify only historical
       references remain
 - [ ] T030 [US2] Verify tests pass: run `make test` and confirm all tests pass
       with new module path
@@ -137,7 +137,7 @@ finfocus-spec path (zero pulumicost-spec imports remain)
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] Update package-name in release-please-config.json from `pulumicost-spec` to `finfocus-spec`
+- [ ] T031 [P] [US3] Update package-name in release-please-config.json from `finfocus-spec` to `finfocus-spec`
 - [ ] T032 [US3] Reset root version in .release-please-manifest.json to `0.5.0` (complete reset as per research decision)
 - [ ] T033 [P] [US3] Update .github/workflows/ci.yml to use new module name in
       cache keys (e.g., go-mod-cache: github.com/rshade/finfocus-spec)
@@ -158,10 +158,10 @@ finfocus-spec path (zero pulumicost-spec imports remain)
 
 **Purpose**: Global text replacement, documentation updates, and final validation
 
-- [ ] T038 [P] Perform global case-sensitive find/replace: `pulumicost` →
+- [ ] T038 [P] Perform global case-sensitive find/replace: `finfocus` →
       `finfocus` (lowercase) across entire repository (excluding historical
       files like specs/)
-- [ ] T039 [P] Perform global case-sensitive find/replace: `PulumiCost` →
+- [ ] T039 [P] Perform global case-sensitive find/replace: `FinFocus` →
       `FinFocus` (PascalCase) across entire repository (excluding historical
       files like specs/)
 - [ ] T040 [P] Perform global case-sensitive find/replace: `PULUMICOST` →
@@ -172,19 +172,19 @@ finfocus-spec path (zero pulumicost-spec imports remain)
 - [ ] T042 [P] Update docs/ directory: search and replace brand references while
       preserving historical context (contextual replacement per research
       decision)
-- [ ] T043 [P] Update CLAUDE.md references to pulumicost-spec where appropriate (preserve historical notes)
-- [ ] T044 [P] Update GEMINI.md references to pulumicost-spec where appropriate (preserve historical notes)
-- [ ] T045 [P] Update AGENTS.md references to pulumicost-spec where appropriate (preserve historical notes)
+- [ ] T043 [P] Update CLAUDE.md references to finfocus-spec where appropriate (preserve historical notes)
+- [ ] T044 [P] Update GEMINI.md references to finfocus-spec where appropriate (preserve historical notes)
+- [ ] T045 [P] Update AGENTS.md references to finfocus-spec where appropriate (preserve historical notes)
 - [ ] T046 [P] Update any other documentation files (docs/\*.md) with FinFocus branding (contextual replacement)
 - [ ] T047 Final validation: run `make generate` and confirm clean proto code generation
 - [ ] T048 Final validation: run `make test` and confirm all tests pass
 - [ ] T049 Final validation: run `make validate` (linting and schema
       validation) and confirm all checks pass
-- [ ] T050 [P] Search for remaining pulumicost brand references: run
-      `rg -i "pulumicost"` and verify only historical context remains (in
+- [ ] T050 [P] Search for remaining finfocus brand references: run
+      `rg -i "finfocus"` and verify only historical context remains (in
       specs/, docs with legacy notes)
-- [ ] T051 [P] Search for remaining PulumiCost brand references: run
-      `rg "PulumiCost"` and verify only historical context remains
+- [ ] T051 [P] Search for remaining FinFocus brand references: run
+      `rg "FinFocus"` and verify only historical context remains
 - [ ] T052 Verify wire protocol compatibility: run `make generate` and confirm
       generated proto files maintain service and message structure
 - [ ] T053 Validate success criteria: verify SC-001 through SC-005 from spec.md
@@ -218,7 +218,7 @@ finfocus-spec path (zero pulumicost-spec imports remain)
 - **User Story 2 (P2)**: SDK Module Transition
   - **BLOCKS ON**: US1 completion (proto must be renamed before Go module)
   - Must complete before US3 (release config should be done after module rename)
-  - Independently testable: Run `go test ./...` and verify zero pulumicost-spec imports
+  - Independently testable: Run `go test ./...` and verify zero finfocus-spec imports
 
 - **User Story 3 (P3)**: Automated Release Management
   - **BLOCKS ON**: US2 completion (module path must be updated before release config)
@@ -261,9 +261,9 @@ Task: "Update examples/**/*.go imports"
 
 ```bash
 # Launch all global replacements together (parallel):
-Task: "Perform global case-sensitive find/replace: pulumicost →
+Task: "Perform global case-sensitive find/replace: finfocus →
       finfocus"
-Task: "Perform global case-sensitive find/replace: PulumiCost →
+Task: "Perform global case-sensitive find/replace: FinFocus →
       FinFocus"
 Task: "Perform global case-sensitive find/replace: PULUMICOST →
       FINFOCUS"

@@ -7,7 +7,7 @@
 
 Formalize and extend the existing `sdk/go/testing/` framework into a documented Plugin Conformance
 Test Suite. The suite will be a Go library that plugin authors import to validate their
-implementations against the pulumicost-spec at three conformance levels (Basic, Standard, Advanced)
+implementations against the finfocus-spec at three conformance levels (Basic, Standard, Advanced)
 with structured JSON output for CI/CD integration.
 
 ## Technical Context

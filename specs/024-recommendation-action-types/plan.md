@@ -57,10 +57,10 @@ specs/019-recommendation-action-types/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 └── costsource.proto     # RecommendationActionType enum (lines 613-621)
 
-sdk/go/proto/pulumicost/v1/
+sdk/go/proto/finfocus/v1/
 └── costsource.pb.go     # Generated Go code (regenerate with buf)
 
 sdk/go/testing/

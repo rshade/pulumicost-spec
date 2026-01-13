@@ -15,7 +15,7 @@
 
 ## Path Conventions
 
-- **Proto**: `proto/pulumicost/v1/costsource.proto`
+- **Proto**: `proto/finfocus/v1/costsource.proto`
 - **SDK**: `sdk/go/proto/`, `sdk/go/pricing/`, `sdk/go/testing/`
 - **Schemas**: `schemas/pricing_spec.schema.json`
 - **Examples**: `examples/specs/*.json`
@@ -50,13 +50,13 @@
 
 ### Proto Implementation
 
-- [ ] T007 Add PricingTier message to proto/pulumicost/v1/costsource.proto after line 162
+- [ ] T007 Add PricingTier message to proto/finfocus/v1/costsource.proto after line 162
       with fields: min_quantity (1), max_quantity (2), rate_per_unit (3), description (4)
-- [ ] T008 Add unit field (12) to PricingSpec message in proto/pulumicost/v1/costsource.proto
+- [ ] T008 Add unit field (12) to PricingSpec message in proto/finfocus/v1/costsource.proto
 - [ ] T009 [P] Add assumptions field (13) to PricingSpec message in
-      proto/pulumicost/v1/costsource.proto
+      proto/finfocus/v1/costsource.proto
 - [ ] T010 [P] Add pricing_tiers field (14) to PricingSpec message in
-      proto/pulumicost/v1/costsource.proto
+      proto/finfocus/v1/costsource.proto
 - [ ] T011 Add proto comments for all new fields explaining purpose and usage
 - [ ] T012 Run `make generate` to regenerate Go SDK from proto
 - [ ] T013 Run `make lint` to verify buf lint and buf breaking pass

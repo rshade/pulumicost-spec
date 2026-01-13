@@ -294,7 +294,7 @@ client := pluginsdk.NewClient(pluginsdk.ClientConfig{
 ### Documentation Pattern
 
 ```go
-// NewClient creates a new PulumiCost client with the given configuration.
+// NewClient creates a new FinFocus client with the given configuration.
 //
 // HTTP Client Ownership:
 //   - If HTTPClient is nil, an internal HTTP client is created and owned by

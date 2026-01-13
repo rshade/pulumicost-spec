@@ -6,7 +6,7 @@
 
 ## Overview
 
-SDK Polish v0.4.15 adds three enhancements to the PulumiCost Go SDK:
+SDK Polish v0.4.15 adds three enhancements to the FinFocus Go SDK:
 
 1. **Configurable Client Timeouts** - Per-client timeout configuration with context deadline support
 2. **User-Friendly GetPluginInfo Errors** - Improved error messages for better developer experience
@@ -33,7 +33,7 @@ import (
     "log"
     "time"
 
-    pluginsdk "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    pluginsdk "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func main() {
@@ -153,8 +153,8 @@ import (
     "context"
     "log"
 
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
-    pluginsdk "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+    pluginsdk "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // MyPlugin implements Plugin interface and optional PluginInfoProvider
@@ -281,9 +281,9 @@ package main
 import (
     "os"
 
-    "github.com/rshade/pulumicost-spec/sdk/go/pluginsdk"
-    "github.com/rshade/pulumicost-spec/sdk/go/testing"
-    pbc "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    "github.com/rshade/finfocus-spec/sdk/go/testing"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 type MyPlugin struct{}
@@ -643,7 +643,7 @@ func (s *Server) GetPluginInfo(ctx context.Context, req *pbc.GetPluginInfoReques
 
 ## Summary
 
-SDK Polish v0.4.15 enhances the PulumiCost Go SDK with:
+SDK Polish v0.4.15 enhances the FinFocus Go SDK with:
 
 - ✅ Configurable per-client timeouts with context deadline support
 - ✅ User-friendly GetPluginInfo error messages (automatic server-side validation)

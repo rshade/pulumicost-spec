@@ -4,7 +4,7 @@
 
 ### 1. Protobuf Enum for MetricKind
 
-- **Decision**: Define `MetricKind` as a top-level enum in `proto/pulumicost/v1/costsource.proto`.
+- **Decision**: Define `MetricKind` as a top-level enum in `proto/finfocus/v1/costsource.proto`.
 - **Rationale**: It is a core part of the capability discovery and cost projection logic.
 - **Values**:
   - `METRIC_KIND_UNSPECIFIED = 0`

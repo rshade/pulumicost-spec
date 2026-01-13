@@ -80,7 +80,7 @@ verifying the proposed version and manifest updates.
 
 ### Edge Cases
 
-- **Mixed Imports**: Ensuring no `pulumicost` imports remain in the `sdk/go` directory.
+- **Mixed Imports**: Ensuring no `finfocus` imports remain in the `sdk/go` directory.
 - **Documentation Drift**: Ensuring `README.md` and `docs/` are fully updated to prevent branding inconsistency.
 - **Generated Code Persistence**: Ensuring `make clean` and `make generate` work correctly with the new structure.
 
@@ -88,11 +88,11 @@ verifying the proposed version and manifest updates.
 
 ### Functional Requirements
 
-- **FR-001**: System MUST rename all Protobuf packages from `pulumicost.v1` to `finfocus.v1`.
+- **FR-001**: System MUST rename all Protobuf packages from `finfocus.v1` to `finfocus.v1`.
 - **FR-002**: System MUST update `go.mod` to `github.com/rshade/finfocus-spec`.
 - **FR-003**: System MUST perform a global case-insensitive find/replace of
-  `pulumicost` to `finfocus` (respecting casing: `PulumiCost` -> `FinFocus`).
-- **FR-004**: System MUST move `proto/pulumicost/` directory to `proto/finfocus/`.
+  `finfocus` to `finfocus` (respecting casing: `FinFocus` -> `FinFocus`).
+- **FR-004**: System MUST move `proto/finfocus/` directory to `proto/finfocus/`.
 - **FR-005**: System MUST update `release-please-config.json` and
   `.release-please-manifest.json` to reflect the new project name and version
   (v0.5.0).
@@ -105,7 +105,7 @@ verifying the proposed version and manifest updates.
 
 ### Key Entities
 
-- **Protobuf Contract**: The wire protocol definition transitioning from `pulumicost.v1` to `finfocus.v1`.
+- **Protobuf Contract**: The wire protocol definition transitioning from `finfocus.v1` to `finfocus.v1`.
 - **Go SDK Module**: The Go module identity in `go.mod`.
 - **Release Manifest**: The `release-please` state files tracking versions.
 
@@ -115,8 +115,8 @@ verifying the proposed version and manifest updates.
 
 - **SC-001**: 100% of `.proto` files use the `finfocus.v1` package name.
 - **SC-002**: `make generate` completes without errors and populates `sdk/go/proto/finfocus/v1`.
-- **SC-003**: `make test` passes with zero remaining imports of `github.com/rshade/pulumicost-spec`.
-- **SC-004**: All occurrences of the string "PulumiCost" (case-insensitive) in the
+- **SC-003**: `make test` passes with zero remaining imports of `github.com/rshade/finfocus-spec`.
+- **SC-004**: All occurrences of the string "FinFocus" (case-insensitive) in the
   `docs/` directory are replaced with "FinFocus", unless referring to historical
   context.
 - **SC-005**: `release-please` configuration is valid and points to the new repository and package names.

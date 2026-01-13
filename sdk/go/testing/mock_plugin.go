@@ -1,4 +1,4 @@
-// Package testing provides test utilities for PulumiCost plugin development.
+// Package testing provides test utilities for FinFocus plugin development.
 // It includes mock plugin implementations, test harnesses, and conformance testing
 // utilities for validating plugin behavior against the CostSource gRPC service spec.
 package testing

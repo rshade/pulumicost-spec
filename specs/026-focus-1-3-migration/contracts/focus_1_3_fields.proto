@@ -1,10 +1,10 @@
 // FOCUS 1.3 Field Extensions Contract
 // This file documents the proto field additions to FocusCostRecord.
-// Actual implementation goes in proto/pulumicost/v1/focus.proto
+// Actual implementation goes in proto/finfocus/v1/focus.proto
 
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
 // NOTE: This is a CONTRACT DEFINITION showing the new fields.
 // These fields will be ADDED to the existing FocusCostRecord message.

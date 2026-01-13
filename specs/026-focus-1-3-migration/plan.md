@@ -5,7 +5,7 @@
 
 ## Summary
 
-Migrate the PulumiCost FOCUS implementation from version 1.2 to 1.3 by:
+Migrate the FinFocus FOCUS implementation from version 1.2 to 1.3 by:
 
 1. Adding 8 new columns to FocusCostRecord proto message for split cost allocation and
    provider identification
@@ -60,14 +60,14 @@ specs/026-focus-1-3-migration/
 ### Source Code (repository root)
 
 ```text
-proto/pulumicost/v1/
+proto/finfocus/v1/
 ├── focus.proto          # FocusCostRecord message (add 8 new fields)
 ├── contract.proto       # NEW: ContractCommitment message (12 fields)
 └── enums.proto          # Add new enums if needed
 
 sdk/go/
 ├── proto/               # Generated code (via buf generate)
-│   └── pulumicost/v1/
+│   └── finfocus/v1/
 │       ├── focus.pb.go
 │       └── contract.pb.go  # NEW
 ├── pluginsdk/
@@ -85,7 +85,7 @@ docs/
 ```
 
 **Structure Decision**: Follows existing repository structure with proto definitions in
-`proto/pulumicost/v1/`, generated code in `sdk/go/proto/`, and SDK implementation in
+`proto/finfocus/v1/`, generated code in `sdk/go/proto/`, and SDK implementation in
 `sdk/go/pluginsdk/`. New ContractCommitment proto may be added to existing focus.proto
 or as a separate contract.proto file.
 

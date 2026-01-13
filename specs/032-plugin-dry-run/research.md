@@ -11,7 +11,7 @@
 
 **Findings**:
 
-The `FocusCostRecord` message in `proto/pulumicost/v1/focus.proto` contains ~50 fields
+The `FocusCostRecord` message in `proto/finfocus/v1/focus.proto` contains ~50 fields
 organized into these sections:
 
 | Section | Field Range | Example Fields |

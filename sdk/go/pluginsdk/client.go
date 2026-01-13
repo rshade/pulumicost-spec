@@ -1,4 +1,4 @@
-// Package pluginsdk provides a development SDK for PulumiCost plugins.
+// Package pluginsdk provides a development SDK for FinFocus plugins.
 package pluginsdk
 
 import (
@@ -78,7 +78,7 @@ const (
 	DefaultIdleConnTimeout = 90 * time.Second
 )
 
-// ClientConfig configures a PulumiCost client.
+// ClientConfig configures a FinFocus client.
 type ClientConfig struct {
 	// BaseURL is the server's base URL (e.g., "http://localhost:8080").
 	BaseURL string
@@ -149,7 +149,7 @@ func HighThroughputClientConfig(baseURL string) ClientConfig {
 	}
 }
 
-// Client provides a simplified interface for communicating with PulumiCost plugins.
+// Client provides a simplified interface for communicating with FinFocus plugins.
 // It wraps the generated connect client with cleaner method signatures.
 //
 // Clients should be reused for multiple calls rather than creating a new client
@@ -175,7 +175,7 @@ func wrapRPCError(ctx context.Context, operation string, err error) error {
 	return fmt.Errorf("%s RPC failed: %w", operation, err)
 }
 
-// NewClient creates a new PulumiCost client with the given configuration.
+// NewClient creates a new FinFocus client with the given configuration.
 // If an invalid protocol is specified, it defaults to ProtocolConnect for backward compatibility.
 //
 // HTTP Client Ownership:

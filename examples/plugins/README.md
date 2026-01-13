@@ -1,6 +1,6 @@
 # Plugin Manifest Examples
 
-This directory contains comprehensive examples of plugin manifests for the PulumiCost Plugin Registry system.
+This directory contains comprehensive examples of plugin manifests for the FinFocus Plugin Registry system.
 
 ## Overview
 
@@ -91,7 +91,7 @@ done
 
 ### Security Levels
 
-- **Official**: Not demonstrated (reserved for PulumiCost team)
+- **Official**: Not demonstrated (reserved for FinFocus team)
 - **Verified**: `aws-cost-plugin.json`, `kubecost-plugin.json`
   - Digital signatures required
   - Comprehensive security review

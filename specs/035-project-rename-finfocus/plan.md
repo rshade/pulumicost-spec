@@ -8,12 +8,12 @@
 
 ## Summary
 
-This feature implements a comprehensive rename of the project from PulumiCost to
+This feature implements a comprehensive rename of the project from FinFocus to
 FinFocus, aligning the repository with the FinOps FOCUS specification. The
 technical approach involves:
 
-1. **Protocol rename**: Updating all protobuf package declarations from `pulumicost.v1` to `finfocus.v1`
-2. **Module rename**: Changing the Go module from `github.com/rshade/pulumicost-spec` to `github.com/rshade/finfocus-spec`
+1. **Protocol rename**: Updating all protobuf package declarations from `finfocus.v1` to `finfocus.v1`
+2. **Module rename**: Changing the Go module from `github.com/rshade/finfocus-spec` to `github.com/rshade/finfocus-spec`
 3. **Global text replacement**: Performing case-sensitive find/replace of branding references
 4. **Release management**: Updating `release-please` configuration and resetting version to v0.5.0
 5. **CI/CD updates**: Ensuring all workflows reference the new module paths
@@ -41,7 +41,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 - [x] **Contract First**: Does this change start with Proto definitions?
   - **Status**: PASS - The rename begins with updating `.proto` package declarations from
-    `pulumicost.v1` to `finfocus.v1`, consistent with the "Proto definitions are the
+    `finfocus.v1` to `finfocus.v1`, consistent with the "Proto definitions are the
     source of truth" principle.
 - [x] **Spec Consumes**: Does implementation avoid embedding complex pricing logic/calculators?
   - **Status**: PASS - This is a purely mechanical rename; no pricing logic or calculations are added or modified.
@@ -77,7 +77,7 @@ specs/[###-feature]/
 
 ```text
 proto/
-├── finfocus/v1/         # Renamed from pulumicost/v1/
+├── finfocus/v1/         # Renamed from finfocus/v1/
 │   ├── costsource.proto
 │   └── budget.proto
 ├── buf.yaml

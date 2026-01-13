@@ -16,8 +16,8 @@ and testing.
 
 ## Path Conventions
 
-- **Proto**: `proto/pulumicost/v1/costsource.proto`
-- **Generated**: `sdk/go/proto/pulumicost/v1/` (auto-generated, do not edit)
+- **Proto**: `proto/finfocus/v1/costsource.proto`
+- **Generated**: `sdk/go/proto/finfocus/v1/` (auto-generated, do not edit)
 - **Tests**: `sdk/go/testing/`
 - **SDK Helpers**: `sdk/go/pluginsdk/`
 
@@ -33,7 +33,7 @@ and testing.
 > fail against existing code first.
 
 - [X] T001 Add `id` and `arn` fields to ResourceDescriptor in
-  `proto/pulumicost/v1/costsource.proto`
+  `proto/finfocus/v1/costsource.proto`
 - [X] T002 Run `make generate` to regenerate Go protobuf bindings
 - [X] T003 Run `buf lint` to validate proto changes
 - [X] T004 Run `buf breaking` to verify backward compatibility
@@ -48,7 +48,7 @@ and testing.
 
 **⚠️ CRITICAL**: No user story tests can be verified until this phase is complete
 
-- [X] T005 Verify generated `sdk/go/proto/pulumicost/v1/costsource.pb.go` includes
+- [X] T005 Verify generated `sdk/go/proto/finfocus/v1/costsource.pb.go` includes
   new fields
 - [X] T006 Run `go build ./...` to verify compilation
 - [X] T007 Run `make lint` to verify no lint errors

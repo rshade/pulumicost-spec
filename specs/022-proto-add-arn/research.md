@@ -10,7 +10,7 @@
   terminology (Amazon Resource Name), it is often used colloquially in multi-cloud contexts to mean
   "the long, unique ID". However, to be strictly provider-agnostic, `canonical_id` might be better.
   BUT, `resource_id` is already generic. The prompt/spec specifically asked for `arn` to enable
-  `pulumicost-plugin-aws-ce`.
+  `finfocus-plugin-aws-ce`.
 * **Alternatives Considered**:
   * `canonical_id`: More generic, but `arn` was requested.
   * `provider_id`: Could be confused with the plugin ID.

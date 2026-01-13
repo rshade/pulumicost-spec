@@ -5,7 +5,7 @@
 
 ## Overview
 
-This guide shows how to customize CORS headers in your PulumiCost plugin for security compliance
+This guide shows how to customize CORS headers in your FinFocus plugin for security compliance
 and observability requirements.
 
 ## Default Behavior

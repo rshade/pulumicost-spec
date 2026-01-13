@@ -12,7 +12,7 @@ Billing Budgets, Azure Cost Management, Kubecost)."
 ### User Story 1 - Unified Budget Visibility Across Providers (Priority: P1)
 
 As a FinOps engineer managing cloud costs across multiple providers, I want to see all my
-budgets (AWS, GCP, Azure, Kubecost) in a single pulumicost output so that I have a unified
+budgets (AWS, GCP, Azure, Kubecost) in a single finfocus output so that I have a unified
 view of my spending limits and can make informed decisions about resource allocation.
 
 **Why this priority**: This is the core value proposition - consolidating budget information
@@ -24,7 +24,7 @@ immediate value for budget monitoring.
 
 **Acceptance Scenarios**:
 
-1. **Given** AWS and GCP plugins are configured with budget data, **When** I run pulumicost
+1. **Given** AWS and GCP plugins are configured with budget data, **When** I run finfocus
    commands, **Then** I see budgets from both providers in the output
 2. **Given** a budget exceeds its threshold in AWS, **When** I view budget status, **Then**
    the exceeded budget is clearly marked and highlighted
@@ -36,14 +36,14 @@ immediate value for budget monitoring.
 ### User Story 2 - Kubernetes Budget Tracking (Priority: P2)
 
 As a Kubernetes operator responsible for cost governance, I want Kubecost budgets to be
-exposed through pulumicost so that I can track namespace spending limits alongside
+exposed through finfocus so that I can track namespace spending limits alongside
 infrastructure costs.
 
 **Why this priority**: Enables comprehensive cost visibility including container orchestration
 budgets, which is critical for organizations running Kubernetes workloads.
 
 **Independent Test**: Can be fully tested by configuring Kubecost plugin and verifying
-namespace budget information appears in pulumicost output, providing standalone value for
+namespace budget information appears in finfocus output, providing standalone value for
 Kubernetes cost management.
 
 **Acceptance Scenarios**:
@@ -146,6 +146,6 @@ and displaying summary statistics, offering standalone value for high-level budg
 - **SC-003**: System successfully retrieves budget data from at least 95% of configured plugins
 - **SC-004**: Users report 80% satisfaction with budget visibility and unified display
 - **SC-005**: Budget threshold alerts trigger within 1 minute of threshold being crossed
-  (alerts handled by pulumicost-core consuming applications)
+  (alerts handled by finfocus-core consuming applications)
 - **SC-006**: Multi-cloud users can assess overall budget health in under 30 seconds
 - **SC-007**: System supports 100-1000 budgets per user/department with acceptable performance

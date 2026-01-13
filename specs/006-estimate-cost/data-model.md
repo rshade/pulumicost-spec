@@ -85,7 +85,7 @@ EstimateCostResponse {
 
 ### EstimateCost
 
-**Service**: `pulumicost.v1.CostSource`
+**Service**: `finfocus.v1.CostSource`
 
 **Signature**:
 

@@ -1,7 +1,7 @@
 package pluginsdk
 
 import (
-	pb "github.com/rshade/pulumicost-spec/proto/pulumicost/v1"
+	pb "github.com/rshade/finfocus-spec/proto/finfocus/v1"
 )
 
 // ValidateProjectedCostRequest validates that a GetProjectedCostRequest is well-formed.

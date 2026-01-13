@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
-option go_package = "github.com/pulumi/pulumicost-spec/sdk/go/pulumicost/v1;pulumicostv1";
+option go_package = "github.com/pulumi/finfocus-spec/sdk/go/finfocus/v1;finfocusv1";
 
 // FocusServiceCategory represents the standard service classifications
 // defined in FinOps FOCUS 1.2.

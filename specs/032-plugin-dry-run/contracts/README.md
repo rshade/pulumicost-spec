@@ -9,8 +9,8 @@ This directory contains the gRPC/proto contract definitions for the dry-run feat
 Proto snippet showing all additions required for the dry-run feature. This is not a
 standalone proto file but a reference showing what will be merged into:
 
-- `proto/pulumicost/v1/enums.proto` - FieldSupportStatus enum
-- `proto/pulumicost/v1/costsource.proto` - Messages and RPC definition
+- `proto/finfocus/v1/enums.proto` - FieldSupportStatus enum
+- `proto/finfocus/v1/costsource.proto` - Messages and RPC definition
 
 ## Implementation Notes
 

@@ -1,6 +1,6 @@
-// Package pricing provides domain types and validation for PulumiCost pricing specifications.
+// Package pricing provides domain types and validation for FinFocus pricing specifications.
 // It includes billing mode constants, unit types, and validation helpers for ensuring
-// pricing data conforms to the PulumiCost schema.
+// pricing data conforms to the FinFocus schema.
 package pricing
 
 // BillingMode represents the billing model for a cloud resource.

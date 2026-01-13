@@ -20,8 +20,8 @@ import (
 // Prometheus metrics for each unary RPC call.
 //
 // The interceptor records:
-//   - pulumicost_plugin_requests_total: Counter with labels grpc_method, grpc_code, plugin_name
-//   - pulumicost_plugin_request_duration_seconds: Histogram with labels grpc_method, plugin_name
+//   - finfocus_plugin_requests_total: Counter with labels grpc_method, grpc_code, plugin_name
+//   - finfocus_plugin_request_duration_seconds: Histogram with labels grpc_method, plugin_name
 //
 // Parameters:
 //   - pluginName: Identifier for the plugin, used as the plugin_name label value
@@ -124,7 +124,7 @@ func StartMetricsServer(config MetricsServerConfig) (*http.Server, error)
 
 const (
 	// MetricNamespace is the Prometheus namespace for all plugin metrics.
-	MetricNamespace = "pulumicost"
+	MetricNamespace = "finfocus"
 
 	// MetricSubsystem is the Prometheus subsystem for plugin metrics.
 	MetricSubsystem = "plugin"

@@ -26,7 +26,7 @@ that implement canonical-first, fallback-second reading pattern using Go stdlib 
 **Project Type**: Single Go module (SDK library)
 **Performance Goals**: N/A (simple env var reads, ~nanosecond operations)
 **Constraints**: Must maintain 100% backward compatibility with `LOG_LEVEL` (no PORT fallback)
-**Scale/Scope**: Used by all PulumiCost plugins (3+ repos currently)
+**Scale/Scope**: Used by all FinFocus plugins (3+ repos currently)
 
 ## Constitution Check
 

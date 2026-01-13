@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package pulumicost.v1;
+package finfocus.v1;
 
-option go_package = "github.com/rshade/pulumicost-spec/sdk/go/proto;pbc";
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto;pbc";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
-import "pulumicost/v1/focus.proto";
+import "finfocus/v1/focus.proto";
 
 // CostSourceService provides gRPC interface for cost source plugins to implement.
 // This service defines the contract for retrieving actual costs, projected costs,

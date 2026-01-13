@@ -24,7 +24,7 @@ additional FinOps platform recommendation categories.
 
 ```go
 import (
-    pb "github.com/rshade/pulumicost-spec/sdk/go/proto/pulumicost/v1"
+    pb "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func (p *MyPlugin) GetRecommendations(ctx context.Context, req *pb.GetRecommendationsRequest) (
