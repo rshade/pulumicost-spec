@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rshade/finfocus-spec/schemas/migration.schema.json",
+  "title": "FinFocus Migration Manifest Schema",
+  "description": "Schema for the machine-readable migration metadata for the PulumiCost to FinFocus rename",
+  "type": "object",
+  "required": ["project_rename", "environment_variables", "paths", "migration_steps"],
+  "additionalProperties": true,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this migration manifest"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title of the migration manifest"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the migration manifest"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the migration manifest (semantic versioning)"
+    },
+    "project_rename": {
+      "type": "object",
+      "required": ["from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Old project name"
+        },
+        "to": {
+          "type": "string",
+          "description": "New project name"
+        }
+      }
+    },
+    "environment_variables": {
+      "type": "object",
+      "required": ["renames"],
+      "properties": {
+        "renames": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["old", "new", "description", "backwards_compatible"],
+            "additionalProperties": true,
+            "properties": {
+              "old": {
+                "type": "string",
+                "pattern": "^[A-Z_]+$",
+                "description": "Old environment variable name"
+              },
+              "new": {
+                "type": "string",
+                "pattern": "^[A-Z_]+$",
+                "description": "New environment variable name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Purpose and usage of the environment variable"
+              },
+              "backwards_compatible": {
+                "type": "boolean",
+                "description": "Whether the SDK provides backwards compatibility for this variable"
+              },
+              "fallback": {
+                "type": "string",
+                "pattern": "^[A-Z_]+$",
+                "description": "Legacy fallback environment variable name (if backwards_compatible is true)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "properties": {
+        "plugin_discovery": {
+          "type": "object",
+          "required": ["old", "new"],
+          "additionalProperties": false,
+          "properties": {
+            "old": {
+              "type": "string",
+              "description": "Old plugin discovery path"
+            },
+            "new": {
+              "type": "string",
+              "description": "New plugin discovery path"
+            }
+          }
+        }
+      }
+    },
+    "go_sdk": {
+      "type": "object",
+      "properties": {
+        "module_path_update": {
+          "type": "object",
+          "required": ["description", "old_import", "new_import", "required"],
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Description of the module path change"
+            },
+            "old_import": {
+              "type": "string",
+              "description": "Old import path for Go SDK"
+            },
+            "new_import": {
+              "type": "string",
+              "description": "New import path for Go SDK"
+            },
+            "required": {
+              "type": "boolean",
+              "description": "Whether updating imports is required"
+            },
+            "note": {
+              "type": "string",
+              "description": "Additional notes for developers"
+            }
+          }
+        }
+      }
+    },
+    "migration_steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["step", "description"],
+        "additionalProperties": true,
+        "properties": {
+          "step": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Step number in the migration sequence"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the migration step"
+          },
+          "action": {
+            "type": "string",
+            "description": "Machine-readable action type for automation"
+          },
+          "command": {
+            "type": "string",
+            "description": "Shell command to execute for this step"
+          },
+          "details": {
+            "type": "string",
+            "description": "Detailed explanation of the step"
+          }
+        }
+      }
+    }
+  }
+}

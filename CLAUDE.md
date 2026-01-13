@@ -754,6 +754,27 @@ cd schemas && /init            # JSON Schema validation
 - Go 1.25.5 (per go.mod) + Go stdlib only (`strings`) (016-pluginsdk-mapping)
 - N/A (stateless helper functions, no data persistence) (016-pluginsdk-mapping)
 
+## PulumiCost to FinFocus Migration Documentation
+
+A comprehensive migration guide is available in [MIGRATION.md](./MIGRATION.md) for users migrating from PulumiCost to FinFocus.
+
+**Key Documentation Files**:
+
+- **MIGRATION.md** - Human-readable migration guide with step-by-step instructions, backwards compatibility
+  details, rollback procedures, and deprecation timeline
+- **llm-migration.json** - Machine-readable migration manifest for automated tooling and AI assistants
+- **schemas/migration.schema.json** - JSON Schema defining the migration manifest structure
+
+**Environment Variables**:
+
+The SDK supports both `FINFOCUS_*` variables (new, required) and partial backwards compatibility:
+
+- **Full Backwards Compatibility**: Only `FINFOCUS_LOG_LEVEL` (falls back to `LOG_LEVEL`)
+- **No Backwards Compatibility**: All other `FINFOCUS_*` variables have NO fallback to old names
+- **Deprecation**: `PULUMICOST_*` variables are deprecated and will be removed in v1.0
+
+See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable documentation.
+
 ## Recent Changes
 
 - 029-plugin-info-rpc: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc

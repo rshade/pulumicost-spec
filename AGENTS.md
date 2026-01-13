@@ -30,6 +30,9 @@
 
 ## Active Technologies
 
+- Documentation (Markdown, JSON) - No code implementation + markdownlint-cli2 (for validation), JSON schema validators (001-migration-docs)
+- Files - Repository documentation files (MIGRATION.md, CHANGELOG.md, README.md) (001-migration-docs)
+
 - Go 1.25.5+ + gRPC, Protobuf, Buf, ConnectRPC, RS/Zerolog (035-project-rename-finfocus)
 - N/A (Protobuf definitions and Go SDK) (035-project-rename-finfocus)
 

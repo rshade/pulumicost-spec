@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "https://github.com/rshade/finfocus-spec/schemas/migration.schema.json",
+  "title": "FinFocus Migration Manifest",
+  "description": "Machine-readable migration metadata for the PulumiCost to FinFocus rename",
+  "version": "1.0.0",
+  "project_rename": {
+    "from": "PulumiCost",
+    "to": "FinFocus"
+  },
+  "environment_variables": {
+    "renames": [
+      {
+        "old": "PULUMICOST_PLUGIN_PORT",
+        "new": "FINFOCUS_PLUGIN_PORT",
+        "description": "Port for the plugin gRPC server",
+        "backwards_compatible": true,
+        "fallback_chain": ["FINFOCUS_PLUGIN_PORT", "PULUMICOST_PLUGIN_PORT"]
+      },
+      {
+        "old": "PULUMICOST_LOG_LEVEL",
+        "new": "FINFOCUS_LOG_LEVEL",
+        "description": "Logging verbosity (debug, info, warn, error)",
+        "backwards_compatible": true,
+        "fallback_chain": ["FINFOCUS_LOG_LEVEL", "PULUMICOST_LOG_LEVEL", "LOG_LEVEL"],
+        "note": "Three-layer fallback: includes generic LOG_LEVEL for maximum compatibility"
+      },
+      {
+        "old": "PULUMICOST_LOG_FILE",
+        "new": "FINFOCUS_LOG_FILE",
+        "description": "Path to log file (redirects from stderr)",
+        "backwards_compatible": true,
+        "fallback_chain": ["FINFOCUS_LOG_FILE", "PULUMICOST_LOG_FILE"]
+      },
+      {
+        "old": "PULUMICOST_LOG_FORMAT",
+        "new": "FINFOCUS_LOG_FORMAT",
+        "description": "Log output format (json, text)",
+        "backwards_compatible": true,
+        "fallback_chain": ["FINFOCUS_LOG_FORMAT", "PULUMICOST_LOG_FORMAT"]
+      },
+      {
+        "old": "PULUMICOST_TRACE_ID",
+        "new": "FINFOCUS_TRACE_ID",
+        "description": "Distributed tracing correlation ID",
+        "backwards_compatible": true,
+        "fallback_chain": ["FINFOCUS_TRACE_ID", "PULUMICOST_TRACE_ID"]
+      },
+      {
+        "old": "PULUMICOST_TEST_MODE",
+        "new": "FINFOCUS_TEST_MODE",
+        "description": "Enable test mode features",
+        "backwards_compatible": true,
+        "fallback_chain": ["FINFOCUS_TEST_MODE", "PULUMICOST_TEST_MODE"]
+      }
+    ]
+  },
+  "paths": {
+    "plugin_discovery": {
+      "old": "~/.pulumicost/plugins/",
+      "new": "~/.finfocus/plugins/"
+    }
+  },
+  "go_sdk": {
+    "module_path_update": {
+      "description": "Module path has changed to github.com/rshade/finfocus-spec",
+      "old_import": "github.com/rshade/pulumicost/sdk/go/pluginsdk",
+      "new_import": "github.com/rshade/finfocus-spec/sdk/go/pluginsdk",
+      "required": true,
+      "note": "Update all import statements in your plugin code to use the new module path."
+    }
+  },
+  "migration_steps": [
+    {
+      "step": 1,
+      "description": "Update environment variables in deployment configs",
+      "action": "replace_env_vars",
+      "details": "Replace all PULUMICOST_* variables with FINFOCUS_* equivalents in shell profiles, Kubernetes manifests, systemd services, and Dockerfiles"
+    },
+    {
+      "step": 2,
+      "description": "Move plugins to new directory",
+      "command": "mkdir -p ~/.finfocus/plugins && mv ~/.pulumicost/plugins/* ~/.finfocus/plugins/ 2>/dev/null || true && rmdir ~/.pulumicost/plugins 2>/dev/null || true",
+      "details": "Creates target directory, moves plugin files, and cleans up old directories. Safe for repeated execution."
+    },
+    {
+      "step": 3,
+      "description": "Update plugin configuration files",
+      "action": "update_config_files",
+      "details": "Search configuration files for references to 'pulumicost' and update to 'finfocus' equivalents"
+    }
+  ]
+}

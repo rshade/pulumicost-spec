@@ -83,25 +83,29 @@ cd ../../ && make test && make lint
 
 **Environment Variables (env.go)**:
 
-| Constant              | Variable Name            | Purpose                                  |
-| --------------------- | ------------------------ | ---------------------------------------- |
-| `EnvPort`             | `FINFOCUS_PLUGIN_PORT` | gRPC server port (no fallback)           |
-| `EnvLogLevel`         | `FINFOCUS_LOG_LEVEL`   | Log verbosity (debug, info, warn, error) |
-| `EnvLogLevelFallback` | `LOG_LEVEL`              | Legacy fallback for log level            |
-| `EnvLogFormat`        | `FINFOCUS_LOG_FORMAT`  | Log output format (json, text)           |
-| `EnvLogFile`          | `FINFOCUS_LOG_FILE`    | Log file path (empty = stderr)           |
-| `EnvTraceID`          | `FINFOCUS_TRACE_ID`    | Distributed tracing correlation ID       |
-| `EnvTestMode`         | `FINFOCUS_TEST_MODE`   | Enable test mode (only "true" enables)   |
+| Primary Variable       | Fallback Variable      | Generic Fallback    | Purpose                                  |
+| ---------------------- | ---------------------- | ------------------- | ---------------------------------------- |
+| `FINFOCUS_PLUGIN_PORT` | `PULUMICOST_PLUGIN_PORT` | —                 | gRPC server port                         |
+| `FINFOCUS_LOG_LEVEL`   | `PULUMICOST_LOG_LEVEL`   | `LOG_LEVEL`        | Log verbosity (debug, info, warn, error) |
+| `FINFOCUS_LOG_FORMAT`  | `PULUMICOST_LOG_FORMAT`  | —                 | Log output format (json, text)           |
+| `FINFOCUS_LOG_FILE`    | `PULUMICOST_LOG_FILE`    | —                 | Log file path (empty = stderr)           |
+| `FINFOCUS_TRACE_ID`    | `PULUMICOST_TRACE_ID`    | —                 | Distributed tracing correlation ID       |
+| `FINFOCUS_TEST_MODE`   | `PULUMICOST_TEST_MODE`   | —                 | Enable test mode (only "true" enables)   |
+
+**Environment Fallback Chains**:
+
+- **Two-layer fallback** (port, log format, log file, trace ID, test mode): Tries `FINFOCUS_*` first, then `PULUMICOST_*`
+- **Three-layer fallback** (log level): Tries `FINFOCUS_LOG_LEVEL` → `PULUMICOST_LOG_LEVEL` → `LOG_LEVEL`
 
 **Environment Functions**:
 
-- `GetPort() int` - Returns port from `FINFOCUS_PLUGIN_PORT` or 0 if not set/invalid
-- `GetLogLevel() string` - Returns log level (canonical first, then fallback)
-- `GetLogFormat() string` - Returns log format or empty string
-- `GetLogFile() string` - Returns log file path or empty string
-- `GetTraceID() string` - Returns trace ID or empty string
-- `GetTestMode() bool` - Returns true only if value is "true" (logs warning for invalid values)
-- `IsTestMode() bool` - Same as GetTestMode but without warning logging (for repeated checks)
+- `GetPort() int` - Returns port from fallback chain, or 0 if not set/invalid
+- `GetLogLevel() string` - Returns log level from three-layer fallback (includes generic `LOG_LEVEL`)
+- `GetLogFormat() string` - Returns log format from fallback chain or empty string
+- `GetLogFile() string` - Returns log file path from fallback chain or empty string
+- `GetTraceID() string` - Returns trace ID from fallback chain or empty string
+- `GetTestMode() bool` - Returns true only if "true" (checks fallback chain, logs invalid values)
+- `IsTestMode() bool` - Returns true only if "true" (checks fallback chain, no warnings)
 
 **`pricing/` Package - Domain Logic**
 
