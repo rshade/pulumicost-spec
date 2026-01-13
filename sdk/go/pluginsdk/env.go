@@ -12,39 +12,51 @@ import (
 // These constants define the canonical names for all supported environment variables.
 const (
 	// EnvPort is the canonical environment variable for plugin gRPC port.
-	// Plugins MUST use FINFOCUS_PLUGIN_PORT (no fallback to PORT).
-	EnvPort = "FINFOCUS_PLUGIN_PORT"
+	// Fallback chain: FINFOCUS_PLUGIN_PORT -> PULUMICOST_PLUGIN_PORT.
+	EnvPort         = "FINFOCUS_PLUGIN_PORT"
+	EnvPortFallback = "PULUMICOST_PLUGIN_PORT"
 
 	// EnvLogLevel is the canonical environment variable for log verbosity.
 	// Supported values: debug, info, warn, error (plugin-specific validation).
-	EnvLogLevel = "FINFOCUS_LOG_LEVEL"
-
-	// EnvLogLevelFallback is the legacy environment variable for log verbosity.
-	// GetLogLevel() checks FINFOCUS_LOG_LEVEL first, then falls back to LOG_LEVEL.
-	EnvLogLevelFallback = "LOG_LEVEL"
+	// Fallback chain: FINFOCUS_LOG_LEVEL -> PULUMICOST_LOG_LEVEL -> LOG_LEVEL.
+	EnvLogLevel           = "FINFOCUS_LOG_LEVEL"
+	EnvLogLevelPulumiCost = "PULUMICOST_LOG_LEVEL"
+	EnvLogLevelFallback   = "LOG_LEVEL"
 
 	// EnvLogFormat is the environment variable for log output format.
 	// Supported values: json, text (plugin-specific validation).
-	EnvLogFormat = "FINFOCUS_LOG_FORMAT"
+	// Fallback chain: FINFOCUS_LOG_FORMAT -> PULUMICOST_LOG_FORMAT.
+	EnvLogFormat         = "FINFOCUS_LOG_FORMAT"
+	EnvLogFormatFallback = "PULUMICOST_LOG_FORMAT"
 
 	// EnvLogFile is the environment variable for log file path.
 	// Empty string means log to stderr (not stdout).
-	EnvLogFile = "FINFOCUS_LOG_FILE"
+	// Fallback chain: FINFOCUS_LOG_FILE -> PULUMICOST_LOG_FILE.
+	EnvLogFile         = "FINFOCUS_LOG_FILE"
+	EnvLogFileFallback = "PULUMICOST_LOG_FILE"
 
 	// EnvTraceID is the environment variable for distributed tracing.
 	// When set, this ID should be included in all related logs and responses.
-	EnvTraceID = "FINFOCUS_TRACE_ID"
+	// Fallback chain: FINFOCUS_TRACE_ID -> PULUMICOST_TRACE_ID.
+	EnvTraceID         = "FINFOCUS_TRACE_ID"
+	EnvTraceIDFallback = "PULUMICOST_TRACE_ID"
 
 	// EnvTestMode is the environment variable for enabling test mode.
 	// Only "true" enables test mode; all other values disable it.
-	EnvTestMode = "FINFOCUS_TEST_MODE"
+	// Fallback chain: FINFOCUS_TEST_MODE -> PULUMICOST_TEST_MODE.
+	EnvTestMode         = "FINFOCUS_TEST_MODE"
+	EnvTestModeFallback = "PULUMICOST_TEST_MODE"
 )
 
-// GetPort returns the plugin port from FINFOCUS_PLUGIN_PORT environment variable.
-// Returns 0 if not set or invalid. There is no fallback to PORT.
+// GetPort returns the plugin port from environment variables.
+// Checks FINFOCUS_PLUGIN_PORT first, then falls back to PULUMICOST_PLUGIN_PORT.
+// Returns 0 if not set or invalid.
 // Callers should treat 0 as "port not configured" and handle accordingly.
 func GetPort() int {
 	v := os.Getenv(EnvPort)
+	if v == "" {
+		v = os.Getenv(EnvPortFallback)
+	}
 	if v == "" {
 		return 0
 	}
@@ -56,39 +68,57 @@ func GetPort() int {
 }
 
 // GetLogLevel returns the log level from environment variables.
-// Checks FINFOCUS_LOG_LEVEL first, then falls back to LOG_LEVEL.
-// Returns empty string if neither is set.
+// Checks in order: FINFOCUS_LOG_LEVEL -> PULUMICOST_LOG_LEVEL -> LOG_LEVEL.
+// Returns empty string if none are set.
 func GetLogLevel() string {
 	if v := os.Getenv(EnvLogLevel); v != "" {
+		return v
+	}
+	if v := os.Getenv(EnvLogLevelPulumiCost); v != "" {
 		return v
 	}
 	return os.Getenv(EnvLogLevelFallback)
 }
 
-// GetLogFormat returns the log format from FINFOCUS_LOG_FORMAT.
+// GetLogFormat returns the log format from environment variables.
+// Checks FINFOCUS_LOG_FORMAT first, then falls back to PULUMICOST_LOG_FORMAT.
 // Returns empty string if not set.
 func GetLogFormat() string {
-	return os.Getenv(EnvLogFormat)
+	if v := os.Getenv(EnvLogFormat); v != "" {
+		return v
+	}
+	return os.Getenv(EnvLogFormatFallback)
 }
 
-// GetLogFile returns the log file path from the EnvLogFile environment variable.
-// Returns an empty string if EnvLogFile is unset or empty, indicating that
-// NewLogWriter() will use os.Stderr (not stdout) for logging.
+// GetLogFile returns the log file path from environment variables.
+// Checks FINFOCUS_LOG_FILE first, then falls back to PULUMICOST_LOG_FILE.
+// Returns an empty string if unset or empty, indicating that logging will use os.Stderr.
 func GetLogFile() string {
-	return os.Getenv(EnvLogFile)
+	if v := os.Getenv(EnvLogFile); v != "" {
+		return v
+	}
+	return os.Getenv(EnvLogFileFallback)
 }
 
-// GetTraceID returns the trace ID from FINFOCUS_TRACE_ID.
+// GetTraceID returns the trace ID from environment variables.
+// Checks FINFOCUS_TRACE_ID first, then falls back to PULUMICOST_TRACE_ID.
 // Returns empty string if not set.
 func GetTraceID() string {
-	return os.Getenv(EnvTraceID)
+	if v := os.Getenv(EnvTraceID); v != "" {
+		return v
+	}
+	return os.Getenv(EnvTraceIDFallback)
 }
 
-// GetTestMode returns true if FINFOCUS_TEST_MODE is set to "true".
+// GetTestMode returns true if test mode is enabled via environment variables.
+// Checks FINFOCUS_TEST_MODE first, then falls back to PULUMICOST_TEST_MODE.
 // Logs a warning if the value is set but not "true" or "false".
 // Returns false for any value other than "true".
 func GetTestMode() bool {
 	v := os.Getenv(EnvTestMode)
+	if v == "" {
+		v = os.Getenv(EnvTestModeFallback)
+	}
 	if v == "" {
 		return false
 	}
@@ -104,9 +134,14 @@ func GetTestMode() bool {
 	return false
 }
 
-// IsTestMode returns true if FINFOCUS_TEST_MODE is set to "true".
+// IsTestMode returns true if test mode is enabled via environment variables.
+// Checks FINFOCUS_TEST_MODE first, then falls back to PULUMICOST_TEST_MODE.
 // Unlike GetTestMode, this function does not log warnings for invalid values.
 // Use this for repeated checks to avoid log spam.
 func IsTestMode() bool {
-	return os.Getenv(EnvTestMode) == "true"
+	v := os.Getenv(EnvTestMode)
+	if v == "" {
+		v = os.Getenv(EnvTestModeFallback)
+	}
+	return v == "true"
 }

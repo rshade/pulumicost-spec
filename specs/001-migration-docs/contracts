@@ -1,0 +1,62 @@
+# Data Model: Add Migration Documentation
+
+## Overview
+
+The migration documentation feature defines conceptual entities for documenting the PulumiCost to FinFocus transition. No new data structures are created; instead, existing documentation formats are utilized.
+
+## Key Entities
+
+### MigrationGuide
+
+**Purpose**: Human-readable documentation explaining the rename and migration steps.
+
+**Attributes**:
+- Title: "Migration Guide: PulumiCost to FinFocus"
+- Sections: Environment Variables, Plugin Discovery Paths, Migration Steps, SDK Changes
+- Format: Markdown
+- Validation: Must pass markdown linting
+
+**Relationships**: References EnvironmentVariableMapping and PluginPathMapping entities.
+
+### LLMManifest
+
+**Purpose**: Machine-readable JSON file containing migration metadata for AI assistants.
+
+**Attributes**:
+- project_rename: Object with from/to fields
+- environment_variables: Object with renames array
+- paths: Object with plugin_discovery mapping
+- go_sdk: Object with module_path_update description
+- migration_steps: Array of step objects with description and action/command
+
+**Relationships**: Provides structured data for automated migration assistance.
+
+### EnvironmentVariableMapping
+
+**Purpose**: Documented mapping from old PULUMICOST_* variables to new FINFOCUS_* variables.
+
+**Attributes**:
+- old_name: String (e.g., "PULUMICOST_PLUGIN_PORT")
+- new_name: String (e.g., "FINFOCUS_PLUGIN_PORT")
+- description: String explaining the variable purpose
+- backwards_compatible: Boolean indicating SDK fallback support
+
+**Validation Rules**:
+- All 6 variables must be documented (PORT, LOG_LEVEL, LOG_FILE, LOG_FORMAT, TRACE_ID, TEST_MODE)
+- New names must follow FINFOCUS_* pattern
+- Descriptions must be accurate and current
+- backwards_compatible field must match actual SDK behavior
+
+### PluginPathMapping
+
+**Purpose**: Documented mapping from old plugin discovery path to new path.
+
+**Attributes**:
+- old_path: String ("~/.pulumicost/plugins/")
+- new_path: String ("~/.finfocus/plugins/")
+- migration_command: String (safe, tested command for migration)
+
+**Validation Rules**:
+- Paths must be user home-relative
+- Migration command must be safe and testable
+- Command must handle existing target directories

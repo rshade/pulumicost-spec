@@ -3,8 +3,8 @@
 ## Focusing your finances left
 
 FinFocus (formerly PulumiCost) provides a comprehensive, standardized protocol for cost source
-plugins to integrate with cost management platforms. This specification enables consistent
-cost data retrieval across AWS, Azure, GCP, Kubernetes, and custom providers.
+plugins to integrate with cost management platforms. (See [Migration Guide](MIGRATION.md) for upgrade instructions).
+This specification enables consistent cost data retrieval across AWS, Azure, GCP, Kubernetes, and custom providers.
 
 [![CI](https://github.com/rshade/finfocus-spec/actions/workflows/ci.yml/badge.svg)](https://github.com/rshade/finfocus-spec/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rshade/finfocus-spec/branch/main/graph/badge.svg)](https://codecov.io/gh/rshade/finfocus-spec)
@@ -846,6 +846,7 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 - **[FOCUS 1.2 Columns](./docs/focus-columns.md)** - FinOps FOCUS column mapping reference
 - **[Plugin Registry Spec](./docs/plugin-registry-specification.md)** - Plugin registration and discovery
 - **[Migration Guide](./docs/PLUGIN_MIGRATION_GUIDE.md)** - Upgrading between spec versions
+- **[Project Rename Migration](./MIGRATION.md)** - Guide for migrating from PulumiCost to FinFocus
 
 ### Community
 

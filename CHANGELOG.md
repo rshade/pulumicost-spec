@@ -7,136 +7,129 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0](https://github.com/rshade/finfocus-spec/compare/v0.4.14...v0.5.0) (2026-01-12)
 
-
 ### Changed
 
-* **sdk:** rename project from pulumicost to finfocus ([#273](https://github.com/rshade/finfocus-spec/issues/273)) ([eecdddb](https://github.com/rshade/finfocus-spec/commit/eecdddbdf8ea901f15c46658e8315dadbd4e58a0)), closes [#272](https://github.com/rshade/finfocus-spec/issues/272)
+- **sdk:** rename project from pulumicost to finfocus ([#273](https://github.com/rshade/finfocus-spec/issues/273)) ([eecdddb](https://github.com/rshade/finfocus-spec/commit/eecdddbdf8ea901f15c46658e8315dadbd4e58a0)), closes [#272](https://github.com/rshade/finfocus-spec/issues/272)
 
+### Migration Guide (PulumiCost -> FinFocus)
+
+This release renames the project to **FinFocus**. Breaking changes include:
+
+- **Environment Variables:**
+  - `PULUMICOST_PLUGIN_PORT` → `FINFOCUS_PLUGIN_PORT`
+  - `PULUMICOST_LOG_LEVEL` → `FINFOCUS_LOG_LEVEL`
+  - `PULUMICOST_LOG_FILE` → `FINFOCUS_LOG_FILE`
+- **Plugin Path:** `~/.pulumicost/plugins/` → `~/.finfocus/plugins/`
+
+See [MIGRATION.md](MIGRATION.md) for full details.
 
 ### Chores
 
-* release 0.5.0 ([4358f2a](https://github.com/rshade/finfocus-spec/commit/4358f2a060220fc9876d898ecd20136fabb5e3eb))
+- release 0.5.0 ([4358f2a](https://github.com/rshade/finfocus-spec/commit/4358f2a060220fc9876d898ecd20136fabb5e3eb))
 
 ## [0.4.14](https://github.com/rshade/finfocus-spec/compare/v0.4.13...v0.4.14) (2026-01-10)
 
-
 ### Added
 
-* **pluginsdk:** implement sdk polish features and hardening ([#259](https://github.com/rshade/finfocus-spec/issues/259)) ([2091d19](https://github.com/rshade/finfocus-spec/commit/2091d19cc0e84b46bd14469202e9d896e6fa3cc9))
-
+- **pluginsdk:** implement sdk polish features and hardening ([#259](https://github.com/rshade/finfocus-spec/issues/259)) ([2091d19](https://github.com/rshade/finfocus-spec/commit/2091d19cc0e84b46bd14469202e9d896e6fa3cc9))
 
 ### Fixed
 
-* **pluginsdk:** use zerolog in health handler ([#268](https://github.com/rshade/finfocus-spec/issues/268)) ([b43443e](https://github.com/rshade/finfocus-spec/commit/b43443e8afedd7bdf69f19b81de0c852c35739f1)), closes [#266](https://github.com/rshade/finfocus-spec/issues/266)
-
+- **pluginsdk:** use zerolog in health handler ([#268](https://github.com/rshade/finfocus-spec/issues/268)) ([b43443e](https://github.com/rshade/finfocus-spec/commit/b43443e8afedd7bdf69f19b81de0c852c35739f1)), closes [#266](https://github.com/rshade/finfocus-spec/issues/266)
 
 ### Changed
 
-* **sdk:** Improve ARN provider type safety ([#269](https://github.com/rshade/finfocus-spec/issues/269)) ([813d98e](https://github.com/rshade/finfocus-spec/commit/813d98e55e55d4efab4ea4802c9ad04dd7ebda85)), closes [#203](https://github.com/rshade/finfocus-spec/issues/203)
-* **sdk:** Improve ARN provider type safety ([#270](https://github.com/rshade/finfocus-spec/issues/270)) ([61ea613](https://github.com/rshade/finfocus-spec/commit/61ea6136d9223fb188e862c7d8aff2adda6fd40c)), closes [#203](https://github.com/rshade/finfocus-spec/issues/203)
+- **sdk:** Improve ARN provider type safety ([#269](https://github.com/rshade/finfocus-spec/issues/269)) ([813d98e](https://github.com/rshade/finfocus-spec/commit/813d98e55e55d4efab4ea4802c9ad04dd7ebda85)), closes [#203](https://github.com/rshade/finfocus-spec/issues/203)
+- **sdk:** Improve ARN provider type safety ([#270](https://github.com/rshade/finfocus-spec/issues/270)) ([61ea613](https://github.com/rshade/finfocus-spec/commit/61ea6136d9223fb188e862c7d8aff2adda6fd40c)), closes [#203](https://github.com/rshade/finfocus-spec/issues/203)
 
 ## [0.4.13](https://github.com/rshade/finfocus-spec/compare/v0.4.12...v0.4.13) (2026-01-05)
 
-
 ### Added
 
-* **pluginsdk:** Add CORS headers, max-age, and security headers ([#256](https://github.com/rshade/finfocus-spec/issues/256)) ([93555f6](https://github.com/rshade/finfocus-spec/commit/93555f6003b3a32b645f36c42bd740f35fef9e97)), closes [#228](https://github.com/rshade/finfocus-spec/issues/228) [#229](https://github.com/rshade/finfocus-spec/issues/229) [#239](https://github.com/rshade/finfocus-spec/issues/239)
-* **pluginsdk:** Add DryRun for plugin field mapping discovery ([#248](https://github.com/rshade/finfocus-spec/issues/248)) ([45cea69](https://github.com/rshade/finfocus-spec/commit/45cea69ca004e4d08a0fb9c08a1ea62422c0ec9f)), closes [#186](https://github.com/rshade/finfocus-spec/issues/186)
-* **proto:** add growth_type to projected cost response ([#250](https://github.com/rshade/finfocus-spec/issues/250)) ([4ba1da4](https://github.com/rshade/finfocus-spec/commit/4ba1da43a642939f1bceb42c8bf2ebd14b7d327d)), closes [#249](https://github.com/rshade/finfocus-spec/issues/249)
-* **sdk:** add jsonld serialization package for focus cost data ([#252](https://github.com/rshade/finfocus-spec/issues/252)) ([6760501](https://github.com/rshade/finfocus-spec/commit/676050119a3605598286238e3f5a8a0b25a6e374)), closes [#187](https://github.com/rshade/finfocus-spec/issues/187)
+- **pluginsdk:** Add CORS headers, max-age, and security headers ([#256](https://github.com/rshade/finfocus-spec/issues/256)) ([93555f6](https://github.com/rshade/finfocus-spec/commit/93555f6003b3a32b645f36c42bd740f35fef9e97)), closes [#228](https://github.com/rshade/finfocus-spec/issues/228) [#229](https://github.com/rshade/finfocus-spec/issues/229) [#239](https://github.com/rshade/finfocus-spec/issues/239)
+- **pluginsdk:** Add DryRun for plugin field mapping discovery ([#248](https://github.com/rshade/finfocus-spec/issues/248)) ([45cea69](https://github.com/rshade/finfocus-spec/commit/45cea69ca004e4d08a0fb9c08a1ea62422c0ec9f)), closes [#186](https://github.com/rshade/finfocus-spec/issues/186)
+- **proto:** add growth_type to projected cost response ([#250](https://github.com/rshade/finfocus-spec/issues/250)) ([4ba1da4](https://github.com/rshade/finfocus-spec/commit/4ba1da43a642939f1bceb42c8bf2ebd14b7d327d)), closes [#249](https://github.com/rshade/finfocus-spec/issues/249)
+- **sdk:** add jsonld serialization package for focus cost data ([#252](https://github.com/rshade/finfocus-spec/issues/252)) ([6760501](https://github.com/rshade/finfocus-spec/commit/676050119a3605598286238e3f5a8a0b25a6e374)), closes [#187](https://github.com/rshade/finfocus-spec/issues/187)
 
 ## [0.4.12](https://github.com/rshade/finfocus-spec/compare/v0.4.11...v0.4.12) (2025-12-31)
 
-
 ### Added
 
-* **pluginsdk:** Add GetPluginInfo RPC for spec version compatibility ([#242](https://github.com/rshade/finfocus-spec/issues/242)) ([d8f4c53](https://github.com/rshade/finfocus-spec/commit/d8f4c539a3f778e323263a531dd08ade274f350d)), closes [#222](https://github.com/rshade/finfocus-spec/issues/222)
-* **pluginsdk:** add multi-protocol support with connect-go ([#223](https://github.com/rshade/finfocus-spec/issues/223)) ([26f7549](https://github.com/rshade/finfocus-spec/commit/26f7549da00515932949d8b2503d4ce5166684eb)), closes [#189](https://github.com/rshade/finfocus-spec/issues/189)
-* **proto:** add forecasting primitives for cost projections ([#241](https://github.com/rshade/finfocus-spec/issues/241)) ([0e2ab7c](https://github.com/rshade/finfocus-spec/commit/0e2ab7cc84689ae0bf2677e48c8e8e3a788250ed)), closes [#215](https://github.com/rshade/finfocus-spec/issues/215)
-
+- **pluginsdk:** Add GetPluginInfo RPC for spec version compatibility ([#242](https://github.com/rshade/finfocus-spec/issues/242)) ([d8f4c53](https://github.com/rshade/finfocus-spec/commit/d8f4c539a3f778e323263a531dd08ade274f350d)), closes [#222](https://github.com/rshade/finfocus-spec/issues/222)
+- **pluginsdk:** add multi-protocol support with connect-go ([#223](https://github.com/rshade/finfocus-spec/issues/223)) ([26f7549](https://github.com/rshade/finfocus-spec/commit/26f7549da00515932949d8b2503d4ce5166684eb)), closes [#189](https://github.com/rshade/finfocus-spec/issues/189)
+- **proto:** add forecasting primitives for cost projections ([#241](https://github.com/rshade/finfocus-spec/issues/241)) ([0e2ab7c](https://github.com/rshade/finfocus-spec/commit/0e2ab7cc84689ae0bf2677e48c8e8e3a788250ed)), closes [#215](https://github.com/rshade/finfocus-spec/issues/215)
 
 ### Documentation
 
-* **pluginsdk:** Add thread safety, rate limiting, CORS, and perf docs ([#243](https://github.com/rshade/finfocus-spec/issues/243)) ([91b2ae1](https://github.com/rshade/finfocus-spec/commit/91b2ae1cad4d5209dbfe6236d3dc0ff353e161b0)), closes [#206](https://github.com/rshade/finfocus-spec/issues/206) [#207](https://github.com/rshade/finfocus-spec/issues/207) [#211](https://github.com/rshade/finfocus-spec/issues/211) [#231](https://github.com/rshade/finfocus-spec/issues/231) [#233](https://github.com/rshade/finfocus-spec/issues/233) [#235](https://github.com/rshade/finfocus-spec/issues/235) [#236](https://github.com/rshade/finfocus-spec/issues/236) [#237](https://github.com/rshade/finfocus-spec/issues/237) [#238](https://github.com/rshade/finfocus-spec/issues/238) [#240](https://github.com/rshade/finfocus-spec/issues/240)
-* **sdk:** add advanced implementation patterns and examples ([#213](https://github.com/rshade/finfocus-spec/issues/213)) ([922422c](https://github.com/rshade/finfocus-spec/commit/922422c6ccb2d65ff4bfd503c8e543ff3f29dc6a)), closes [#185](https://github.com/rshade/finfocus-spec/issues/185)
+- **pluginsdk:** Add thread safety, rate limiting, CORS, and perf docs ([#243](https://github.com/rshade/finfocus-spec/issues/243)) ([91b2ae1](https://github.com/rshade/finfocus-spec/commit/91b2ae1cad4d5209dbfe6236d3dc0ff353e161b0)), closes [#206](https://github.com/rshade/finfocus-spec/issues/206) [#207](https://github.com/rshade/finfocus-spec/issues/207) [#211](https://github.com/rshade/finfocus-spec/issues/211) [#231](https://github.com/rshade/finfocus-spec/issues/231) [#233](https://github.com/rshade/finfocus-spec/issues/233) [#235](https://github.com/rshade/finfocus-spec/issues/235) [#236](https://github.com/rshade/finfocus-spec/issues/236) [#237](https://github.com/rshade/finfocus-spec/issues/237) [#238](https://github.com/rshade/finfocus-spec/issues/238) [#240](https://github.com/rshade/finfocus-spec/issues/240)
+- **sdk:** add advanced implementation patterns and examples ([#213](https://github.com/rshade/finfocus-spec/issues/213)) ([922422c](https://github.com/rshade/finfocus-spec/commit/922422c6ccb2d65ff4bfd503c8e543ff3f29dc6a)), closes [#185](https://github.com/rshade/finfocus-spec/issues/185)
 
 ## [0.4.11](https://github.com/rshade/finfocus-spec/compare/v0.4.10...v0.4.11) (2025-12-26)
 
-
 ### Added
 
-* **pluginsdk:** Enable gRPC server reflection by default ([#181](https://github.com/rshade/finfocus-spec/issues/181)) ([c058c6e](https://github.com/rshade/finfocus-spec/commit/c058c6e57f2f8e0c983ebe092f6084fc3b3f513a))
-* **pluginsdk:** implement contextual finops validation ([#201](https://github.com/rshade/finfocus-spec/issues/201)) ([4a9b808](https://github.com/rshade/finfocus-spec/commit/4a9b80805180b261708a87d02ea1fec41b371d7b)), closes [#184](https://github.com/rshade/finfocus-spec/issues/184)
-* **proto:** add focus 1.3 columns and contract commitment dataset ([#199](https://github.com/rshade/finfocus-spec/issues/199)) ([25fcf65](https://github.com/rshade/finfocus-spec/commit/25fcf65591c96435fa3e71e159e42b0f43d5cd6d)), closes [#183](https://github.com/rshade/finfocus-spec/issues/183)
-* **proto:** Add id and arn fields to ResourceDescriptor ([#202](https://github.com/rshade/finfocus-spec/issues/202)) ([962db4f](https://github.com/rshade/finfocus-spec/commit/962db4f17621d134eac1a64f1675574ab47b2859)), closes [#200](https://github.com/rshade/finfocus-spec/issues/200)
+- **pluginsdk:** Enable gRPC server reflection by default ([#181](https://github.com/rshade/finfocus-spec/issues/181)) ([c058c6e](https://github.com/rshade/finfocus-spec/commit/c058c6e57f2f8e0c983ebe092f6084fc3b3f513a))
+- **pluginsdk:** implement contextual finops validation ([#201](https://github.com/rshade/finfocus-spec/issues/201)) ([4a9b808](https://github.com/rshade/finfocus-spec/commit/4a9b80805180b261708a87d02ea1fec41b371d7b)), closes [#184](https://github.com/rshade/finfocus-spec/issues/184)
+- **proto:** add focus 1.3 columns and contract commitment dataset ([#199](https://github.com/rshade/finfocus-spec/issues/199)) ([25fcf65](https://github.com/rshade/finfocus-spec/commit/25fcf65591c96435fa3e71e159e42b0f43d5cd6d)), closes [#183](https://github.com/rshade/finfocus-spec/issues/183)
+- **proto:** Add id and arn fields to ResourceDescriptor ([#202](https://github.com/rshade/finfocus-spec/issues/202)) ([962db4f](https://github.com/rshade/finfocus-spec/commit/962db4f17621d134eac1a64f1675574ab47b2859)), closes [#200](https://github.com/rshade/finfocus-spec/issues/200)
 
 ## [0.4.10](https://github.com/rshade/finfocus-spec/compare/v0.4.9...v0.4.10) (2025-12-19)
 
-
 ### Added
 
-* **proto:** add greenops metrics and utilization modeling ([#176](https://github.com/rshade/finfocus-spec/issues/176)) ([d00dc45](https://github.com/rshade/finfocus-spec/commit/d00dc4504c3fc88cc2a7c21ae294db0ee339116c))
+- **proto:** add greenops metrics and utilization modeling ([#176](https://github.com/rshade/finfocus-spec/issues/176)) ([d00dc45](https://github.com/rshade/finfocus-spec/commit/d00dc4504c3fc88cc2a7c21ae294db0ee339116c))
 
 ## [0.4.9](https://github.com/rshade/finfocus-spec/compare/v0.4.8...v0.4.9) (2025-12-18)
 
-
 ### Added
 
-* **proto:** add target_resources for resource-scoped recs ([#171](https://github.com/rshade/finfocus-spec/issues/171)) ([4526eb7](https://github.com/rshade/finfocus-spec/commit/4526eb70d93b9e7e05e6d06519c75bd44a80da00))
-* **proto:** extend recommendation action types for cost optimization ([#173](https://github.com/rshade/finfocus-spec/issues/173)) ([4abebd1](https://github.com/rshade/finfocus-spec/commit/4abebd1cfabea315a150065a65aca53d3291c6c0)), closes [#170](https://github.com/rshade/finfocus-spec/issues/170)
-
+- **proto:** add target_resources for resource-scoped recs ([#171](https://github.com/rshade/finfocus-spec/issues/171)) ([4526eb7](https://github.com/rshade/finfocus-spec/commit/4526eb70d93b9e7e05e6d06519c75bd44a80da00))
+- **proto:** extend recommendation action types for cost optimization ([#173](https://github.com/rshade/finfocus-spec/issues/173)) ([4abebd1](https://github.com/rshade/finfocus-spec/commit/4abebd1cfabea315a150065a65aca53d3291c6c0)), closes [#170](https://github.com/rshade/finfocus-spec/issues/170)
 
 ### Fixed
 
-* fixing test issues and mockplugin ([#172](https://github.com/rshade/finfocus-spec/issues/172)) ([fa0b641](https://github.com/rshade/finfocus-spec/commit/fa0b641e23df8e80652a88a8e1fea513a8e16de8))
-* **sdk:** correct strict weak ordering violation in sort recommendations ([#168](https://github.com/rshade/finfocus-spec/issues/168)) ([0860d38](https://github.com/rshade/finfocus-spec/commit/0860d3841b5adb69871f99debe1454bf662820e6)), closes [#167](https://github.com/rshade/finfocus-spec/issues/167)
+- fixing test issues and mockplugin ([#172](https://github.com/rshade/finfocus-spec/issues/172)) ([fa0b641](https://github.com/rshade/finfocus-spec/commit/fa0b641e23df8e80652a88a8e1fea513a8e16de8))
+- **sdk:** correct strict weak ordering violation in sort recommendations ([#168](https://github.com/rshade/finfocus-spec/issues/168)) ([0860d38](https://github.com/rshade/finfocus-spec/commit/0860d3841b5adb69871f99debe1454bf662820e6)), closes [#167](https://github.com/rshade/finfocus-spec/issues/167)
 
 ## [0.4.8](https://github.com/rshade/finfocus-spec/compare/v0.4.7...v0.4.8) (2025-12-16)
 
-
 ### Added
 
-* **proto:** add comprehensive filter and dismissal to recommendations ([#166](https://github.com/rshade/finfocus-spec/issues/166)) ([71240b8](https://github.com/rshade/finfocus-spec/commit/71240b852b590dee01c8063f613ef5dc4ece62e9)), closes [#165](https://github.com/rshade/finfocus-spec/issues/165)
-
+- **proto:** add comprehensive filter and dismissal to recommendations ([#166](https://github.com/rshade/finfocus-spec/issues/166)) ([71240b8](https://github.com/rshade/finfocus-spec/commit/71240b852b590dee01c8063f613ef5dc4ece62e9)), closes [#165](https://github.com/rshade/finfocus-spec/issues/165)
 
 ### Documentation
 
-* updating the documentation for the latest changes ([2589c1a](https://github.com/rshade/finfocus-spec/commit/2589c1aff4e06f576d2617ed4b38d7222cca60a4))
-* updating the documentation for the latest changes ([#164](https://github.com/rshade/finfocus-spec/issues/164)) ([b54b806](https://github.com/rshade/finfocus-spec/commit/b54b806b27e554fdd384f23a93ca328128eb5b3e))
+- updating the documentation for the latest changes ([2589c1a](https://github.com/rshade/finfocus-spec/commit/2589c1aff4e06f576d2617ed4b38d7222cca60a4))
+- updating the documentation for the latest changes ([#164](https://github.com/rshade/finfocus-spec/issues/164)) ([b54b806](https://github.com/rshade/finfocus-spec/commit/b54b806b27e554fdd384f23a93ca328128eb5b3e))
 
 ## [0.4.7](https://github.com/rshade/finfocus-spec/compare/v0.4.6...v0.4.7) (2025-12-15)
 
-
 ### Added
 
-* **proto:** add arn field to actual cost request ([#160](https://github.com/rshade/finfocus-spec/issues/160)) ([a75b42b](https://github.com/rshade/finfocus-spec/commit/a75b42b355395f590b7d211475de05f5083bd82b)), closes [#157](https://github.com/rshade/finfocus-spec/issues/157)
+- **proto:** add arn field to actual cost request ([#160](https://github.com/rshade/finfocus-spec/issues/160)) ([a75b42b](https://github.com/rshade/finfocus-spec/commit/a75b42b355395f590b7d211475de05f5083bd82b)), closes [#157](https://github.com/rshade/finfocus-spec/issues/157)
 
 ## [0.4.6](https://github.com/rshade/finfocus-spec/compare/v0.4.5...v0.4.6) (2025-12-11)
 
-
 ### Added
 
-* **pluginsdk:** add request validation helpers ([#151](https://github.com/rshade/finfocus-spec/issues/151)) ([ef71ba6](https://github.com/rshade/finfocus-spec/commit/ef71ba6018169b630f3068deab45b97bd1e3522c)), closes [#130](https://github.com/rshade/finfocus-spec/issues/130)
-
+- **pluginsdk:** add request validation helpers ([#151](https://github.com/rshade/finfocus-spec/issues/151)) ([ef71ba6](https://github.com/rshade/finfocus-spec/commit/ef71ba6018169b630f3068deab45b97bd1e3522c)), closes [#130](https://github.com/rshade/finfocus-spec/issues/130)
 
 ### Fixed
 
-* updating small bugs in spec ([#156](https://github.com/rshade/finfocus-spec/issues/156)) ([83df05f](https://github.com/rshade/finfocus-spec/commit/83df05f11ec2690c9b4e594128a9ba4022c20c8b))
+- updating small bugs in spec ([#156](https://github.com/rshade/finfocus-spec/issues/156)) ([83df05f](https://github.com/rshade/finfocus-spec/commit/83df05f11ec2690c9b4e594128a9ba4022c20c8b))
 
 ## [0.4.5](https://github.com/rshade/finfocus-spec/compare/v0.4.4...v0.4.5) (2025-12-10)
 
-
 ### Added
 
-* **pluginsdk:** add mapping package for property extraction ([#148](https://github.com/rshade/finfocus-spec/issues/148)) ([8fd1524](https://github.com/rshade/finfocus-spec/commit/8fd1524877218272a7d219239058bfee43c294bc)), closes [#128](https://github.com/rshade/finfocus-spec/issues/128)
-* **proto:** add getbudgets rpc for unified budget visibility ([#149](https://github.com/rshade/finfocus-spec/issues/149)) ([b4018d7](https://github.com/rshade/finfocus-spec/commit/b4018d794fd5b2c2f54541102c7625ffd900f26f)), closes [#123](https://github.com/rshade/finfocus-spec/issues/123)
-* **sdk:** Support PULUMICOST_LOG_FILE for unified logging ([#145](https://github.com/rshade/finfocus-spec/issues/145)) ([6b9a9b3](https://github.com/rshade/finfocus-spec/commit/6b9a9b38e24f9b49a05095c140bd2500c4e8090b)), closes [#131](https://github.com/rshade/finfocus-spec/issues/131)
-
+- **pluginsdk:** add mapping package for property extraction ([#148](https://github.com/rshade/finfocus-spec/issues/148)) ([8fd1524](https://github.com/rshade/finfocus-spec/commit/8fd1524877218272a7d219239058bfee43c294bc)), closes [#128](https://github.com/rshade/finfocus-spec/issues/128)
+- **proto:** add getbudgets rpc for unified budget visibility ([#149](https://github.com/rshade/finfocus-spec/issues/149)) ([b4018d7](https://github.com/rshade/finfocus-spec/commit/b4018d794fd5b2c2f54541102c7625ffd900f26f)), closes [#123](https://github.com/rshade/finfocus-spec/issues/123)
+- **sdk:** Support PULUMICOST_LOG_FILE for unified logging ([#145](https://github.com/rshade/finfocus-spec/issues/145)) ([6b9a9b3](https://github.com/rshade/finfocus-spec/commit/6b9a9b38e24f9b49a05095c140bd2500c4e8090b)), closes [#131](https://github.com/rshade/finfocus-spec/issues/131)
 
 ### Documentation
 
-* Document pluginsdk.Serve() behavior and configuration ([#146](https://github.com/rshade/finfocus-spec/issues/146)) ([30687f9](https://github.com/rshade/finfocus-spec/commit/30687f9ca34a1c262a0ac6b8f66f98301dce1987))
-* **sdk:** add core-plugin interface docs and contract tests ([#150](https://github.com/rshade/finfocus-spec/issues/150)) ([87d4428](https://github.com/rshade/finfocus-spec/commit/87d44289a5a63b25d8baeccb11f7eb9f56ba3128)), closes [#132](https://github.com/rshade/finfocus-spec/issues/132) [#133](https://github.com/rshade/finfocus-spec/issues/133) [#134](https://github.com/rshade/finfocus-spec/issues/134) [#135](https://github.com/rshade/finfocus-spec/issues/135)
+- Document pluginsdk.Serve() behavior and configuration ([#146](https://github.com/rshade/finfocus-spec/issues/146)) ([30687f9](https://github.com/rshade/finfocus-spec/commit/30687f9ca34a1c262a0ac6b8f66f98301dce1987))
+- **sdk:** add core-plugin interface docs and contract tests ([#150](https://github.com/rshade/finfocus-spec/issues/150)) ([87d4428](https://github.com/rshade/finfocus-spec/commit/87d44289a5a63b25d8baeccb11f7eb9f56ba3128)), closes [#132](https://github.com/rshade/finfocus-spec/issues/132) [#133](https://github.com/rshade/finfocus-spec/issues/133) [#134](https://github.com/rshade/finfocus-spec/issues/134) [#135](https://github.com/rshade/finfocus-spec/issues/135)
 
 ## [0.4.4](https://github.com/rshade/finfocus-spec/compare/v0.4.3...v0.4.4) (2025-12-09)
 
