@@ -11,7 +11,7 @@ Templates Requiring Updates: None
 Follow-up TODOs: None
 -->
 
-# PulumiCost Specification Constitution (Transitioning to FinFocus)
+# FinFocus Specification Constitution
 
 ## Core Principles
 
@@ -20,7 +20,7 @@ Follow-up TODOs: None
 Every change to the protocol MUST begin with protobuf specification updates before implementation:
 
 - **Proto definitions are the source of truth**: All gRPC service definitions in
-  `proto/pulumicost/v1/` define the canonical contract.
+  `proto/finfocus/v1/` define the canonical contract.
 - SDK code is generated from proto definitions; manual edits to generated code are FORBIDDEN.
 - Proto changes require corresponding JSON schema updates for PricingSpec messages.
 - All protobuf message types MUST have comprehensive validation.
@@ -55,7 +55,7 @@ spec's role is standardized observability, not financial calculation.
 
 This repository defines the _specification_ and foundational tooling, not the end-user application:
 
-- **Spec vs. Core**: `pulumicost-spec` defines interfaces; `pulumicost-core` contains application logic.
+- **Spec vs. Core**: `finfocus-spec` defines interfaces; `finfocus-core` contains application logic.
 - **Plugin SDK focus**: The SDK is for plugin creators, not end-users.
 - **Minimal Dependencies**: Core spec files MUST NOT depend on higher-level application components.
 
@@ -90,8 +90,8 @@ implementations and client applications.
 
 Every gRPC specification element MUST be documented, and the project's identity must be preserved:
 
-- **FinFocus Rename (v0.2.0)**: As per `RENAME-PLAN.md`, the project is transitioning to the **FinFocus**
-  identity. All new documentation SHOULD acknowledge this transition.
+- **FinFocus Identity**: The project has been renamed to **FinFocus** to align with the
+  industry-standard FinOps FOCUS specification.
 - Proto messages and fields require inline comments for documentation generation.
 - **Documentation Currency**: Documentation MUST be updated in the same PR as feature implementation. Stale
   docs are blocking for PR approval.
