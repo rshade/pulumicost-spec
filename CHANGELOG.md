@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1](https://github.com/rshade/finfocus-spec/compare/v0.5.0...v0.5.1) (2026-01-13)
+
+
+### Changed
+
+* **main:** finishing up finfocus polish ([#280](https://github.com/rshade/finfocus-spec/issues/280)) ([2c3827e](https://github.com/rshade/finfocus-spec/commit/2c3827eb559c2e2b7bd3cdcafe16e2a673c544c4))
+
+
+### Documentation
+
+* add pulumicost to finfocus migration guide ([#286](https://github.com/rshade/finfocus-spec/issues/286)) ([6ed0a71](https://github.com/rshade/finfocus-spec/commit/6ed0a717debc4b64d545133a0e155c855c51f4cd)), closes [#282](https://github.com/rshade/finfocus-spec/issues/282)
+
 ## [0.5.0](https://github.com/rshade/finfocus-spec/compare/v0.4.14...v0.5.0) (2026-01-12)
 
 ### Changed
