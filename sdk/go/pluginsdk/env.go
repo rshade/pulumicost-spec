@@ -56,6 +56,9 @@ func GetPort() int {
 	v := os.Getenv(EnvPort)
 	if v == "" {
 		v = os.Getenv(EnvPortFallback)
+		if v != "" {
+			warnLegacyEnv(EnvPortFallback, EnvPort)
+		}
 	}
 	if v == "" {
 		return 0
@@ -75,9 +78,14 @@ func GetLogLevel() string {
 		return v
 	}
 	if v := os.Getenv(EnvLogLevelPulumiCost); v != "" {
+		warnLegacyEnv(EnvLogLevelPulumiCost, EnvLogLevel)
 		return v
 	}
-	return os.Getenv(EnvLogLevelFallback)
+	v := os.Getenv(EnvLogLevelFallback)
+	if v != "" {
+		warnLegacyEnv(EnvLogLevelFallback, EnvLogLevel)
+	}
+	return v
 }
 
 // GetLogFormat returns the log format from environment variables.
@@ -87,7 +95,11 @@ func GetLogFormat() string {
 	if v := os.Getenv(EnvLogFormat); v != "" {
 		return v
 	}
-	return os.Getenv(EnvLogFormatFallback)
+	v := os.Getenv(EnvLogFormatFallback)
+	if v != "" {
+		warnLegacyEnv(EnvLogFormatFallback, EnvLogFormat)
+	}
+	return v
 }
 
 // GetLogFile returns the log file path from environment variables.
@@ -97,7 +109,11 @@ func GetLogFile() string {
 	if v := os.Getenv(EnvLogFile); v != "" {
 		return v
 	}
-	return os.Getenv(EnvLogFileFallback)
+	v := os.Getenv(EnvLogFileFallback)
+	if v != "" {
+		warnLegacyEnv(EnvLogFileFallback, EnvLogFile)
+	}
+	return v
 }
 
 // GetTraceID returns the trace ID from environment variables.
@@ -107,7 +123,11 @@ func GetTraceID() string {
 	if v := os.Getenv(EnvTraceID); v != "" {
 		return v
 	}
-	return os.Getenv(EnvTraceIDFallback)
+	v := os.Getenv(EnvTraceIDFallback)
+	if v != "" {
+		warnLegacyEnv(EnvTraceIDFallback, EnvTraceID)
+	}
+	return v
 }
 
 // GetTestMode returns true if test mode is enabled via environment variables.
@@ -118,6 +138,9 @@ func GetTestMode() bool {
 	v := os.Getenv(EnvTestMode)
 	if v == "" {
 		v = os.Getenv(EnvTestModeFallback)
+		if v != "" {
+			warnLegacyEnv(EnvTestModeFallback, EnvTestMode)
+		}
 	}
 	if v == "" {
 		return false
@@ -142,6 +165,16 @@ func IsTestMode() bool {
 	v := os.Getenv(EnvTestMode)
 	if v == "" {
 		v = os.Getenv(EnvTestModeFallback)
+		// No warning here to avoid log spam in repeated checks,
+		// as documented in the function description.
 	}
 	return v == "true"
+}
+
+// warnLegacyEnv logs a warning message when a legacy environment variable is used.
+func warnLegacyEnv(legacy, canonical string) {
+	log.Warn().
+		Str("legacy", legacy).
+		Str("canonical", canonical).
+		Msg("using legacy environment variable; please migrate to the canonical one")
 }

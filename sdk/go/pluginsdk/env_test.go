@@ -75,6 +75,15 @@ func TestGetPort_NonPositive_ReturnsZero(t *testing.T) {
 	}
 }
 
+func TestGetPort_Fallback(t *testing.T) {
+	unsetEnv(t, pluginsdk.EnvPort)
+	setEnv(t, pluginsdk.EnvPortFallback, "9090")
+	got := pluginsdk.GetPort()
+	if got != 9090 {
+		t.Errorf("GetPort() = %d, want 9090 (fallback should work)", got)
+	}
+}
+
 // ============================================================================
 // User Story 2: Logging Configuration Tests
 // ============================================================================
@@ -258,9 +267,59 @@ func TestIsTestMode_NoWarning(t *testing.T) {
 func TestGetLogLevel_FallbackWorks(t *testing.T) {
 	// This test verifies that LOG_LEVEL fallback works for migration support.
 	unsetEnv(t, pluginsdk.EnvLogLevel)
+	unsetEnv(t, pluginsdk.EnvLogLevelPulumiCost)
 	setEnv(t, pluginsdk.EnvLogLevelFallback, "warn")
 	got := pluginsdk.GetLogLevel()
 	if got != "warn" {
 		t.Errorf("GetLogLevel() = %q, want %q (fallback should work)", got, "warn")
+	}
+}
+
+func TestGetLogLevel_PulumiCostFallback(t *testing.T) {
+	unsetEnv(t, pluginsdk.EnvLogLevel)
+	setEnv(t, pluginsdk.EnvLogLevelPulumiCost, "error")
+	setEnv(t, pluginsdk.EnvLogLevelFallback, "warn")
+	got := pluginsdk.GetLogLevel()
+	if got != "error" {
+		t.Errorf(
+			"GetLogLevel() = %q, want %q (PULUMICOST_LOG_LEVEL should take precedence over LOG_LEVEL)",
+			got, "error",
+		)
+	}
+}
+
+func TestGetLogFormat_Fallback(t *testing.T) {
+	unsetEnv(t, pluginsdk.EnvLogFormat)
+	setEnv(t, pluginsdk.EnvLogFormatFallback, "text")
+	got := pluginsdk.GetLogFormat()
+	if got != "text" {
+		t.Errorf("GetLogFormat() = %q, want %q (fallback should work)", got, "text")
+	}
+}
+
+func TestGetLogFile_Fallback(t *testing.T) {
+	unsetEnv(t, pluginsdk.EnvLogFile)
+	setEnv(t, pluginsdk.EnvLogFileFallback, "/tmp/legacy.log")
+	got := pluginsdk.GetLogFile()
+	if got != "/tmp/legacy.log" {
+		t.Errorf("GetLogFile() = %q, want %q (fallback should work)", got, "/tmp/legacy.log")
+	}
+}
+
+func TestGetTraceID_Fallback(t *testing.T) {
+	unsetEnv(t, pluginsdk.EnvTraceID)
+	setEnv(t, pluginsdk.EnvTraceIDFallback, "legacy-trace-123")
+	got := pluginsdk.GetTraceID()
+	if got != "legacy-trace-123" {
+		t.Errorf("GetTraceID() = %q, want %q (fallback should work)", got, "legacy-trace-123")
+	}
+}
+
+func TestGetTestMode_Fallback(t *testing.T) {
+	unsetEnv(t, pluginsdk.EnvTestMode)
+	setEnv(t, pluginsdk.EnvTestModeFallback, "true")
+	got := pluginsdk.GetTestMode()
+	if !got {
+		t.Error("GetTestMode() = false, want true (fallback should work)")
 	}
 }

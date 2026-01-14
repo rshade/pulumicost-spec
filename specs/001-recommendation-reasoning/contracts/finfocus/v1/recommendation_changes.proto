@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package finfocus.v1;
+
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc";
+
+// RecommendationReason represents the standardized reason code for a recommendation.
+enum RecommendationReason {
+  RECOMMENDATION_REASON_UNSPECIFIED = 0;
+  // Resource capacity significantly exceeds utilization.
+  RECOMMENDATION_REASON_OVER_PROVISIONED = 1;
+  // Resource capacity is insufficient for the workload (Performance).
+  RECOMMENDATION_REASON_UNDER_PROVISIONED = 2;
+  // Resource is active but has no significant utilization.
+  RECOMMENDATION_REASON_IDLE = 3;
+  // Resource provides duplicate functionality (e.g., unused IP).
+  RECOMMENDATION_REASON_REDUNDANT = 4;
+  // Resource uses an older hardware generation (e.g., AWS t2 vs t3).
+  RECOMMENDATION_REASON_OBSOLETE_GENERATION = 5;
+}
+
+// Recommendation represents a single cost optimization recommendation.
+// (Fields 1-17 match existing definition)
+message Recommendation {
+  // ... existing fields ...
+
+  // primary_reason is the main driver for the recommendation.
+  RecommendationReason primary_reason = 18;
+
+  // secondary_reasons are contributing factors for the recommendation.
+  repeated RecommendationReason secondary_reasons = 19;
+}

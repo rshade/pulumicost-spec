@@ -765,13 +765,12 @@ A comprehensive migration guide is available in [MIGRATION.md](./MIGRATION.md) f
 - **llm-migration.json** - Machine-readable migration manifest for automated tooling and AI assistants
 - **schemas/migration.schema.json** - JSON Schema defining the migration manifest structure
 
-**Environment Variables**:
+- **Environment Variables**:
+  - **Port**: `--port` flag > `FINFOCUS_PLUGIN_PORT` > `PULUMICOST_PLUGIN_PORT` (deprecated) > ephemeral (0)
+  - **Log Level**: `FINFOCUS_LOG_LEVEL` > `PULUMICOST_LOG_LEVEL` (deprecated) > `LOG_LEVEL` (deprecated)
+  - **Other Vars**: `FINFOCUS_*` > `PULUMICOST_*` (deprecated)
+  - **Deprecation**: Using legacy `PULUMICOST_*` or `LOG_LEVEL` variables triggers a warning log. Support will be removed in v1.0.
 
-The SDK supports both `FINFOCUS_*` variables (new, required) and partial backwards compatibility:
-
-- **Full Backwards Compatibility**: Only `FINFOCUS_LOG_LEVEL` (falls back to `LOG_LEVEL`)
-- **No Backwards Compatibility**: All other `FINFOCUS_*` variables have NO fallback to old names
-- **Deprecation**: `PULUMICOST_*` variables are deprecated and will be removed in v1.0
 
 See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable documentation.
 

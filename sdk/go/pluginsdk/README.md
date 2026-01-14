@@ -633,16 +633,23 @@ client := pluginsdk.NewClient(pluginsdk.ClientConfig{
 
 ## Environment Variables
 
-Plugins can be configured using standard environment variables.
+Plugins can be configured using standard environment variables. The SDK provides backward compatibility
+for legacy environment variables during the migration from PulumiCost to FinFocus.
 
-| Variable                 | Purpose                                          | Default       |
-| ------------------------ | ------------------------------------------------ | ------------- |
-| `FINFOCUS_PLUGIN_PORT` | gRPC server port (overridden by `--port`)        | Ephemeral (0) |
-| `FINFOCUS_LOG_LEVEL`   | Log verbosity (`debug`, `info`, `warn`, `error`) | `info`        |
-| `FINFOCUS_LOG_FORMAT`  | Log output format (`json`, `text`)               | `json`        |
-| `FINFOCUS_LOG_FILE`    | Path to log file (empty = stderr)                | stderr        |
-| `FINFOCUS_TRACE_ID`    | Distributed trace ID for correlation             | (none)        |
-| `FINFOCUS_TEST_MODE`   | Enable test mode features (`true` / `false`)     | `false`       |
+| Variable                 | Legacy Fallback           | Purpose                                          | Default       |
+| ------------------------ | ------------------------- | ------------------------------------------------ | ------------- |
+| `FINFOCUS_PLUGIN_PORT` | `PULUMICOST_PLUGIN_PORT` | gRPC server port (overridden by `--port`)        | Ephemeral (0) |
+| `FINFOCUS_LOG_LEVEL`   | `PULUMICOST_LOG_LEVEL`   | Log verbosity (`debug`, `info`, `warn`, `error`) | `info`        |
+| `FINFOCUS_LOG_FORMAT`  | `PULUMICOST_LOG_FORMAT`  | Log output format (`json`, `text`)               | `json`        |
+| `FINFOCUS_LOG_FILE`    | `PULUMICOST_LOG_FILE`    | Path to log file (empty = stderr)                | stderr        |
+| `FINFOCUS_TRACE_ID`    | `PULUMICOST_TRACE_ID`    | Distributed trace ID for correlation             | (none)        |
+| `FINFOCUS_TEST_MODE`   | `PULUMICOST_TEST_MODE`   | Enable test mode features (`true` / `false`)     | `false`       |
+
+### Backward Compatibility
+
+When a `FINFOCUS_*` environment variable is not set, the SDK automatically checks for the corresponding
+`PULUMICOST_*` legacy variable. If a legacy variable is used, the SDK logs a **deprecation warning**
+advising migration to the new canonical variable.
 
 ### Logging Configuration
 
@@ -651,8 +658,8 @@ Plugins can be configured using standard environment variables.
   - `info`: Standard operational events
   - `warn`: Warning conditions
   - `error`: Error conditions
-  - **Fallback**: If `FINFOCUS_LOG_LEVEL` is not set, `GetLogLevel()` falls back to the legacy
-    `LOG_LEVEL` environment variable.
+  - **Fallback**: If `FINFOCUS_LOG_LEVEL` is not set, `GetLogLevel()` checks `PULUMICOST_LOG_LEVEL`,
+    then finally falls back to the generic `LOG_LEVEL` environment variable.
 - **FINFOCUS_LOG_FORMAT**: Controls the output structure.
   - `json`: Structured JSON for production (default)
   - `text`: Human-readable text for development

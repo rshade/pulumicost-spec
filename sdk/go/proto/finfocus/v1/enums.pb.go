@@ -617,6 +617,70 @@ func (GrowthType) EnumDescriptor() ([]byte, []int) {
 	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{9}
 }
 
+// RecommendationReason represents the standardized reason code for a recommendation.
+type RecommendationReason int32
+
+const (
+	RecommendationReason_RECOMMENDATION_REASON_UNSPECIFIED RecommendationReason = 0
+	// Resource capacity significantly exceeds utilization.
+	RecommendationReason_RECOMMENDATION_REASON_OVER_PROVISIONED RecommendationReason = 1
+	// Resource capacity is insufficient for the workload (Performance).
+	RecommendationReason_RECOMMENDATION_REASON_UNDER_PROVISIONED RecommendationReason = 2
+	// Resource is active but has no significant utilization.
+	RecommendationReason_RECOMMENDATION_REASON_IDLE RecommendationReason = 3
+	// Resource provides duplicate functionality (e.g., unused IP).
+	RecommendationReason_RECOMMENDATION_REASON_REDUNDANT RecommendationReason = 4
+	// Resource uses an older hardware generation (e.g., AWS t2 vs t3).
+	RecommendationReason_RECOMMENDATION_REASON_OBSOLETE_GENERATION RecommendationReason = 5
+)
+
+// Enum value maps for RecommendationReason.
+var (
+	RecommendationReason_name = map[int32]string{
+		0: "RECOMMENDATION_REASON_UNSPECIFIED",
+		1: "RECOMMENDATION_REASON_OVER_PROVISIONED",
+		2: "RECOMMENDATION_REASON_UNDER_PROVISIONED",
+		3: "RECOMMENDATION_REASON_IDLE",
+		4: "RECOMMENDATION_REASON_REDUNDANT",
+		5: "RECOMMENDATION_REASON_OBSOLETE_GENERATION",
+	}
+	RecommendationReason_value = map[string]int32{
+		"RECOMMENDATION_REASON_UNSPECIFIED":         0,
+		"RECOMMENDATION_REASON_OVER_PROVISIONED":    1,
+		"RECOMMENDATION_REASON_UNDER_PROVISIONED":   2,
+		"RECOMMENDATION_REASON_IDLE":                3,
+		"RECOMMENDATION_REASON_REDUNDANT":           4,
+		"RECOMMENDATION_REASON_OBSOLETE_GENERATION": 5,
+	}
+)
+
+func (x RecommendationReason) Enum() *RecommendationReason {
+	p := new(RecommendationReason)
+	*p = x
+	return p
+}
+
+func (x RecommendationReason) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RecommendationReason) Descriptor() protoreflect.EnumDescriptor {
+	return file_finfocus_v1_enums_proto_enumTypes[10].Descriptor()
+}
+
+func (RecommendationReason) Type() protoreflect.EnumType {
+	return &file_finfocus_v1_enums_proto_enumTypes[10]
+}
+
+func (x RecommendationReason) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RecommendationReason.Descriptor instead.
+func (RecommendationReason) EnumDescriptor() ([]byte, []int) {
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{10}
+}
+
 var File_finfocus_v1_enums_proto protoreflect.FileDescriptor
 
 const file_finfocus_v1_enums_proto_rawDesc = "" +
@@ -681,7 +745,14 @@ const file_finfocus_v1_enums_proto_rawDesc = "" +
 	"\x17GROWTH_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10GROWTH_TYPE_NONE\x10\x01\x12\x16\n" +
 	"\x12GROWTH_TYPE_LINEAR\x10\x02\x12\x1b\n" +
-	"\x17GROWTH_TYPE_EXPONENTIAL\x10\x03B>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
+	"\x17GROWTH_TYPE_EXPONENTIAL\x10\x03*\x8a\x02\n" +
+	"\x14RecommendationReason\x12%\n" +
+	"!RECOMMENDATION_REASON_UNSPECIFIED\x10\x00\x12*\n" +
+	"&RECOMMENDATION_REASON_OVER_PROVISIONED\x10\x01\x12+\n" +
+	"'RECOMMENDATION_REASON_UNDER_PROVISIONED\x10\x02\x12\x1e\n" +
+	"\x1aRECOMMENDATION_REASON_IDLE\x10\x03\x12#\n" +
+	"\x1fRECOMMENDATION_REASON_REDUNDANT\x10\x04\x12-\n" +
+	")RECOMMENDATION_REASON_OBSOLETE_GENERATION\x10\x05B>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
 
 var (
 	file_finfocus_v1_enums_proto_rawDescOnce sync.Once
@@ -695,7 +766,7 @@ func file_finfocus_v1_enums_proto_rawDescGZIP() []byte {
 	return file_finfocus_v1_enums_proto_rawDescData
 }
 
-var file_finfocus_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
+var file_finfocus_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 11)
 var file_finfocus_v1_enums_proto_goTypes = []any{
 	(FocusServiceCategory)(0),            // 0: finfocus.v1.FocusServiceCategory
 	(FocusChargeCategory)(0),             // 1: finfocus.v1.FocusChargeCategory
@@ -707,6 +778,7 @@ var file_finfocus_v1_enums_proto_goTypes = []any{
 	(FocusCapacityReservationStatus)(0),  // 7: finfocus.v1.FocusCapacityReservationStatus
 	(FieldSupportStatus)(0),              // 8: finfocus.v1.FieldSupportStatus
 	(GrowthType)(0),                      // 9: finfocus.v1.GrowthType
+	(RecommendationReason)(0),            // 10: finfocus.v1.RecommendationReason
 }
 var file_finfocus_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -726,7 +798,7 @@ func file_finfocus_v1_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_finfocus_v1_enums_proto_rawDesc), len(file_finfocus_v1_enums_proto_rawDesc)),
-			NumEnums:      10,
+			NumEnums:      11,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
