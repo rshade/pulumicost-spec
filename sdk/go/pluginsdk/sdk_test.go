@@ -942,12 +942,23 @@ func TestResolvePort_FallsBackToEnvVar(t *testing.T) {
 	assert.Equal(t, 7777, got, "should fall back to FINFOCUS_PLUGIN_PORT when requested is 0")
 }
 
+// TestResolvePort_FallsBackToLegacyEnvVar tests that PULUMICOST_PLUGIN_PORT is used when FINFOCUS_PLUGIN_PORT is not set.
+func TestResolvePort_FallsBackToLegacyEnvVar(t *testing.T) {
+	require.NoError(t, os.Unsetenv(EnvPort))
+	t.Setenv(EnvPortFallback, "8888")
+
+	got := resolvePort(0)
+
+	assert.Equal(t, 8888, got, "should fall back to PULUMICOST_PLUGIN_PORT when FINFOCUS_PLUGIN_PORT is not set")
+}
+
 // TestResolvePort_ReturnsZeroWhenNeitherSet tests ephemeral port behavior.
 func TestResolvePort_ReturnsZeroWhenNeitherSet(t *testing.T) {
-	// Ensure env var is not set by setting it to empty string
-	// t.Setenv handles save/restore automatically
+	// Ensure env vars are not set
 	t.Setenv(EnvPort, "")
 	require.NoError(t, os.Unsetenv(EnvPort))
+	t.Setenv(EnvPortFallback, "")
+	require.NoError(t, os.Unsetenv(EnvPortFallback))
 
 	got := resolvePort(0)
 
@@ -959,15 +970,17 @@ func TestResolvePort_ReturnsZeroWhenNeitherSet(t *testing.T) {
 func TestResolvePort_IgnoresGenericPORT(t *testing.T) {
 	// Set the DANGEROUS generic PORT env var
 	t.Setenv("PORT", "5000")
-	// Ensure our canonical env var is NOT set by setting then unsetting
-	// t.Setenv handles save/restore automatically
+	// Ensure our canonical env vars are NOT set
 	t.Setenv(EnvPort, "")
 	require.NoError(t, os.Unsetenv(EnvPort))
+	t.Setenv(EnvPortFallback, "")
+	require.NoError(t, os.Unsetenv(EnvPortFallback))
 
 	got := resolvePort(0)
 
 	// PORT should be IGNORED - we should get 0 (ephemeral), not 5000
-	assert.Equal(t, 0, got, "PORT env var should be ignored; only FINFOCUS_PLUGIN_PORT is read")
+	msg := "PORT env var should be ignored; only FINFOCUS_PLUGIN_PORT and legacy PULUMICOST_PLUGIN_PORT are read"
+	assert.Equal(t, 0, got, msg)
 }
 
 // TestServe_InvalidPluginInfoReturnsError tests T020: Serve returns error for invalid PluginInfo.

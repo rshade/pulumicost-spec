@@ -140,3 +140,18 @@ enum GrowthType {
   // Requires growth_rate to be set.
   GROWTH_TYPE_EXPONENTIAL = 3;
 }
+
+// RecommendationReason represents the standardized reason code for a recommendation.
+enum RecommendationReason {
+  RECOMMENDATION_REASON_UNSPECIFIED = 0;
+  // Resource capacity significantly exceeds utilization.
+  RECOMMENDATION_REASON_OVER_PROVISIONED = 1;
+  // Resource capacity is insufficient for the workload (Performance).
+  RECOMMENDATION_REASON_UNDER_PROVISIONED = 2;
+  // Resource is active but has no significant utilization.
+  RECOMMENDATION_REASON_IDLE = 3;
+  // Resource provides duplicate functionality (e.g., unused IP).
+  RECOMMENDATION_REASON_REDUNDANT = 4;
+  // Resource uses an older hardware generation (e.g., AWS t2 vs t3).
+  RECOMMENDATION_REASON_OBSOLETE_GENERATION = 5;
+}

@@ -677,7 +677,7 @@ type ServeConfig struct {
 
 // resolvePort determines the port to use with the following priority:
 //  1. requested (set from --port flag via ParsePortFlag(), or explicitly configured in ServeConfig.Port)
-//  2. FINFOCUS_PLUGIN_PORT env var (via GetPort())
+//  2. FINFOCUS_PLUGIN_PORT env var (via GetPort(), with fallback to PULUMICOST_PLUGIN_PORT)
 //  3. 0 (ephemeral port - OS assigns available port)
 //
 // Note: The generic PORT env var is NOT supported to avoid multi-plugin conflicts.
@@ -687,7 +687,7 @@ func resolvePort(requested int) int {
 	if requested > 0 {
 		return requested
 	}
-	// Use centralized GetPort() which reads FINFOCUS_PLUGIN_PORT only (no fallback)
+	// Use centralized GetPort() which reads FINFOCUS_PLUGIN_PORT with legacy fallback
 	return GetPort()
 }
 

@@ -1097,6 +1097,12 @@ message Recommendation {
   optional google.protobuf.Timestamp created_at = 16;
   // metadata contains additional provider-specific information
   map<string, string> metadata = 17;
+
+  // primary_reason is the main driver for the recommendation.
+  RecommendationReason primary_reason = 18;
+
+  // secondary_reasons are contributing factors for the recommendation.
+  repeated RecommendationReason secondary_reasons = 19;
 }
 
 // =============================================================================
