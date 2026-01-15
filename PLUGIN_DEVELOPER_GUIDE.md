@@ -83,6 +83,59 @@ service CostSourceService {
 }
 ```
 
+### Plugin Capabilities
+
+Plugins implement the `Plugin` interface directly.
+The FinFocus SDK detects implemented interfaces and reports capabilities via `GetPluginInfo`.
+
+#### Automatic Capability Detection
+
+Your plugin's capabilities are automatically determined by which optional interfaces you implement:
+
+```go
+type MyPlugin struct{}
+
+// Base capabilities (always present):
+// - PLUGIN_CAPABILITY_PROJECTED_COSTS
+// - PLUGIN_CAPABILITY_ACTUAL_COSTS
+
+// Optional capabilities (add by implementing interfaces):
+
+// Add PLUGIN_CAPABILITY_RECOMMENDATIONS
+func (p *MyPlugin) GetRecommendations(ctx context.Context, req *pbc.GetRecommendationsRequest) (*pbc.GetRecommendationsResponse, error) {
+    // Implementation
+}
+
+// Add PLUGIN_CAPABILITY_BUDGETS
+func (p *MyPlugin) GetBudgets(ctx context.Context, req *pbc.GetBudgetsRequest) (*pbc.GetBudgetsResponse, error) {
+    // Implementation
+}
+```
+
+#### Manual Capability Override
+
+For advanced cases, you can explicitly declare capabilities:
+
+```go
+pluginInfo := pluginsdk.NewPluginInfo("my-plugin", "v1.0.0",
+    pluginsdk.WithCapabilities(
+        pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+        pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+    ),
+)
+```
+
+#### Backward Compatibility
+
+Legacy clients can read capabilities from `GetPluginInfoResponse.metadata`:
+
+```go
+resp, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
+if resp.Metadata["recommendations"] == "true" {
+    // Plugin supports recommendations
+}
+```
+
 ### Request/Response Messages
 
 #### Name RPC
@@ -461,20 +514,20 @@ The `RecommendationFilter` message supports comprehensive filtering with 16 fiel
 
 **Recommendation Action Types**:
 
-| Action Type           | Value | Description                                             |
-| --------------------- | ----- | ------------------------------------------------------- |
-| `UNSPECIFIED`         | 0     | Default/unknown action type                             |
-| `RIGHTSIZE`           | 1     | Resize to a more appropriate SKU/size                   |
-| `TERMINATE`           | 2     | Delete unused or idle resources                         |
-| `PURCHASE_COMMITMENT` | 3     | Purchase reserved instances or savings plans            |
-| `ADJUST_REQUESTS`     | 4     | Adjust resource requests (Kubernetes)                   |
-| `MODIFY`              | 5     | Generic configuration modification                      |
-| `DELETE_UNUSED`       | 6     | Delete unused/orphaned resources (volumes, snapshots)   |
-| `MIGRATE`             | 7     | Move workloads to different regions/zones/SKUs          |
-| `CONSOLIDATE`         | 8     | Combine multiple resources into fewer, larger ones      |
-| `SCHEDULE`            | 9     | Start/stop resources on schedule (dev/test)             |
-| `REFACTOR`            | 10    | Architectural changes (e.g., move to serverless)        |
-| `OTHER`               | 11    | Provider-specific catch-all                             |
+| Action Type           | Value | Description                                           |
+| --------------------- | ----- | ----------------------------------------------------- |
+| `UNSPECIFIED`         | 0     | Default/unknown action type                           |
+| `RIGHTSIZE`           | 1     | Resize to a more appropriate SKU/size                 |
+| `TERMINATE`           | 2     | Delete unused or idle resources                       |
+| `PURCHASE_COMMITMENT` | 3     | Purchase reserved instances or savings plans          |
+| `ADJUST_REQUESTS`     | 4     | Adjust resource requests (Kubernetes)                 |
+| `MODIFY`              | 5     | Generic configuration modification                    |
+| `DELETE_UNUSED`       | 6     | Delete unused/orphaned resources (volumes, snapshots) |
+| `MIGRATE`             | 7     | Move workloads to different regions/zones/SKUs        |
+| `CONSOLIDATE`         | 8     | Combine multiple resources into fewer, larger ones    |
+| `SCHEDULE`            | 9     | Start/stop resources on schedule (dev/test)           |
+| `REFACTOR`            | 10    | Architectural changes (e.g., move to serverless)      |
+| `OTHER`               | 11    | Provider-specific catch-all                           |
 
 **Backward Compatibility**:
 
@@ -3125,20 +3178,20 @@ additions (7-11), and provides guidance on migration and compatibility.
 
 #### Complete Action Types Table
 
-| Action Type | Value | Description | Example Usage |
-|-------------|-------|-------------|---------------|
-| `UNSPECIFIED` | 0 | Default/unknown action type | Initial state, error cases |
-| `RIGHTSIZE` | 1 | Resize to a more appropriate SKU/size | Change AWS t3.large to t3.medium |
-| `TERMINATE` | 2 | Delete unused or idle resources | Delete idle EC2 instance |
-| `PURCHASE_COMMITMENT` | 3 | Purchase reserved instances or savings plans | Buy 1yr All Upfront RI |
-| `ADJUST_REQUESTS` | 4 | Adjust resource requests (Kubernetes) | Reduce CPU request from 1000m to 500m |
-| `MODIFY` | 5 | Generic configuration modification | Enable GP3 on EBS volume |
-| `DELETE_UNUSED` | 6 | Delete unused/orphaned resources | Delete unattached EBS volume |
-| `MIGRATE` | 7 | Move workloads to different regions/zones/SKUs | Move from us-east-1 to us-east-2 |
-| `CONSOLIDATE` | 8 | Combine multiple resources into fewer, larger ones | Merge 3 small node pools into 1 large |
-| `SCHEDULE` | 9 | Start/stop resources on schedule | Stop dev instances at night |
-| `REFACTOR` | 10 | Architectural changes | Move from EC2 to Lambda |
-| `OTHER` | 11 | Provider-specific catch-all | Custom action not fitting above |
+| Action Type           | Value | Description                                        | Example Usage                         |
+| --------------------- | ----- | -------------------------------------------------- | ------------------------------------- |
+| `UNSPECIFIED`         | 0     | Default/unknown action type                        | Initial state, error cases            |
+| `RIGHTSIZE`           | 1     | Resize to a more appropriate SKU/size              | Change AWS t3.large to t3.medium      |
+| `TERMINATE`           | 2     | Delete unused or idle resources                    | Delete idle EC2 instance              |
+| `PURCHASE_COMMITMENT` | 3     | Purchase reserved instances or savings plans       | Buy 1yr All Upfront RI                |
+| `ADJUST_REQUESTS`     | 4     | Adjust resource requests (Kubernetes)              | Reduce CPU request from 1000m to 500m |
+| `MODIFY`              | 5     | Generic configuration modification                 | Enable GP3 on EBS volume              |
+| `DELETE_UNUSED`       | 6     | Delete unused/orphaned resources                   | Delete unattached EBS volume          |
+| `MIGRATE`             | 7     | Move workloads to different regions/zones/SKUs     | Move from us-east-1 to us-east-2      |
+| `CONSOLIDATE`         | 8     | Combine multiple resources into fewer, larger ones | Merge 3 small node pools into 1 large |
+| `SCHEDULE`            | 9     | Start/stop resources on schedule                   | Stop dev instances at night           |
+| `REFACTOR`            | 10    | Architectural changes                              | Move from EC2 to Lambda               |
+| `OTHER`               | 11    | Provider-specific catch-all                        | Custom action not fitting above       |
 
 #### Migration Guide
 
@@ -3146,7 +3199,7 @@ Plugins should update their logic to use specific action types (7-11) instead of
 
 #### Example: Migrating from MODIFY to SCHEDULE
 
-*Before:*
+_Before:_
 
 ```go
 // Old: Using generic MODIFY for scheduling
@@ -3154,7 +3207,7 @@ rec.ActionType = pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_MODIFY
 rec.Description = "Schedule this instance to stop at night"
 ```
 
-*After:*
+_After:_
 
 ```go
 // New: Using specific SCHEDULE type

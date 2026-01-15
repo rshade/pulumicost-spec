@@ -44,8 +44,14 @@ const (
 	// EnvTestMode is the environment variable for enabling test mode.
 	// Only "true" enables test mode; all other values disable it.
 	// Fallback chain: FINFOCUS_TEST_MODE -> PULUMICOST_TEST_MODE.
-	EnvTestMode         = "FINFOCUS_TEST_MODE"
+	EnvTestMode = "FINFOCUS_TEST_MODE"
+	// EnvTestModeFallback is the legacy environment variable for enabling test mode.
 	EnvTestModeFallback = "PULUMICOST_TEST_MODE"
+
+	// ValueTrue is the canonical string value for true in environment variables.
+	ValueTrue = "true"
+	// ValueFalse is the canonical string value for false in environment variables.
+	ValueFalse = "false"
 )
 
 // GetPort returns the plugin port from environment variables.
@@ -145,10 +151,10 @@ func GetTestMode() bool {
 	if v == "" {
 		return false
 	}
-	if v == "true" {
+	if v == ValueTrue {
 		return true
 	}
-	if v != "false" {
+	if v != ValueFalse {
 		log.Warn().
 			Str("variable", EnvTestMode).
 			Str("value", v).
@@ -168,7 +174,7 @@ func IsTestMode() bool {
 		// No warning here to avoid log spam in repeated checks,
 		// as documented in the function description.
 	}
-	return v == "true"
+	return v == ValueTrue
 }
 
 // warnLegacyEnv logs a warning message when a legacy environment variable is used.

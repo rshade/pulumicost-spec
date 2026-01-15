@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package finfocus.v1;
+
+import "finfocus/v1/enums.proto";
+
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;finfocusv1";
+
+message GetPluginInfoResponse {
+  string name = 1;
+  string version = 2;
+  string spec_version = 3;
+  repeated string providers = 4;
+  map<string, string> metadata = 5;
+  // NEW: Explicit capability declarations using type-safe enum
+  repeated PluginCapability capabilities = 6;
+}

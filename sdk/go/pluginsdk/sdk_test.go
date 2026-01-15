@@ -1116,6 +1116,58 @@ type mockPluginInfoPlugin struct {
 	metadata  map[string]string
 }
 
+// backwardCompatTestPlugin implements Plugin and optional interfaces for testing capability discovery.
+type backwardCompatTestPlugin struct {
+	name string
+}
+
+func (p *backwardCompatTestPlugin) Name() string { return p.name }
+
+// Implements Plugin interface.
+func (p *backwardCompatTestPlugin) GetProjectedCost(
+	_ context.Context,
+	_ *pbc.GetProjectedCostRequest,
+) (*pbc.GetProjectedCostResponse, error) {
+	return &pbc.GetProjectedCostResponse{}, nil
+}
+
+func (p *backwardCompatTestPlugin) GetActualCost(
+	_ context.Context,
+	_ *pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+	return &pbc.GetActualCostResponse{}, nil
+}
+
+func (p *backwardCompatTestPlugin) GetPricingSpec(
+	_ context.Context,
+	_ *pbc.GetPricingSpecRequest,
+) (*pbc.GetPricingSpecResponse, error) {
+	return &pbc.GetPricingSpecResponse{}, nil
+}
+
+func (p *backwardCompatTestPlugin) EstimateCost(
+	_ context.Context,
+	_ *pbc.EstimateCostRequest,
+) (*pbc.EstimateCostResponse, error) {
+	return &pbc.EstimateCostResponse{}, nil
+}
+
+// Implements RecommendationsProvider.
+func (p *backwardCompatTestPlugin) GetRecommendations(
+	_ context.Context,
+	_ *pbc.GetRecommendationsRequest,
+) (*pbc.GetRecommendationsResponse, error) {
+	return &pbc.GetRecommendationsResponse{}, nil
+}
+
+// Implements BudgetsProvider.
+func (p *backwardCompatTestPlugin) GetBudgets(
+	_ context.Context,
+	_ *pbc.GetBudgetsRequest,
+) (*pbc.GetBudgetsResponse, error) {
+	return &pbc.GetBudgetsResponse{}, nil
+}
+
 func (m *mockPluginInfoPlugin) GetPluginInfo(
 	_ context.Context,
 	_ *pbc.GetPluginInfoRequest,
@@ -1181,4 +1233,87 @@ func TestValidateCORSConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestGetPluginInfo_BackwardCompatibility_CapabilitiesEnumAndStringMap tests that
+// GetPluginInfo returns both the new enum-based capabilities AND the legacy string map
+// for backward compatibility with older clients.
+func TestGetPluginInfo_BackwardCompatibility_CapabilitiesEnumAndStringMap(t *testing.T) {
+	// Create a plugin that implements multiple optional interfaces
+	plugin := &backwardCompatTestPlugin{
+		name: "backward-compat-test-plugin",
+	}
+
+	// Create server with basic plugin info to enable GetPluginInfo
+	pluginInfo := NewPluginInfo("backward-compat-test-plugin", "v1.0.0")
+	server := NewServerWithOptions(plugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	// Verify enum-based capabilities are present
+	require.NotEmpty(t, resp.GetCapabilities(), "capabilities enum should not be empty")
+	expectedCapabilities := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS,
+	}
+	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilities(),
+		"capabilities enum should include all supported capabilities")
+
+	// Verify legacy string map is present in metadata for backward compatibility
+	require.NotNil(t, resp.GetMetadata(), "metadata should not be nil")
+	assert.Equal(t, "true", resp.GetMetadata()["projected_costs"],
+		"legacy projected_costs should be 'true' in metadata")
+	assert.Equal(t, "true", resp.GetMetadata()["actual_costs"],
+		"legacy actual_costs should be 'true' in metadata")
+	assert.Equal(t, "true", resp.GetMetadata()["recommendations"],
+		"legacy recommendations should be 'true' in metadata")
+	assert.Equal(t, "true", resp.GetMetadata()["budgets"],
+		"legacy budgets should be 'true' in metadata")
+
+	// Verify no other legacy keys are present - check that only the expected legacy capability keys exist
+	expectedKeys := []string{"projected_costs", "actual_costs", "recommendations", "budgets"}
+	for _, key := range expectedKeys {
+		assert.Contains(t, resp.GetMetadata(), key, "metadata should contain expected legacy capability key: %s", key)
+	}
+	// Ensure no unexpected keys are present
+	for key := range resp.GetMetadata() {
+		assert.Contains(t, expectedKeys, key, "metadata contains unexpected key: %s", key)
+	}
+
+	// Test with explicitly set capabilities (override auto-discovery)
+	explicitCapabilities := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+	}
+	explicitPluginInfo := NewPluginInfo("explicit-test-plugin", "v1.0.0",
+		WithCapabilities(explicitCapabilities...))
+	explicitServer := NewServerWithOptions(
+		&backwardCompatTestPlugin{name: "explicit-test-plugin"},
+		nil,
+		nil,
+		explicitPluginInfo,
+	)
+
+	explicitResp, err := explicitServer.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, explicitResp)
+
+	// Verify only explicitly set capabilities are reported
+	assert.ElementsMatch(t, explicitCapabilities, explicitResp.GetCapabilities(),
+		"explicitly set capabilities should be returned")
+
+	// Verify legacy metadata reflects only the explicitly set capabilities
+	assert.Equal(t, "true", explicitResp.GetMetadata()["projected_costs"], "projected_costs should be 'true'")
+	assert.Equal(t, "true", explicitResp.GetMetadata()["actual_costs"], "actual_costs should be 'true'")
+	assert.NotContains(t, explicitResp.GetMetadata(), "recommendations",
+		"recommendations should not be present (not explicitly set)")
+	assert.NotContains(t, explicitResp.GetMetadata(), "budgets",
+		"budgets should not be present (not explicitly set)")
 }

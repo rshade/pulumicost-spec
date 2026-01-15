@@ -142,6 +142,19 @@ Every source file (Go, Proto, Script, Schema) MUST include the standard Apache 2
 **Rationale**: Ensures license clarity even if files are separated from the repository and maintains a
 professional enterprise standard aligned with Apache 2.0 recommendations.
 
+### XII. Automatic Capability Declaration
+
+Plugin capabilities MUST be automatically discovered through interface implementation:
+
+- **Interface-Driven Discovery**: Capabilities are determined by which optional provider interfaces
+  (RecommendationsProvider, BudgetsProvider, etc.) the plugin implements.
+- **Zero-Configuration**: Plugin developers should not need to manually declare capabilities.
+- **Backward Compatibility**: Legacy string-based capability metadata MUST be maintained in GetPluginInfo responses.
+- **Override Support**: Explicit capability declaration via PluginInfo.WithCapabilities() is allowed for advanced cases.
+
+**Rationale**: Automatic discovery reduces boilerplate and prevents capability declaration errors.
+Interface-based detection ensures capabilities match actual implementation.
+
 ## Governance
 
 ### Amendment Process

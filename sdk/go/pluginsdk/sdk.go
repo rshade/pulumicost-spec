@@ -26,7 +26,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const maxPayloadSize = 1 << 20 // 1MB
+const (
+	maxPayloadSize = 1 << 20 // 1MB
+	capabilityTrue = "true"
+)
 
 // portFlag is the --port command-line flag for specifying the gRPC server port.
 // This is registered at package initialization time.
@@ -320,66 +323,22 @@ func (s *Server) Name(_ context.Context, _ *pbc.NameRequest) (*pbc.NameResponse,
 //	    Version:     resp.GetVersion(),
 //	    SpecVersion: resp.GetSpecVersion(),
 //	}, nil
+
+// GetPluginInfo implements the gRPC GetPluginInfo method.
+// It retrieves metadata and capabilities from the plugin, with support for
+// auto-discovery and backward compatibility.
 func (s *Server) GetPluginInfo(
 	ctx context.Context,
 	req *pbc.GetPluginInfoRequest,
 ) (*pbc.GetPluginInfoResponse, error) {
 	// Check if plugin implements PluginInfoProvider interface
 	if provider, ok := s.plugin.(PluginInfoProvider); ok {
-		resp, err := provider.GetPluginInfo(ctx, req)
-		if err != nil {
-			// Log the detailed error server-side for debugging
-			s.logger.Error().
-				Err(err).
-				Msg("GetPluginInfo handler error")
-			// Return generic message to client (internal error details not exposed)
-			return nil, status.Error(codes.Internal, "plugin failed to retrieve metadata")
-		}
-
-		// Validate response before returning (defense against buggy/malicious plugins)
-		if resp == nil {
-			s.logger.Error().Msg("GetPluginInfo returned nil response")
-			return nil, status.Error(codes.Internal, "unable to retrieve plugin metadata")
-		}
-		if resp.GetName() == "" || resp.GetVersion() == "" || resp.GetSpecVersion() == "" {
-			s.logger.Error().
-				Str("name", resp.GetName()).
-				Str("version", resp.GetVersion()).
-				Str("spec_version", resp.GetSpecVersion()).
-				Msg("GetPluginInfo returned incomplete response")
-			return nil, status.Error(codes.Internal, "plugin metadata is incomplete")
-		}
-		if specErr := ValidateSpecVersion(resp.GetSpecVersion()); specErr != nil {
-			s.logger.Error().
-				Err(specErr).
-				Msg("GetPluginInfo returned invalid spec_version")
-			return nil, status.Error(codes.Internal, "plugin reported an invalid specification version")
-		}
-		return resp, nil
+		return s.handleProviderPluginInfo(ctx, req, provider)
 	}
 
 	// Use configured PluginInfo if available
 	if s.pluginInfo != nil {
-		// Create defensive copies to prevent concurrent modification
-		// if the caller mutates the returned slices/maps
-		providers := make([]string, len(s.pluginInfo.Providers))
-		copy(providers, s.pluginInfo.Providers)
-
-		var metadata map[string]string
-		if s.pluginInfo.Metadata != nil {
-			metadata = make(map[string]string, len(s.pluginInfo.Metadata))
-			for k, v := range s.pluginInfo.Metadata {
-				metadata[k] = v
-			}
-		}
-
-		return &pbc.GetPluginInfoResponse{
-			Name:        s.pluginInfo.Name,
-			Version:     s.pluginInfo.Version,
-			SpecVersion: s.pluginInfo.SpecVersion,
-			Providers:   providers,
-			Metadata:    metadata,
-		}, nil
+		return s.handleConfiguredPluginInfo()
 	}
 
 	// Log at debug level to aid debugging while maintaining graceful degradation
@@ -389,6 +348,84 @@ func (s *Server) GetPluginInfo(
 
 	// Return Unimplemented for legacy plugins (enables graceful degradation)
 	return nil, status.Error(codes.Unimplemented, "GetPluginInfo not implemented")
+}
+
+// handleProviderPluginInfo handles GetPluginInfo for plugins implementing PluginInfoProvider.
+func (s *Server) handleProviderPluginInfo(
+	ctx context.Context,
+	req *pbc.GetPluginInfoRequest,
+	provider PluginInfoProvider,
+) (*pbc.GetPluginInfoResponse, error) {
+	resp, err := provider.GetPluginInfo(ctx, req)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("GetPluginInfo handler error")
+		return nil, status.Error(codes.Internal, "plugin failed to retrieve metadata")
+	}
+
+	if resp == nil {
+		s.logger.Error().Msg("GetPluginInfo returned nil response")
+		return nil, status.Error(codes.Internal, "unable to retrieve plugin metadata")
+	}
+
+	if resp.GetName() == "" || resp.GetVersion() == "" || resp.GetSpecVersion() == "" {
+		s.logger.Error().
+			Str("name", resp.GetName()).
+			Str("version", resp.GetVersion()).
+			Str("spec_version", resp.GetSpecVersion()).
+			Msg("GetPluginInfo returned incomplete response")
+		return nil, status.Error(codes.Internal, "plugin metadata is incomplete")
+	}
+
+	if specErr := ValidateSpecVersion(resp.GetSpecVersion()); specErr != nil {
+		s.logger.Error().Err(specErr).Msg("GetPluginInfo returned invalid spec_version")
+		return nil, status.Error(codes.Internal, "plugin reported an invalid specification version")
+	}
+
+	return resp, nil
+}
+
+// handleConfiguredPluginInfo handles GetPluginInfo using the server's configured PluginInfo.
+func (s *Server) handleConfiguredPluginInfo() (*pbc.GetPluginInfoResponse, error) {
+	// Create defensive copies to prevent concurrent modification
+	providers := make([]string, len(s.pluginInfo.Providers))
+	copy(providers, s.pluginInfo.Providers)
+
+	var metadata map[string]string
+	if s.pluginInfo.Metadata != nil {
+		metadata = make(map[string]string, len(s.pluginInfo.Metadata))
+		for k, v := range s.pluginInfo.Metadata {
+			metadata[k] = v
+		}
+	}
+
+	// Determine capabilities: use explicit if set, otherwise infer
+	var capabilities []pbc.PluginCapability
+	if len(s.pluginInfo.Capabilities) > 0 {
+		capabilities = make([]pbc.PluginCapability, len(s.pluginInfo.Capabilities))
+		copy(capabilities, s.pluginInfo.Capabilities)
+	} else {
+		capabilities = inferCapabilities(s.plugin)
+	}
+
+	// Add legacy capability metadata for backward compatibility
+	if len(capabilities) > 0 {
+		legacyMeta := capabilitiesToLegacyMetadata(capabilities)
+		if metadata == nil {
+			metadata = make(map[string]string, len(legacyMeta))
+		}
+		for key := range legacyMeta {
+			metadata[key] = capabilityTrue
+		}
+	}
+
+	return &pbc.GetPluginInfoResponse{
+		Name:         s.pluginInfo.Name,
+		Version:      s.pluginInfo.Version,
+		SpecVersion:  s.pluginInfo.SpecVersion,
+		Providers:    providers,
+		Metadata:     metadata,
+		Capabilities: capabilities,
+	}, nil
 }
 
 // GetProjectedCost implements the gRPC GetProjectedCost method.

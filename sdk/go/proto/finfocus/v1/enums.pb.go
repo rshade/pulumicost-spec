@@ -681,6 +681,84 @@ func (RecommendationReason) EnumDescriptor() ([]byte, []int) {
 	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{10}
 }
 
+// PluginCapability represents discrete features a plugin can provide.
+// Used by consuming applications for intelligent plugin routing and selection.
+// Plugins report supported capabilities via GetPluginInfo or SupportsResponse.
+type PluginCapability int32
+
+const (
+	PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED PluginCapability = 0
+	// Plugin implements GetProjectedCost RPC for cost estimation
+	PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS PluginCapability = 1
+	// Plugin implements GetActualCost RPC for historical cost data
+	PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS PluginCapability = 2
+	// Plugin supports carbon/sustainability metrics (METRIC_KIND_CARBON_FOOTPRINT)
+	PluginCapability_PLUGIN_CAPABILITY_CARBON PluginCapability = 3
+	// Plugin implements GetRecommendations RPC (existing "recommendations" capability)
+	PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS PluginCapability = 4
+	// Plugin implements DryRun RPC (existing "dry_run" capability)
+	PluginCapability_PLUGIN_CAPABILITY_DRY_RUN PluginCapability = 5
+	// Plugin implements GetBudgets RPC (existing "budgets" capability)
+	PluginCapability_PLUGIN_CAPABILITY_BUDGETS PluginCapability = 6
+	// Plugin supports energy consumption metrics (METRIC_KIND_ENERGY_CONSUMPTION)
+	PluginCapability_PLUGIN_CAPABILITY_ENERGY PluginCapability = 7
+	// Plugin supports water usage metrics (METRIC_KIND_WATER_USAGE)
+	PluginCapability_PLUGIN_CAPABILITY_WATER PluginCapability = 8
+)
+
+// Enum value maps for PluginCapability.
+var (
+	PluginCapability_name = map[int32]string{
+		0: "PLUGIN_CAPABILITY_UNSPECIFIED",
+		1: "PLUGIN_CAPABILITY_PROJECTED_COSTS",
+		2: "PLUGIN_CAPABILITY_ACTUAL_COSTS",
+		3: "PLUGIN_CAPABILITY_CARBON",
+		4: "PLUGIN_CAPABILITY_RECOMMENDATIONS",
+		5: "PLUGIN_CAPABILITY_DRY_RUN",
+		6: "PLUGIN_CAPABILITY_BUDGETS",
+		7: "PLUGIN_CAPABILITY_ENERGY",
+		8: "PLUGIN_CAPABILITY_WATER",
+	}
+	PluginCapability_value = map[string]int32{
+		"PLUGIN_CAPABILITY_UNSPECIFIED":     0,
+		"PLUGIN_CAPABILITY_PROJECTED_COSTS": 1,
+		"PLUGIN_CAPABILITY_ACTUAL_COSTS":    2,
+		"PLUGIN_CAPABILITY_CARBON":          3,
+		"PLUGIN_CAPABILITY_RECOMMENDATIONS": 4,
+		"PLUGIN_CAPABILITY_DRY_RUN":         5,
+		"PLUGIN_CAPABILITY_BUDGETS":         6,
+		"PLUGIN_CAPABILITY_ENERGY":          7,
+		"PLUGIN_CAPABILITY_WATER":           8,
+	}
+)
+
+func (x PluginCapability) Enum() *PluginCapability {
+	p := new(PluginCapability)
+	*p = x
+	return p
+}
+
+func (x PluginCapability) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PluginCapability) Descriptor() protoreflect.EnumDescriptor {
+	return file_finfocus_v1_enums_proto_enumTypes[11].Descriptor()
+}
+
+func (PluginCapability) Type() protoreflect.EnumType {
+	return &file_finfocus_v1_enums_proto_enumTypes[11]
+}
+
+func (x PluginCapability) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PluginCapability.Descriptor instead.
+func (PluginCapability) EnumDescriptor() ([]byte, []int) {
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{11}
+}
+
 var File_finfocus_v1_enums_proto protoreflect.FileDescriptor
 
 const file_finfocus_v1_enums_proto_rawDesc = "" +
@@ -752,7 +830,17 @@ const file_finfocus_v1_enums_proto_rawDesc = "" +
 	"'RECOMMENDATION_REASON_UNDER_PROVISIONED\x10\x02\x12\x1e\n" +
 	"\x1aRECOMMENDATION_REASON_IDLE\x10\x03\x12#\n" +
 	"\x1fRECOMMENDATION_REASON_REDUNDANT\x10\x04\x12-\n" +
-	")RECOMMENDATION_REASON_OBSOLETE_GENERATION\x10\x05B>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
+	")RECOMMENDATION_REASON_OBSOLETE_GENERATION\x10\x05*\xbe\x02\n" +
+	"\x10PluginCapability\x12!\n" +
+	"\x1dPLUGIN_CAPABILITY_UNSPECIFIED\x10\x00\x12%\n" +
+	"!PLUGIN_CAPABILITY_PROJECTED_COSTS\x10\x01\x12\"\n" +
+	"\x1ePLUGIN_CAPABILITY_ACTUAL_COSTS\x10\x02\x12\x1c\n" +
+	"\x18PLUGIN_CAPABILITY_CARBON\x10\x03\x12%\n" +
+	"!PLUGIN_CAPABILITY_RECOMMENDATIONS\x10\x04\x12\x1d\n" +
+	"\x19PLUGIN_CAPABILITY_DRY_RUN\x10\x05\x12\x1d\n" +
+	"\x19PLUGIN_CAPABILITY_BUDGETS\x10\x06\x12\x1c\n" +
+	"\x18PLUGIN_CAPABILITY_ENERGY\x10\a\x12\x1b\n" +
+	"\x17PLUGIN_CAPABILITY_WATER\x10\bB>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
 
 var (
 	file_finfocus_v1_enums_proto_rawDescOnce sync.Once
@@ -766,7 +854,7 @@ func file_finfocus_v1_enums_proto_rawDescGZIP() []byte {
 	return file_finfocus_v1_enums_proto_rawDescData
 }
 
-var file_finfocus_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 11)
+var file_finfocus_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 12)
 var file_finfocus_v1_enums_proto_goTypes = []any{
 	(FocusServiceCategory)(0),            // 0: finfocus.v1.FocusServiceCategory
 	(FocusChargeCategory)(0),             // 1: finfocus.v1.FocusChargeCategory
@@ -779,6 +867,7 @@ var file_finfocus_v1_enums_proto_goTypes = []any{
 	(FieldSupportStatus)(0),              // 8: finfocus.v1.FieldSupportStatus
 	(GrowthType)(0),                      // 9: finfocus.v1.GrowthType
 	(RecommendationReason)(0),            // 10: finfocus.v1.RecommendationReason
+	(PluginCapability)(0),                // 11: finfocus.v1.PluginCapability
 }
 var file_finfocus_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -798,7 +887,7 @@ func file_finfocus_v1_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_finfocus_v1_enums_proto_rawDesc), len(file_finfocus_v1_enums_proto_rawDesc)),
-			NumEnums:      11,
+			NumEnums:      12,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

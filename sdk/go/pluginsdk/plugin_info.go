@@ -4,6 +4,8 @@ package pluginsdk
 import (
 	"errors"
 	"fmt"
+
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // PluginInfo holds metadata about a plugin that can be reported via GetPluginInfo RPC.
@@ -30,6 +32,12 @@ type PluginInfo struct {
 	// Metadata is optional key-value pairs for diagnostic information.
 	// Examples: {"build_date": "2024-01-15", "git_commit": "abc123"}
 	Metadata map[string]string
+
+	// Capabilities declares the functional capabilities this plugin provides.
+	// When set, these are returned in GetPluginInfoResponse.capabilities.
+	// When nil or empty, capabilities are auto-discovered from implemented interfaces.
+	// This allows plugins to override auto-discovery if needed.
+	Capabilities []pbc.PluginCapability
 }
 
 // PluginInfoOption is a functional option for configuring PluginInfo.
@@ -124,6 +132,22 @@ func WithMetadataMap(metadata map[string]string) PluginInfoOption {
 	}
 }
 
+// WithCapabilities sets the plugin capabilities.
+// When set, these override auto-discovery from implemented interfaces.
+// A defensive copy is made to prevent aliasing issues.
+//
+// Example:
+//
+//	WithCapabilities(pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+//	                 pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS)
+func WithCapabilities(capabilities ...pbc.PluginCapability) PluginInfoOption {
+	return func(info *PluginInfo) {
+		// Defensive copy to prevent aliasing issues
+		info.Capabilities = make([]pbc.PluginCapability, len(capabilities))
+		copy(info.Capabilities, capabilities)
+	}
+}
+
 // Validate checks that the PluginInfo has all required fields and they are valid.
 // Returns an error if validation fails. Returns an error if info is nil.
 //
@@ -152,4 +176,75 @@ func (info *PluginInfo) Validate() error {
 	}
 
 	return nil
+}
+
+// inferCapabilities determines plugin capabilities by checking implemented interfaces.
+// The type assertions themselves are zero-allocation, but inferCapabilities may
+// allocate as needed when append grows the capabilities slice.
+// Returns a slice of capabilities supported by the plugin.
+//
+// The base Plugin interface methods (GetProjectedCost, GetActualCost, etc.) are
+// always assumed to be implemented since they are required by the interface.
+// Only optional interfaces are checked via type assertion.
+func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
+	var capabilities []pbc.PluginCapability
+
+	// Base capabilities - always present since required by Plugin interface
+	capabilities = append(capabilities,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+	)
+
+	// Check optional interfaces using zero-allocation type assertions
+	if _, ok := plugin.(RecommendationsProvider); ok {
+		capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS)
+	}
+	if _, ok := plugin.(BudgetsProvider); ok {
+		capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS)
+	}
+
+	// Future: Add checks for other optional interfaces as they are defined
+	// if _, ok := plugin.(DryRunProvider); ok {
+	//     capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN)
+	// }
+	// if _, ok := plugin.(CarbonProvider); ok {
+	//     capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON)
+	// }
+
+	return capabilities
+}
+
+// legacyCapabilityMap provides backward compatibility by mapping PluginCapability
+// enums to the legacy string-based capability keys used in metadata.
+//
+// This maintains compatibility with clients that expect the old string-based
+// capability reporting while the new enum-based approach is adopted.
+var legacyCapabilityMap = map[pbc.PluginCapability]string{ //nolint:exhaustive,gochecknoglobals // Mapping table for backward compatibility
+	pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS: "projected_costs",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS:    "actual_costs",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON:          "carbon",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS: "recommendations",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN:         "dry_run",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS:         "budgets",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_ENERGY:          "energy",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_WATER:           "water",
+}
+
+// capabilitiesToLegacyMetadata converts a slice of PluginCapability enums
+// to the legacy metadata map format for backward compatibility.
+//
+// Returns a map[string]bool where the keys are legacy capability names
+// and values are always true (presence indicates capability support).
+func capabilitiesToLegacyMetadata(capabilities []pbc.PluginCapability) map[string]bool {
+	if len(capabilities) == 0 {
+		return nil
+	}
+
+	metadata := make(map[string]bool, len(capabilities))
+	for _, cap := range capabilities {
+		if key, exists := legacyCapabilityMap[cap]; exists {
+			metadata[key] = true
+		}
+	}
+	return metadata
 }

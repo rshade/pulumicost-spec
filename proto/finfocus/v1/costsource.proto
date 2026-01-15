@@ -1358,6 +1358,9 @@ message GetPluginInfoResponse {
   // such as build hash, commit ID, or plugin-specific configuration.
   // Free-form; no key restrictions or size limits enforced by SDK.
   map<string, string> metadata = 5;
+  // Explicit capability declarations using type-safe enum
+  repeated PluginCapability capabilities = 6;
+
 }
 
 // =============================================================================

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package finfocus.v1;
+
+option go_package = "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;finfocusv1";
+
+// PluginCapability represents discrete features a plugin can provide.
+// Used by consuming applications for intelligent plugin routing and selection.
+// Plugins report supported capabilities via GetPluginInfo or SupportsResponse.
+enum PluginCapability {
+  PLUGIN_CAPABILITY_UNSPECIFIED = 0;
+  // Plugin implements GetProjectedCost RPC for cost estimation
+  PLUGIN_CAPABILITY_PROJECTED_COSTS = 1;
+  // Plugin implements GetActualCost RPC for historical cost data
+  PLUGIN_CAPABILITY_ACTUAL_COSTS = 2;
+  // Plugin supports carbon/sustainability metrics (METRIC_KIND_CARBON_FOOTPRINT)
+  PLUGIN_CAPABILITY_CARBON = 3;
+  // Plugin implements GetRecommendations RPC (existing "recommendations" capability)
+  PLUGIN_CAPABILITY_RECOMMENDATIONS = 4;
+  // Plugin implements DryRun RPC (existing "dry_run" capability)
+  PLUGIN_CAPABILITY_DRY_RUN = 5;
+  // Plugin implements GetBudgets RPC (existing "budgets" capability)
+  PLUGIN_CAPABILITY_BUDGETS = 6;
+  // Plugin supports energy consumption metrics (METRIC_KIND_ENERGY_CONSUMPTION)
+  PLUGIN_CAPABILITY_ENERGY = 7;
+  // Plugin supports water usage metrics (METRIC_KIND_WATER_USAGE)
+  PLUGIN_CAPABILITY_WATER = 8;
+}

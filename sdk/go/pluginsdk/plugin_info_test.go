@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func TestNewPluginInfo(t *testing.T) {
@@ -17,6 +18,7 @@ func TestNewPluginInfo(t *testing.T) {
 		wantSpec    string
 		wantProvs   []string
 		wantMeta    map[string]string
+		wantCaps    []pbc.PluginCapability
 	}{
 		{
 			name:        "basic plugin info",
@@ -98,12 +100,26 @@ func TestNewPluginInfo(t *testing.T) {
 			wantProvs:   []string{"gcp", "kubernetes"},
 			wantMeta:    map[string]string{"author": "test"},
 		},
+		{
+			name:       "with capabilities",
+			pluginName: "capability-plugin",
+			version:    "v1.0.0",
+			opts: []pluginsdk.PluginInfoOption{
+				pluginsdk.WithCapabilities(pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS),
+			},
+			wantName:    "capability-plugin",
+			wantVersion: "v1.0.0",
+			wantSpec:    pluginsdk.SpecVersion,
+			wantCaps: []pbc.PluginCapability{
+				pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			info := pluginsdk.NewPluginInfo(tt.pluginName, tt.version, tt.opts...)
-			assertPluginInfo(t, info, tt.wantName, tt.wantVersion, tt.wantSpec, tt.wantProvs, tt.wantMeta)
+			assertPluginInfo(t, info, tt.wantName, tt.wantVersion, tt.wantSpec, tt.wantProvs, tt.wantMeta, tt.wantCaps)
 		})
 	}
 }
@@ -114,6 +130,7 @@ func assertPluginInfo(
 	wantName, wantVersion, wantSpec string,
 	wantProvs []string,
 	wantMeta map[string]string,
+	wantCaps []pbc.PluginCapability,
 ) {
 	t.Helper()
 	if info.Name != wantName {
@@ -144,6 +161,17 @@ func assertPluginInfo(
 		for k, v := range wantMeta {
 			if info.Metadata[k] != v {
 				t.Errorf("Metadata[%q] = %q, want %q", k, info.Metadata[k], v)
+			}
+		}
+	}
+
+	// Check capabilities
+	if len(info.Capabilities) != len(wantCaps) {
+		t.Errorf("Capabilities length = %d, want %d", len(info.Capabilities), len(wantCaps))
+	} else {
+		for i, c := range info.Capabilities {
+			if c != wantCaps[i] {
+				t.Errorf("Capabilities[%d] = %v, want %v", i, c, wantCaps[i])
 			}
 		}
 	}

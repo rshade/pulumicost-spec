@@ -769,8 +769,8 @@ A comprehensive migration guide is available in [MIGRATION.md](./MIGRATION.md) f
   - **Port**: `--port` flag > `FINFOCUS_PLUGIN_PORT` > `PULUMICOST_PLUGIN_PORT` (deprecated) > ephemeral (0)
   - **Log Level**: `FINFOCUS_LOG_LEVEL` > `PULUMICOST_LOG_LEVEL` (deprecated) > `LOG_LEVEL` (deprecated)
   - **Other Vars**: `FINFOCUS_*` > `PULUMICOST_*` (deprecated)
-  - **Deprecation**: Using legacy `PULUMICOST_*` or `LOG_LEVEL` variables triggers a warning log. Support will be removed in v1.0.
-
+  - **Deprecation**: Using legacy `PULUMICOST_*` or `LOG_LEVEL` variables triggers
+    a warning log. Support will be removed in v1.0.
 
 See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable documentation.
 
