@@ -248,3 +248,108 @@ func TestConformanceResultPassed(t *testing.T) {
 	// (may pass or fail depending on mock implementation, but should not panic)
 	_ = result.Passed()
 }
+
+// TestGetPluginInfoCapabilitiesDiscovery verifies that GetPluginInfo auto-discovers
+// capabilities based on implemented interfaces.
+func TestGetPluginInfoCapabilitiesDiscovery(t *testing.T) {
+	// Create a test plugin that implements specific interfaces
+	testPlugin := &capabilityTestPlugin{
+		name: "capability-test-plugin",
+	}
+
+	// Create server with basic plugin info to enable GetPluginInfo
+	pluginInfo := NewPluginInfo("capability-test-plugin", "v1.0.0")
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	// Verify auto-discovered capabilities
+	expectedCapabilities := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS,
+	}
+
+	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilities(),
+		"GetPluginInfo should auto-discover capabilities based on implemented interfaces")
+}
+
+func TestGetPluginInfoCapabilitiesOverride(t *testing.T) {
+	testPlugin := &capabilityTestPlugin{
+		name: "override-test-plugin",
+	}
+
+	pluginInfo := NewPluginInfo("override-test-plugin", "v1.0.0",
+		WithCapabilities(pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS))
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	assert.ElementsMatch(t,
+		[]pbc.PluginCapability{pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS},
+		resp.GetCapabilities(),
+		"GetPluginInfo should honor explicit capabilities override")
+}
+
+// capabilityTestPlugin implements multiple interfaces for testing capability discovery.
+type capabilityTestPlugin struct {
+	name string
+}
+
+func (p *capabilityTestPlugin) Name() string { return p.name }
+
+// Implements Plugin interface.
+func (p *capabilityTestPlugin) GetProjectedCost(
+	_ context.Context,
+	_ *pbc.GetProjectedCostRequest,
+) (*pbc.GetProjectedCostResponse, error) {
+	return &pbc.GetProjectedCostResponse{}, nil
+}
+
+func (p *capabilityTestPlugin) GetActualCost(
+	_ context.Context,
+	_ *pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+	return &pbc.GetActualCostResponse{}, nil
+}
+
+func (p *capabilityTestPlugin) GetPricingSpec(
+	_ context.Context,
+	_ *pbc.GetPricingSpecRequest,
+) (*pbc.GetPricingSpecResponse, error) {
+	return &pbc.GetPricingSpecResponse{}, nil
+}
+
+func (p *capabilityTestPlugin) EstimateCost(
+	_ context.Context,
+	_ *pbc.EstimateCostRequest,
+) (*pbc.EstimateCostResponse, error) {
+	return &pbc.EstimateCostResponse{}, nil
+}
+
+// Implements RecommendationsProvider.
+func (p *capabilityTestPlugin) GetRecommendations(
+	_ context.Context,
+	_ *pbc.GetRecommendationsRequest,
+) (*pbc.GetRecommendationsResponse, error) {
+	return &pbc.GetRecommendationsResponse{}, nil
+}
+
+// Implements BudgetsProvider.
+func (p *capabilityTestPlugin) GetBudgets(
+	_ context.Context,
+	_ *pbc.GetBudgetsRequest,
+) (*pbc.GetBudgetsResponse, error) {
+	return &pbc.GetBudgetsResponse{}, nil
+}
