@@ -483,27 +483,44 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 
 	// Step 2: Check if plugin implements SupportsProvider
 	supportsProvider, ok := s.plugin.(SupportsProvider)
+	var resp *pbc.SupportsResponse
+	var err error
+
 	if !ok {
 		// Plugin does not implement SupportsProvider - return default response
-		return &pbc.SupportsResponse{
-				Supported: false,
-				Reason:    DefaultSupportsNotImplementedReason,
-			},
-			nil
+		resp = &pbc.SupportsResponse{
+			Supported: false,
+			Reason:    DefaultSupportsNotImplementedReason,
+		}
+	} else {
+		// Delegate to plugin's Supports method
+		resp, err = supportsProvider.Supports(ctx, req)
+		if err != nil {
+			// Log the detailed error server-side for debugging
+			s.logger.Error().
+				Str(FieldResourceType, resource.GetResourceType()).
+				Str(FieldProvider, provider).
+				Str(FieldRegion, region).
+				Err(err).
+				Msg("Supports handler error")
+			// Return generic message to client (internal error details not exposed)
+			return nil, status.Error(codes.Internal, "plugin failed to execute")
+		}
 	}
 
-	// Delegate to plugin's Supports method
-	resp, err := supportsProvider.Supports(ctx, req)
-	if err != nil {
-		// Log the detailed error server-side for debugging
-		s.logger.Error().
-			Str(FieldResourceType, resource.GetResourceType()).
-			Str(FieldProvider, provider).
-			Str(FieldRegion, region).
-			Err(err).
-			Msg("Supports handler error")
-		// Return generic message to client (internal error details not exposed)
-		return nil, status.Error(codes.Internal, "plugin failed to execute")
+	// Auto-populate capabilities based on implemented interfaces (User Story 1, Issue #194)
+	if resp != nil {
+		capabilities := inferCapabilities(s.plugin)
+
+		// Populate typed capabilities if not already set by the plugin
+		if len(resp.CapabilitiesEnum) == 0 {
+			resp.CapabilitiesEnum = capabilities
+		}
+
+		// Populate legacy string map for backward compatibility
+		if len(resp.Capabilities) == 0 && len(capabilities) > 0 {
+			resp.Capabilities = capabilitiesToLegacyMetadata(capabilities)
+		}
 	}
 
 	return resp, nil
