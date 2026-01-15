@@ -245,6 +245,10 @@ type Server struct {
 	// GetPluginInfo handlers see the initialized value without additional
 	// synchronization required.
 	pluginInfo *PluginInfo
+
+	// globalCapabilities are the capabilities inferred from the plugin interface
+	// or explicitly configured. Populated at server initialization.
+	globalCapabilities []pbc.PluginCapability
 }
 
 // NewServer creates a Server that exposes the provided Plugin over gRPC.
@@ -253,9 +257,10 @@ type Server struct {
 // to provide a real registry for production use.
 func NewServer(plugin Plugin) *Server {
 	return &Server{
-		plugin:   plugin,
-		registry: &DefaultRegistryLookup{},
-		logger:   newDefaultLogger(),
+		plugin:             plugin,
+		registry:           &DefaultRegistryLookup{},
+		logger:             newDefaultLogger(),
+		globalCapabilities: inferCapabilities(plugin),
 	}
 }
 
@@ -283,11 +288,22 @@ func NewServerWithOptions(plugin Plugin, registry RegistryLookup, logger *zerolo
 	} else {
 		log = newDefaultLogger()
 	}
+
+	// Determine capabilities: use explicitly configured if available, otherwise infer
+	var caps []pbc.PluginCapability
+	if info != nil && len(info.Capabilities) > 0 {
+		caps = make([]pbc.PluginCapability, len(info.Capabilities))
+		copy(caps, info.Capabilities)
+	} else {
+		caps = inferCapabilities(plugin)
+	}
+
 	return &Server{
-		plugin:     plugin,
-		registry:   registry,
-		logger:     log,
-		pluginInfo: info, // Set atomically during construction
+		plugin:             plugin,
+		registry:           registry,
+		logger:             log,
+		pluginInfo:         info, // Set atomically during construction
+		globalCapabilities: caps,
 	}
 }
 
@@ -398,13 +414,14 @@ func (s *Server) handleConfiguredPluginInfo() (*pbc.GetPluginInfoResponse, error
 		}
 	}
 
-	// Determine capabilities: use explicit if set, otherwise infer
+	// Determine capabilities: use explicit if set, otherwise use globalCapabilities
 	var capabilities []pbc.PluginCapability
 	if len(s.pluginInfo.Capabilities) > 0 {
 		capabilities = make([]pbc.PluginCapability, len(s.pluginInfo.Capabilities))
 		copy(capabilities, s.pluginInfo.Capabilities)
 	} else {
-		capabilities = inferCapabilities(s.plugin)
+		capabilities = make([]pbc.PluginCapability, len(s.globalCapabilities))
+		copy(capabilities, s.globalCapabilities)
 	}
 
 	// Add legacy capability metadata for backward compatibility
@@ -510,16 +527,18 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 
 	// Auto-populate capabilities based on implemented interfaces (User Story 1, Issue #194)
 	if resp != nil {
-		capabilities := inferCapabilities(s.plugin)
-
-		// Populate typed capabilities if not already set by the plugin
-		if len(resp.CapabilitiesEnum) == 0 {
-			resp.CapabilitiesEnum = capabilities
+		// Populate typed capabilities if not already set by the plugin (Inherit Global)
+		if len(resp.GetCapabilitiesEnum()) == 0 {
+			caps := make([]pbc.PluginCapability, len(s.globalCapabilities))
+			copy(caps, s.globalCapabilities)
+			resp.CapabilitiesEnum = caps
 		}
 
-		// Populate legacy string map for backward compatibility
-		if len(resp.Capabilities) == 0 && len(capabilities) > 0 {
-			resp.Capabilities = capabilitiesToLegacyMetadata(capabilities)
+		// Always sync legacy string map from final capabilities to ensure consistency.
+		// This handles both cases: plugin didn't set capabilities, or plugin manually set Capabilities map.
+		// By always regenerating from the enum, we ensure both formats represent the same capabilities.
+		if len(resp.GetCapabilitiesEnum()) > 0 {
+			resp.Capabilities = capabilitiesToLegacyMetadata(resp.GetCapabilitiesEnum())
 		}
 	}
 

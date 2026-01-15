@@ -193,6 +193,8 @@ func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
 	capabilities = append(capabilities,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST,
 	)
 
 	// Check optional interfaces using zero-allocation type assertions
@@ -202,14 +204,12 @@ func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
 	if _, ok := plugin.(BudgetsProvider); ok {
 		capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS)
 	}
-
-	// Future: Add checks for other optional interfaces as they are defined
-	// if _, ok := plugin.(DryRunProvider); ok {
-	//     capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN)
-	// }
-	// if _, ok := plugin.(CarbonProvider); ok {
-	//     capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON)
-	// }
+	if _, ok := plugin.(DismissProvider); ok {
+		capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS)
+	}
+	if _, ok := plugin.(DryRunHandler); ok {
+		capabilities = append(capabilities, pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN)
+	}
 
 	return capabilities
 }
@@ -219,15 +219,20 @@ func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
 //
 // This maintains compatibility with clients that expect the old string-based
 // capability reporting while the new enum-based approach is adopted.
-var legacyCapabilityMap = map[pbc.PluginCapability]string{ //nolint:exhaustive,gochecknoglobals // Mapping table for backward compatibility
-	pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS: "projected_costs",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS:    "actual_costs",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON:          "carbon",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS: "recommendations",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN:         "dry_run",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS:         "budgets",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_ENERGY:          "energy",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_WATER:           "water",
+//
+//nolint:exhaustive,gochecknoglobals // Mapping table for backward compatibility
+var legacyCapabilityMap = map[pbc.PluginCapability]string{
+	pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS:         "projected_costs",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS:            "actual_costs",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC:            "pricing_spec",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST:           "estimate_cost",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON:                  "carbon",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS:         "recommendations",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS: "dismiss_recommendations",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN:                 "dry_run",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS:                 "budgets",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_ENERGY:                  "energy",
+	pbc.PluginCapability_PLUGIN_CAPABILITY_WATER:                   "water",
 }
 
 // capabilitiesToLegacyMetadata converts a slice of PluginCapability enums

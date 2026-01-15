@@ -268,12 +268,16 @@ func TestGetPluginInfoCapabilitiesDiscovery(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 
-	// Verify auto-discovered capabilities
+	// Verify auto-discovered capabilities - includes all optional interfaces + base interface capabilities
 	expectedCapabilities := []pbc.PluginCapability{
 		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN,
 	}
 
 	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilities(),
@@ -352,4 +356,19 @@ func (p *capabilityTestPlugin) GetBudgets(
 	_ *pbc.GetBudgetsRequest,
 ) (*pbc.GetBudgetsResponse, error) {
 	return &pbc.GetBudgetsResponse{}, nil
+}
+
+// Implements DismissProvider.
+func (p *capabilityTestPlugin) DismissRecommendation(
+	_ context.Context,
+	_ *pbc.DismissRecommendationRequest,
+) (*pbc.DismissRecommendationResponse, error) {
+	return &pbc.DismissRecommendationResponse{}, nil
+}
+
+// Implements DryRunHandler.
+func (p *capabilityTestPlugin) HandleDryRun(
+	_ *pbc.DryRunRequest,
+) (*pbc.DryRunResponse, error) {
+	return &pbc.DryRunResponse{}, nil
 }

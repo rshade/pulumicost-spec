@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package finfocus.v1;
+
+import "finfocus/v1/enums.proto";
+
+// Extended SupportsResponse for reference in implementation
+message SupportsResponse {
+  bool supported = 1;
+  string reason = 2;
+  map<string, bool> capabilities = 3;
+  repeated MetricKind supported_metrics = 4;
+  repeated PluginCapability capabilities_enum = 5;
+}

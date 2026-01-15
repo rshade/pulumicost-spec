@@ -93,7 +93,8 @@ your plugin supports.
 The Host calls `GetPluginInfo` once during initialization to discover which high-level
 features your plugin supports across its entire lifecycle.
 
-**Automatic Detection**: Your plugin's global capabilities are automatically determined by which optional interfaces you implement:
+**Automatic Detection**: Your plugin's global capabilities are automatically determined by which
+optional interfaces you implement:
 
 ```go
 type MyPlugin struct{}
@@ -153,7 +154,7 @@ func (s *server) Supports(ctx context.Context, req *pb.SupportsRequest) (*pb.Sup
 
 #### Backward Compatibility
 
-Both `GetPluginInfo` and `Supports` automatically populate the legacy `map<string, bool> capabilities` 
+Both `GetPluginInfo` and `Supports` automatically populate the legacy `map<string, bool> capabilities`
 field for compatibility with older Host implementations.
 
 ### Request/Response Messages

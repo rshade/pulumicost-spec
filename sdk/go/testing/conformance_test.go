@@ -111,6 +111,12 @@ func addBasicConformanceTests(suite *plugintesting.PluginConformanceSuite) {
 	})
 
 	suite.AddTest(plugintesting.ConformanceTest{
+		Name:        "SupportsGranularDiscovery",
+		Description: "Plugin must return granular capabilities in Supports response (inheriting global if needed)",
+		TestFunc:    createSupportsGranularDiscoveryTest(),
+	})
+
+	suite.AddTest(plugintesting.ConformanceTest{
 		Name:        "GetProjectedCostHandlesValidResource",
 		Description: "Plugin must handle GetProjectedCost for valid resources",
 		TestFunc:    createProjectedCostValidResourceTest(),
@@ -2512,7 +2518,81 @@ func createGetPluginInfoPerformanceTest() func(*plugintesting.TestHarness) plugi
 			Method:   "GetPluginInfo",
 			Success:  true,
 			Duration: totalDuration / iterations,
-			Details:  fmt.Sprintf("Average response time over %d iterations: %v", iterations, totalDuration/iterations),
+			Details: fmt.Sprintf(
+				"Average response time over %d iterations: %v",
+				iterations,
+				totalDuration/iterations,
+			),
+		}
+	}
+}
+
+func createSupportsGranularDiscoveryTest() func(*plugintesting.TestHarness) plugintesting.TestResult {
+	return func(harness *plugintesting.TestHarness) plugintesting.TestResult {
+		start := time.Now()
+		// 1. Check if GetPluginInfo is available
+		// If GetPluginInfo returns Unimplemented, continue (legacy plugins may not have it)
+		// Otherwise, any other error is a failure
+		_, err := harness.Client().
+			GetPluginInfo(context.Background(), &pbc.GetPluginInfoRequest{})
+		if err != nil && status.Code(err) != codes.Unimplemented {
+			// Non-Unimplemented errors are failures
+			return plugintesting.TestResult{
+				Method: "Supports", Success: false, Error: err, Duration: time.Since(start),
+				Details: "Prerequisite GetPluginInfo failed",
+			}
+		}
+
+		// 2. Call Supports
+		resource := plugintesting.CreateResourceDescriptor("aws", "ec2", "t3.micro", "us-east-1")
+		supportsResp, err := harness.Client().Supports(context.Background(), &pbc.SupportsRequest{
+			Resource: resource,
+		})
+		duration := time.Since(start)
+
+		if err != nil {
+			return plugintesting.TestResult{
+				Method: "Supports", Success: false, Error: err, Duration: duration,
+				Details: "Supports RPC failed",
+			}
+		}
+
+		// 3. Verify Capabilities are present (Granular Discovery)
+		// If Supported=true, we expect capabilities to be populated (enum-based)
+		if supportsResp.GetSupported() {
+			// Enum-based "strongly-typed capabilities" requirement - must always be populated when Supported=true
+			if len(supportsResp.GetCapabilitiesEnum()) == 0 {
+				return plugintesting.TestResult{
+					Method:  "Supports",
+					Success: false,
+					Error: errors.New(
+						"granular capabilities enum is empty but Supported=true",
+					),
+					Duration: duration,
+					Details:  "Enum-based capabilities must be populated when Supported=true",
+				}
+			}
+
+			// Verify legacy sync
+			if len(supportsResp.GetCapabilitiesEnum()) > 0 &&
+				len(supportsResp.GetCapabilities()) == 0 {
+				return plugintesting.TestResult{
+					Method: "Supports", Success: false,
+					Error: errors.New(
+						"legacy capabilities map is empty but enum capabilities present",
+					),
+					Duration: duration,
+					Details:  "Legacy map should be synced from enum",
+				}
+			}
+		}
+
+		return plugintesting.TestResult{
+			Method: "Supports", Success: true, Duration: duration,
+			Details: fmt.Sprintf(
+				"Validated granular capabilities (count=%d)",
+				len(supportsResp.GetCapabilitiesEnum()),
+			),
 		}
 	}
 }
