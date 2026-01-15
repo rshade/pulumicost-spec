@@ -85,12 +85,15 @@ service CostSourceService {
 
 ### Plugin Capabilities
 
-Plugins implement the `Plugin` interface directly.
-The FinFocus SDK detects implemented interfaces and reports capabilities via `GetPluginInfo`.
+FinFocus uses a dual-layer discovery mechanism to help the Host determine which features
+your plugin supports.
 
-#### Automatic Capability Detection
+#### 1. Global Capability Discovery (`GetPluginInfo`)
 
-Your plugin's capabilities are automatically determined by which optional interfaces you implement:
+The Host calls `GetPluginInfo` once during initialization to discover which high-level
+features your plugin supports across its entire lifecycle.
+
+**Automatic Detection**: Your plugin's global capabilities are automatically determined by which optional interfaces you implement:
 
 ```go
 type MyPlugin struct{}
@@ -105,36 +108,53 @@ type MyPlugin struct{}
 func (p *MyPlugin) GetRecommendations(ctx context.Context, req *pbc.GetRecommendationsRequest) (*pbc.GetRecommendationsResponse, error) {
     // Implementation
 }
+```
 
-// Add PLUGIN_CAPABILITY_BUDGETS
-func (p *MyPlugin) GetBudgets(ctx context.Context, req *pbc.GetBudgetsRequest) (*pbc.GetBudgetsResponse, error) {
-    // Implementation
+#### 2. Granular Capability Discovery (`Supports`)
+
+Even if a plugin supports a feature globally (e.g., Recommendations), it may only support
+it for specific resource types. The `Supports` RPC allows you to advertise capabilities
+on a per-resource basis.
+
+**Automatic Detection**: The SDK automatically populates `SupportsResponse.capabilities_enum`
+using the same interface-based introspection used in `GetPluginInfo`.
+
+**Implementation Example**:
+
+```go
+func (s *server) Supports(ctx context.Context, req *pb.SupportsRequest) (*pb.SupportsResponse, error) {
+    // If you return Supported: true, the SDK will automatically append
+    // implemented capabilities (like Recommendations) to the response.
+    return &pb.SupportsResponse{
+        Supported: true,
+    }, nil
 }
 ```
 
 #### Manual Capability Override
 
-For advanced cases, you can explicitly declare capabilities:
+For advanced cases where you want to report different capabilities than those detected
+by the SDK (e.g., a capability that is only conditionally available), you can populate
+the fields manually in your response.
 
 ```go
-pluginInfo := pluginsdk.NewPluginInfo("my-plugin", "v1.0.0",
-    pluginsdk.WithCapabilities(
-        pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
-        pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
-    ),
-)
+func (s *server) Supports(ctx context.Context, req *pb.SupportsRequest) (*pb.SupportsResponse, error) {
+    res := &pb.SupportsResponse{Supported: true}
+    
+    // Explicitly set capabilities for this specific resource type
+    res.CapabilitiesEnum = []pb.PluginCapability{
+        pb.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+        // Maybe this specific resource doesn't support recommendations yet
+    }
+    
+    return res, nil
+}
 ```
 
 #### Backward Compatibility
 
-Legacy clients can read capabilities from `GetPluginInfoResponse.metadata`:
-
-```go
-resp, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
-if resp.Metadata["recommendations"] == "true" {
-    // Plugin supports recommendations
-}
-```
+Both `GetPluginInfo` and `Supports` automatically populate the legacy `map<string, bool> capabilities` 
+field for compatibility with older Host implementations.
 
 ### Request/Response Messages
 

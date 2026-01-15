@@ -209,6 +209,9 @@ message SupportsResponse {
   map<string, bool> capabilities = 3;
   // supported_metrics declares optional sustainability metrics the plugin supports
   repeated MetricKind supported_metrics = 4;
+  // capabilities_enum declares optional capabilities using strongly-typed enums.
+  // This field is automatically populated by the SDK based on implemented interfaces.
+  repeated PluginCapability capabilities_enum = 5;
 }
 
 // GetActualCostRequest contains parameters for retrieving historical cost data.

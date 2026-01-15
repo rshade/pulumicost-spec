@@ -1317,3 +1317,47 @@ func TestGetPluginInfo_BackwardCompatibility_CapabilitiesEnumAndStringMap(t *tes
 	assert.NotContains(t, explicitResp.GetMetadata(), "budgets",
 		"budgets should not be present (not explicitly set)")
 }
+
+// TestSupports_AutoDiscovery tests that Supports RPC automatically populates
+// both the new capabilities_enum AND the legacy capabilities map.
+func TestSupports_AutoDiscovery(t *testing.T) {
+	// Create a plugin that implements multiple optional interfaces
+	plugin := &backwardCompatTestPlugin{
+		name: "auto-discovery-test-plugin",
+	}
+	registry := &mockRegistry{
+		plugins: map[string]string{"aws:us-east-1": "auto-discovery-test-plugin"},
+	}
+	server := NewServerWithRegistry(plugin, registry)
+
+	ctx := context.Background()
+	req := &pbc.SupportsRequest{
+		Resource: &pbc.ResourceDescriptor{
+			Provider:     "aws",
+			ResourceType: "ec2",
+			Region:       "us-east-1",
+		},
+	}
+
+	resp, err := server.Supports(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	// Verify enum-based capabilities are present in SupportsResponse
+	require.NotEmpty(t, resp.GetCapabilitiesEnum(), "capabilities_enum should not be empty")
+	expectedCapabilities := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS,
+	}
+	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilitiesEnum(),
+		"capabilities_enum should include all supported capabilities")
+
+	// Verify legacy string map is present in SupportsResponse for backward compatibility
+	require.NotNil(t, resp.GetCapabilities(), "capabilities map should not be nil")
+	assert.True(t, resp.GetCapabilities()["projected_costs"], "legacy projected_costs should be true")
+	assert.True(t, resp.GetCapabilities()["actual_costs"], "legacy actual_costs should be true")
+	assert.True(t, resp.GetCapabilities()["recommendations"], "legacy recommendations should be true")
+	assert.True(t, resp.GetCapabilities()["budgets"], "legacy budgets should be true")
+}
