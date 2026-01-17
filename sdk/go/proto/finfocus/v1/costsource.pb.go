@@ -5976,7 +5976,8 @@ const file_finfocus_v1_costsource_proto_rawDesc = "" +
 	"\vHealthCheck\x12\x1f.finfocus.v1.HealthCheckRequest\x1a .finfocus.v1.HealthCheckResponse\x12M\n" +
 	"\n" +
 	"GetMetrics\x12\x1e.finfocus.v1.GetMetricsRequest\x1a\x1f.finfocus.v1.GetMetricsResponse\x12z\n" +
-	"\x19GetServiceLevelIndicators\x12-.finfocus.v1.GetServiceLevelIndicatorsRequest\x1a..finfocus.v1.GetServiceLevelIndicatorsResponseB>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
+	"\x19GetServiceLevelIndicators\x12-.finfocus.v1.GetServiceLevelIndicatorsRequest\x1a..finfocus.v1.GetServiceLevelIndicatorsResponseB\xad\x01\n" +
+	"\x0fcom.finfocus.v1B\x0fCostsourceProtoP\x01Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc\xa2\x02\x03FXX\xaa\x02\vFinfocus.V1\xca\x02\vFinfocus\\V1\xe2\x02\x17Finfocus\\V1\\GPBMetadata\xea\x02\fFinfocus::V1b\x06proto3"
 
 var (
 	file_finfocus_v1_costsource_proto_rawDescOnce sync.Once

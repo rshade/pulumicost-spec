@@ -7,7 +7,8 @@ export async function* recommendationsIterator(
 ): AsyncGenerator<Recommendation, void, unknown> {
   // Clone request to avoid mutating the original
   const request = new GetRecommendationsRequest(baseRequest);
-  let nextPageToken = "";
+  // Preserve caller-supplied pageToken for resuming pagination
+  let nextPageToken = request.pageToken ?? "";
 
   do {
     request.pageToken = nextPageToken;

@@ -156,6 +156,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+- [ ] TXXX [P] Update TypeScript SDK if proto definitions changed (sdk/typescript/)
+- [ ] TXXX [P] Regenerate Go SDK if proto definitions changed (make generate)
 
 ---
 

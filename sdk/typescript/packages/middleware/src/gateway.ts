@@ -1,4 +1,3 @@
-import { PromiseClient, MethodInfo } from "@connectrpc/connect";
 import * as http from "http";
 import { CostSourceClient, ObservabilityClient, RegistryClient } from "finfocus-client";
 
@@ -28,6 +27,9 @@ export interface RESTGatewayConfig {
  * });
  * ```
  */
+/** Maximum request body size in bytes (1MB) */
+const MAX_BODY_SIZE = 1024 * 1024;
+
 export class RESTGateway {
   private costSourceClient: CostSourceClient;
   private observabilityClient?: ObservabilityClient;
@@ -42,6 +44,7 @@ export class RESTGateway {
   /**
    * Main HTTP request handler.
    * Parses the request path and dispatches to appropriate RPC method.
+   * Returns a Promise that resolves after the response is fully sent.
    */
   async handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     // Only handle POST requests
@@ -63,28 +66,50 @@ export class RESTGateway {
 
     const [, serviceName, methodName] = pathMatch;
 
-    // Read request body
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
+    // Wrap body reading in a Promise so handleRequest resolves after response is sent
+    return new Promise<void>((resolve, reject) => {
+      let body = '';
+      let bodySize = 0;
+      let aborted = false;
 
-    req.on('end', async () => {
-      try {
-        let requestData: any = {};
-        if (body) {
-          requestData = JSON.parse(body);
+      req.on('data', chunk => {
+        if (aborted) return;
+        bodySize += chunk.length;
+        if (bodySize > MAX_BODY_SIZE) {
+          aborted = true;
+          req.destroy();
+          res.writeHead(413, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Request body too large' }));
+          resolve();
+          return;
         }
+        body += chunk.toString();
+      });
 
-        const response = await this.dispatchRequest(serviceName, methodName, requestData);
+      req.on('error', (error) => {
+        reject(error);
+      });
 
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(response));
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: errorMessage }));
-      }
+      req.on('end', async () => {
+        if (aborted) return;
+        try {
+          let requestData: any = {};
+          if (body) {
+            requestData = JSON.parse(body);
+          }
+
+          const response = await this.dispatchRequest(serviceName, methodName, requestData);
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(response));
+          resolve();
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: errorMessage }));
+          resolve();
+        }
+      });
     });
   }
 
@@ -132,9 +157,9 @@ export class RESTGateway {
  * ```
  */
 export function createRESTMiddleware(gateway: RESTGateway) {
-  return (req: http.IncomingMessage, res: http.ServerResponse, next?: () => void) => {
+  return (req: http.IncomingMessage, res: http.ServerResponse, next?: (err?: Error) => void) => {
     gateway.handleRequest(req, res).catch(error => {
-      if (next) next();
+      if (next) next(error instanceof Error ? error : new Error(String(error)));
     });
   };
 }

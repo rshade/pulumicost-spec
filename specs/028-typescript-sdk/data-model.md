@@ -6,26 +6,32 @@
 ## Core Clients
 
 ### CostSourceClient
+
 The primary entry point for cost operations.
 
 **Methods**:
+
 - `getActualCost(request: GetActualCostRequest): Promise<GetActualCostResponse>`
 - `getProjectedCost(request: GetProjectedCostRequest): Promise<GetProjectedCostResponse>`
 - `getRecommendations(request: GetRecommendationsRequest): Promise<GetRecommendationsResponse>`
 - ... (and 8 others matching CostSourceService)
 
 ### ObservabilityClient
+
 Handles plugin health and metrics.
 
 **Methods**:
+
 - `healthCheck()`: Checks plugin status.
 - `getMetrics()`: Retrieves Prometheus-style metrics.
 - `getServiceLevelIndicators()`: Retrieves SLIs.
 
 ### RegistryClient
+
 Manages plugin lifecycle (install, update, remove).
 
 **Methods**:
+
 - `discoverPlugins()`
 - `installPlugin()`
 - ... (and 6 others)
@@ -33,6 +39,7 @@ Manages plugin lifecycle (install, update, remove).
 ## Builder Pattern Objects
 
 ### ResourceDescriptorBuilder
+
 Fluent interface for constructing `ResourceDescriptor` messages.
 
 ```typescript
@@ -46,6 +53,7 @@ class ResourceDescriptorBuilder {
 ```
 
 ### RecommendationFilterBuilder
+
 Fluent interface for constructing `RecommendationFilter` messages.
 
 ```typescript
@@ -58,6 +66,7 @@ class RecommendationFilterBuilder {
 ```
 
 ### FocusRecordBuilder
+
 Constructs FOCUS 1.2/1.3 compliant cost records.
 
 ```typescript
@@ -72,6 +81,7 @@ class FocusRecordBuilder {
 ## Validation & Error Handling
 
 ### ValidationError
+
 Thrown when input fails validation rules (ISO 4217, null checks, FOCUS rules).
 
 ```typescript

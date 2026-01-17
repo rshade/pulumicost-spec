@@ -50,6 +50,7 @@ tools to create a robust ecosystem of cost-estimation plugins.
   documented in a design specification under the `specs/` directory before implementation.
 
 ## Active Technologies
+
 - TypeScript 5.0+ (Target: ES2018) (028-typescript-sdk)
 
 - Go 1.25.5+, Protobuf 3 + `google.golang.org/grpc`, `google.golang.org/protobuf` (029-plugin-info-rpc)

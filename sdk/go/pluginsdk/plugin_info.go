@@ -4,6 +4,7 @@ package pluginsdk
 import (
 	"errors"
 	"fmt"
+	"maps"
 
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
@@ -126,9 +127,7 @@ func WithMetadataMap(metadata map[string]string) PluginInfoOption {
 	return func(info *PluginInfo) {
 		// Defensive copy to prevent aliasing issues
 		info.Metadata = make(map[string]string, len(metadata))
-		for k, v := range metadata {
-			info.Metadata[k] = v
-		}
+		maps.Copy(info.Metadata, metadata)
 	}
 }
 
@@ -178,16 +177,37 @@ func (info *PluginInfo) Validate() error {
 	return nil
 }
 
+// Capability counts for pre-allocation during capability inference.
+// These constants document the expected capability breakdown and help
+// prevent the maxCapabilities constant from becoming stale.
+const (
+	// baseCapabilities is the number of capabilities always present
+	// from the required Plugin interface: GetProjectedCost, GetActualCost,
+	// GetPricingSpec, EstimateCost.
+	baseCapabilities = 4
+
+	// optionalCapabilities is the number of capabilities from optional
+	// interfaces: RecommendationsProvider, BudgetsProvider, DismissProvider,
+	// DryRunHandler.
+	optionalCapabilities = 4
+
+	// maxCapabilities is the total maximum number of capabilities a plugin
+	// can have. Used for pre-allocation to minimize allocations during
+	// capability inference.
+	maxCapabilities = baseCapabilities + optionalCapabilities
+)
+
 // inferCapabilities determines plugin capabilities by checking implemented interfaces.
-// The type assertions themselves are zero-allocation, but inferCapabilities may
-// allocate as needed when append grows the capabilities slice.
+// The slice is pre-allocated with capacity maxCapabilities (4 base + 4 optional) to minimize allocations.
 // Returns a slice of capabilities supported by the plugin.
 //
 // The base Plugin interface methods (GetProjectedCost, GetActualCost, etc.) are
 // always assumed to be implemented since they are required by the interface.
 // Only optional interfaces are checked via type assertion.
 func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
-	var capabilities []pbc.PluginCapability
+	// Pre-allocate for common case (4 base + 4 optional = maxCapabilities)
+	// This reduces allocations from ~2-3 (slice growth) to 1 (initial make)
+	capabilities := make([]pbc.PluginCapability, 0, maxCapabilities)
 
 	// Base capabilities - always present since required by Plugin interface
 	capabilities = append(capabilities,
@@ -236,6 +256,13 @@ var legacyCapabilityMap = map[pbc.PluginCapability]string{
 	pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS:                 "budgets",
 	pbc.PluginCapability_PLUGIN_CAPABILITY_ENERGY:                  "energy",
 	pbc.PluginCapability_PLUGIN_CAPABILITY_WATER:                   "water",
+}
+
+// HasLegacyCapabilityMapping checks if a capability has a legacy string mapping.
+// This is used by tests to verify legacyCapabilityMap completeness.
+func HasLegacyCapabilityMapping(capability pbc.PluginCapability) bool {
+	_, exists := legacyCapabilityMap[capability]
+	return exists
 }
 
 // capabilitiesToLegacyMetadata converts a slice of PluginCapability enums

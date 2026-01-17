@@ -4,6 +4,7 @@ package pluginsdk
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"testing"
 
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
@@ -244,9 +245,15 @@ func TestConformanceResultPassed(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	// The Passed() method should be accessible through the type alias
-	// (may pass or fail depending on mock implementation, but should not panic)
-	_ = result.Passed()
+	// Verify Passed() method is accessible through the type alias and returns a boolean.
+	// The actual result depends on the mock implementation's completeness.
+	// We verify it doesn't panic and returns a deterministic value.
+	passed := result.Passed()
+	t.Logf("Conformance result: Passed=%v, Total=%d, Passed=%d, Failed=%d",
+		passed, result.Summary.Total, result.Summary.Passed, result.Summary.Failed)
+
+	// Verify the result is consistent on repeated calls (deterministic behavior)
+	assert.Equal(t, passed, result.Passed(), "Passed() should return consistent results")
 }
 
 // TestGetPluginInfoCapabilitiesDiscovery verifies that GetPluginInfo auto-discovers
@@ -455,29 +462,31 @@ func TestGetPluginInfoConcurrentAccess(t *testing.T) {
 	ctx := context.Background()
 	req := &pbc.GetPluginInfoRequest{}
 
-	// Launch concurrent requests
+	// Launch concurrent requests with goroutine ID tracking for accurate error reporting
 	const numGoroutines = 100
 	results := make(chan *pbc.GetPluginInfoResponse, numGoroutines)
 	errors := make(chan error, numGoroutines)
 
-	for range numGoroutines {
-		go func() {
+	for i := range numGoroutines {
+		go func(goroutineID int) {
 			resp, err := server.GetPluginInfo(ctx, req)
 			if err != nil {
-				errors <- err
+				// Wrap error with goroutine ID for accurate debugging
+				errors <- fmt.Errorf("goroutine %d: %w", goroutineID, err)
 			} else {
 				results <- resp
 			}
-		}()
+		}(i)
 	}
 
 	// Collect results - should all succeed without race conditions
-	for i := range numGoroutines {
+	for range numGoroutines {
 		select {
 		case err := <-errors:
-			t.Errorf("goroutine %d failed: %v", i, err)
+			// Error already includes goroutine ID from the wrapper
+			t.Error(err)
 		case resp := <-results:
-			require.NotNil(t, resp, "goroutine %d returned nil response", i)
+			require.NotNil(t, resp)
 			// Verify all concurrent calls return same capabilities
 			assert.NotEmpty(t, resp.GetCapabilities())
 		}
@@ -611,4 +620,59 @@ func mapKeys(m map[string]bool) []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+// =============================================================================
+// Benchmark Tests
+// =============================================================================
+
+// BenchmarkInferCapabilities measures the performance of capability discovery.
+// This verifies that type assertions are zero-allocation and slice operations
+// are efficient.
+func BenchmarkInferCapabilities(b *testing.B) {
+	plugin := &capabilityTestPlugin{name: "benchmark-plugin"}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		_ = inferCapabilities(plugin)
+	}
+}
+
+// BenchmarkInferCapabilitiesMinimal benchmarks capability discovery for a plugin
+// with no optional interfaces (base capabilities only).
+func BenchmarkInferCapabilitiesMinimal(b *testing.B) {
+	plugin := &conformanceMockPlugin{name: "benchmark-minimal-plugin"}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		_ = inferCapabilities(plugin)
+	}
+}
+
+// =============================================================================
+// Context Cancellation Tests
+// =============================================================================
+
+// TestGetPluginInfoContextCancellation verifies that GetPluginInfo handles
+// context cancellation gracefully. Since GetPluginInfo doesn't perform blocking
+// operations, it should still succeed even with a cancelled context.
+func TestGetPluginInfoContextCancellation(t *testing.T) {
+	testPlugin := &capabilityTestPlugin{name: "timeout-test-plugin"}
+	pluginInfo := NewPluginInfo("timeout-test-plugin", "v1.0.0")
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	// Create context that's already cancelled
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	req := &pbc.GetPluginInfoRequest{}
+	resp, err := server.GetPluginInfo(ctx, req)
+
+	// GetPluginInfo should still succeed even with cancelled context
+	// since it doesn't perform blocking operations
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Equal(t, "timeout-test-plugin", resp.GetName())
 }

@@ -1,15 +1,14 @@
 import {
   Module,
   Controller,
-  Post,
   Inject,
   All,
   Req,
   Res,
-  BadRequestException,
   InternalServerErrorException,
   Optional,
   DynamicModule,
+  Injectable,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { RESTGateway, RESTGatewayConfig } from 'finfocus-middleware';
@@ -70,7 +69,9 @@ export class FinFocusModule {
           provide: REST_GATEWAY_OPTIONS,
           useValue: new RESTGateway(options),
         },
+        FinFocusGatewayService,
       ],
+      exports: [FinFocusGatewayService],
     };
   }
 
@@ -90,7 +91,7 @@ export class FinFocusModule {
    * ```
    */
   static registerAsync(options: {
-    useFactory: () => Promise<RESTGatewayConfig> | RESTGatewayConfig;
+    useFactory: (...args: any[]) => Promise<RESTGatewayConfig> | RESTGatewayConfig;
     inject?: any[];
   }): DynamicModule {
     return {
@@ -105,7 +106,9 @@ export class FinFocusModule {
           },
           inject: options.inject || [],
         },
+        FinFocusGatewayService,
       ],
+      exports: [FinFocusGatewayService],
     };
   }
 }
@@ -126,8 +129,6 @@ export class FinFocusModule {
  * }
  * ```
  */
-import { Injectable } from '@nestjs/common';
-
 @Injectable()
 export class FinFocusGatewayService {
   constructor(

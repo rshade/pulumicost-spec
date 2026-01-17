@@ -3,7 +3,8 @@
   "ignores": [
     ".claude/agents/CLAUDE.md",
     ".opencode/command/speckit.checklist.md",
-    ".opencode/command/speckit.constitution.md"
+    ".opencode/command/speckit.constitution.md",
+    "**/node_modules/**"
   ],
   "MD013": {
     "line_length": 120,

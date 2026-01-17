@@ -35,6 +35,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - [ ] **Spec Consumes**: Does implementation avoid embedding complex pricing logic/calculators?
 - [ ] **Multi-Provider**: Are examples/patterns provider-agnostic?
 - [ ] **FinFocus Alignment**: Does this respect the identity transition to FinFocus?
+- [ ] **SDK Synchronization**: Are all SDKs (Go, TypeScript) updated when proto changes?
 - [ ] [Additional gates determined based on constitution file]
 
 ## Project Structure

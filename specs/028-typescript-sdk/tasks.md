@@ -6,14 +6,15 @@
 
 ## Dependencies
 
-1.  **Phase 1: Setup** (Project initialization)
-2.  **Phase 2: Foundation** (Generated Code & Shared Types)
-3.  **Phase 3: Browser Client (US1)** (Core Client, Builders, Validation)
-4.  **Phase 4: REST API Integration (US2)** (Node Middleware)
-5.  **Phase 5: Framework Integration (US3)** (Express, Fastify, NestJS)
-6.  **Phase 6: Polish** (Docs, Bundle Size)
+1. **Phase 1: Setup** (Project initialization)
+2. **Phase 2: Foundation** (Generated Code & Shared Types)
+3. **Phase 3: Browser Client (US1)** (Core Client, Builders, Validation)
+4. **Phase 4: REST API Integration (US2)** (Node Middleware)
+5. **Phase 5: Framework Integration (US3)** (Express, Fastify, NestJS)
+6. **Phase 6: Polish** (Docs, Bundle Size)
 
 ## Phase 1: Setup & Configuration
+
 *Goal: Initialize the monorepo structure and build tooling.*
 
 - [X] T001 Initialize npm workspaces configuration in `sdk/typescript/package.json`
@@ -22,6 +23,7 @@
 - [X] T004 Install core dependencies (`@connectrpc/connect`, `@bufbuild/protobuf`) in `sdk/typescript/packages/client/`
 
 ## Phase 2: Foundation (Blocking)
+
 *Goal: Generate Protobuf code and establish shared error handling.*
 
 - [X] T005 Configure Buf generation for TypeScript in `sdk/typescript/buf.gen.yaml`
@@ -30,6 +32,7 @@
 - [X] T008 [P] Export all enum types (BillingMode, Provider, etc.) in `sdk/typescript/packages/client/src/index.ts`
 
 ## Phase 3: User Story 1 - Browser Application Developer (P1)
+
 *Goal: Enable browser-based cost fetching and optimization using the Core Client.*
 *Independent Test: Verify `CostSourceClient` fetches data against MSW mock.*
 
@@ -43,6 +46,7 @@
 - [X] T016 [US1] Write integration tests for full client workflow in `sdk/typescript/packages/client/test/integration.test.ts`
 
 ## Phase 4: User Story 2 - REST API Integration (P2)
+
 *Goal: Expose plugin capabilities via standard HTTP endpoints using Node.js middleware.*
 *Independent Test: Verify generic middleware translates JSON requests to RPC.*
 
@@ -51,6 +55,7 @@
 - [X] T019 [US2] Implement generic `RESTGateway` logic (JSON->RPC proxy) in `sdk/typescript/packages/middleware/src/gateway.ts`
 
 ## Phase 5: User Story 3 - Framework Integration (P3)
+
 *Goal: Provide native adapters for popular Node.js frameworks.*
 *Independent Test: Verify Express app handles requests via the adapter.*
 
@@ -60,11 +65,13 @@
 - [X] T023 [P] [US3] Implement NestJS module and service in `sdk/typescript/packages/framework-plugins/src/nestjs/index.ts`
 
 ## Phase 6: Polish & Cross-Cutting
+
 *Goal: Finalize documentation and bundle size checks.*
 
 - [X] T024 Ensure core client bundle size is under 40KB (minified) in `sdk/typescript/packages/client/`
 
 ## Implementation Strategy
+
 - **MVP (Phase 1-3)**: Deliver the browser-compatible Core Client. This unblocks the primary use case (Dashboards).
 - **Expansion (Phase 4-5)**: Add Node.js server-side support.
 - **Parallelism**: Builders (T009-T011) and Framework adapters (T021-T023) can be implemented in parallel.

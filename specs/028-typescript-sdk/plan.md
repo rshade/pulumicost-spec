@@ -5,12 +5,16 @@
 
 ## Summary
 
-Implement the official TypeScript SDK (`finfocus-client`) for the FinFocus ecosystem. This SDK will serve as the primary browser-side integration point, leveraging the Connect protocol (JSON/HTTP) to communicate with plugins. It will includes a core client, builder patterns for complex objects, validatons, a REST API wrapper, and integration plugins for major Node.js frameworks (Express, Fastify, NestJS).
+Implement the official TypeScript SDK (`finfocus-client`) for the FinFocus ecosystem. This SDK will serve as the
+primary browser-side integration point, leveraging the Connect protocol (JSON/HTTP) to communicate with plugins. It
+includes a core client, builder patterns for complex objects, validations, a REST API wrapper, and integration plugins
+for major Node.js frameworks (Express, Fastify, NestJS).
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.0+ (Target: ES2018)
-**Primary Dependencies**: 
+**Primary Dependencies**:
+
 - Core: `@connectrpc/connect`, `@connectrpc/connect-web`, `@bufbuild/protobuf`
 - Validation: `zod` (internal usage for runtime checks if needed, or manual)
 - Testing: `vitest`, `msw` (Mock Service Worker)
@@ -65,7 +69,8 @@ sdk/typescript/
 └── tsconfig.base.json
 ```
 
-**Structure Decision**: Monorepo structure within `sdk/typescript` to separate the browser-light core client from Node.js-specific middleware and framework plugins, ensuring the <40KB bundle size requirement is met for the core.
+**Structure Decision**: Monorepo structure within `sdk/typescript` to separate the browser-light core client from
+Node.js-specific middleware and framework plugins, ensuring the <40KB bundle size requirement is met for the core.
 
 ## Complexity Tracking
 

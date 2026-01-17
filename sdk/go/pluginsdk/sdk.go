@@ -302,7 +302,7 @@ func NewServerWithOptions(plugin Plugin, registry RegistryLookup, logger *zerolo
 		plugin:             plugin,
 		registry:           registry,
 		logger:             log,
-		pluginInfo:         info, // Set atomically during construction
+		pluginInfo:         info, // Thread-safe: set during construction before requests accepted
 		globalCapabilities: caps,
 	}
 }
