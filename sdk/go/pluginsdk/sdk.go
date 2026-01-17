@@ -534,7 +534,7 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 			resp.CapabilitiesEnum = caps
 		}
 
-		// Always sync legacy string map from final capabilities to ensure consistency.
+		// Always sync legacy capabilities map from enum to ensure consistency.
 		// This handles both cases: plugin didn't set capabilities, or plugin manually set Capabilities map.
 		// By always regenerating from the enum, we ensure both formats represent the same capabilities.
 		if len(resp.GetCapabilitiesEnum()) > 0 {

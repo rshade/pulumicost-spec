@@ -1,0 +1,25 @@
+{
+  "name": "finfocus-middleware",
+  "version": "0.1.0",
+  "description": "FinFocus REST API middleware for Node.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "~1.10.0",
+    "@connectrpc/connect": "^1.7.0",
+    "finfocus-client": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "tsup": "^8.0.1"
+  },
+  "files": [
+    "dist"
+  ]
+}

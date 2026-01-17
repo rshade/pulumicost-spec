@@ -1,5 +1,11 @@
 version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: js_import_style
+      value: module
 plugins:
+  # Go SDK generation
   - remote: buf.build/protocolbuffers/go
     out: sdk/go/proto
     opt:
@@ -12,3 +18,19 @@ plugins:
     out: sdk/go/proto
     opt:
       - paths=source_relative
+
+  # TypeScript SDK generation
+  - remote: buf.build/protocolbuffers/es:v2.0.0
+    out: sdk/typescript/packages/client/src/generated
+    opt:
+      - target=ts
+      - import_extension=none
+
+  - remote: buf.build/connectrpc/es:v2.0.0
+    out: sdk/typescript/packages/client/src/generated
+    opt:
+      - target=ts
+      - import_extension=none
+
+inputs:
+  - directory: proto

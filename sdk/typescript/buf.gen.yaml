@@ -1,0 +1,8 @@
+version: v2
+plugins:
+  - local: node_modules/.bin/protoc-gen-es
+    out: packages/client/src/generated
+    opt: target=ts
+  - local: node_modules/.bin/protoc-gen-connect-es
+    out: packages/client/src/generated
+    opt: target=ts

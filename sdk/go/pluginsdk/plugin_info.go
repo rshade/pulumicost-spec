@@ -220,7 +220,10 @@ func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
 // This maintains compatibility with clients that expect the old string-based
 // capability reporting while the new enum-based approach is adopted.
 //
-//nolint:exhaustive,gochecknoglobals // Mapping table for backward compatibility
+// PLUGIN_CAPABILITY_UNSPECIFIED (value 0) is intentionally excluded from this map.
+// It is the protobuf default/zero value and should never be used as an actual capability.
+//
+//nolint:exhaustive,gochecknoglobals // UNSPECIFIED intentionally excluded from legacy mapping
 var legacyCapabilityMap = map[pbc.PluginCapability]string{
 	pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS:         "projected_costs",
 	pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS:            "actual_costs",

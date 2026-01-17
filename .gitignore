@@ -49,3 +49,9 @@ CodeRabbitPromptGrok.md
 Thumbs.db
 *.tmp
 *.swp
+# Node.js / TypeScript
+dist/
+build/
+coverage/
+junit.xml
+

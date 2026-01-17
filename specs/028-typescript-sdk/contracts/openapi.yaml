@@ -1,0 +1,79 @@
+openapi: 3.0.0
+info:
+  title: FinFocus REST Gateway
+  version: 0.1.0
+  description: REST API Wrapper for FinFocus Plugins
+paths:
+  /finfocus.v1.CostSourceService/GetActualCost:
+    post:
+      summary: Get Actual Cost
+      operationId: getActualCost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetActualCostRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetActualCostResponse'
+  /finfocus.v1.CostSourceService/GetRecommendations:
+    post:
+      summary: Get Recommendations
+      operationId: getRecommendations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetRecommendationsRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRecommendationsResponse'
+
+components:
+  schemas:
+    GetActualCostRequest:
+      type: object
+      properties:
+        resource:
+          $ref: '#/components/schemas/ResourceDescriptor'
+    GetActualCostResponse:
+      type: object
+      properties:
+        total:
+          $ref: '#/components/schemas/Money'
+    GetRecommendationsRequest:
+      type: object
+      properties:
+        filter:
+          type: object
+    GetRecommendationsResponse:
+      type: object
+      properties:
+        recommendations:
+          type: array
+          items:
+            type: object
+    ResourceDescriptor:
+      type: object
+      properties:
+        provider:
+          type: string
+        resourceType:
+          type: string
+    Money:
+      type: object
+      properties:
+        units:
+          type: string
+        nanos:
+          type: integer
+        currencyCode:
+          type: string
