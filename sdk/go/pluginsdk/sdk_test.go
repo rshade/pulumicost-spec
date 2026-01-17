@@ -1168,6 +1168,21 @@ func (p *backwardCompatTestPlugin) GetBudgets(
 	return &pbc.GetBudgetsResponse{}, nil
 }
 
+// Implements DismissProvider.
+func (p *backwardCompatTestPlugin) DismissRecommendation(
+	_ context.Context,
+	_ *pbc.DismissRecommendationRequest,
+) (*pbc.DismissRecommendationResponse, error) {
+	return &pbc.DismissRecommendationResponse{}, nil
+}
+
+// Implements DryRunHandler.
+func (p *backwardCompatTestPlugin) HandleDryRun(
+	_ *pbc.DryRunRequest,
+) (*pbc.DryRunResponse, error) {
+	return &pbc.DryRunResponse{}, nil
+}
+
 func (m *mockPluginInfoPlugin) GetPluginInfo(
 	_ context.Context,
 	_ *pbc.GetPluginInfoRequest,
@@ -1257,10 +1272,15 @@ func TestGetPluginInfo_BackwardCompatibility_CapabilitiesEnumAndStringMap(t *tes
 
 	// Verify enum-based capabilities are present
 	require.NotEmpty(t, resp.GetCapabilities(), "capabilities enum should not be empty")
+	// backwardCompatTestPlugin now implements all 4 optional interfaces + base interface capabilities
 	expectedCapabilities := []pbc.PluginCapability{
 		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS,
 	}
 	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilities(),
@@ -1272,19 +1292,24 @@ func TestGetPluginInfo_BackwardCompatibility_CapabilitiesEnumAndStringMap(t *tes
 		"legacy projected_costs should be 'true' in metadata")
 	assert.Equal(t, "true", resp.GetMetadata()["actual_costs"],
 		"legacy actual_costs should be 'true' in metadata")
+	assert.Equal(t, "true", resp.GetMetadata()["pricing_spec"],
+		"legacy pricing_spec should be 'true' in metadata")
+	assert.Equal(t, "true", resp.GetMetadata()["estimate_cost"],
+		"legacy estimate_cost should be 'true' in metadata")
 	assert.Equal(t, "true", resp.GetMetadata()["recommendations"],
 		"legacy recommendations should be 'true' in metadata")
+	assert.Equal(t, "true", resp.GetMetadata()["dismiss_recommendations"],
+		"legacy dismiss_recommendations should be 'true' in metadata")
+	assert.Equal(t, "true", resp.GetMetadata()["dry_run"],
+		"legacy dry_run should be 'true' in metadata")
 	assert.Equal(t, "true", resp.GetMetadata()["budgets"],
 		"legacy budgets should be 'true' in metadata")
 
-	// Verify no other legacy keys are present - check that only the expected legacy capability keys exist
-	expectedKeys := []string{"projected_costs", "actual_costs", "recommendations", "budgets"}
+	// Verify all expected keys are present in legacy metadata
+	expectedKeys := []string{"projected_costs", "actual_costs", "pricing_spec", "estimate_cost",
+		"recommendations", "dismiss_recommendations", "dry_run", "budgets"}
 	for _, key := range expectedKeys {
 		assert.Contains(t, resp.GetMetadata(), key, "metadata should contain expected legacy capability key: %s", key)
-	}
-	// Ensure no unexpected keys are present
-	for key := range resp.GetMetadata() {
-		assert.Contains(t, expectedKeys, key, "metadata contains unexpected key: %s", key)
 	}
 
 	// Test with explicitly set capabilities (override auto-discovery)
@@ -1345,10 +1370,15 @@ func TestSupports_AutoDiscovery(t *testing.T) {
 
 	// Verify enum-based capabilities are present in SupportsResponse
 	require.NotEmpty(t, resp.GetCapabilitiesEnum(), "capabilities_enum should not be empty")
+	// Plugin implements all 4 optional interfaces + base interface capabilities
 	expectedCapabilities := []pbc.PluginCapability{
 		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN,
 		pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS,
 	}
 	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilitiesEnum(),
@@ -1358,6 +1388,10 @@ func TestSupports_AutoDiscovery(t *testing.T) {
 	require.NotNil(t, resp.GetCapabilities(), "capabilities map should not be nil")
 	assert.True(t, resp.GetCapabilities()["projected_costs"], "legacy projected_costs should be true")
 	assert.True(t, resp.GetCapabilities()["actual_costs"], "legacy actual_costs should be true")
+	assert.True(t, resp.GetCapabilities()["pricing_spec"], "legacy pricing_spec should be true")
+	assert.True(t, resp.GetCapabilities()["estimate_cost"], "legacy estimate_cost should be true")
 	assert.True(t, resp.GetCapabilities()["recommendations"], "legacy recommendations should be true")
+	assert.True(t, resp.GetCapabilities()["dismiss_recommendations"], "legacy dismiss_recommendations should be true")
+	assert.True(t, resp.GetCapabilities()["dry_run"], "legacy dry_run should be true")
 	assert.True(t, resp.GetCapabilities()["budgets"], "legacy budgets should be true")
 }

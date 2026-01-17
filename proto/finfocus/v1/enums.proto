@@ -177,4 +177,10 @@ enum PluginCapability {
   PLUGIN_CAPABILITY_ENERGY = 7;
   // Plugin supports water usage metrics (METRIC_KIND_WATER_USAGE)
   PLUGIN_CAPABILITY_WATER = 8;
+  // Plugin implements GetPricingSpec RPC
+  PLUGIN_CAPABILITY_PRICING_SPEC = 9;
+  // Plugin implements EstimateCost RPC
+  PLUGIN_CAPABILITY_ESTIMATE_COST = 10;
+  // Plugin implements DismissRecommendation RPC
+  PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS = 11;
 }
