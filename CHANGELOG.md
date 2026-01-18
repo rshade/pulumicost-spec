@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2](https://github.com/rshade/finfocus-spec/compare/v0.5.1...v0.5.2) (2026-01-18)
+
+
+### Added
+
+* **proto:** add standardized reasoning metadata ([#288](https://github.com/rshade/finfocus-spec/issues/288)) ([20f3b14](https://github.com/rshade/finfocus-spec/commit/20f3b146609b84860d480fcc63a7de1ccc2b348e)), closes [#188](https://github.com/rshade/finfocus-spec/issues/188)
+* **sdk:** add typescript sdk for browser and node.js ([#302](https://github.com/rshade/finfocus-spec/issues/302)) ([f819c3e](https://github.com/rshade/finfocus-spec/commit/f819c3efa695c65ce4f74e18bdcf2260d56455b3))
+* **sdk:** implement granular capability discovery in supports rpc ([#291](https://github.com/rshade/finfocus-spec/issues/291)) ([fea8874](https://github.com/rshade/finfocus-spec/commit/fea88745db9a714b7e1c6457090d12690df8e14d)), closes [#194](https://github.com/rshade/finfocus-spec/issues/194)
+* **sdk:** implement granular capability discovery in supports rpc ([#292](https://github.com/rshade/finfocus-spec/issues/292)) ([886cd51](https://github.com/rshade/finfocus-spec/commit/886cd51a54938f9a2d4edf466d204c7c0901b37c)), closes [#194](https://github.com/rshade/finfocus-spec/issues/194)
+* **sdk:** implement plugin capability discovery and auto-detection ([#290](https://github.com/rshade/finfocus-spec/issues/290)) ([ee3ed6b](https://github.com/rshade/finfocus-spec/commit/ee3ed6bdd6d4d479c236ba04c10ab258ac44430d)), closes [#287](https://github.com/rshade/finfocus-spec/issues/287)
+
+
+### Fixed
+
+* **sdk:** complete typescript sdk builder api and improve error handling ([#303](https://github.com/rshade/finfocus-spec/issues/303)) ([4804ded](https://github.com/rshade/finfocus-spec/commit/4804ded9252e01e5b2d6eb934909c08e7ed5cb26))
+* **sdk:** complete typescript sdk builder api and improve error handling ([#303](https://github.com/rshade/finfocus-spec/issues/303)) ([#305](https://github.com/rshade/finfocus-spec/issues/305)) ([a1ef832](https://github.com/rshade/finfocus-spec/commit/a1ef8327887376bc39328a288afc2187dad88609))
+
 ## [0.5.1](https://github.com/rshade/finfocus-spec/compare/v0.5.0...v0.5.1) (2026-01-13)
 
 
