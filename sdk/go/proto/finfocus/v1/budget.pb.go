@@ -859,7 +859,8 @@ const file_finfocus_v1_budget_proto_rawDesc = "" +
 	"\x17BUDGET_HEALTH_STATUS_OK\x10\x01\x12 \n" +
 	"\x1cBUDGET_HEALTH_STATUS_WARNING\x10\x02\x12!\n" +
 	"\x1dBUDGET_HEALTH_STATUS_CRITICAL\x10\x03\x12!\n" +
-	"\x1dBUDGET_HEALTH_STATUS_EXCEEDED\x10\x04B>Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbcb\x06proto3"
+	"\x1dBUDGET_HEALTH_STATUS_EXCEEDED\x10\x04B\xa9\x01\n" +
+	"\x0fcom.finfocus.v1B\vBudgetProtoP\x01Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc\xa2\x02\x03FXX\xaa\x02\vFinfocus.V1\xca\x02\vFinfocus\\V1\xe2\x02\x17Finfocus\\V1\\GPBMetadata\xea\x02\fFinfocus::V1b\x06proto3"
 
 var (
 	file_finfocus_v1_budget_proto_rawDescOnce sync.Once

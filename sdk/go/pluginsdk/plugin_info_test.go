@@ -463,3 +463,19 @@ func TestWithMetadataMapDefensiveCopy(t *testing.T) {
 		t.Errorf("Expected 2 metadata entries, got %d (defensive copy failed)", len(info.Metadata))
 	}
 }
+
+func TestLegacyCapabilityMapCompleteness(t *testing.T) {
+	// Verify all PluginCapability enum values (except UNSPECIFIED) have legacy mappings.
+	// This test prevents the legacyCapabilityMap from becoming stale when new
+	// capabilities are added to the proto definition.
+	allCaps := pbc.PluginCapability_name
+	for capValue, capName := range allCaps {
+		capability := pbc.PluginCapability(capValue)
+		if capability == pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED {
+			continue // UNSPECIFIED is intentionally excluded from legacy mapping
+		}
+		if !pluginsdk.HasLegacyCapabilityMapping(capability) {
+			t.Errorf("Capability %s (value %d) missing from legacyCapabilityMap", capName, capValue)
+		}
+	}
+}

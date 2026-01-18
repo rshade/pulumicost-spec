@@ -1,5 +1,8 @@
 version: v2
+managed:
+  enabled: true
 plugins:
+  # Go SDK generation
   - remote: buf.build/protocolbuffers/go
     out: sdk/go/proto
     opt:
@@ -12,3 +15,23 @@ plugins:
     out: sdk/go/proto
     opt:
       - paths=source_relative
+
+  # TypeScript SDK generation
+  # Using import_extension=none for compatibility with TypeScript module resolution.
+  # This prevents .js extensions from being added to import statements, which is
+  # required for Node.js ESM compatibility and bundler-friendly output.
+  # See: https://github.com/bufbuild/protobuf-es/blob/main/docs/generated_code.md
+  - remote: buf.build/bufbuild/es:v2.2.3
+    out: sdk/typescript/packages/client/src/generated
+    opt:
+      - target=ts
+      - import_extension=none
+
+  - remote: buf.build/connectrpc/es:v1.6.1
+    out: sdk/typescript/packages/client/src/generated
+    opt:
+      - target=ts
+      - import_extension=none
+
+inputs:
+  - directory: proto

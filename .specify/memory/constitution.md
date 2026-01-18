@@ -1,13 +1,16 @@
 <!--
-Sync Impact Report - Constitution v1.3.2
+Sync Impact Report - Constitution v1.4.0
 =======================================
-Version Change: 1.3.1 → 1.3.2
-Modified Principles:
-  - Section XI (Mandatory Copyright Headers): Removed specific attribution text
-    requirement ("Copyright 2026 PulumiCost/FinFocus Authors").
+Version Change: 1.3.2 → 1.4.0
+Modified Principles: None
+Added Sections:
+  - Section XIII (Multi-Language SDK Synchronization): New principle requiring
+    TypeScript SDK updates when new RPCs are added
 Removed Sections: None
-Added Sections: None
-Templates Requiring Updates: None
+Templates Requiring Updates:
+  - ✅ .specify/templates/plan-template.md - Added TypeScript SDK checkpoint
+  - ✅ .specify/templates/spec-template.md - No changes required (already aligned)
+  - ✅ .specify/templates/tasks-template.md - Added TypeScript SDK task examples
 Follow-up TODOs: None
 -->
 
@@ -155,6 +158,21 @@ Plugin capabilities MUST be automatically discovered through interface implement
 **Rationale**: Automatic discovery reduces boilerplate and prevents capability declaration errors.
 Interface-based detection ensures capabilities match actual implementation.
 
+### XIII. Multi-Language SDK Synchronization
+
+All language SDKs (Go, TypeScript) MUST be kept in sync when gRPC service definitions change:
+
+- **New RPC Methods**: When a new RPC is added to `proto/finfocus/v1/costsource.proto`, ALL SDKs MUST be updated.
+- **TypeScript SDK**: Located in `sdk/typescript/`, includes client libraries for browser and Node.js environments.
+- **Code Generation**: TypeScript protobuf bindings are generated via buf and MUST be regenerated after proto changes.
+- **Client Implementation**: High-level client wrappers (e.g., `CostSourceClient`, builder patterns)
+  MUST expose new RPC methods.
+- **Testing**: Integration tests MUST cover new RPC methods in all SDKs.
+
+**Rationale**: FinFocus provides a multi-language ecosystem. Keeping SDKs synchronized ensures consistent
+developer experience across Go, TypeScript, and future languages. Fragmented SDK support leads to ecosystem
+fragmentation and developer confusion.
+
 ## Governance
 
 ### Amendment Process
@@ -175,10 +193,11 @@ All PRs MUST verify:
 - **Test-first protocol**: Conformance tests written and passed.
 - **Backward compatibility**: buf breaking check passes.
 - **Documentation complete**: Updated root docs and examples.
+- **SDK synchronization**: All SDKs (Go, TypeScript) updated for proto changes.
 
 ### Runtime Development Guidance
 
 For day-to-day development guidance, refer to `CLAUDE.md` or `GEMINI.md` in the repository root. The
 constitution defines non-negotiable principles; these files provide practical workflow tips.
 
-**Version**: 1.3.2 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-11
+**Version**: 1.4.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-16

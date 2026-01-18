@@ -4,6 +4,7 @@ package pluginsdk
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"testing"
 
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
@@ -244,9 +245,15 @@ func TestConformanceResultPassed(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	// The Passed() method should be accessible through the type alias
-	// (may pass or fail depending on mock implementation, but should not panic)
-	_ = result.Passed()
+	// Verify Passed() method is accessible through the type alias and returns a boolean.
+	// The actual result depends on the mock implementation's completeness.
+	// We verify it doesn't panic and returns a deterministic value.
+	passed := result.Passed()
+	t.Logf("Conformance result: Passed=%v, Total=%d, Passed=%d, Failed=%d",
+		passed, result.Summary.Total, result.Summary.Passed, result.Summary.Failed)
+
+	// Verify the result is consistent on repeated calls (deterministic behavior)
+	assert.Equal(t, passed, result.Passed(), "Passed() should return consistent results")
 }
 
 // TestGetPluginInfoCapabilitiesDiscovery verifies that GetPluginInfo auto-discovers
@@ -371,4 +378,301 @@ func (p *capabilityTestPlugin) HandleDryRun(
 	_ *pbc.DryRunRequest,
 ) (*pbc.DryRunResponse, error) {
 	return &pbc.DryRunResponse{}, nil
+}
+
+// consistencyTestRegistry is a mock registry for testing that accepts any provider/region.
+type consistencyTestRegistry struct{}
+
+func (r *consistencyTestRegistry) FindPlugin(_, _ string) string {
+	// Always return a plugin name to indicate the provider/region combo is supported
+	return "test-plugin"
+}
+
+// TestGetPluginInfoCapabilitiesEmptyOverride verifies that empty capability override
+// falls back to auto-discovered capabilities from implemented interfaces.
+func TestGetPluginInfoCapabilitiesEmptyOverride(t *testing.T) {
+	testPlugin := &capabilityTestPlugin{
+		name: "empty-override-test-plugin",
+	}
+
+	// Override with empty slice - should fall back to auto-discovery
+	pluginInfo := NewPluginInfo("empty-override-test-plugin", "v1.0.0",
+		WithCapabilities()) // Empty override
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	// Empty override should fall back to globalCapabilities from auto-discovery
+	expectedCapabilities := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN,
+	}
+
+	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilities(),
+		"Empty override should fall back to auto-discovered capabilities")
+}
+
+// TestGetPluginInfoCapabilitiesUnimplementedOverride verifies that capability override
+// is honored even for capabilities not implemented by the plugin.
+func TestGetPluginInfoCapabilitiesUnimplementedOverride(t *testing.T) {
+	// Create a minimal plugin with no optional interfaces
+	testPlugin := &conformanceMockPlugin{
+		name: "minimal-override-test-plugin",
+	}
+
+	// Override with CARBON capability, even though plugin doesn't implement CarbonProvider
+	pluginInfo := NewPluginInfo("minimal-override-test-plugin", "v1.0.0",
+		WithCapabilities(pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON))
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	assert.ElementsMatch(t,
+		[]pbc.PluginCapability{pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON},
+		resp.GetCapabilities(),
+		"Override with unimplemented capability should be honored")
+}
+
+// TestGetPluginInfoConcurrentAccess verifies that concurrent GetPluginInfo calls
+// don't cause race conditions when accessing global capabilities.
+func TestGetPluginInfoConcurrentAccess(t *testing.T) {
+	testPlugin := &capabilityTestPlugin{
+		name: "concurrent-test-plugin",
+	}
+
+	pluginInfo := NewPluginInfo("concurrent-test-plugin", "v1.0.0")
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	// Launch concurrent requests with goroutine ID tracking for accurate error reporting
+	const numGoroutines = 100
+	results := make(chan *pbc.GetPluginInfoResponse, numGoroutines)
+	errors := make(chan error, numGoroutines)
+
+	for i := range numGoroutines {
+		go func(goroutineID int) {
+			resp, err := server.GetPluginInfo(ctx, req)
+			if err != nil {
+				// Wrap error with goroutine ID for accurate debugging
+				errors <- fmt.Errorf("goroutine %d: %w", goroutineID, err)
+			} else {
+				results <- resp
+			}
+		}(i)
+	}
+
+	// Collect results - should all succeed without race conditions
+	for range numGoroutines {
+		select {
+		case err := <-errors:
+			// Error already includes goroutine ID from the wrapper
+			t.Error(err)
+		case resp := <-results:
+			require.NotNil(t, resp)
+			// Verify all concurrent calls return same capabilities
+			assert.NotEmpty(t, resp.GetCapabilities())
+		}
+	}
+}
+
+// TestCapabilitiesLegacyMetadataConsistency verifies that GetPluginInfo and Supports
+// produce consistent legacy metadata from the same capabilities.
+func TestCapabilitiesLegacyMetadataConsistency(t *testing.T) {
+	testPlugin := &capabilityTestPlugin{
+		name: "legacy-consistency-test-plugin",
+	}
+
+	pluginInfo := NewPluginInfo("legacy-consistency-test-plugin", "v1.0.0")
+	// Use a simple mock registry that accepts any provider/region
+	mockReg := &consistencyTestRegistry{}
+	server := NewServerWithOptions(testPlugin, mockReg, nil, pluginInfo)
+
+	ctx := context.Background()
+
+	// Call GetPluginInfo
+	getPluginInfoReq := &pbc.GetPluginInfoRequest{}
+	getPluginInfoResp, err := server.GetPluginInfo(ctx, getPluginInfoReq)
+	require.NoError(t, err)
+	require.NotNil(t, getPluginInfoResp)
+
+	// Call Supports
+	supportsReq := &pbc.SupportsRequest{
+		Resource: &pbc.ResourceDescriptor{
+			Provider:     "aws",
+			Region:       "us-east-1",
+			ResourceType: "ec2",
+		},
+	}
+	supportsResp, err := server.Supports(ctx, supportsReq)
+	require.NoError(t, err)
+	require.NotNil(t, supportsResp)
+
+	// Verify both have legacy metadata (for backward compatibility)
+	assert.NotNil(t, getPluginInfoResp.GetMetadata())
+	assert.NotNil(t, supportsResp.GetCapabilities())
+
+	// Verify the legacy metadata keys are consistent
+	getPluginInfoMetadataKeys := make(map[string]bool)
+	for key := range getPluginInfoResp.GetMetadata() {
+		getPluginInfoMetadataKeys[key] = true
+	}
+
+	supportsCapabilitiesKeys := make(map[string]bool)
+	for key := range supportsResp.GetCapabilities() {
+		supportsCapabilitiesKeys[key] = true
+	}
+
+	assert.ElementsMatch(t, mapKeys(getPluginInfoMetadataKeys), mapKeys(supportsCapabilitiesKeys),
+		"Legacy metadata keys should be consistent between GetPluginInfo and Supports")
+}
+
+// TestGetPluginInfoCapabilitiesWithUnspecified verifies that UNSPECIFIED capability
+// is filtered out from legacy metadata mapping.
+func TestGetPluginInfoCapabilitiesWithUnspecified(t *testing.T) {
+	testPlugin := &capabilityTestPlugin{
+		name: "unspecified-test-plugin",
+	}
+
+	// Override with UNSPECIFIED and a real capability
+	pluginInfo := NewPluginInfo("unspecified-test-plugin", "v1.0.0",
+		WithCapabilities(
+			pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED,
+			pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		))
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	// Verify UNSPECIFIED is included in enum capabilities (it was explicitly set)
+	assert.Contains(t, resp.GetCapabilities(), pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED)
+
+	// Verify UNSPECIFIED is NOT in legacy metadata (should be filtered out)
+	metadata := resp.GetMetadata()
+	for key := range metadata {
+		assert.NotEqual(t, "unspecified", key,
+			"UNSPECIFIED should not appear in legacy metadata keys")
+	}
+
+	// Verify PROJECTED_COSTS is in legacy metadata
+	assert.NotNil(t, metadata["projected_costs"],
+		"PROJECTED_COSTS should be in legacy metadata")
+}
+
+// TestGetPluginInfoEmptyPluginEmptyOverride verifies that a minimal plugin
+// with empty override returns only base capabilities.
+func TestGetPluginInfoEmptyPluginEmptyOverride(t *testing.T) {
+	// Create plugin with NO optional interfaces implemented
+	testPlugin := &conformanceMockPlugin{
+		name: "empty-empty-test-plugin",
+	}
+
+	// Empty capabilities override on minimal plugin
+	pluginInfo := NewPluginInfo("empty-empty-test-plugin", "v1.0.0",
+		WithCapabilities())
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	// Empty override with minimal plugin should return base capabilities only
+	expectedCapabilities := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST,
+	}
+
+	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilities(),
+		"Empty override with minimal plugin should return only base capabilities")
+}
+
+// mapKeys is a helper to extract keys from a string map for comparison.
+func mapKeys(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+// =============================================================================
+// Benchmark Tests
+// =============================================================================
+
+// BenchmarkInferCapabilities measures the performance of capability discovery.
+// This verifies that type assertions are zero-allocation and slice operations
+// are efficient.
+func BenchmarkInferCapabilities(b *testing.B) {
+	plugin := &capabilityTestPlugin{name: "benchmark-plugin"}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		_ = inferCapabilities(plugin)
+	}
+}
+
+// BenchmarkInferCapabilitiesMinimal benchmarks capability discovery for a plugin
+// with no optional interfaces (base capabilities only).
+func BenchmarkInferCapabilitiesMinimal(b *testing.B) {
+	plugin := &conformanceMockPlugin{name: "benchmark-minimal-plugin"}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		_ = inferCapabilities(plugin)
+	}
+}
+
+// =============================================================================
+// Context Cancellation Tests
+// =============================================================================
+
+// TestGetPluginInfoContextCancellation verifies that GetPluginInfo handles
+// context cancellation gracefully. Since GetPluginInfo doesn't perform blocking
+// operations, it should still succeed even with a cancelled context.
+func TestGetPluginInfoContextCancellation(t *testing.T) {
+	testPlugin := &capabilityTestPlugin{name: "timeout-test-plugin"}
+	pluginInfo := NewPluginInfo("timeout-test-plugin", "v1.0.0")
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	// Create context that's already cancelled
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	req := &pbc.GetPluginInfoRequest{}
+	resp, err := server.GetPluginInfo(ctx, req)
+
+	// GetPluginInfo should still succeed even with cancelled context
+	// since it doesn't perform blocking operations
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Equal(t, "timeout-test-plugin", resp.GetName())
 }

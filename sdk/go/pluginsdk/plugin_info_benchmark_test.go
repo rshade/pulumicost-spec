@@ -25,13 +25,15 @@ func BenchmarkInferCapabilities(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for range b.N {
+	for b.Loop() {
 		resp, err := server.GetPluginInfo(ctx, req)
 		if err != nil {
 			b.Fatal(err)
 		}
-		if len(resp.GetCapabilities()) != 4 {
-			b.Fatalf("Expected 4 capabilities, got %d", len(resp.GetCapabilities()))
+		// Plugin implements: 4 base (projected, actual, pricing, estimate) +
+		// 2 optional interfaces (RecommendationsProvider, BudgetsProvider) = 6 total
+		if len(resp.GetCapabilities()) != 6 {
+			b.Fatalf("Expected 6 capabilities, got %d", len(resp.GetCapabilities()))
 		}
 	}
 }
@@ -58,7 +60,7 @@ func BenchmarkInferCapabilitiesExplicit(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-	for range b.N {
+	for b.Loop() {
 		resp, err := server.GetPluginInfo(ctx, req)
 		if err != nil {
 			b.Fatal(err)

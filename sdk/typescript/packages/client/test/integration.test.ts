@@ -1,0 +1,235 @@
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
+import { setupServer } from 'msw/node';
+import { handlers } from './mocks/handlers.js';
+import { CostSourceClient } from '../src/clients/cost-source.js';
+import { ObservabilityClient } from '../src/clients/auxiliary.js';
+import { RegistryClient } from '../src/clients/auxiliary.js';
+import { ResourceDescriptorBuilder } from '../src/builders/resource-descriptor.js';
+import { RecommendationFilterBuilder } from '../src/builders/recommendation-filter.js';
+import { FocusRecordBuilder } from '../src/builders/focus-record.js';
+import { recommendationsIterator } from '../src/utils/pagination.js';
+import { ValidationError } from '../src/errors/validation-error.js';
+import {
+  GetActualCostRequest,
+  GetProjectedCostRequest,
+  GetRecommendationsRequest,
+  DismissRecommendationRequest,
+  NameRequest,
+  SupportsRequest,
+  EstimateCostRequest,
+  GetBudgetsRequest,
+  GetPricingSpecRequest,
+  GetPluginInfoRequest,
+  DryRunRequest
+} from '../src/generated/finfocus/v1/costsource_pb.js';
+
+const server = setupServer(...handlers);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+describe('CostSourceClient Integration', () => {
+  const client = new CostSourceClient({
+    baseUrl: 'https://plugin-aws.example.com'
+  });
+
+  it('fetches plugin name successfully', async () => {
+    const request = new NameRequest();
+    const response = await client.name(request);
+    expect(response.name).toBe("AWS Cost Plugin");
+  });
+
+  it('fetches supported billing modes and providers', async () => {
+    const request = new SupportsRequest();
+    const response = await client.supports(request);
+    expect(response.billingModes).toContain("HOURLY");
+    expect(response.providers).toContain("AWS");
+  });
+
+  it('fetches actual cost successfully using ID', async () => {
+    const request = new GetActualCostRequest({ resourceId: 'i-1234567890abcdef0' });
+    const response = await client.getActualCost(request);
+
+    expect(response.total).toBeDefined();
+    expect(response.total?.units).toBe(100n);
+    expect(response.total?.currencyCode).toBe("USD");
+  });
+
+  it('fetches projected cost successfully using ResourceDescriptor', async () => {
+    const resource = new ResourceDescriptorBuilder()
+      .withProvider('AWS')
+      .withResourceType('ec2.instance')
+      .withRegion('us-east-1')
+      .withId('i-1234567890abcdef0')
+      .build();
+
+    const request = new GetProjectedCostRequest({ resource });
+    const response = await client.getProjectedCost(request);
+
+    expect(response.total).toBeDefined();
+    expect(response.total?.units).toBe(150n);
+  });
+
+  it('fetches pricing specification', async () => {
+    const request = new GetPricingSpecRequest();
+    const response = await client.getPricingSpec(request);
+    expect(response.pricingSpec).toBeDefined();
+    expect(response.pricingSpec?.provider).toBe("AWS");
+  });
+
+  it('estimates cost for a resource', async () => {
+    const resource = new ResourceDescriptorBuilder()
+      .withProvider('AWS')
+      .withResourceType('ec2.instance')
+      .build();
+
+    const request = new EstimateCostRequest({ resource });
+    const response = await client.estimateCost(request);
+
+    expect(response.estimatedCost).toBeDefined();
+    expect(response.estimatedCost?.units).toBe(200n);
+  });
+
+  it('fetches recommendations', async () => {
+    const request = new GetRecommendationsRequest();
+    const response = await client.getRecommendations(request);
+
+    expect(response.recommendations).toBeDefined();
+    expect(response.recommendations.length).toBeGreaterThan(0);
+    expect(response.recommendations[0].title).toBe("Downsize Instance");
+  });
+
+  it('fetches recommendations with filter', async () => {
+    const filter = new RecommendationFilterBuilder()
+      .forProvider('AWS')
+      .withPriority(1) // HIGH
+      .build();
+
+    const request = new GetRecommendationsRequest({ filter });
+    const response = await client.getRecommendations(request);
+
+    expect(response.recommendations).toBeDefined();
+  });
+
+  it('iterates through paginated recommendations', async () => {
+    const request = new GetRecommendationsRequest();
+    const recommendations: any[] = [];
+
+    for await (const rec of recommendationsIterator(client, request)) {
+      recommendations.push(rec);
+    }
+
+    expect(recommendations.length).toBeGreaterThan(0);
+  });
+
+  it('dismisses a recommendation', async () => {
+    const request = new DismissRecommendationRequest({ recommendationId: 'rec-1' });
+    const response = await client.dismissRecommendation(request);
+    expect(response.success).toBe(true);
+  });
+
+  it('throws ValidationError when dismissing recommendation without ID', async () => {
+    const request = new DismissRecommendationRequest();
+    expect(() => {
+      client.dismissRecommendation(request);
+    }).rejects.toThrow(ValidationError);
+  });
+
+  it('fetches budgets', async () => {
+    const request = new GetBudgetsRequest();
+    const response = await client.getBudgets(request);
+    expect(response.budgets).toBeDefined();
+    expect(response.budgets.length).toBeGreaterThan(0);
+  });
+
+  it('fetches plugin info', async () => {
+    const request = new GetPluginInfoRequest();
+    const response = await client.getPluginInfo(request);
+    expect(response.name).toBe("AWS Cost Plugin");
+    expect(response.version).toBe("1.0.0");
+  });
+
+  it('performs DryRun check', async () => {
+    const request = new DryRunRequest();
+    const response = await client.dryRun(request);
+    expect(response.resourceTypeSupported).toBe(true);
+    expect(response.configurationValid).toBe(true);
+  });
+});
+
+describe('ResourceDescriptorBuilder', () => {
+  it('builds descriptor with all properties', () => {
+    const descriptor = new ResourceDescriptorBuilder()
+      .withProvider('AWS')
+      .withResourceType('ec2.instance')
+      .withRegion('us-west-2')
+      .withSku('m5.large')
+      .withArn('arn:aws:ec2:us-west-2:123456789012:instance/i-1234567890abcdef0')
+      .withTags({ environment: 'production', team: 'platform' })
+      .build();
+
+    expect(descriptor.provider).toBe('AWS');
+    expect(descriptor.resourceType).toBe('ec2.instance');
+    expect(descriptor.region).toBe('us-west-2');
+    expect(descriptor.sku).toBe('m5.large');
+    expect(descriptor.resourceId).toBe('arn:aws:ec2:us-west-2:123456789012:instance/i-1234567890abcdef0');
+    expect(descriptor.tags).toEqual({ environment: 'production', team: 'platform' });
+  });
+
+  it('supports fluent API chaining', () => {
+    const descriptor = new ResourceDescriptorBuilder()
+      .withProvider('Azure')
+      .withResourceType('virtual_machine')
+      .build();
+
+    expect(descriptor.provider).toBe('Azure');
+    expect(descriptor.resourceType).toBe('virtual_machine');
+  });
+});
+
+describe('FocusRecordBuilder', () => {
+  it('builds FOCUS record with billing information', () => {
+    const now = new Date();
+    const record = new FocusRecordBuilder()
+      .withBilledCost(100.50, 'USD')
+      .withBillingPeriod(new Date(now.getFullYear(), now.getMonth(), 1), now)
+      .withResourceId('i-1234567890abcdef0')
+      .withProvider('AWS')
+      .build();
+
+    expect(record.billedCost).toBe(100.50);
+    expect(record.billingCurrency).toBe('USD');
+    expect(record.resourceId).toBe('i-1234567890abcdef0');
+    expect(record.providerName).toBe('AWS');
+  });
+});
+
+describe('ObservabilityClient', () => {
+  const client = new ObservabilityClient({
+    baseUrl: 'https://plugin-aws.example.com'
+  });
+
+  it('checks plugin health', async () => {
+    const response = await client.healthCheck();
+    expect(response.status).toBe("HEALTHY");
+  });
+});
+
+describe('RegistryClient', () => {
+  const client = new RegistryClient({
+    baseUrl: 'https://plugin-registry.example.com'
+  });
+
+  it('discovers available plugins', async () => {
+    const response = await client.discoverPlugins();
+    expect(response.plugins).toBeDefined();
+    expect(response.plugins.length).toBeGreaterThan(0);
+  });
+
+  it('lists installed plugins', async () => {
+    const response = await client.listInstalledPlugins();
+    expect(response.plugins).toBeDefined();
+    expect(response.plugins.length).toBeGreaterThan(0);
+  });
+});
