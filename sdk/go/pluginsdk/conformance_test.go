@@ -629,6 +629,13 @@ func mapKeys(m map[string]bool) []string {
 // BenchmarkInferCapabilities measures the performance of capability discovery.
 // This verifies that type assertions are zero-allocation and slice operations
 // are efficient.
+//
+// Expected performance for plugins with all optional interfaces:
+// - < 100 ns/op: Type assertions and slice operations are fast
+// - 1 alloc/op: Single allocation for capability slice
+//
+// These benchmarks establish performance contracts that can be validated in CI
+// to prevent regressions in capability discovery performance.
 func BenchmarkInferCapabilities(b *testing.B) {
 	plugin := &capabilityTestPlugin{name: "benchmark-plugin"}
 
@@ -658,6 +665,13 @@ func BenchmarkInferCapabilitiesMinimal(b *testing.B) {
 // TestGetPluginInfoContextCancellation verifies that GetPluginInfo handles
 // context cancellation gracefully. Since GetPluginInfo doesn't perform blocking
 // operations, it should still succeed even with a cancelled context.
+//
+// Rationale for succeeding with cancelled context:
+//  1. It only reads pre-constructed PluginInfo (no I/O operations)
+//  2. Execution time is guaranteed < 1ms (simple field copies)
+//  3. Failing fast would prevent legitimate metadata queries during shutdown
+//
+// This behavior is intentional and differs from RPCs that perform external calls.
 func TestGetPluginInfoContextCancellation(t *testing.T) {
 	testPlugin := &capabilityTestPlugin{name: "timeout-test-plugin"}
 	pluginInfo := NewPluginInfo("timeout-test-plugin", "v1.0.0")
