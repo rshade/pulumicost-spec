@@ -64,7 +64,30 @@ export class RecommendationFilterBuilder {
     return this;
   }
 
+  /**
+   * Sets tags, replacing any existing tags.
+   * Use addTags() to merge additional tags without clearing existing ones.
+   */
   withTags(tags: Record<string, string>): this {
+    if (!tags) {
+      throw new ValidationError("Tags cannot be null or undefined", "tags");
+    }
+    // Clear existing tags and set new ones (replacement semantics)
+    const existingKeys = Object.keys(this.filter.tags);
+    for (const key of existingKeys) {
+      delete this.filter.tags[key];
+    }
+    for (const [key, value] of Object.entries(tags)) {
+      this.filter.tags[key] = value;
+    }
+    return this;
+  }
+
+  /**
+   * Adds tags to the existing tags without clearing them.
+   * Use withTags() to replace all tags.
+   */
+  addTags(tags: Record<string, string>): this {
     if (!tags) {
       throw new ValidationError("Tags cannot be null or undefined", "tags");
     }
@@ -101,7 +124,7 @@ export class RecommendationFilterBuilder {
   }
 
   withMinConfidenceScore(score: number): this {
-    if (score < 0 || score > 1) {
+    if (!Number.isFinite(score) || score < 0 || score > 1) {
       throw new ValidationError("Confidence score must be between 0.0 and 1.0", "minConfidenceScore");
     }
     this.filter.minConfidenceScore = score;
@@ -109,7 +132,8 @@ export class RecommendationFilterBuilder {
   }
 
   withMaxAgeDays(days: number): this {
-    if (days < 0 || !Number.isInteger(days)) {
+    // Check integer first to reject NaN, Infinity, and floats before range check
+    if (!Number.isInteger(days) || days < 0) {
       throw new ValidationError("Max age days must be a non-negative integer", "maxAgeDays");
     }
     this.filter.maxAgeDays = days;
