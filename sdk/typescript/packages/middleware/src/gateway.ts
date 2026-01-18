@@ -87,17 +87,33 @@ export class RESTGateway {
       });
 
       req.on('error', (error) => {
-        reject(error);
+        if (aborted) return;
+        aborted = true;
+        req.destroy();
+        const errorMessage = error instanceof Error ? error.message : 'Request error';
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: errorMessage }));
+        resolve();
       });
 
       req.on('end', async () => {
         if (aborted) return;
-        try {
-          let requestData: any = {};
-          if (body) {
-            requestData = JSON.parse(body);
-          }
 
+        // Parse JSON body separately to return 400 for malformed JSON
+        let requestData: any = {};
+        if (body) {
+          try {
+            requestData = JSON.parse(body);
+          } catch (parseError) {
+            // Treat all JSON parse errors as 400 Bad Request
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Malformed JSON' }));
+            resolve();
+            return;
+          }
+        }
+
+        try {
           const response = await this.dispatchRequest(serviceName, methodName, requestData);
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
