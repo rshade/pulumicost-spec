@@ -97,15 +97,73 @@ centered around the FinOps Foundation's FOCUS standard.
     Migration guide ([#246](https://github.com/rshade/finfocus-spec/issues/246)).
   - **Quality**: CI Benchmarks ([#224](https://github.com/rshade/finfocus-spec/issues/224)),
     Extreme value tests ([#212](https://github.com/rshade/finfocus-spec/issues/212)), Fuzzing ([#205](https://github.com/rshade/finfocus-spec/issues/205)).
+- [x] **GetPluginInfo Performance Test** ([#244](https://github.com/rshade/finfocus-spec/issues/244)) -
+  Added standalone conformance test for GetPluginInfo response time (<100ms assertion).
+- [x] **User-Friendly Error Messages** ([#245](https://github.com/rshade/finfocus-spec/issues/245)) -
+  Improved GetPluginInfo error messages for end-users.
+- [x] **TypeScript SDK** ([#293](https://github.com/rshade/finfocus-spec/issues/293),
+  [#302](https://github.com/rshade/finfocus-spec/pull/302)) -
+  Initial TypeScript client SDK for browser and Node.js environments.
+- [x] **Plugin Capability Enum** ([#287](https://github.com/rshade/finfocus-spec/issues/287)) -
+  Added PluginCapability enum for granular feature discovery.
+- [x] **Backward Compatibility for Environment Variables**
+  ([#283](https://github.com/rshade/finfocus-spec/issues/283)) -
+  Maintained legacy PULUMICOST_* environment variable support during migration.
+- [x] **Migration Documentation** ([#282](https://github.com/rshade/finfocus-spec/issues/282)) -
+  Added MIGRATION.md and llm-migration.json for PulumiCost to FinFocus migration.
+- [x] **PulumiCost to FinFocus Rename** ([#272](https://github.com/rshade/finfocus-spec/issues/272)) -
+  Complete project rename with backward compatibility shims.
 
 ---
 
 ## [Immediate Focus] (Q1 2026)
 
+### TypeScript SDK
+
+- [ ] **Migrate TypeScript SDK to Connect-ES v2**
+  ([#304](https://github.com/rshade/finfocus-spec/issues/304)) -
+  Update TypeScript SDK to use Connect-ES v2 for improved browser/Node.js support.
+
 ### Stability & Maintenance
 
 - [ ] **Dependency Management** ([#13](https://github.com/rshade/finfocus-spec/issues/13)) -
   Automated tracking and updating of core proto and SDK dependencies.
+
+### Bug Fixes (Capability Discovery)
+
+- [ ] **Missing Nil Check in inferCapabilities**
+  ([#297](https://github.com/rshade/finfocus-spec/issues/297)) -
+  Fix potential nil pointer dereference in capability inference.
+- [ ] **Missing Test Coverage for Capability Override Edge Cases**
+  ([#296](https://github.com/rshade/finfocus-spec/issues/296)) -
+  Add tests for edge cases in capability override handling.
+- [ ] **Proto Field Type Inconsistency**
+  ([#295](https://github.com/rshade/finfocus-spec/issues/295)) -
+  Fix inconsistency between capabilities and metadata field types.
+- [ ] **Missing DryRunHandler Interface Definition**
+  ([#294](https://github.com/rshade/finfocus-spec/issues/294)) -
+  Add proper interface definition for DryRunHandler.
+
+### SDK Quality
+
+- [ ] **Inconsistent Backward Compatibility Patterns**
+  ([#299](https://github.com/rshade/finfocus-spec/issues/299)) -
+  Standardize backward compatibility conversion patterns across SDK.
+- [ ] **Optimize Slice Copying Performance**
+  ([#301](https://github.com/rshade/finfocus-spec/issues/301)) -
+  Use append pattern for improved slice copying performance.
+
+### Documentation
+
+- [ ] **Documentation Updates for Capability Discovery**
+  ([#300](https://github.com/rshade/finfocus-spec/issues/300)) -
+  Update docs to reflect new capability discovery system.
+- [ ] **Unclear Exhaustive Nolint Directive**
+  ([#298](https://github.com/rshade/finfocus-spec/issues/298)) -
+  Clarify the nolint directive in legacyCapabilityMap.
+- [ ] **Strengthen Log File Security Warning**
+  ([#284](https://github.com/rshade/finfocus-spec/issues/284)) -
+  Improve security guidance for log file handling (good first issue).
 
 ### Planned Features
 
@@ -115,22 +173,6 @@ centered around the FinOps Foundation's FOCUS standard.
 - [ ] **Usage Profiles** ([#218](https://github.com/rshade/finfocus-spec/issues/218))
   - Add `UsageProfile` context to requests to allow plugins to adjust recommendations
     based on environment (e.g., Dev vs Prod)
-
-### Connect Protocol Enhancements
-
-- [ ] **Configurable Client Timeouts** ([#226](https://github.com/rshade/finfocus-spec/issues/226)) -
-  Add per-request timeout configuration for client operations.
-
-- [ ] **CORS Configuration** ([#228](https://github.com/rshade/finfocus-spec/issues/228),
-  [#229](https://github.com/rshade/finfocus-spec/issues/229)) -
-  Make CORS headers and max-age configurable.
-
-### SDK Polish (v0.4.15)
-
-- [ ] **GetPluginInfo Performance Test** ([#244](https://github.com/rshade/finfocus-spec/issues/244)) -
-  Add standalone conformance test for GetPluginInfo response time.
-- [ ] **User-Friendly Error Messages** ([#245](https://github.com/rshade/finfocus-spec/issues/245)) -
-  Improve GetPluginInfo error messages for end-users.
 
 ---
 

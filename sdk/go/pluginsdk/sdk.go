@@ -425,8 +425,18 @@ func (s *Server) handleConfiguredPluginInfo() (*pbc.GetPluginInfoResponse, error
 	}
 
 	// Add legacy capability metadata for backward compatibility
+	// Use warning-aware function to detect and log invalid/unmapped capabilities
 	if len(capabilities) > 0 {
-		legacyMeta := capabilitiesToLegacyMetadata(capabilities)
+		legacyMeta, warnings := capabilitiesToLegacyMetadataWithWarnings(capabilities)
+
+		// Log any warnings about unmapped capabilities
+		for _, w := range warnings {
+			s.logger.Warn().
+				Int32("capability", int32(w.Capability)).
+				Str("reason", w.Reason).
+				Msg("Capability has no legacy metadata mapping")
+		}
+
 		if metadata == nil {
 			metadata = make(map[string]string, len(legacyMeta))
 		}
@@ -538,7 +548,17 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 		// This handles both cases: plugin didn't set capabilities, or plugin manually set Capabilities map.
 		// By always regenerating from the enum, we ensure both formats represent the same capabilities.
 		if len(resp.GetCapabilitiesEnum()) > 0 {
-			resp.Capabilities = capabilitiesToLegacyMetadata(resp.GetCapabilitiesEnum())
+			legacyMeta, warnings := capabilitiesToLegacyMetadataWithWarnings(resp.GetCapabilitiesEnum())
+
+			// Log any warnings about unmapped capabilities
+			for _, w := range warnings {
+				s.logger.Warn().
+					Int32("capability", int32(w.Capability)).
+					Str("reason", w.Reason).
+					Msg("Capability has no legacy metadata mapping in Supports response")
+			}
+
+			resp.Capabilities = legacyMeta
 		}
 	}
 

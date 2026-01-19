@@ -174,6 +174,13 @@ func (info *PluginInfo) Validate() error {
 			info.Name, info.SpecVersion, err)
 	}
 
+	// DoS protection: reject excessive capability configurations
+	// This prevents memory exhaustion from malicious plugins
+	if len(info.Capabilities) > MaxConfiguredCapabilities {
+		return fmt.Errorf("plugin info validation failed for plugin %q: too many capabilities (%d > %d max)",
+			info.Name, len(info.Capabilities), MaxConfiguredCapabilities)
+	}
+
 	return nil
 }
 
@@ -195,16 +202,74 @@ const (
 	// can have. Used for pre-allocation to minimize allocations during
 	// capability inference.
 	maxCapabilities = baseCapabilities + optionalCapabilities
+
+	// MaxConfiguredCapabilities is the maximum number of capabilities allowed
+	// in PluginInfo.Capabilities. This limit prevents DoS attacks where malicious
+	// plugins configure excessive capabilities to exhaust memory. The limit is
+	// generous (64) compared to currently defined capabilities (12) to allow for
+	// future growth while still providing protection.
+	MaxConfiguredCapabilities = 64
+
+	// minValidCapability is the minimum valid PluginCapability enum value.
+	// PLUGIN_CAPABILITY_UNSPECIFIED (0) is the protobuf default and not a valid capability.
+	minValidCapability = pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS // 1
+
+	// maxValidCapability is the maximum valid PluginCapability enum value.
+	// This should be updated when new capabilities are added to the proto definition.
+	maxValidCapability = pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS // 11
 )
+
+// IsValidCapability checks if a PluginCapability enum value is within the valid range.
+// PLUGIN_CAPABILITY_UNSPECIFIED (0) is not considered valid as it's the protobuf default.
+// This function is used to filter out invalid enum values that may be passed through
+// configuration or from untrusted sources.
+//
+// Example:
+//
+//	if pluginsdk.IsValidCapability(cap) {
+//	    // Process valid capability
+//	}
+func IsValidCapability(capability pbc.PluginCapability) bool {
+	return capability >= minValidCapability && capability <= maxValidCapability
+}
 
 // inferCapabilities determines plugin capabilities by checking implemented interfaces.
 // The slice is pre-allocated with capacity maxCapabilities (4 base + 4 optional) to minimize allocations.
-// Returns a slice of capabilities supported by the plugin.
+// Returns a slice of capabilities supported by the plugin, or nil if plugin is nil.
 //
 // The base Plugin interface methods (GetProjectedCost, GetActualCost, etc.) are
 // always assumed to be implemented since they are required by the interface.
 // Only optional interfaces are checked via type assertion.
+//
+// Nil Plugin Handling:
+//
+// This function defensively handles nil plugin input to prevent panics during:
+//   - Unit tests where nil mocks may be passed for isolated capability testing
+//   - Error recovery scenarios in server constructors where plugin creation failed
+//   - Lazy initialization patterns where plugin may be temporarily unset
+//   - Edge cases in test harnesses that need to verify nil-safety
+//
+// Callers should validate plugin is non-nil before calling constructors in production.
+// A nil plugin results in an empty capability set (returns nil slice).
+//
+// Design Note:
+//
+// While a nil plugin is typically a programming error, this function chooses to
+// return nil gracefully rather than panic. The rationale is:
+//   - Type assertions on nil interface values panic in Go
+//   - Callers may not always control the plugin lifecycle
+//   - Fail-safe behavior is preferable for infrastructure code
+//
+// Production code using NewServer/NewServerWithOptions should ensure plugins are
+// non-nil before construction. The server constructors could be enhanced to return
+// errors for nil plugins if stricter validation is desired in the future.
 func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
+	// Defensive nil check to prevent panic on type assertions.
+	// See function documentation for rationale on handling nil plugins gracefully.
+	if plugin == nil {
+		return nil
+	}
+
 	// Pre-allocate for common case (4 base + 4 optional = maxCapabilities)
 	// This reduces allocations from ~2-3 (slice growth) to 1 (initial make)
 	capabilities := make([]pbc.PluginCapability, 0, maxCapabilities)
@@ -265,21 +330,46 @@ func HasLegacyCapabilityMapping(capability pbc.PluginCapability) bool {
 	return exists
 }
 
-// capabilitiesToLegacyMetadata converts a slice of PluginCapability enums
-// to the legacy metadata map format for backward compatibility.
+// CapabilityConversionWarning describes a capability that couldn't be mapped to legacy format.
+type CapabilityConversionWarning struct {
+	Capability pbc.PluginCapability
+	Reason     string
+}
+
+// capabilitiesToLegacyMetadataWithWarnings converts capabilities to legacy format
+// and returns both the metadata map and any warnings about unmapped capabilities.
+// This allows callers to log warnings appropriately.
 //
-// Returns a map[string]bool where the keys are legacy capability names
-// and values are always true (presence indicates capability support).
-func capabilitiesToLegacyMetadata(capabilities []pbc.PluginCapability) map[string]bool {
+// Warnings are returned (not logged) to:
+//  1. Allow callers to decide logging level and format.
+//  2. Support testing without log inspection.
+//  3. Avoid circular dependencies between plugin_info.go and logging utilities.
+func capabilitiesToLegacyMetadataWithWarnings(capabilities []pbc.PluginCapability) (
+	map[string]bool, []CapabilityConversionWarning,
+) {
 	if len(capabilities) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	metadata := make(map[string]bool, len(capabilities))
+	var warnings []CapabilityConversionWarning
+
 	for _, cap := range capabilities {
 		if key, exists := legacyCapabilityMap[cap]; exists {
 			metadata[key] = true
+		} else if cap != pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED {
+			// Capability has no legacy mapping - this indicates either:
+			// 1. An invalid enum value (outside valid range)
+			// 2. A new capability not yet added to legacyCapabilityMap
+			reason := "capability has no legacy metadata mapping"
+			if !IsValidCapability(cap) {
+				reason = "invalid capability enum value (outside valid range)"
+			}
+			warnings = append(warnings, CapabilityConversionWarning{
+				Capability: cap,
+				Reason:     reason,
+			})
 		}
 	}
-	return metadata
+	return metadata, warnings
 }
