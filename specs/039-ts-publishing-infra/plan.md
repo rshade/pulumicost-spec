@@ -3,6 +3,7 @@
 **Feature**: TypeScript SDK Publishing Infrastructure
 **Branch**: `039-ts-publishing-infra`
 **Status**: Planning
+**Spec**: [specs/039-ts-publishing-infra/spec.md](spec.md)
 
 ## Technical Context
 
@@ -22,6 +23,13 @@ We are enabling the automated publication of the `finfocus-client` TypeScript SD
 - `release-please-config.json`: Configuration for versioning strategies.
 - `.github/workflows/`: CI pipeline location.
 
+### Unknowns & Risks
+
+- **Unknowns**: None.
+- **Risks**:
+  - **Token Permissions**: GitHub Packages usually requires `packages: write` permission in the workflow. We must ensure the token used has this scope.
+  - **Workspace Isolation**: Publishing a package from within a workspace can sometimes be tricky with `npm publish` if it relies on hoisted dependencies. `npm publish -w` or navigating to the directory is usually required.
+
 ## Constitution Check
 
 | Principle | Compliance | Notes |
@@ -29,8 +37,15 @@ We are enabling the automated publication of the `finfocus-client` TypeScript SD
 | **III. Spec Consumes, It Does Not Calculate** | N/A | Infrastructure task. |
 | **IV. Separation of Concerns** | ✅ | Creating a dedicated publishing pipeline separate from the Go SDK/Spec. |
 | **VII. Documentation & Identity** | ✅ | Scoping the package to `@rshade` establishes clear identity. |
+| **XIII. Multi-Language SDK Synchronization** | ✅ | This infrastructure ensures the TS SDK is versioned and distributed, supporting synchronization. |
 
 ## Phased Implementation
+
+### Phase 0: Research & Design
+
+**Goal**: Confirm package naming and registry configuration.
+
+- [x] Create `research.md` (Formalize the registry choice and config details).
 
 ### Phase 1: Configuration (Package & Versioning)
 
@@ -53,11 +68,6 @@ We are enabling the automated publication of the `finfocus-client` TypeScript SD
 
 1.  **Lint**: Ensure JSON/YAML files are valid.
 2.  **Build**: Verify `npm run build` works locally with the new name.
-
-## Unknowns & Risks
-
-- **Token Permissions**: GitHub Packages usually requires `packages: write` permission in the workflow. We must ensure the token used has this scope.
-- **Workspace Isolation**: Publishing a package from within a workspace can sometimes be tricky with `npm publish` if it relies on hoisted dependencies. `npm publish -w` or navigating to the directory is usually required.
 
 ## Verification Plan
 
