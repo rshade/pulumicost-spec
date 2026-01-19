@@ -16,8 +16,13 @@ name: Publish TypeScript SDK
 
 on:
   release:
-    types: [published]
+    types: [created]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g., finfocus-client-v0.1.0)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -26,8 +31,14 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Only run for TypeScript SDK releases (finfocus-client-vX.X.X tags)
+    if: >-
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.tag, 'finfocus-client-v')) ||
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'finfocus-client-v'))
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.event.release.tag_name }}
 
       - uses: actions/setup-node@v4
         with:
