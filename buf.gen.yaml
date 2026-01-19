@@ -21,13 +21,9 @@ plugins:
   # This prevents .js extensions from being added to import statements, which is
   # required for Node.js ESM compatibility and bundler-friendly output.
   # See: https://github.com/bufbuild/protobuf-es/blob/main/docs/generated_code.md
+  # In Connect-ES v2, services are generated directly by protoc-gen-es
+  # No separate connectrpc/es plugin is needed
   - remote: buf.build/bufbuild/es:v2.2.3
-    out: sdk/typescript/packages/client/src/generated
-    opt:
-      - target=ts
-      - import_extension=none
-
-  - remote: buf.build/connectrpc/es:v1.6.1
     out: sdk/typescript/packages/client/src/generated
     opt:
       - target=ts

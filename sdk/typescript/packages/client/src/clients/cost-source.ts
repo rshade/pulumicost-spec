@@ -1,33 +1,43 @@
-import { createPromiseClient, PromiseClient, Transport } from "@connectrpc/connect";
+import { createClient, Client, Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { CostSourceService } from "../generated/finfocus/v1/costsource_connect.js";
-import { ValidationError } from "../errors/validation-error.js";
+import { create } from "@bufbuild/protobuf";
 import {
+  CostSourceService,
   GetActualCostRequest,
+  GetActualCostRequestSchema,
   GetActualCostResponse,
   GetProjectedCostRequest,
+  GetProjectedCostRequestSchema,
   GetProjectedCostResponse,
   GetRecommendationsRequest,
+  GetRecommendationsRequestSchema,
   GetRecommendationsResponse,
   GetPricingSpecRequest,
+  GetPricingSpecRequestSchema,
   GetPricingSpecResponse,
   EstimateCostRequest,
   EstimateCostResponse,
   DismissRecommendationRequest,
   DismissRecommendationResponse,
   GetPluginInfoRequest,
+  GetPluginInfoRequestSchema,
   GetPluginInfoResponse,
   DryRunRequest,
+  DryRunRequestSchema,
   DryRunResponse,
   NameRequest,
+  NameRequestSchema,
   NameResponse,
   SupportsRequest,
+  SupportsRequestSchema,
   SupportsResponse
 } from "../generated/finfocus/v1/costsource_pb.js";
 import {
   GetBudgetsRequest,
+  GetBudgetsRequestSchema,
   GetBudgetsResponse
 } from "../generated/finfocus/v1/budget_pb.js";
+import { ValidationError } from "../errors/validation-error.js";
 
 export interface CostSourceClientConfig {
   baseUrl: string;
@@ -35,21 +45,21 @@ export interface CostSourceClientConfig {
 }
 
 export class CostSourceClient {
-  private client: PromiseClient<typeof CostSourceService>;
+  private client: Client<typeof CostSourceService>;
 
   constructor(config: CostSourceClientConfig) {
     const transport = config.transport || createConnectTransport({
       baseUrl: config.baseUrl,
       useBinaryFormat: false,
     });
-    this.client = createPromiseClient(CostSourceService, transport);
+    this.client = createClient(CostSourceService, transport);
   }
 
-  async name(req: NameRequest = new NameRequest()): Promise<NameResponse> {
+  async name(req: NameRequest = create(NameRequestSchema)): Promise<NameResponse> {
     return this.client.name(req);
   }
 
-  async supports(req: SupportsRequest = new SupportsRequest()): Promise<SupportsResponse> {
+  async supports(req: SupportsRequest = create(SupportsRequestSchema)): Promise<SupportsResponse> {
     return this.client.supports(req);
   }
 
@@ -65,7 +75,7 @@ export class CostSourceClient {
     return this.client.getProjectedCost(req);
   }
 
-  async getPricingSpec(req: GetPricingSpecRequest = new GetPricingSpecRequest()): Promise<GetPricingSpecResponse> {
+  async getPricingSpec(req: GetPricingSpecRequest = create(GetPricingSpecRequestSchema)): Promise<GetPricingSpecResponse> {
     return this.client.getPricingSpec(req);
   }
 
@@ -73,7 +83,7 @@ export class CostSourceClient {
     return this.client.estimateCost(req);
   }
 
-  async getRecommendations(req: GetRecommendationsRequest = new GetRecommendationsRequest()): Promise<GetRecommendationsResponse> {
+  async getRecommendations(req: GetRecommendationsRequest = create(GetRecommendationsRequestSchema)): Promise<GetRecommendationsResponse> {
     return this.client.getRecommendations(req);
   }
 
@@ -82,15 +92,15 @@ export class CostSourceClient {
     return this.client.dismissRecommendation(req);
   }
 
-  async getBudgets(req: GetBudgetsRequest = new GetBudgetsRequest()): Promise<GetBudgetsResponse> {
+  async getBudgets(req: GetBudgetsRequest = create(GetBudgetsRequestSchema)): Promise<GetBudgetsResponse> {
     return this.client.getBudgets(req);
   }
 
-  async getPluginInfo(req: GetPluginInfoRequest = new GetPluginInfoRequest()): Promise<GetPluginInfoResponse> {
+  async getPluginInfo(req: GetPluginInfoRequest = create(GetPluginInfoRequestSchema)): Promise<GetPluginInfoResponse> {
     return this.client.getPluginInfo(req);
   }
 
-  async dryRun(req: DryRunRequest = new DryRunRequest()): Promise<DryRunResponse> {
+  async dryRun(req: DryRunRequest = create(DryRunRequestSchema)): Promise<DryRunResponse> {
     return this.client.dryRun(req);
   }
 }

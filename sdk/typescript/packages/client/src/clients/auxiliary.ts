@@ -1,21 +1,38 @@
-import { createPromiseClient, PromiseClient, Transport } from "@connectrpc/connect";
+import { createClient, Client, Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { PluginRegistryService } from "../generated/finfocus/v1/registry_connect.js";
-import { ObservabilityService } from "../generated/finfocus/v1/costsource_connect.js";
-import { 
-    DiscoverPluginsRequest, DiscoverPluginsResponse,
-    GetPluginManifestRequest, GetPluginManifestResponse,
-    ValidatePluginRequest, ValidatePluginResponse,
-    InstallPluginRequest, InstallPluginResponse,
-    UpdatePluginRequest, UpdatePluginResponse,
-    RemovePluginRequest, RemovePluginResponse,
-    ListInstalledPluginsRequest, ListInstalledPluginsResponse,
-    CheckPluginHealthRequest, CheckPluginHealthResponse
+import { create } from "@bufbuild/protobuf";
+import {
+  PluginRegistryService,
+  DiscoverPluginsRequest,
+  DiscoverPluginsRequestSchema,
+  DiscoverPluginsResponse,
+  GetPluginManifestRequest,
+  GetPluginManifestResponse,
+  ValidatePluginRequest,
+  ValidatePluginResponse,
+  InstallPluginRequest,
+  InstallPluginResponse,
+  UpdatePluginRequest,
+  UpdatePluginResponse,
+  RemovePluginRequest,
+  RemovePluginResponse,
+  ListInstalledPluginsRequest,
+  ListInstalledPluginsRequestSchema,
+  ListInstalledPluginsResponse,
+  CheckPluginHealthRequest,
+  CheckPluginHealthResponse
 } from "../generated/finfocus/v1/registry_pb.js";
 import {
-    HealthCheckRequest, HealthCheckResponse,
-    GetMetricsRequest, GetMetricsResponse,
-    GetServiceLevelIndicatorsRequest, GetServiceLevelIndicatorsResponse
+  ObservabilityService,
+  HealthCheckRequest,
+  HealthCheckRequestSchema,
+  HealthCheckResponse,
+  GetMetricsRequest,
+  GetMetricsRequestSchema,
+  GetMetricsResponse,
+  GetServiceLevelIndicatorsRequest,
+  GetServiceLevelIndicatorsRequestSchema,
+  GetServiceLevelIndicatorsResponse
 } from "../generated/finfocus/v1/costsource_pb.js";
 
 export interface ClientConfig {
@@ -24,17 +41,17 @@ export interface ClientConfig {
 }
 
 export class RegistryClient {
-  private client: PromiseClient<typeof PluginRegistryService>;
+  private client: Client<typeof PluginRegistryService>;
 
   constructor(config: ClientConfig) {
     const transport = config.transport || createConnectTransport({
       baseUrl: config.baseUrl,
       useBinaryFormat: false,
     });
-    this.client = createPromiseClient(PluginRegistryService, transport);
+    this.client = createClient(PluginRegistryService, transport);
   }
 
-  async discoverPlugins(req: DiscoverPluginsRequest = new DiscoverPluginsRequest()): Promise<DiscoverPluginsResponse> {
+  async discoverPlugins(req: DiscoverPluginsRequest = create(DiscoverPluginsRequestSchema)): Promise<DiscoverPluginsResponse> {
     return this.client.discoverPlugins(req);
   }
 
@@ -58,7 +75,7 @@ export class RegistryClient {
       return this.client.removePlugin(req);
   }
 
-  async listInstalledPlugins(req: ListInstalledPluginsRequest = new ListInstalledPluginsRequest()): Promise<ListInstalledPluginsResponse> {
+  async listInstalledPlugins(req: ListInstalledPluginsRequest = create(ListInstalledPluginsRequestSchema)): Promise<ListInstalledPluginsResponse> {
       return this.client.listInstalledPlugins(req);
   }
 
@@ -68,25 +85,25 @@ export class RegistryClient {
 }
 
 export class ObservabilityClient {
-  private client: PromiseClient<typeof ObservabilityService>;
+  private client: Client<typeof ObservabilityService>;
 
   constructor(config: ClientConfig) {
     const transport = config.transport || createConnectTransport({
       baseUrl: config.baseUrl,
       useBinaryFormat: false,
     });
-    this.client = createPromiseClient(ObservabilityService, transport);
+    this.client = createClient(ObservabilityService, transport);
   }
 
-  async healthCheck(req: HealthCheckRequest = new HealthCheckRequest()): Promise<HealthCheckResponse> {
+  async healthCheck(req: HealthCheckRequest = create(HealthCheckRequestSchema)): Promise<HealthCheckResponse> {
       return this.client.healthCheck(req);
   }
 
-  async getMetrics(req: GetMetricsRequest = new GetMetricsRequest()): Promise<GetMetricsResponse> {
+  async getMetrics(req: GetMetricsRequest = create(GetMetricsRequestSchema)): Promise<GetMetricsResponse> {
       return this.client.getMetrics(req);
   }
 
-  async getServiceLevelIndicators(req: GetServiceLevelIndicatorsRequest = new GetServiceLevelIndicatorsRequest()): Promise<GetServiceLevelIndicatorsResponse> {
+  async getServiceLevelIndicators(req: GetServiceLevelIndicatorsRequest = create(GetServiceLevelIndicatorsRequestSchema)): Promise<GetServiceLevelIndicatorsResponse> {
       return this.client.getServiceLevelIndicators(req);
   }
 }

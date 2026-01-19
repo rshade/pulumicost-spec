@@ -1,12 +1,20 @@
-import { RecommendationFilter, RecommendationCategory, RecommendationSortBy, SortOrder } from "../generated/finfocus/v1/costsource_pb.js";
-import { RecommendationActionType, RecommendationPriority } from "../generated/finfocus/v1/enums_pb.js";
+import { create, clone } from "@bufbuild/protobuf";
+import {
+  RecommendationFilter,
+  RecommendationFilterSchema,
+  RecommendationCategory,
+  RecommendationSortBy,
+  SortOrder,
+  RecommendationActionType,
+  RecommendationPriority
+} from "../generated/finfocus/v1/costsource_pb.js";
 import { ValidationError } from "../errors/validation-error.js";
 
 export class RecommendationFilterBuilder {
   private filter: RecommendationFilter;
 
   constructor() {
-    this.filter = new RecommendationFilter();
+    this.filter = create(RecommendationFilterSchema);
   }
 
   forProvider(provider: string): this {
@@ -150,25 +158,6 @@ export class RecommendationFilterBuilder {
 
   build(): RecommendationFilter {
     // Create a copy to prevent mutation issues when reusing the builder
-    const copy = new RecommendationFilter();
-    copy.provider = this.filter.provider;
-    copy.region = this.filter.region;
-    copy.resourceType = this.filter.resourceType;
-    copy.actionType = this.filter.actionType;
-    copy.priority = this.filter.priority;
-    copy.minEstimatedSavings = this.filter.minEstimatedSavings;
-    copy.category = this.filter.category;
-    copy.sku = this.filter.sku;
-    for (const [key, value] of Object.entries(this.filter.tags)) {
-      copy.tags[key] = value;
-    }
-    copy.source = this.filter.source;
-    copy.accountId = this.filter.accountId;
-    copy.sortBy = this.filter.sortBy;
-    copy.sortOrder = this.filter.sortOrder;
-    copy.minConfidenceScore = this.filter.minConfidenceScore;
-    copy.maxAgeDays = this.filter.maxAgeDays;
-    copy.resourceId = this.filter.resourceId;
-    return copy;
+    return clone(RecommendationFilterSchema, this.filter);
   }
 }

@@ -10,54 +10,53 @@ export const handlers = [
 
   http.post('https://plugin-aws.example.com/finfocus.v1.CostSourceService/Supports', () => {
     return HttpResponse.json({
-      billingModes: ["FLAT", "HOURLY", "MONTHLY"],
-      providers: ["AWS"]
+      supported: true,
+      reason: "",
+      capabilities: { "recommendations": true, "dry_run": true },
+      supportedMetrics: [],
+      capabilitiesEnum: [4, 5] // PLUGIN_CAPABILITY_RECOMMENDATIONS, PLUGIN_CAPABILITY_DRY_RUN
     });
   }),
 
   http.post('https://plugin-aws.example.com/finfocus.v1.CostSourceService/GetActualCost', () => {
     return HttpResponse.json({
-      total: {
-        units: "100",
-        nanos: 0,
-        currencyCode: "USD"
-      },
-      lineItems: []
+      results: [
+        {
+          cost: 100.0,
+          usageAmount: 720,
+          usageUnit: "hours",
+          source: "AWS Cost Explorer"
+        }
+      ],
+      fallbackHint: 1 // FALLBACK_HINT_NONE
     });
   }),
 
   http.post('https://plugin-aws.example.com/finfocus.v1.CostSourceService/GetProjectedCost', () => {
     return HttpResponse.json({
-      total: {
-        units: "150",
-        nanos: 0,
-        currencyCode: "USD"
-      },
-      lineItems: []
+      unitPrice: 0.10,
+      currency: "USD",
+      costPerMonth: 150.0,
+      billingDetail: "On-demand pricing"
     });
   }),
 
   http.post('https://plugin-aws.example.com/finfocus.v1.CostSourceService/GetPricingSpec', () => {
     return HttpResponse.json({
-      pricingSpec: {
+      spec: {
         provider: "AWS",
         resourceType: "ec2.instance",
         billingMode: "HOURLY",
-        ratePerUnit: {
-          units: "10",
-          currencyCode: "USD"
-        }
+        ratePerUnit: 0.10,
+        currency: "USD"
       }
     });
   }),
 
   http.post('https://plugin-aws.example.com/finfocus.v1.CostSourceService/EstimateCost', () => {
     return HttpResponse.json({
-      estimatedCost: {
-        units: "200",
-        nanos: 0,
-        currencyCode: "USD"
-      }
+      currency: "USD",
+      costMonthly: 200.0
     });
   }),
 
@@ -66,15 +65,15 @@ export const handlers = [
       recommendations: [
         {
           id: "rec-1",
-          title: "Downsize Instance",
-          category: "RESOURCE_SIZING",
-          actionType: "DOWNSIZE",
-          estimatedSavings: {
-            units: "50",
-            nanos: 0,
-            currencyCode: "USD"
+          description: "Downsize Instance to save costs",
+          category: 1, // RECOMMENDATION_CATEGORY_COST
+          actionType: 1, // RECOMMENDATION_ACTION_TYPE_RIGHTSIZE
+          impact: {
+            estimatedSavings: 50.0,
+            currency: "USD",
+            projectionPeriod: "monthly"
           },
-          priority: "HIGH"
+          priority: 3 // RECOMMENDATION_PRIORITY_HIGH
         }
       ],
       nextPageToken: ""
@@ -93,15 +92,17 @@ export const handlers = [
         {
           id: "budget-1",
           name: "Monthly Budget",
-          limit: {
-            units: "1000",
-            nanos: 0,
-            currencyCode: "USD"
+          source: "aws-budgets",
+          amount: {
+            limit: 1000.0,
+            currency: "USD"
           },
-          currentSpend: {
-            units: "750",
-            nanos: 0,
-            currencyCode: "USD"
+          period: 3, // BUDGET_PERIOD_MONTHLY
+          status: {
+            currentSpend: 750.0,
+            percentageUsed: 75.0,
+            currency: "USD",
+            health: 1 // BUDGET_HEALTH_STATUS_OK
           }
         }
       ]
@@ -112,7 +113,8 @@ export const handlers = [
     return HttpResponse.json({
       name: "AWS Cost Plugin",
       version: "1.0.0",
-      specVersion: "v1"
+      specVersion: "v1",
+      providers: ["aws"]
     });
   }),
 
@@ -127,7 +129,8 @@ export const handlers = [
   // ObservabilityService endpoints
   http.post('https://plugin-aws.example.com/finfocus.v1.ObservabilityService/HealthCheck', () => {
     return HttpResponse.json({
-      status: "HEALTHY"
+      status: 1, // HealthCheckResponse.Status.SERVING
+      message: "Plugin is healthy"
     });
   }),
 
@@ -139,7 +142,7 @@ export const handlers = [
 
   http.post('https://plugin-aws.example.com/finfocus.v1.ObservabilityService/GetServiceLevelIndicators', () => {
     return HttpResponse.json({
-      indicators: []
+      slis: []
     });
   }),
 

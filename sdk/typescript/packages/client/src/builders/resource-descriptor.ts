@@ -1,11 +1,12 @@
-import { ResourceDescriptor } from "../generated/finfocus/v1/costsource_pb.js";
+import { create, clone } from "@bufbuild/protobuf";
+import { ResourceDescriptor, ResourceDescriptorSchema } from "../generated/finfocus/v1/costsource_pb.js";
 import { ValidationError } from "../errors/validation-error.js";
 
 export class ResourceDescriptorBuilder {
   private descriptor: ResourceDescriptor;
 
   constructor() {
-    this.descriptor = new ResourceDescriptor();
+    this.descriptor = create(ResourceDescriptorSchema);
   }
 
   withProvider(provider: string): this {
@@ -63,17 +64,6 @@ export class ResourceDescriptorBuilder {
 
   build(): ResourceDescriptor {
     // Create a copy to prevent mutation issues when reusing the builder
-    const copy = new ResourceDescriptor();
-    copy.provider = this.descriptor.provider;
-    copy.resourceType = this.descriptor.resourceType;
-    copy.region = this.descriptor.region;
-    copy.sku = this.descriptor.sku;
-    copy.id = this.descriptor.id;
-    copy.arn = this.descriptor.arn;
-    // Deep copy tags to prevent mutation
-    if (this.descriptor.tags) {
-      copy.tags = { ...this.descriptor.tags };
-    }
-    return copy;
+    return clone(ResourceDescriptorSchema, this.descriptor);
   }
 }
