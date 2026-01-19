@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3](https://github.com/rshade/finfocus-spec/compare/v0.5.2...v0.5.3) (2026-01-19)
+
+
+### Added
+
+* **ci:** implement automated typescript sdk publishing ([#312](https://github.com/rshade/finfocus-spec/issues/312)) ([a12d218](https://github.com/rshade/finfocus-spec/commit/a12d21815c3daa3dafe6cd2db259c230bb34a89f)), closes [#311](https://github.com/rshade/finfocus-spec/issues/311)
+* **sdk:** polish capability discovery and optimize performance ([#310](https://github.com/rshade/finfocus-spec/issues/310)) ([f74c8c4](https://github.com/rshade/finfocus-spec/commit/f74c8c4d59b2801ca831ed95e9cc5bf15865b1f4)), closes [#294](https://github.com/rshade/finfocus-spec/issues/294) [#295](https://github.com/rshade/finfocus-spec/issues/295) [#299](https://github.com/rshade/finfocus-spec/issues/299) [#300](https://github.com/rshade/finfocus-spec/issues/300) [#301](https://github.com/rshade/finfocus-spec/issues/301) [#208](https://github.com/rshade/finfocus-spec/issues/208) [#209](https://github.com/rshade/finfocus-spec/issues/209)
+
+
+### Fixed
+
+* **pluginsdk:** improve capability discovery robustness ([#306](https://github.com/rshade/finfocus-spec/issues/306)) ([873201e](https://github.com/rshade/finfocus-spec/commit/873201eee932ef219efaaadbeca9a92f87e6015c)), closes [#296](https://github.com/rshade/finfocus-spec/issues/296) [#297](https://github.com/rshade/finfocus-spec/issues/297)
+
 ## [0.5.2](https://github.com/rshade/finfocus-spec/compare/v0.5.1...v0.5.2) (2026-01-18)
 
 
