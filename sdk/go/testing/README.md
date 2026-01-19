@@ -1031,6 +1031,15 @@ test-all: test-integration test-conformance test-performance
 
 ## Resource Identifier Fields
 
+> **Import Note**: Examples in this section use the following import aliases:
+>
+> ```go
+> import (
+>     pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+>     "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+> )
+> ```
+
 The `ResourceDescriptor` message supports two optional fields for resource identification:
 
 ### ID Field (Batch Correlation)
@@ -1040,8 +1049,6 @@ multiple resources for recommendations, they can assign unique IDs to each resou
 those IDs to match responses back to their original requests.
 
 ```go
-import "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
-
 // Create descriptors with unique IDs for batch correlation
 descriptors := []*pbc.ResourceDescriptor{
     pluginsdk.NewResourceDescriptor(

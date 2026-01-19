@@ -1288,26 +1288,34 @@ func TestGetPluginInfo_BackwardCompatibility_CapabilitiesEnumAndStringMap(t *tes
 
 	// Verify legacy string map is present in metadata for backward compatibility
 	require.NotNil(t, resp.GetMetadata(), "metadata should not be nil")
-	assert.Equal(t, "true", resp.GetMetadata()["projected_costs"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_projected_costs"],
 		"legacy projected_costs should be 'true' in metadata")
-	assert.Equal(t, "true", resp.GetMetadata()["actual_costs"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_actual_costs"],
 		"legacy actual_costs should be 'true' in metadata")
-	assert.Equal(t, "true", resp.GetMetadata()["pricing_spec"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_pricing_spec"],
 		"legacy pricing_spec should be 'true' in metadata")
-	assert.Equal(t, "true", resp.GetMetadata()["estimate_cost"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_estimate_cost"],
 		"legacy estimate_cost should be 'true' in metadata")
-	assert.Equal(t, "true", resp.GetMetadata()["recommendations"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_recommendations"],
 		"legacy recommendations should be 'true' in metadata")
-	assert.Equal(t, "true", resp.GetMetadata()["dismiss_recommendations"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_dismiss_recommendations"],
 		"legacy dismiss_recommendations should be 'true' in metadata")
-	assert.Equal(t, "true", resp.GetMetadata()["dry_run"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_dry_run"],
 		"legacy dry_run should be 'true' in metadata")
-	assert.Equal(t, "true", resp.GetMetadata()["budgets"],
+	assert.Equal(t, "true", resp.GetMetadata()["supports_budgets"],
 		"legacy budgets should be 'true' in metadata")
 
 	// Verify all expected keys are present in legacy metadata
-	expectedKeys := []string{"projected_costs", "actual_costs", "pricing_spec", "estimate_cost",
-		"recommendations", "dismiss_recommendations", "dry_run", "budgets"}
+	expectedKeys := []string{
+		"supports_projected_costs",
+		"supports_actual_costs",
+		"supports_pricing_spec",
+		"supports_estimate_cost",
+		"supports_recommendations",
+		"supports_dismiss_recommendations",
+		"supports_dry_run",
+		"supports_budgets",
+	}
 	for _, key := range expectedKeys {
 		assert.Contains(t, resp.GetMetadata(), key, "metadata should contain expected legacy capability key: %s", key)
 	}
@@ -1335,11 +1343,11 @@ func TestGetPluginInfo_BackwardCompatibility_CapabilitiesEnumAndStringMap(t *tes
 		"explicitly set capabilities should be returned")
 
 	// Verify legacy metadata reflects only the explicitly set capabilities
-	assert.Equal(t, "true", explicitResp.GetMetadata()["projected_costs"], "projected_costs should be 'true'")
-	assert.Equal(t, "true", explicitResp.GetMetadata()["actual_costs"], "actual_costs should be 'true'")
-	assert.NotContains(t, explicitResp.GetMetadata(), "recommendations",
+	assert.Equal(t, "true", explicitResp.GetMetadata()["supports_projected_costs"], "projected_costs should be 'true'")
+	assert.Equal(t, "true", explicitResp.GetMetadata()["supports_actual_costs"], "actual_costs should be 'true'")
+	assert.NotContains(t, explicitResp.GetMetadata(), "supports_recommendations",
 		"recommendations should not be present (not explicitly set)")
-	assert.NotContains(t, explicitResp.GetMetadata(), "budgets",
+	assert.NotContains(t, explicitResp.GetMetadata(), "supports_budgets",
 		"budgets should not be present (not explicitly set)")
 }
 
@@ -1386,12 +1394,23 @@ func TestSupports_AutoDiscovery(t *testing.T) {
 
 	// Verify legacy string map is present in SupportsResponse for backward compatibility
 	require.NotNil(t, resp.GetCapabilities(), "capabilities map should not be nil")
-	assert.True(t, resp.GetCapabilities()["projected_costs"], "legacy projected_costs should be true")
-	assert.True(t, resp.GetCapabilities()["actual_costs"], "legacy actual_costs should be true")
-	assert.True(t, resp.GetCapabilities()["pricing_spec"], "legacy pricing_spec should be true")
-	assert.True(t, resp.GetCapabilities()["estimate_cost"], "legacy estimate_cost should be true")
-	assert.True(t, resp.GetCapabilities()["recommendations"], "legacy recommendations should be true")
-	assert.True(t, resp.GetCapabilities()["dismiss_recommendations"], "legacy dismiss_recommendations should be true")
-	assert.True(t, resp.GetCapabilities()["dry_run"], "legacy dry_run should be true")
-	assert.True(t, resp.GetCapabilities()["budgets"], "legacy budgets should be true")
+	assert.True(t, resp.GetCapabilities()["supports_projected_costs"],
+		"legacy projected_costs should be true")
+	assert.True(t, resp.GetCapabilities()["supports_actual_costs"],
+		"legacy actual_costs should be true")
+	assert.True(t, resp.GetCapabilities()["supports_pricing_spec"],
+		"legacy pricing_spec should be true")
+	assert.True(t, resp.GetCapabilities()["supports_estimate_cost"],
+		"legacy estimate_cost should be true")
+	assert.True(t, resp.GetCapabilities()["supports_recommendations"],
+		"legacy recommendations should be true")
+	assert.True(
+		t,
+		resp.GetCapabilities()["supports_dismiss_recommendations"],
+		"legacy dismiss_recommendations should be true",
+	)
+	assert.True(t, resp.GetCapabilities()["supports_dry_run"],
+		"legacy dry_run should be true")
+	assert.True(t, resp.GetCapabilities()["supports_budgets"],
+		"legacy budgets should be true")
 }

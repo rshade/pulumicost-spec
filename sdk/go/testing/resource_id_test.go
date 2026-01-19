@@ -357,9 +357,10 @@ func TestResourceDescriptor_LongID(t *testing.T) {
 // Goal: Verify existing plugins and clients continue to work without modification
 // =============================================================================
 
-// TestResourceDescriptor_OldClientSimulation tests that requests without
-// id/arn fields work correctly (simulating old clients).
-func TestResourceDescriptor_OldClientSimulation(t *testing.T) {
+// TestResourceDescriptor_RoundTripDefaulting tests that new fields (id, arn) default
+// correctly when unmarshaling from data that doesn't include them.
+// This simulates the behavior when an older client sends a message without new fields.
+func TestResourceDescriptor_RoundTripDefaulting(t *testing.T) {
 	t.Parallel()
 
 	// Simulate an old client sending a request without id/arn fields
@@ -431,9 +432,11 @@ func TestResourceDescriptor_EmptyDefaults(t *testing.T) {
 	}
 }
 
-// TestResourceDescriptor_NewClientOldServer simulates a new client sending
-// a request with id/arn to an old server (proto3 behavior: unknown fields ignored).
-func TestResourceDescriptor_NewClientOldServer(t *testing.T) {
+// TestResourceDescriptor_RoundTripCompatibility tests that new fields survive
+// a marshal/unmarshal round-trip through the current generated type.
+// This approximates proto3 unknown-field handling behavior rather than
+// literally testing against an older generated type.
+func TestResourceDescriptor_RoundTripCompatibility(t *testing.T) {
 	t.Parallel()
 
 	// New client sends descriptor with new fields

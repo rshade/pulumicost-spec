@@ -89,8 +89,7 @@ func WithSpecVersion(specVersion string) PluginInfoOption {
 func WithProviders(providers ...string) PluginInfoOption {
 	return func(info *PluginInfo) {
 		// Defensive copy to prevent aliasing issues
-		info.Providers = make([]string, len(providers))
-		copy(info.Providers, providers)
+		info.Providers = append([]string{}, providers...)
 	}
 }
 
@@ -142,8 +141,7 @@ func WithMetadataMap(metadata map[string]string) PluginInfoOption {
 func WithCapabilities(capabilities ...pbc.PluginCapability) PluginInfoOption {
 	return func(info *PluginInfo) {
 		// Defensive copy to prevent aliasing issues
-		info.Capabilities = make([]pbc.PluginCapability, len(capabilities))
-		copy(info.Capabilities, capabilities)
+		info.Capabilities = append([]pbc.PluginCapability{}, capabilities...)
 	}
 }
 
@@ -297,79 +295,4 @@ func inferCapabilities(plugin Plugin) []pbc.PluginCapability {
 	}
 
 	return capabilities
-}
-
-// legacyCapabilityMap provides backward compatibility by mapping PluginCapability
-// enums to the legacy string-based capability keys used in metadata.
-//
-// This maintains compatibility with clients that expect the old string-based
-// capability reporting while the new enum-based approach is adopted.
-//
-// PLUGIN_CAPABILITY_UNSPECIFIED (value 0) is intentionally excluded from this map.
-// It is the protobuf default/zero value and should never be used as an actual capability.
-//
-//nolint:exhaustive,gochecknoglobals // UNSPECIFIED intentionally excluded from legacy mapping
-var legacyCapabilityMap = map[pbc.PluginCapability]string{
-	pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS:         "projected_costs",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS:            "actual_costs",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC:            "pricing_spec",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST:           "estimate_cost",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON:                  "carbon",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS:         "recommendations",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS: "dismiss_recommendations",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN:                 "dry_run",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS:                 "budgets",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_ENERGY:                  "energy",
-	pbc.PluginCapability_PLUGIN_CAPABILITY_WATER:                   "water",
-}
-
-// HasLegacyCapabilityMapping checks if a capability has a legacy string mapping.
-// This is used by tests to verify legacyCapabilityMap completeness.
-func HasLegacyCapabilityMapping(capability pbc.PluginCapability) bool {
-	_, exists := legacyCapabilityMap[capability]
-	return exists
-}
-
-// CapabilityConversionWarning describes a capability that couldn't be mapped to legacy format.
-type CapabilityConversionWarning struct {
-	Capability pbc.PluginCapability
-	Reason     string
-}
-
-// capabilitiesToLegacyMetadataWithWarnings converts capabilities to legacy format
-// and returns both the metadata map and any warnings about unmapped capabilities.
-// This allows callers to log warnings appropriately.
-//
-// Warnings are returned (not logged) to:
-//  1. Allow callers to decide logging level and format.
-//  2. Support testing without log inspection.
-//  3. Avoid circular dependencies between plugin_info.go and logging utilities.
-func capabilitiesToLegacyMetadataWithWarnings(capabilities []pbc.PluginCapability) (
-	map[string]bool, []CapabilityConversionWarning,
-) {
-	if len(capabilities) == 0 {
-		return nil, nil
-	}
-
-	metadata := make(map[string]bool, len(capabilities))
-	var warnings []CapabilityConversionWarning
-
-	for _, cap := range capabilities {
-		if key, exists := legacyCapabilityMap[cap]; exists {
-			metadata[key] = true
-		} else if cap != pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED {
-			// Capability has no legacy mapping - this indicates either:
-			// 1. An invalid enum value (outside valid range)
-			// 2. A new capability not yet added to legacyCapabilityMap
-			reason := "capability has no legacy metadata mapping"
-			if !IsValidCapability(cap) {
-				reason = "invalid capability enum value (outside valid range)"
-			}
-			warnings = append(warnings, CapabilityConversionWarning{
-				Capability: cap,
-				Reason:     reason,
-			})
-		}
-	}
-	return metadata, warnings
 }

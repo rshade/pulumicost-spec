@@ -631,13 +631,62 @@ client := pluginsdk.NewClient(pluginsdk.ClientConfig{
 })
 ```
 
+## Capability Discovery
+
+The SDK automatically discovers capabilities by checking which interfaces your plugin implements.
+This simplifies configuration and ensures metadata matches implementation.
+
+### Automatic Discovery
+
+Simply implement the standard interfaces:
+
+| Interface                 | Required Method         | Capability Enum                             |
+| ------------------------- | ----------------------- | ------------------------------------------- |
+| `DryRunHandler`           | `HandleDryRun`          | `PLUGIN_CAPABILITY_DRY_RUN`                 |
+| `RecommendationsProvider` | `GetRecommendations`    | `PLUGIN_CAPABILITY_RECOMMENDATIONS`         |
+| `BudgetsProvider`         | `GetBudgets`            | `PLUGIN_CAPABILITY_BUDGETS`                 |
+| `DismissProvider`         | `DismissRecommendation` | `PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS` |
+
+```go
+// Example: Implementing DryRunHandler
+func (p *MyPlugin) HandleDryRun(req *pbc.DryRunRequest) (*pbc.DryRunResponse, error) {
+    // ...
+    return &pbc.DryRunResponse{}, nil
+}
+
+func main() {
+    // PLUGIN_CAPABILITY_DRY_RUN is automatically added to capabilities
+    info := pluginsdk.NewPluginInfo("my-plugin", "v1.0.0")
+    pluginsdk.Serve(context.Background(), pluginsdk.ServeConfig{
+        Plugin: &MyPlugin{},
+        PluginInfo: info,
+    })
+}
+```
+
+### Manual Override
+
+To override auto-discovery (e.g., to disable a feature or when using a proxy), use `WithCapabilities()`:
+
+```go
+info := pluginsdk.NewPluginInfo("my-plugin", "v1.0.0",
+    // Explicitly set capabilities (ignores interfaces)
+    pluginsdk.WithCapabilities(
+        pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN,
+    ),
+)
+```
+
+**Backward Compatibility**: The SDK automatically populates the legacy `metadata` map
+(e.g., `"supports_dry_run": "true"`) derived from your capabilities to support older hosts.
+
 ## Environment Variables
 
 Plugins can be configured using standard environment variables. The SDK provides backward compatibility
 for legacy environment variables during the migration from PulumiCost to FinFocus.
 
-| Variable                 | Legacy Fallback           | Purpose                                          | Default       |
-| ------------------------ | ------------------------- | ------------------------------------------------ | ------------- |
+| Variable               | Legacy Fallback          | Purpose                                          | Default       |
+| ---------------------- | ------------------------ | ------------------------------------------------ | ------------- |
 | `FINFOCUS_PLUGIN_PORT` | `PULUMICOST_PLUGIN_PORT` | gRPC server port (overridden by `--port`)        | Ephemeral (0) |
 | `FINFOCUS_LOG_LEVEL`   | `PULUMICOST_LOG_LEVEL`   | Log verbosity (`debug`, `info`, `warn`, `error`) | `info`        |
 | `FINFOCUS_LOG_FORMAT`  | `PULUMICOST_LOG_FORMAT`  | Log output format (`json`, `text`)               | `json`        |
@@ -821,8 +870,8 @@ logger := pluginsdk.NewPluginLogger(
 
 **Behavior**:
 
-| Scenario                               | Result                                                     |
-| -------------------------------------- | ---------------------------------------------------------- |
+| Scenario                             | Result                                                     |
+| ------------------------------------ | ---------------------------------------------------------- |
 | `FINFOCUS_LOG_FILE` not set          | Returns `os.Stderr`                                        |
 | `FINFOCUS_LOG_FILE=""` (empty)       | Returns `os.Stderr`                                        |
 | `FINFOCUS_LOG_FILE=/valid/path.log`  | Returns file writer (creates if needed, appends if exists) |
@@ -949,8 +998,8 @@ http.Handle("/metrics", promhttp.HandlerFor(
 
 ### Available Metrics
 
-| Metric                                       | Type      | Labels                                    | Description                  |
-| -------------------------------------------- | --------- | ----------------------------------------- | ---------------------------- |
+| Metric                                     | Type      | Labels                                    | Description                  |
+| ------------------------------------------ | --------- | ----------------------------------------- | ---------------------------- |
 | `finfocus_plugin_requests_total`           | Counter   | `grpc_method`, `grpc_code`, `plugin_name` | Total gRPC requests          |
 | `finfocus_plugin_request_duration_seconds` | Histogram | `grpc_method`, `plugin_name`              | Request latency distribution |
 
@@ -992,12 +1041,12 @@ For handlers with typical work (1ms+), the metrics overhead is under 1% of total
 
 ### Metrics Constants
 
-| Constant             | Value        | Description          |
-| -------------------- | ------------ | -------------------- |
+| Constant             | Value      | Description          |
+| -------------------- | ---------- | -------------------- |
 | `MetricNamespace`    | `finfocus` | Prometheus namespace |
-| `MetricSubsystem`    | `plugin`     | Prometheus subsystem |
-| `DefaultMetricsPort` | `9090`       | Default HTTP port    |
-| `DefaultMetricsPath` | `/metrics`   | Default URL path     |
+| `MetricSubsystem`    | `plugin`   | Prometheus subsystem |
+| `DefaultMetricsPort` | `9090`     | Default HTTP port    |
+| `DefaultMetricsPath` | `/metrics` | Default URL path     |
 
 ## Testing Utilities
 

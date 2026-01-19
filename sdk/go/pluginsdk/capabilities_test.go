@@ -97,8 +97,8 @@ func TestGetPluginInfo_AutoDiscovery(t *testing.T) {
 
 	// Verify Legacy Metadata - all 4 optional interfaces
 	meta := resp.GetMetadata()
-	assert.Equal(t, "true", meta["recommendations"])
-	assert.Equal(t, "true", meta["budgets"])
-	assert.Equal(t, "true", meta["dismiss_recommendations"])
-	assert.Equal(t, "true", meta["dry_run"])
+	assert.Equal(t, "true", meta["supports_recommendations"])
+	assert.Equal(t, "true", meta["supports_budgets"])
+	assert.Equal(t, "true", meta["supports_dismiss_recommendations"])
+	assert.Equal(t, "true", meta["supports_dry_run"])
 }

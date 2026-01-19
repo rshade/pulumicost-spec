@@ -134,11 +134,9 @@ export type SupportsResponse = Message<"finfocus.v1.SupportsResponse"> & {
 
   /**
    * capabilities declares optional capabilities the plugin supports.
-   * Standard capability keys:
-   *   - "recommendations": Plugin supports GetRecommendations RPC
-   *   - "dry_run": Plugin supports DryRun RPC and dry_run flag on cost RPCs
-   *   - "budgets": Plugin supports GetBudgets RPC
+   * Legacy capability format using boolean map.
    * Example: {"recommendations": true, "dry_run": true}
+   * DEPRECATION: Use capabilities_enum for new integrations.
    *
    * @generated from field: map<string, bool> capabilities = 3;
    */
@@ -153,7 +151,8 @@ export type SupportsResponse = Message<"finfocus.v1.SupportsResponse"> & {
 
   /**
    * capabilities_enum declares optional capabilities using strongly-typed enums.
-   * This field is automatically populated by the SDK based on implemented interfaces.
+   * Modern capability format using strongly-typed enums.
+   * Auto-populated by SDK based on implemented interfaces.
    *
    * @generated from field: repeated finfocus.v1.PluginCapability capabilities_enum = 5;
    */
@@ -2716,7 +2715,10 @@ export type GetPluginInfoResponse = Message<"finfocus.v1.GetPluginInfoResponse">
   /**
    * metadata contains optional key-value pairs for additional information
    * such as build hash, commit ID, or plugin-specific configuration.
-   * Free-form; no key restrictions or size limits enforced by SDK.
+   * Legacy metadata format for backward compatibility with older hosts.
+   * Contains string-based capability flags: {"supports_xyz": "true"}.
+   * SDK auto-populates this from capabilities for backward compatibility.
+   * DEPRECATION: New integrations should use capabilities field instead.
    *
    * @generated from field: map<string, string> metadata = 5;
    */
@@ -2724,6 +2726,9 @@ export type GetPluginInfoResponse = Message<"finfocus.v1.GetPluginInfoResponse">
 
   /**
    * Explicit capability declarations using type-safe enum
+   * Modern capability format using strongly-typed enums.
+   * Prefer this field for capability queries on newer clients.
+   * SDK auto-populates this based on implemented interfaces.
    *
    * @generated from field: repeated finfocus.v1.PluginCapability capabilities = 6;
    */
