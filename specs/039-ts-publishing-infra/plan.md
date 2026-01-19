@@ -37,12 +37,12 @@ Packages. This transforms the SDK from a source-only artifact into a consumable 
 
 ## Constitution Check
 
-| Principle | Compliance | Notes |
-| :--- | :--- | :--- |
-| **III. Spec Consumes, It Does Not Calculate** | N/A | Infrastructure task. |
-| **IV. Separation of Concerns** | ✅ | Creating a dedicated publishing pipeline separate from the Go SDK/Spec. |
-| **VII. Documentation & Identity** | ✅ | Scoping the package to `@rshade` establishes clear identity. |
-| **XIII. Multi-Language SDK Synchronization** | ✅ | This infrastructure ensures the TS SDK is versioned and distributed, supporting synchronization. |
+| Principle                                     | Compliance | Notes                                                                                            |
+| :-------------------------------------------- | :--------- | :----------------------------------------------------------------------------------------------- |
+| **III. Spec Consumes, It Does Not Calculate** | N/A        | Infrastructure task.                                                                             |
+| **IV. Separation of Concerns**                | ✅         | Creating a dedicated publishing pipeline separate from the Go SDK/Spec.                          |
+| **VII. Documentation & Identity**             | ✅         | Scoping the package to `@rshade` establishes clear identity.                                     |
+| **XIII. Multi-Language SDK Synchronization**  | ✅         | This infrastructure ensures the TS SDK is versioned and distributed, supporting synchronization. |
 
 ## Phased Implementation
 

@@ -29,7 +29,7 @@
 (verifies local build with new name)
 
 - [x] T008 [US1] Verify `sdk/typescript/packages/client/package.json` has correct name and
-  publishConfig
+      publishConfig
 - [x] T009 [US1] Verify `npm run build` works with the new package name locally
 
 ## Phase 4: Automated Release Pipeline (US2)
@@ -39,10 +39,10 @@
 **Independent Test**: Lint workflow file (visual inspection or tools).
 
 - [x] T010 [US2] Create `.github/workflows/publish-ts-client.yml` workflow file with Apache 2.0
-  license header
+      license header
 - [x] T011 [US2] Configure workflow trigger on `release` event (published)
 - [x] T012 [US2] Add job steps: checkout, setup-node, install, build, publish (using workspace
-  flags or navigation)
+      flags or navigation)
 - [x] T013 [US2] Configure token permissions in workflow file
 
 ## Phase 5: Independent Versioning (US3)
@@ -52,7 +52,7 @@
 **Independent Test**: Review `release-please-config.json` structure.
 
 - [x] T014 [US3] Verify `release-please-config.json` has separate entry for
-  `sdk/typescript/packages/client`
+      `sdk/typescript/packages/client`
 - [x] T015 [US3] Verify correct release type (`node`) is set for the SDK package
 
 ## Phase 6: Polish & Verification
