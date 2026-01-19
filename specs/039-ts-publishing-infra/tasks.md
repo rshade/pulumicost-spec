@@ -36,7 +36,7 @@
 
 **Goal**: Implement the CI/CD workflow for automated publishing.
 
-**Independent Test**: Lint workflow file (visual inspection or tools).
+Independent Test: Lint workflow file (visual inspection or tools).
 
 - [x] T010 [US2] Create `.github/workflows/publish-ts-client.yml` workflow file with Apache 2.0
       license header
@@ -49,7 +49,7 @@
 
 **Goal**: Ensure independent versioning for the TS SDK.
 
-**Independent Test**: Review `release-please-config.json` structure.
+Independent Test: Review `release-please-config.json` structure.
 
 - [x] T014 [US3] Verify `release-please-config.json` has separate entry for
       `sdk/typescript/packages/client`

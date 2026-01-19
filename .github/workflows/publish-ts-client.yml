@@ -18,33 +18,138 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g., finfocus-client-v0.1.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: publish-ts-client-${{ github.event.release.tag_name || inputs.tag || github.run_id }}
+  cancel-in-progress: false
 
 permissions:
+  # Read access to checkout code at the specific tag
   contents: read
+  # Write access required to publish to GitHub Packages registry
   packages: write
+  # Write access required to create issues on failure
+  issues: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Only run for TypeScript SDK releases (finfocus-client-vX.X.X tags)
+    if: >-
+      (github.event_name == 'workflow_dispatch' &&
+        startsWith(inputs.tag, 'finfocus-client-v')) ||
+      (github.event_name == 'release' &&
+        github.event.release.draft == false &&
+        startsWith(github.event.release.tag_name, 'finfocus-client-v'))
     steps:
+      - name: Validate and determine tag
+        id: determine_tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            TAG="$INPUT_TAG"
+
+            # Check tag exists remotely
+            if ! git ls-remote --tags "https://github.com/$REPO" "$TAG" | grep -q "$TAG"; then
+              echo "::error::Tag '$TAG' does not exist in repository"
+              exit 1
+            fi
+          else
+            TAG="$RELEASE_TAG"
+          fi
+
+          # Validate tag format
+          if [[ ! "$TAG" =~ ^finfocus-client-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '$TAG' does not match required pattern finfocus-client-vX.Y.Z"
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "::notice::Publishing tag: $TAG"
+
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.determine_tag.outputs.tag }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@rshade'
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@rshade"
+          cache: 'npm'
+          cache-dependency-path: 'sdk/typescript/package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          set -euo pipefail
+          npm ci
         working-directory: sdk/typescript
 
       - name: Build client package
-        run: npm run build -w packages/client
+        run: |
+          set -euo pipefail
+          npm run build -w packages/client
         working-directory: sdk/typescript
 
       - name: Publish to GitHub Packages
-        run: npm publish -w packages/client
+        run: |
+          set -euo pipefail
+          npm publish -w packages/client
         working-directory: sdk/typescript
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify package published successfully
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./packages/client/package.json').version")
+          echo "::notice::Verifying @rshade/finfocus-client@$VERSION is available..."
+
+          # Wait for registry to update
+          sleep 10
+
+          if ! npm view "@rshade/finfocus-client@$VERSION" version 2>/dev/null; then
+            echo "::warning::Package verification could not confirm publication (may need more time)"
+          else
+            echo "::notice::Successfully verified @rshade/finfocus-client@$VERSION"
+          fi
+        working-directory: sdk/typescript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.payload.release?.tag_name || context.payload.inputs?.tag
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            const eventType = context.eventName
+
+            const body = [
+              `The publish workflow failed for tag \`${tag}\``,
+              `(triggered via ${eventType}).`,
+              '',
+              `**View logs:** ${url}`,
+              '',
+              '**Action Required**: Investigate and retry manually if needed.'
+            ].join('\n');
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[ALERT] TypeScript SDK publish failed for ${tag}`,
+              body: body,
+              labels: ['automation', 'typescript-sdk', 'failure']
+            });
