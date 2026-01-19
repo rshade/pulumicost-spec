@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
@@ -581,6 +582,98 @@ func TestGetPluginInfoCapabilitiesWithUnspecified(t *testing.T) {
 		"PROJECTED_COSTS should be in legacy metadata")
 }
 
+// TestGetPluginInfoCapabilitiesInvalidEnumValue verifies that invalid enum values
+// (undefined capability integers) are handled gracefully without panicking.
+// This tests robustness against malformed capability configurations.
+func TestGetPluginInfoCapabilitiesInvalidEnumValue(t *testing.T) {
+	testPlugin := &conformanceMockPlugin{
+		name: "invalid-enum-test-plugin",
+	}
+
+	// Create capability with invalid enum value (999 is not a defined PluginCapability)
+	invalidCapability := pbc.PluginCapability(999)
+	pluginInfo := NewPluginInfo("invalid-enum-test-plugin", "v1.0.0",
+		WithCapabilities(
+			invalidCapability,
+			pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		))
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	// Should not panic - handle gracefully
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err, "GetPluginInfo should not error on invalid enum values")
+	require.NotNil(t, resp)
+
+	// Both capabilities should be in the response (enum slice is passed through)
+	caps := resp.GetCapabilities()
+	assert.Contains(t, caps, invalidCapability,
+		"Invalid enum value should be passed through in capabilities")
+	assert.Contains(t, caps, pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		"Valid capability should be present")
+
+	// Invalid enum should NOT appear in legacy metadata (no mapping exists)
+	metadata := resp.GetMetadata()
+	assert.Equal(t, "true", metadata["projected_costs"],
+		"Valid capability should appear in legacy metadata")
+	// The invalid value (999) has no legacy mapping, so it should be silently ignored
+	assert.Len(t, metadata, 1,
+		"Only valid capabilities should appear in legacy metadata")
+}
+
+// TestGetPluginInfoCapabilitiesOverrideTakesPrecedence verifies that explicit
+// capability override takes precedence over auto-discovered capabilities.
+// This tests the scenario where a plugin implements optional interfaces
+// but the PluginInfo explicitly declares a subset of capabilities.
+func TestGetPluginInfoCapabilitiesOverrideTakesPrecedence(t *testing.T) {
+	// Create plugin that implements ALL optional interfaces (DryRun, Recommendations, etc.)
+	testPlugin := &capabilityTestPlugin{
+		name: "override-precedence-test-plugin",
+	}
+
+	// Override with ONLY base capabilities - explicitly excluding optional interfaces
+	pluginInfo := NewPluginInfo("override-precedence-test-plugin", "v1.0.0",
+		WithCapabilities(
+			pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+			pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		))
+	server := NewServerWithOptions(testPlugin, nil, nil, pluginInfo)
+
+	ctx := context.Background()
+	req := &pbc.GetPluginInfoRequest{}
+
+	resp, err := server.GetPluginInfo(ctx, req)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	// Override should take precedence - only explicitly set capabilities
+	expectedCapabilities := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+	}
+	assert.ElementsMatch(t, expectedCapabilities, resp.GetCapabilities(),
+		"Override capabilities should take precedence over auto-discovery")
+
+	// Verify excluded capabilities are NOT present despite being implemented
+	assert.NotContains(t, resp.GetCapabilities(),
+		pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN,
+		"DRY_RUN should be excluded even though plugin implements DryRunHandler")
+	assert.NotContains(t, resp.GetCapabilities(),
+		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		"RECOMMENDATIONS should be excluded even though plugin implements RecommendationsProvider")
+
+	// Legacy metadata should also reflect only the overridden capabilities
+	metadata := resp.GetMetadata()
+	assert.Equal(t, "true", metadata["projected_costs"])
+	assert.Equal(t, "true", metadata["actual_costs"])
+	assert.NotContains(t, metadata, "dry_run",
+		"dry_run should not be in legacy metadata")
+	assert.NotContains(t, metadata, "recommendations",
+		"recommendations should not be in legacy metadata")
+}
+
 // TestGetPluginInfoEmptyPluginEmptyOverride verifies that a minimal plugin
 // with empty override returns only base capabilities.
 func TestGetPluginInfoEmptyPluginEmptyOverride(t *testing.T) {
@@ -620,6 +713,21 @@ func mapKeys(m map[string]bool) []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+// =============================================================================
+// Nil Safety Tests
+// =============================================================================
+
+// TestInferCapabilitiesNilPlugin verifies that inferCapabilities handles nil
+// plugin input defensively without panicking.
+//
+// This test ensures robustness in edge cases where a nil plugin might be
+// passed during error recovery or testing scenarios.
+func TestInferCapabilitiesNilPlugin(t *testing.T) {
+	// Should not panic and should return nil
+	result := inferCapabilities(nil)
+	assert.Nil(t, result, "inferCapabilities should return nil for nil plugin")
 }
 
 // =============================================================================
@@ -689,4 +797,208 @@ func TestGetPluginInfoContextCancellation(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, "timeout-test-plugin", resp.GetName())
+}
+
+// =============================================================================
+// Capability Validation Tests
+// =============================================================================
+
+// TestIsValidCapability verifies the IsValidCapability helper function
+// correctly identifies valid and invalid PluginCapability enum values.
+func TestIsValidCapability(t *testing.T) {
+	tests := []struct {
+		name       string
+		capability pbc.PluginCapability
+		wantValid  bool
+	}{
+		// Valid capabilities (all currently defined values)
+		{"PROJECTED_COSTS", pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS, true},
+		{"ACTUAL_COSTS", pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS, true},
+		{"CARBON", pbc.PluginCapability_PLUGIN_CAPABILITY_CARBON, true},
+		{"RECOMMENDATIONS", pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS, true},
+		{"DRY_RUN", pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN, true},
+		{"BUDGETS", pbc.PluginCapability_PLUGIN_CAPABILITY_BUDGETS, true},
+		{"ENERGY", pbc.PluginCapability_PLUGIN_CAPABILITY_ENERGY, true},
+		{"WATER", pbc.PluginCapability_PLUGIN_CAPABILITY_WATER, true},
+		{"PRICING_SPEC", pbc.PluginCapability_PLUGIN_CAPABILITY_PRICING_SPEC, true},
+		{"ESTIMATE_COST", pbc.PluginCapability_PLUGIN_CAPABILITY_ESTIMATE_COST, true},
+		{"DISMISS_RECOMMENDATIONS", pbc.PluginCapability_PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS, true},
+
+		// Invalid capabilities
+		{"UNSPECIFIED (0)", pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED, false},
+		{"negative value (-1)", pbc.PluginCapability(-1), false},
+		{"out of range (999)", pbc.PluginCapability(999), false},
+		{"just above max (12)", pbc.PluginCapability(12), false},
+		{"very large value", pbc.PluginCapability(1000000), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IsValidCapability(tt.capability)
+			assert.Equal(t, tt.wantValid, got, "IsValidCapability(%d)", int32(tt.capability))
+		})
+	}
+}
+
+// TestPluginInfoValidateDoSProtection verifies that the PluginInfo.Validate
+// method rejects capability slices that exceed the DoS protection limit.
+func TestPluginInfoValidateDoSProtection(t *testing.T) {
+	t.Run("accepts capabilities at max limit", func(t *testing.T) {
+		caps := make([]pbc.PluginCapability, MaxConfiguredCapabilities)
+		for i := range caps {
+			caps[i] = pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS
+		}
+		info := NewPluginInfo("test-plugin", "v1.0.0", WithCapabilities(caps...))
+		err := info.Validate()
+		assert.NoError(t, err, "Should accept capabilities at max limit (%d)", MaxConfiguredCapabilities)
+	})
+
+	t.Run("rejects capabilities exceeding max limit", func(t *testing.T) {
+		caps := make([]pbc.PluginCapability, MaxConfiguredCapabilities+1)
+		for i := range caps {
+			caps[i] = pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS
+		}
+		info := NewPluginInfo("test-plugin", "v1.0.0", WithCapabilities(caps...))
+		err := info.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "too many capabilities")
+		assert.Contains(t, err.Error(), "test-plugin")
+	})
+
+	t.Run("rejects large capability slice (DoS scenario)", func(t *testing.T) {
+		// Simulate DoS attack with excessive capabilities
+		caps := make([]pbc.PluginCapability, 10000)
+		for i := range caps {
+			caps[i] = pbc.PluginCapability(999)
+		}
+		info := NewPluginInfo("malicious-plugin", "v1.0.0", WithCapabilities(caps...))
+		err := info.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "too many capabilities")
+	})
+}
+
+// TestCapabilitiesToLegacyMetadataWithWarnings verifies that the warning-aware
+// conversion function correctly identifies and reports invalid/unmapped capabilities.
+func TestCapabilitiesToLegacyMetadataWithWarnings(t *testing.T) {
+	t.Run("all valid capabilities - no warnings", func(t *testing.T) {
+		caps := []pbc.PluginCapability{
+			pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+			pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+			pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		}
+		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+
+		assert.Empty(t, warnings, "Expected no warnings for valid capabilities")
+		assert.Len(t, metadata, 3)
+		assert.True(t, metadata["projected_costs"])
+		assert.True(t, metadata["actual_costs"])
+		assert.True(t, metadata["recommendations"])
+	})
+
+	t.Run("mixed valid and invalid capabilities", func(t *testing.T) {
+		caps := []pbc.PluginCapability{
+			pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+			pbc.PluginCapability(999), // Invalid
+			pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+			pbc.PluginCapability(500), // Invalid
+		}
+		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+
+		assert.Len(t, warnings, 2, "Expected 2 warnings for invalid capabilities")
+		assert.Len(t, metadata, 2, "Only valid capabilities should be in metadata")
+		assert.True(t, metadata["projected_costs"])
+		assert.True(t, metadata["recommendations"])
+
+		// Verify warning details
+		for _, w := range warnings {
+			assert.Contains(t, w.Reason, "invalid capability enum value")
+		}
+	})
+
+	t.Run("all invalid capabilities", func(t *testing.T) {
+		caps := []pbc.PluginCapability{
+			pbc.PluginCapability(100),
+			pbc.PluginCapability(200),
+			pbc.PluginCapability(999),
+		}
+		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+
+		assert.Len(t, warnings, 3, "Expected 3 warnings for all invalid capabilities")
+		assert.Empty(t, metadata, "No valid capabilities should be in metadata")
+	})
+
+	t.Run("UNSPECIFIED is ignored without warning", func(t *testing.T) {
+		caps := []pbc.PluginCapability{
+			pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED,
+			pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		}
+		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+
+		assert.Empty(t, warnings, "UNSPECIFIED should not generate warnings")
+		assert.Len(t, metadata, 1)
+		assert.True(t, metadata["projected_costs"])
+	})
+
+	t.Run("empty slice returns nil", func(t *testing.T) {
+		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings([]pbc.PluginCapability{})
+		assert.Nil(t, metadata)
+		assert.Nil(t, warnings)
+	})
+
+	t.Run("nil slice returns nil", func(t *testing.T) {
+		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(nil)
+		assert.Nil(t, metadata)
+		assert.Nil(t, warnings)
+	})
+}
+
+// TestInferCapabilitiesConcurrentNilSafety verifies that inferCapabilities
+// handles nil plugin safely even under concurrent access.
+func TestInferCapabilitiesConcurrentNilSafety(t *testing.T) {
+	const goroutines = 100
+	const iterations = 100
+
+	var wg sync.WaitGroup
+	wg.Add(goroutines)
+
+	// Ensure no panics occur during concurrent nil access
+	for range goroutines {
+		go func() {
+			defer wg.Done()
+			for range iterations {
+				result := inferCapabilities(nil)
+				assert.Nil(t, result)
+			}
+		}()
+	}
+
+	wg.Wait()
+}
+
+// BenchmarkIsValidCapability benchmarks the capability validation function.
+// Expected performance: < 5 ns/op, 0 allocs/op (simple comparison).
+func BenchmarkIsValidCapability(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		_ = IsValidCapability(pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS)
+	}
+}
+
+// BenchmarkCapabilitiesToLegacyMetadataWithWarnings benchmarks the warning-aware
+// conversion function with a mix of valid and invalid capabilities.
+func BenchmarkCapabilitiesToLegacyMetadataWithWarnings(b *testing.B) {
+	caps := []pbc.PluginCapability{
+		pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
+		pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
+		pbc.PluginCapability(999), // Invalid
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		_, _ = capabilitiesToLegacyMetadataWithWarnings(caps)
+	}
 }
