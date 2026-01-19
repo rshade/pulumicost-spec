@@ -1,6 +1,7 @@
 package pluginsdk_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
@@ -466,7 +467,7 @@ func TestWithMetadataMapDefensiveCopy(t *testing.T) {
 
 func TestLegacyCapabilityMapCompleteness(t *testing.T) {
 	// Verify all PluginCapability enum values (except UNSPECIFIED) have legacy mappings.
-	// This test prevents the legacyCapabilityMap from becoming stale when new
+	// This test prevents the legacyCapabilityNames from becoming stale when new
 	// capabilities are added to the proto definition.
 	allCaps := pbc.PluginCapability_name
 	for capValue, capName := range allCaps {
@@ -474,8 +475,109 @@ func TestLegacyCapabilityMapCompleteness(t *testing.T) {
 		if capability == pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED {
 			continue // UNSPECIFIED is intentionally excluded from legacy mapping
 		}
-		if !pluginsdk.HasLegacyCapabilityMapping(capability) {
-			t.Errorf("Capability %s (value %d) missing from legacyCapabilityMap", capName, capValue)
+		if pluginsdk.CapabilityToLegacyName(capability) == "" {
+			t.Errorf("Capability %s (value %d) missing from legacyCapabilityNames", capName, capValue)
 		}
+	}
+}
+
+// Mock Interfaces for Auto-Discovery Testing
+
+type mockDryRunHandler struct {
+	pbc.UnimplementedCostSourceServiceServer
+}
+
+func (m *mockDryRunHandler) Name() string { return "mock" }
+func (m *mockDryRunHandler) GetProjectedCost(
+	context.Context,
+	*pbc.GetProjectedCostRequest,
+) (*pbc.GetProjectedCostResponse, error) {
+	return &pbc.GetProjectedCostResponse{}, nil
+}
+func (m *mockDryRunHandler) GetActualCost(
+	context.Context,
+	*pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+	return &pbc.GetActualCostResponse{}, nil
+}
+func (m *mockDryRunHandler) GetPricingSpec(
+	context.Context,
+	*pbc.GetPricingSpecRequest,
+) (*pbc.GetPricingSpecResponse, error) {
+	return &pbc.GetPricingSpecResponse{}, nil
+}
+func (m *mockDryRunHandler) EstimateCost(
+	context.Context,
+	*pbc.EstimateCostRequest,
+) (*pbc.EstimateCostResponse, error) {
+	return &pbc.EstimateCostResponse{}, nil
+}
+
+func (m *mockDryRunHandler) HandleDryRun(_ *pbc.DryRunRequest) (*pbc.DryRunResponse, error) {
+	return &pbc.DryRunResponse{}, nil
+}
+
+type mockRecsProvider struct {
+	mockDryRunHandler
+}
+
+func (m *mockRecsProvider) GetRecommendations(
+	context.Context,
+	*pbc.GetRecommendationsRequest,
+) (*pbc.GetRecommendationsResponse, error) {
+	return &pbc.GetRecommendationsResponse{}, nil
+}
+
+// TestAutoDiscovery is implicitly tested by the fact that inferCapabilities
+// is called by NewServer. We can verify it by creating a server and checking its capabilities.
+func TestAutoDiscovery(t *testing.T) {
+	t.Run("DryRunHandler", func(t *testing.T) {
+		plugin := &mockDryRunHandler{}
+		info := pluginsdk.NewPluginInfo("test", "v1.0.0")
+		server := pluginsdk.NewServerWithOptions(plugin, nil, nil, info)
+
+		// DryRunHandler should be auto-discovered
+		found := false
+		for _, capability := range server.GetGlobalCapabilities() {
+			if capability == pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected DryRun capability to be auto-discovered")
+		}
+	})
+
+	t.Run("RecommendationsProvider", func(t *testing.T) {
+		plugin := &mockRecsProvider{}
+		info := pluginsdk.NewPluginInfo("test", "v1.0.0")
+		server := pluginsdk.NewServerWithOptions(plugin, nil, nil, info)
+
+		// Recommendations should be auto-discovered
+		found := false
+		for _, capability := range server.GetGlobalCapabilities() {
+			if capability == pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected Recommendations capability to be auto-discovered")
+		}
+	})
+}
+
+func TestWithCapabilitiesOverride(t *testing.T) {
+	// Test that WithCapabilities overrides any defaults
+	info := pluginsdk.NewPluginInfo("test", "v1.0.0",
+		pluginsdk.WithCapabilities(pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN),
+	)
+
+	if len(info.Capabilities) != 1 {
+		t.Errorf("Expected 1 capability, got %d", len(info.Capabilities))
+	}
+	if info.Capabilities[0] != pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN {
+		t.Errorf("Expected DryRun capability")
 	}
 }

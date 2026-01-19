@@ -106,6 +106,10 @@ centered around the FinOps Foundation's FOCUS standard.
   Initial TypeScript client SDK for browser and Node.js environments.
 - [x] **Plugin Capability Enum** ([#287](https://github.com/rshade/finfocus-spec/issues/287)) -
   Added PluginCapability enum for granular feature discovery.
+- [x] **Capability Discovery Robustness**
+  ([#297](https://github.com/rshade/finfocus-spec/issues/297),
+  [#296](https://github.com/rshade/finfocus-spec/issues/296)) -
+  Fixed nil check in inferCapabilities and added test coverage for capability override edge cases.
 - [x] **Backward Compatibility for Environment Variables**
   ([#283](https://github.com/rshade/finfocus-spec/issues/283)) -
   Maintained legacy PULUMICOST_* environment variable support during migration.
@@ -131,12 +135,6 @@ centered around the FinOps Foundation's FOCUS standard.
 
 ### Bug Fixes (Capability Discovery)
 
-- [ ] **Missing Nil Check in inferCapabilities**
-  ([#297](https://github.com/rshade/finfocus-spec/issues/297)) -
-  Fix potential nil pointer dereference in capability inference.
-- [ ] **Missing Test Coverage for Capability Override Edge Cases**
-  ([#296](https://github.com/rshade/finfocus-spec/issues/296)) -
-  Add tests for edge cases in capability override handling.
 - [ ] **Proto Field Type Inconsistency**
   ([#295](https://github.com/rshade/finfocus-spec/issues/295)) -
   Fix inconsistency between capabilities and metadata field types.

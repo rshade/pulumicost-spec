@@ -201,16 +201,15 @@ message SupportsResponse {
   // reason provides optional explanation if supported is false
   string reason = 2;
   // capabilities declares optional capabilities the plugin supports.
-  // Standard capability keys:
-  //   - "recommendations": Plugin supports GetRecommendations RPC
-  //   - "dry_run": Plugin supports DryRun RPC and dry_run flag on cost RPCs
-  //   - "budgets": Plugin supports GetBudgets RPC
+  // Legacy capability format using boolean map.
   // Example: {"recommendations": true, "dry_run": true}
+  // DEPRECATION: Use capabilities_enum for new integrations.
   map<string, bool> capabilities = 3;
   // supported_metrics declares optional sustainability metrics the plugin supports
   repeated MetricKind supported_metrics = 4;
   // capabilities_enum declares optional capabilities using strongly-typed enums.
-  // This field is automatically populated by the SDK based on implemented interfaces.
+  // Modern capability format using strongly-typed enums.
+  // Auto-populated by SDK based on implemented interfaces.
   repeated PluginCapability capabilities_enum = 5;
 }
 
@@ -1354,17 +1353,22 @@ message GetPluginInfoResponse {
   // compiled against (e.g., "v0.4.11"). Must be a valid SemVer string.
   // Required field - used for compatibility verification.
   string spec_version = 3;
-  // providers lists the cloud providers supported by this plugin (e.g., ["aws"]).
-  // At least one provider should be listed for functional plugins.
-  repeated string providers = 4;
-  // metadata contains optional key-value pairs for additional information
-  // such as build hash, commit ID, or plugin-specific configuration.
-  // Free-form; no key restrictions or size limits enforced by SDK.
-  map<string, string> metadata = 5;
-  // Explicit capability declarations using type-safe enum
-  repeated PluginCapability capabilities = 6;
-
-}
+    // providers lists the cloud providers supported by this plugin (e.g., ["aws"]).
+    // At least one provider should be listed for functional plugins.
+    repeated string providers = 4;
+    // metadata contains optional key-value pairs for additional information
+    // such as build hash, commit ID, or plugin-specific configuration.
+    // Legacy metadata format for backward compatibility with older hosts.
+    // Contains string-based capability flags: {"supports_xyz": "true"}.
+    // SDK auto-populates this from capabilities for backward compatibility.
+    // DEPRECATION: New integrations should use capabilities field instead.
+    map<string, string> metadata = 5;
+    // Explicit capability declarations using type-safe enum
+    // Modern capability format using strongly-typed enums.
+    // Prefer this field for capability queries on newer clients.
+    // SDK auto-populates this based on implemented interfaces.
+    repeated PluginCapability capabilities = 6;
+  }
 
 // =============================================================================
 // DryRun RPC - Plugin Capability Introspection

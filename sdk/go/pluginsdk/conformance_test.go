@@ -578,7 +578,7 @@ func TestGetPluginInfoCapabilitiesWithUnspecified(t *testing.T) {
 	}
 
 	// Verify PROJECTED_COSTS is in legacy metadata
-	assert.NotNil(t, metadata["projected_costs"],
+	assert.NotNil(t, metadata["supports_projected_costs"],
 		"PROJECTED_COSTS should be in legacy metadata")
 }
 
@@ -616,7 +616,7 @@ func TestGetPluginInfoCapabilitiesInvalidEnumValue(t *testing.T) {
 
 	// Invalid enum should NOT appear in legacy metadata (no mapping exists)
 	metadata := resp.GetMetadata()
-	assert.Equal(t, "true", metadata["projected_costs"],
+	assert.Equal(t, "true", metadata["supports_projected_costs"],
 		"Valid capability should appear in legacy metadata")
 	// The invalid value (999) has no legacy mapping, so it should be silently ignored
 	assert.Len(t, metadata, 1,
@@ -666,11 +666,11 @@ func TestGetPluginInfoCapabilitiesOverrideTakesPrecedence(t *testing.T) {
 
 	// Legacy metadata should also reflect only the overridden capabilities
 	metadata := resp.GetMetadata()
-	assert.Equal(t, "true", metadata["projected_costs"])
-	assert.Equal(t, "true", metadata["actual_costs"])
-	assert.NotContains(t, metadata, "dry_run",
+	assert.Equal(t, "true", metadata["supports_projected_costs"])
+	assert.Equal(t, "true", metadata["supports_actual_costs"])
+	assert.NotContains(t, metadata, "supports_dry_run",
 		"dry_run should not be in legacy metadata")
-	assert.NotContains(t, metadata, "recommendations",
+	assert.NotContains(t, metadata, "supports_recommendations",
 		"recommendations should not be in legacy metadata")
 }
 
@@ -887,13 +887,13 @@ func TestCapabilitiesToLegacyMetadataWithWarnings(t *testing.T) {
 			pbc.PluginCapability_PLUGIN_CAPABILITY_ACTUAL_COSTS,
 			pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
 		}
-		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+		metadata, warnings := CapabilitiesToLegacyMetadataWithWarnings(caps)
 
 		assert.Empty(t, warnings, "Expected no warnings for valid capabilities")
 		assert.Len(t, metadata, 3)
-		assert.True(t, metadata["projected_costs"])
-		assert.True(t, metadata["actual_costs"])
-		assert.True(t, metadata["recommendations"])
+		assert.Equal(t, "true", metadata["supports_projected_costs"])
+		assert.Equal(t, "true", metadata["supports_actual_costs"])
+		assert.Equal(t, "true", metadata["supports_recommendations"])
 	})
 
 	t.Run("mixed valid and invalid capabilities", func(t *testing.T) {
@@ -903,12 +903,12 @@ func TestCapabilitiesToLegacyMetadataWithWarnings(t *testing.T) {
 			pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS,
 			pbc.PluginCapability(500), // Invalid
 		}
-		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+		metadata, warnings := CapabilitiesToLegacyMetadataWithWarnings(caps)
 
 		assert.Len(t, warnings, 2, "Expected 2 warnings for invalid capabilities")
 		assert.Len(t, metadata, 2, "Only valid capabilities should be in metadata")
-		assert.True(t, metadata["projected_costs"])
-		assert.True(t, metadata["recommendations"])
+		assert.Equal(t, "true", metadata["supports_projected_costs"])
+		assert.Equal(t, "true", metadata["supports_recommendations"])
 
 		// Verify warning details
 		for _, w := range warnings {
@@ -922,7 +922,7 @@ func TestCapabilitiesToLegacyMetadataWithWarnings(t *testing.T) {
 			pbc.PluginCapability(200),
 			pbc.PluginCapability(999),
 		}
-		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+		metadata, warnings := CapabilitiesToLegacyMetadataWithWarnings(caps)
 
 		assert.Len(t, warnings, 3, "Expected 3 warnings for all invalid capabilities")
 		assert.Empty(t, metadata, "No valid capabilities should be in metadata")
@@ -933,21 +933,21 @@ func TestCapabilitiesToLegacyMetadataWithWarnings(t *testing.T) {
 			pbc.PluginCapability_PLUGIN_CAPABILITY_UNSPECIFIED,
 			pbc.PluginCapability_PLUGIN_CAPABILITY_PROJECTED_COSTS,
 		}
-		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(caps)
+		metadata, warnings := CapabilitiesToLegacyMetadataWithWarnings(caps)
 
 		assert.Empty(t, warnings, "UNSPECIFIED should not generate warnings")
 		assert.Len(t, metadata, 1)
-		assert.True(t, metadata["projected_costs"])
+		assert.Equal(t, "true", metadata["supports_projected_costs"])
 	})
 
 	t.Run("empty slice returns nil", func(t *testing.T) {
-		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings([]pbc.PluginCapability{})
+		metadata, warnings := CapabilitiesToLegacyMetadataWithWarnings([]pbc.PluginCapability{})
 		assert.Nil(t, metadata)
 		assert.Nil(t, warnings)
 	})
 
 	t.Run("nil slice returns nil", func(t *testing.T) {
-		metadata, warnings := capabilitiesToLegacyMetadataWithWarnings(nil)
+		metadata, warnings := CapabilitiesToLegacyMetadataWithWarnings(nil)
 		assert.Nil(t, metadata)
 		assert.Nil(t, warnings)
 	})
@@ -999,6 +999,6 @@ func BenchmarkCapabilitiesToLegacyMetadataWithWarnings(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for b.Loop() {
-		_, _ = capabilitiesToLegacyMetadataWithWarnings(caps)
+		_, _ = CapabilitiesToLegacyMetadataWithWarnings(caps)
 	}
 }

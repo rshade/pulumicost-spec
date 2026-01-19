@@ -1033,17 +1033,15 @@ type SupportsResponse struct {
 	// reason provides optional explanation if supported is false
 	Reason string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
 	// capabilities declares optional capabilities the plugin supports.
-	// Standard capability keys:
-	//   - "recommendations": Plugin supports GetRecommendations RPC
-	//   - "dry_run": Plugin supports DryRun RPC and dry_run flag on cost RPCs
-	//   - "budgets": Plugin supports GetBudgets RPC
-	//
+	// Legacy capability format using boolean map.
 	// Example: {"recommendations": true, "dry_run": true}
+	// DEPRECATION: Use capabilities_enum for new integrations.
 	Capabilities map[string]bool `protobuf:"bytes,3,rep,name=capabilities,proto3" json:"capabilities,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	// supported_metrics declares optional sustainability metrics the plugin supports
 	SupportedMetrics []MetricKind `protobuf:"varint,4,rep,packed,name=supported_metrics,json=supportedMetrics,proto3,enum=finfocus.v1.MetricKind" json:"supported_metrics,omitempty"`
 	// capabilities_enum declares optional capabilities using strongly-typed enums.
-	// This field is automatically populated by the SDK based on implemented interfaces.
+	// Modern capability format using strongly-typed enums.
+	// Auto-populated by SDK based on implemented interfaces.
 	CapabilitiesEnum []PluginCapability `protobuf:"varint,5,rep,packed,name=capabilities_enum,json=capabilitiesEnum,proto3,enum=finfocus.v1.PluginCapability" json:"capabilities_enum,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
@@ -5133,9 +5131,15 @@ type GetPluginInfoResponse struct {
 	Providers []string `protobuf:"bytes,4,rep,name=providers,proto3" json:"providers,omitempty"`
 	// metadata contains optional key-value pairs for additional information
 	// such as build hash, commit ID, or plugin-specific configuration.
-	// Free-form; no key restrictions or size limits enforced by SDK.
+	// Legacy metadata format for backward compatibility with older hosts.
+	// Contains string-based capability flags: {"supports_xyz": "true"}.
+	// SDK auto-populates this from capabilities for backward compatibility.
+	// DEPRECATION: New integrations should use capabilities field instead.
 	Metadata map[string]string `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// Explicit capability declarations using type-safe enum
+	// Modern capability format using strongly-typed enums.
+	// Prefer this field for capability queries on newer clients.
+	// SDK auto-populates this based on implemented interfaces.
 	Capabilities  []PluginCapability `protobuf:"varint,6,rep,packed,name=capabilities,proto3,enum=finfocus.v1.PluginCapability" json:"capabilities,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

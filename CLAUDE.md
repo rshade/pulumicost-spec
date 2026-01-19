@@ -84,6 +84,49 @@ The SDK implements `GetPluginInfo` RPC for retrieving plugin metadata:
 - **PluginInfoProvider**: Optional interface for dynamic metadata
 - **SpecVersion**: Constant defining the compiled SDK spec version (validated at init)
 
+### Capability Discovery Pattern
+
+The SDK supports a dual-mode capability discovery system:
+
+1. **Auto-Discovery (Default)**: Capabilities are automatically detected based on the interfaces
+   implemented by the plugin struct.
+   - `DryRunHandler` -> `PLUGIN_CAPABILITY_DRY_RUN`
+   - `RecommendationsProvider` -> `PLUGIN_CAPABILITY_RECOMMENDATIONS`
+   - `BudgetsProvider` -> `PLUGIN_CAPABILITY_BUDGETS`
+   - `DismissProvider` -> `PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS`
+
+```go
+// Plugin with DryRunHandler implementation
+type MyPlugin struct {
+    proto.UnimplementedCostSourceServiceServer
+}
+
+func (p *MyPlugin) HandleDryRun(req *pbc.DryRunRequest) (*pbc.DryRunResponse, error) {
+    return pluginsdk.NewDryRunResponse(
+        pluginsdk.WithResourceTypeSupported(true),
+    ), nil
+}
+
+// Capability auto-discovered: PLUGIN_CAPABILITY_DRY_RUN
+info := pluginsdk.NewPluginInfo("my-plugin", "v1.0.0")
+```
+
+1. **Manual Override (Advanced)**: Capabilities can be explicitly defined using `WithCapabilities()`.
+   This **completely replaces** auto-discovery. Use this to dynamically enable/disable features or
+   when proxying.
+
+```go
+info := pluginsdk.NewPluginInfo("my-plugin", "v1.0.0",
+    pluginsdk.WithCapabilities(
+        pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN,
+    ),
+)
+```
+
+**Backward Compatibility**:
+The SDK automatically populates both the modern `capabilities` enum list and the legacy `metadata`
+map (e.g., `"supports_dry_run": "true"`) to ensure compatibility with older hosts.
+
 **GetPluginInfo Configuration Patterns:**
 
 ```go

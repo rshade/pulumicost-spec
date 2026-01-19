@@ -28,7 +28,6 @@ import (
 
 const (
 	maxPayloadSize = 1 << 20 // 1MB
-	capabilityTrue = "true"
 )
 
 // portFlag is the --port command-line flag for specifying the gRPC server port.
@@ -292,8 +291,7 @@ func NewServerWithOptions(plugin Plugin, registry RegistryLookup, logger *zerolo
 	// Determine capabilities: use explicitly configured if available, otherwise infer
 	var caps []pbc.PluginCapability
 	if info != nil && len(info.Capabilities) > 0 {
-		caps = make([]pbc.PluginCapability, len(info.Capabilities))
-		copy(caps, info.Capabilities)
+		caps = append([]pbc.PluginCapability{}, info.Capabilities...)
 	} else {
 		caps = inferCapabilities(plugin)
 	}
@@ -305,6 +303,11 @@ func NewServerWithOptions(plugin Plugin, registry RegistryLookup, logger *zerolo
 		pluginInfo:         info, // Thread-safe: set during construction before requests accepted
 		globalCapabilities: caps,
 	}
+}
+
+// GetGlobalCapabilities returns the capabilities supported by this server.
+func (s *Server) GetGlobalCapabilities() []pbc.PluginCapability {
+	return s.globalCapabilities
 }
 
 // Name implements the gRPC Name method.
@@ -403,8 +406,7 @@ func (s *Server) handleProviderPluginInfo(
 // handleConfiguredPluginInfo handles GetPluginInfo using the server's configured PluginInfo.
 func (s *Server) handleConfiguredPluginInfo() (*pbc.GetPluginInfoResponse, error) {
 	// Create defensive copies to prevent concurrent modification
-	providers := make([]string, len(s.pluginInfo.Providers))
-	copy(providers, s.pluginInfo.Providers)
+	providers := append([]string{}, s.pluginInfo.Providers...)
 
 	var metadata map[string]string
 	if s.pluginInfo.Metadata != nil {
@@ -417,17 +419,15 @@ func (s *Server) handleConfiguredPluginInfo() (*pbc.GetPluginInfoResponse, error
 	// Determine capabilities: use explicit if set, otherwise use globalCapabilities
 	var capabilities []pbc.PluginCapability
 	if len(s.pluginInfo.Capabilities) > 0 {
-		capabilities = make([]pbc.PluginCapability, len(s.pluginInfo.Capabilities))
-		copy(capabilities, s.pluginInfo.Capabilities)
+		capabilities = append([]pbc.PluginCapability{}, s.pluginInfo.Capabilities...)
 	} else {
-		capabilities = make([]pbc.PluginCapability, len(s.globalCapabilities))
-		copy(capabilities, s.globalCapabilities)
+		capabilities = append([]pbc.PluginCapability{}, s.globalCapabilities...)
 	}
 
 	// Add legacy capability metadata for backward compatibility
 	// Use warning-aware function to detect and log invalid/unmapped capabilities
 	if len(capabilities) > 0 {
-		legacyMeta, warnings := capabilitiesToLegacyMetadataWithWarnings(capabilities)
+		legacyMeta, warnings := CapabilitiesToLegacyMetadataWithWarnings(capabilities)
 
 		// Log any warnings about unmapped capabilities
 		for _, w := range warnings {
@@ -440,8 +440,8 @@ func (s *Server) handleConfiguredPluginInfo() (*pbc.GetPluginInfoResponse, error
 		if metadata == nil {
 			metadata = make(map[string]string, len(legacyMeta))
 		}
-		for key := range legacyMeta {
-			metadata[key] = capabilityTrue
+		for key, val := range legacyMeta {
+			metadata[key] = val
 		}
 	}
 
@@ -539,8 +539,7 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 	if resp != nil {
 		// Populate typed capabilities if not already set by the plugin (Inherit Global)
 		if len(resp.GetCapabilitiesEnum()) == 0 {
-			caps := make([]pbc.PluginCapability, len(s.globalCapabilities))
-			copy(caps, s.globalCapabilities)
+			caps := append([]pbc.PluginCapability{}, s.globalCapabilities...)
 			resp.CapabilitiesEnum = caps
 		}
 
@@ -548,7 +547,7 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 		// This handles both cases: plugin didn't set capabilities, or plugin manually set Capabilities map.
 		// By always regenerating from the enum, we ensure both formats represent the same capabilities.
 		if len(resp.GetCapabilitiesEnum()) > 0 {
-			legacyMeta, warnings := capabilitiesToLegacyMetadataWithWarnings(resp.GetCapabilitiesEnum())
+			legacyMeta, warnings := CapabilitiesToLegacyMetadataWithWarnings(resp.GetCapabilitiesEnum())
 
 			// Log any warnings about unmapped capabilities
 			for _, w := range warnings {
@@ -558,7 +557,12 @@ func (s *Server) Supports(ctx context.Context, req *pbc.SupportsRequest) (*pbc.S
 					Msg("Capability has no legacy metadata mapping in Supports response")
 			}
 
-			resp.Capabilities = legacyMeta
+			// Convert map[string]string to map[string]bool for SupportsResponse
+			boolMap := make(map[string]bool, len(legacyMeta))
+			for k := range legacyMeta {
+				boolMap[k] = true
+			}
+			resp.Capabilities = boolMap
 		}
 	}
 
