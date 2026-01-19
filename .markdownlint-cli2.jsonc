@@ -18,6 +18,7 @@
     ".claude/agents/",
     ".claude/ralph-loop.local.md",
     ".specify/templates/",
-    ".opencode"
+    ".opencode",
+    "sdk/typescript/packages/client/CHANGELOG.md"
   ]
 }

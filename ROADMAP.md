@@ -104,6 +104,10 @@ centered around the FinOps Foundation's FOCUS standard.
 - [x] **TypeScript SDK** ([#293](https://github.com/rshade/finfocus-spec/issues/293),
   [#302](https://github.com/rshade/finfocus-spec/pull/302)) -
   Initial TypeScript client SDK for browser and Node.js environments.
+- [x] **TypeScript SDK Connect-ES v2 Migration** ([#304](https://github.com/rshade/finfocus-spec/issues/304)) -
+  Updated TypeScript SDK to use Connect-ES v2 for improved browser/Node.js support.
+- [x] **TypeScript SDK Publishing Infrastructure** ([#311](https://github.com/rshade/finfocus-spec/issues/311)) -
+  Automated publishing pipeline for TypeScript SDK to npm.
 - [x] **Plugin Capability Enum** ([#287](https://github.com/rshade/finfocus-spec/issues/287)) -
   Added PluginCapability enum for granular feature discovery.
 - [x] **Capability Discovery Robustness**
@@ -131,9 +135,18 @@ centered around the FinOps Foundation's FOCUS standard.
 
 ### TypeScript SDK
 
-- [ ] **Migrate TypeScript SDK to Connect-ES v2**
-  ([#304](https://github.com/rshade/finfocus-spec/issues/304)) -
-  Update TypeScript SDK to use Connect-ES v2 for improved browser/Node.js support.
+- [ ] **TypeScript SDK Publishing Enhancements**
+  ([#313](https://github.com/rshade/finfocus-spec/issues/313)) -
+  Additional publishing enhancements from PR #312 review.
+
+### Protocol Enhancements
+
+- [ ] **Cost Anomaly Detection Support**
+  ([#315](https://github.com/rshade/finfocus-spec/issues/315)) -
+  Add ANOMALY category and INVESTIGATE action for cost anomaly detection in recommendations.
+- [ ] **Prediction Interval Fields**
+  ([#314](https://github.com/rshade/finfocus-spec/issues/314)) -
+  Add confidence intervals to GetProjectedCostResponse for uncertainty quantification.
 
 ### Stability & Maintenance
 
