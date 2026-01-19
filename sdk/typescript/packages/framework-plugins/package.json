@@ -27,7 +27,7 @@
     "tsup": "^8.0.1"
   },
   "optionalDependencies": {
-    "express": "^4.18.2",
+    "express": "^4.22.1",
     "fastify": "^4.25.2",
     "@nestjs/core": "^10.3.0",
     "@nestjs/common": "^10.3.0"
