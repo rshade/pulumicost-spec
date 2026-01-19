@@ -117,6 +117,13 @@ centered around the FinOps Foundation's FOCUS standard.
   Added MIGRATION.md and llm-migration.json for PulumiCost to FinFocus migration.
 - [x] **PulumiCost to FinFocus Rename** ([#272](https://github.com/rshade/finfocus-spec/issues/272)) -
   Complete project rename with backward compatibility shims.
+- [x] **Capability Discovery Bug Fixes**
+  ([#294](https://github.com/rshade/finfocus-spec/issues/294),
+  [#295](https://github.com/rshade/finfocus-spec/issues/295),
+  [#299](https://github.com/rshade/finfocus-spec/issues/299),
+  [#300](https://github.com/rshade/finfocus-spec/issues/300),
+  [#301](https://github.com/rshade/finfocus-spec/issues/301)) -
+  Fixed DryRunHandler interface, proto field consistency, backward compatibility patterns, docs, and slice performance.
 
 ---
 
@@ -133,29 +140,8 @@ centered around the FinOps Foundation's FOCUS standard.
 - [ ] **Dependency Management** ([#13](https://github.com/rshade/finfocus-spec/issues/13)) -
   Automated tracking and updating of core proto and SDK dependencies.
 
-### Bug Fixes (Capability Discovery)
-
-- [ ] **Proto Field Type Inconsistency**
-  ([#295](https://github.com/rshade/finfocus-spec/issues/295)) -
-  Fix inconsistency between capabilities and metadata field types.
-- [ ] **Missing DryRunHandler Interface Definition**
-  ([#294](https://github.com/rshade/finfocus-spec/issues/294)) -
-  Add proper interface definition for DryRunHandler.
-
-### SDK Quality
-
-- [ ] **Inconsistent Backward Compatibility Patterns**
-  ([#299](https://github.com/rshade/finfocus-spec/issues/299)) -
-  Standardize backward compatibility conversion patterns across SDK.
-- [ ] **Optimize Slice Copying Performance**
-  ([#301](https://github.com/rshade/finfocus-spec/issues/301)) -
-  Use append pattern for improved slice copying performance.
-
 ### Documentation
 
-- [ ] **Documentation Updates for Capability Discovery**
-  ([#300](https://github.com/rshade/finfocus-spec/issues/300)) -
-  Update docs to reflect new capability discovery system.
 - [ ] **Unclear Exhaustive Nolint Directive**
   ([#298](https://github.com/rshade/finfocus-spec/issues/298)) -
   Clarify the nolint directive in legacyCapabilityMap.

@@ -1,28 +1,10 @@
 // Generated proto types and services
+// In Connect-ES v2, services are generated directly in *_pb.ts files
 export * from "./generated/finfocus/v1/enums_pb.js";
 export * from "./generated/finfocus/v1/budget_pb.js";
 export * from "./generated/finfocus/v1/costsource_pb.js";
 export * from "./generated/finfocus/v1/focus_pb.js";
-export {
-  DiscoverPluginsRequest,
-  DiscoverPluginsResponse,
-  GetPluginManifestRequest,
-  GetPluginManifestResponse,
-  ValidatePluginRequest,
-  ValidatePluginResponse,
-  InstallPluginRequest,
-  InstallPluginResponse,
-  UpdatePluginRequest,
-  UpdatePluginResponse,
-  RemovePluginRequest,
-  RemovePluginResponse,
-  ListInstalledPluginsRequest,
-  ListInstalledPluginsResponse,
-  CheckPluginHealthRequest,
-  CheckPluginHealthResponse
-} from "./generated/finfocus/v1/registry_pb.js";
-export * from "./generated/finfocus/v1/costsource_connect.js";
-export * from "./generated/finfocus/v1/registry_connect.js";
+export * from "./generated/finfocus/v1/registry_pb.js";
 
 // Error handling - our custom ValidationError takes precedence
 export { ValidationError } from "./errors/validation-error.js";

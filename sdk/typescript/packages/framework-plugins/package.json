@@ -11,10 +11,10 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "~1.10.0",
-    "@connectrpc/connect": "^1.7.0",
-    "finfocus-middleware": "workspace:*",
-    "finfocus-client": "workspace:*"
+    "@bufbuild/protobuf": "^2.2.0",
+    "@connectrpc/connect": "^2.0.0",
+    "finfocus-middleware": "*",
+    "finfocus-client": "*"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",

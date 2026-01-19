@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { setupServer } from 'msw/node';
 import { handlers } from './mocks/handlers.js';
+import { create } from '@bufbuild/protobuf';
 import { CostSourceClient } from '../src/clients/cost-source.js';
 import { ObservabilityClient } from '../src/clients/auxiliary.js';
 import { RegistryClient } from '../src/clients/auxiliary.js';
@@ -10,18 +11,22 @@ import { FocusRecordBuilder } from '../src/builders/focus-record.js';
 import { recommendationsIterator } from '../src/utils/pagination.js';
 import { ValidationError } from '../src/errors/validation-error.js';
 import {
-  GetActualCostRequest,
-  GetProjectedCostRequest,
-  GetRecommendationsRequest,
-  DismissRecommendationRequest,
-  NameRequest,
-  SupportsRequest,
-  EstimateCostRequest,
-  GetBudgetsRequest,
-  GetPricingSpecRequest,
-  GetPluginInfoRequest,
-  DryRunRequest
+  GetActualCostRequestSchema,
+  GetProjectedCostRequestSchema,
+  GetRecommendationsRequestSchema,
+  DismissRecommendationRequestSchema,
+  NameRequestSchema,
+  SupportsRequestSchema,
+  EstimateCostRequestSchema,
+  GetPricingSpecRequestSchema,
+  GetPluginInfoRequestSchema,
+  DryRunRequestSchema,
+  HealthCheckResponse_Status
 } from '../src/generated/finfocus/v1/costsource_pb.js';
+import {
+  GetBudgetsRequestSchema
+} from '../src/generated/finfocus/v1/budget_pb.js';
+import { RecommendationPriority } from '../src/generated/finfocus/v1/costsource_pb.js';
 
 const server = setupServer(...handlers);
 
@@ -35,25 +40,25 @@ describe('CostSourceClient Integration', () => {
   });
 
   it('fetches plugin name successfully', async () => {
-    const request = new NameRequest();
+    const request = create(NameRequestSchema);
     const response = await client.name(request);
     expect(response.name).toBe("AWS Cost Plugin");
   });
 
-  it('fetches supported billing modes and providers', async () => {
-    const request = new SupportsRequest();
+  it('fetches supported capabilities', async () => {
+    const request = create(SupportsRequestSchema);
     const response = await client.supports(request);
-    expect(response.billingModes).toContain("HOURLY");
-    expect(response.providers).toContain("AWS");
+    expect(response.supported).toBe(true);
+    expect(response.capabilities["recommendations"]).toBe(true);
   });
 
   it('fetches actual cost successfully using ID', async () => {
-    const request = new GetActualCostRequest({ resourceId: 'i-1234567890abcdef0' });
+    const request = create(GetActualCostRequestSchema, { resourceId: 'i-1234567890abcdef0' });
     const response = await client.getActualCost(request);
 
-    expect(response.total).toBeDefined();
-    expect(response.total?.units).toBe(100n);
-    expect(response.total?.currencyCode).toBe("USD");
+    expect(response.results).toBeDefined();
+    expect(response.results.length).toBeGreaterThan(0);
+    expect(response.results[0].cost).toBe(100.0);
   });
 
   it('fetches projected cost successfully using ResourceDescriptor', async () => {
@@ -64,18 +69,18 @@ describe('CostSourceClient Integration', () => {
       .withId('i-1234567890abcdef0')
       .build();
 
-    const request = new GetProjectedCostRequest({ resource });
+    const request = create(GetProjectedCostRequestSchema, { resource });
     const response = await client.getProjectedCost(request);
 
-    expect(response.total).toBeDefined();
-    expect(response.total?.units).toBe(150n);
+    expect(response.costPerMonth).toBe(150.0);
+    expect(response.currency).toBe("USD");
   });
 
   it('fetches pricing specification', async () => {
-    const request = new GetPricingSpecRequest();
+    const request = create(GetPricingSpecRequestSchema);
     const response = await client.getPricingSpec(request);
-    expect(response.pricingSpec).toBeDefined();
-    expect(response.pricingSpec?.provider).toBe("AWS");
+    expect(response.spec).toBeDefined();
+    expect(response.spec?.provider).toBe("AWS");
   });
 
   it('estimates cost for a resource', async () => {
@@ -84,36 +89,36 @@ describe('CostSourceClient Integration', () => {
       .withResourceType('ec2.instance')
       .build();
 
-    const request = new EstimateCostRequest({ resource });
+    const request = create(EstimateCostRequestSchema, { resource });
     const response = await client.estimateCost(request);
 
-    expect(response.estimatedCost).toBeDefined();
-    expect(response.estimatedCost?.units).toBe(200n);
+    expect(response.costMonthly).toBe(200.0);
+    expect(response.currency).toBe("USD");
   });
 
   it('fetches recommendations', async () => {
-    const request = new GetRecommendationsRequest();
+    const request = create(GetRecommendationsRequestSchema);
     const response = await client.getRecommendations(request);
 
     expect(response.recommendations).toBeDefined();
     expect(response.recommendations.length).toBeGreaterThan(0);
-    expect(response.recommendations[0].title).toBe("Downsize Instance");
+    expect(response.recommendations[0].description).toBe("Downsize Instance to save costs");
   });
 
   it('fetches recommendations with filter', async () => {
     const filter = new RecommendationFilterBuilder()
       .forProvider('AWS')
-      .withPriority(1) // HIGH
+      .withPriority(RecommendationPriority.HIGH)
       .build();
 
-    const request = new GetRecommendationsRequest({ filter });
+    const request = create(GetRecommendationsRequestSchema, { filter });
     const response = await client.getRecommendations(request);
 
     expect(response.recommendations).toBeDefined();
   });
 
   it('iterates through paginated recommendations', async () => {
-    const request = new GetRecommendationsRequest();
+    const request = create(GetRecommendationsRequestSchema);
     const recommendations: any[] = [];
 
     for await (const rec of recommendationsIterator(client, request)) {
@@ -124,34 +129,32 @@ describe('CostSourceClient Integration', () => {
   });
 
   it('dismisses a recommendation', async () => {
-    const request = new DismissRecommendationRequest({ recommendationId: 'rec-1' });
+    const request = create(DismissRecommendationRequestSchema, { recommendationId: 'rec-1' });
     const response = await client.dismissRecommendation(request);
     expect(response.success).toBe(true);
   });
 
   it('throws ValidationError when dismissing recommendation without ID', async () => {
-    const request = new DismissRecommendationRequest();
-    expect(() => {
-      client.dismissRecommendation(request);
-    }).rejects.toThrow(ValidationError);
+    const request = create(DismissRecommendationRequestSchema);
+    await expect(client.dismissRecommendation(request)).rejects.toThrow(ValidationError);
   });
 
   it('fetches budgets', async () => {
-    const request = new GetBudgetsRequest();
+    const request = create(GetBudgetsRequestSchema);
     const response = await client.getBudgets(request);
     expect(response.budgets).toBeDefined();
     expect(response.budgets.length).toBeGreaterThan(0);
   });
 
   it('fetches plugin info', async () => {
-    const request = new GetPluginInfoRequest();
+    const request = create(GetPluginInfoRequestSchema);
     const response = await client.getPluginInfo(request);
     expect(response.name).toBe("AWS Cost Plugin");
     expect(response.version).toBe("1.0.0");
   });
 
   it('performs DryRun check', async () => {
-    const request = new DryRunRequest();
+    const request = create(DryRunRequestSchema);
     const response = await client.dryRun(request);
     expect(response.resourceTypeSupported).toBe(true);
     expect(response.configurationValid).toBe(true);
@@ -173,7 +176,7 @@ describe('ResourceDescriptorBuilder', () => {
     expect(descriptor.resourceType).toBe('ec2.instance');
     expect(descriptor.region).toBe('us-west-2');
     expect(descriptor.sku).toBe('m5.large');
-    expect(descriptor.resourceId).toBe('arn:aws:ec2:us-west-2:123456789012:instance/i-1234567890abcdef0');
+    expect(descriptor.arn).toBe('arn:aws:ec2:us-west-2:123456789012:instance/i-1234567890abcdef0');
     expect(descriptor.tags).toEqual({ environment: 'production', team: 'platform' });
   });
 
@@ -212,7 +215,7 @@ describe('ObservabilityClient', () => {
 
   it('checks plugin health', async () => {
     const response = await client.healthCheck();
-    expect(response.status).toBe("HEALTHY");
+    expect(response.status).toBe(HealthCheckResponse_Status.SERVING);
   });
 });
 

@@ -6,7 +6,8 @@
 
 ## Content Quality
 
-- [x] No implementation details (languages, frameworks, APIs) _Note: Specific references to GitHub Packages/npm are required as they are the domain entities here._
+- [x] No implementation details (languages, frameworks, APIs) _Note: Specific references to GitHub
+  Packages/npm are required as they are the domain entities here._
 - [x] Focused on user value and business needs
 - [x] Written for non-technical stakeholders
 - [x] All mandatory sections completed

@@ -1,41 +1,35 @@
-feat(sdk): polish capability discovery with auto-detection
+feat(ci): implement automated typescript sdk publishing
 
 ## Summary
 
-This PR consolidates the capability discovery logic into a robust,
-performant, and auto-detecting system. It introduces a centralized
-compatibility layer for legacy string-map metadata, enables the SDK to
-automatically infer capabilities from implemented Go interfaces (like
-`DryRunHandler`), and optimizes memory allocation in high-traffic paths.
+This PR enables the automated publication of the TypeScript client SDK
+to GitHub Packages. It scopes the package to `@rshade/finfocus-client`,
+configures independent versioning via `release-please`, and adds a
+GitHub Actions workflow to handle the build-and-publish pipeline
+triggered by new releases.
 
 ## Test plan
 
-- [x] `go test ./sdk/go/pluginsdk/...` passes (verified auto-discovery)
-- [x] `go test -bench=. ./sdk/go/pluginsdk/...` shows zero-alloc improvements
-- [x] `golangci-lint run` passes with zero issues
-- [x] Validated backward compatibility with legacy metadata formats
+- [x] Local build verification: `npm run build -w packages/client` passed
+- [x] JSON validation: `npm run validate` passed
+- [x] YAML linting: `.github/workflows/publish-ts-client.yml` verified
+- [x] Verified independent versioning config in `release-please-config.json`
 
 ## Changes
 
 ### New files
 
-- `sdk/go/pluginsdk/capability_compat.go` - Centralized Enum/Metadata conversion
+- `.github/workflows/publish-ts-client.yml` - Automated publishing pipeline
 
 ### Modified files
 
-- `sdk/go/pluginsdk/plugin_info.go` - Implemented interface-based auto-discovery
-- `sdk/go/pluginsdk/sdk.go` - Integrated new discovery logic and optimized slices
-- `proto/finfocus/v1/costsource.proto` - Added clarifying comments to messages
-- `sdk/go/pluginsdk/README.md` - Documented the Capability Discovery Pattern
+- `sdk/typescript/packages/client/package.json` - Scoped name and registry config
+- `release-please-config.json` - Added TS SDK versioning strategy
+- `.release-please-manifest.json` - Initialized SDK version tracking
+- `specs/039-ts-publishing-infra/` - Added plan, research, and tasks
 
 ### Housekeeping
 
-- Renamed compatibility tests in `sdk/go/testing` for clarity
+- Updated `GEMINI.md` context to reflect TS SDK publishing capabilities
 
-Closes #208
-Closes #209
-Closes #294
-Closes #295
-Closes #299
-Closes #300
-Closes #301
+Closes #311

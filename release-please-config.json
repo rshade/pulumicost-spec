@@ -42,6 +42,10 @@
           "pattern": "const SpecVersion = \"{version}\""
         }
       ]
+    },
+    "sdk/typescript/packages/client": {
+      "release-type": "node",
+      "package-name": "@rshade/finfocus-client"
     }
   }
 }
