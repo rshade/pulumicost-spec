@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.9",
-    "tsup": "^8.0.1"
+    "tsup": "^8.5.1"
   },
   "files": [
     "dist"
