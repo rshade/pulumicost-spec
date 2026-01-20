@@ -406,6 +406,13 @@ const (
 	RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE RecommendationCategory = 2
 	RecommendationCategory_RECOMMENDATION_CATEGORY_SECURITY    RecommendationCategory = 3
 	RecommendationCategory_RECOMMENDATION_CATEGORY_RELIABILITY RecommendationCategory = 4
+	// Cost anomaly requiring investigation.
+	// Used for unusual spending patterns detected by cost management services
+	// (AWS Cost Anomaly Detection, Azure Cost Management Anomalies, etc.).
+	// Anomaly recommendations SHOULD use RECOMMENDATION_ACTION_TYPE_INVESTIGATE.
+	// Using other action types is valid but discouraged except when specific
+	// remediation suggestions are available for certain anomaly types.
+	RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY RecommendationCategory = 5
 )
 
 // Enum value maps for RecommendationCategory.
@@ -416,6 +423,7 @@ var (
 		2: "RECOMMENDATION_CATEGORY_PERFORMANCE",
 		3: "RECOMMENDATION_CATEGORY_SECURITY",
 		4: "RECOMMENDATION_CATEGORY_RELIABILITY",
+		5: "RECOMMENDATION_CATEGORY_ANOMALY",
 	}
 	RecommendationCategory_value = map[string]int32{
 		"RECOMMENDATION_CATEGORY_UNSPECIFIED": 0,
@@ -423,6 +431,7 @@ var (
 		"RECOMMENDATION_CATEGORY_PERFORMANCE": 2,
 		"RECOMMENDATION_CATEGORY_SECURITY":    3,
 		"RECOMMENDATION_CATEGORY_RELIABILITY": 4,
+		"RECOMMENDATION_CATEGORY_ANOMALY":     5,
 	}
 )
 
@@ -484,6 +493,11 @@ const (
 	// Use when no other action type accurately describes the recommendation.
 	// Include details in Recommendation.metadata or Recommendation.description.
 	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_OTHER RecommendationActionType = 11
+	// Investigate anomaly or issue requiring human analysis.
+	// No automated remediation is appropriate; the recommendation indicates
+	// something unusual that requires manual investigation.
+	// Commonly paired with RECOMMENDATION_CATEGORY_ANOMALY for cost anomalies.
+	RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE RecommendationActionType = 12
 )
 
 // Enum value maps for RecommendationActionType.
@@ -501,6 +515,7 @@ var (
 		9:  "RECOMMENDATION_ACTION_TYPE_SCHEDULE",
 		10: "RECOMMENDATION_ACTION_TYPE_REFACTOR",
 		11: "RECOMMENDATION_ACTION_TYPE_OTHER",
+		12: "RECOMMENDATION_ACTION_TYPE_INVESTIGATE",
 	}
 	RecommendationActionType_value = map[string]int32{
 		"RECOMMENDATION_ACTION_TYPE_UNSPECIFIED":         0,
@@ -515,6 +530,7 @@ var (
 		"RECOMMENDATION_ACTION_TYPE_SCHEDULE":            9,
 		"RECOMMENDATION_ACTION_TYPE_REFACTOR":            10,
 		"RECOMMENDATION_ACTION_TYPE_OTHER":               11,
+		"RECOMMENDATION_ACTION_TYPE_INVESTIGATE":         12,
 	}
 )
 
@@ -5917,13 +5933,14 @@ const file_finfocus_v1_costsource_proto_rawDesc = "" +
 	"\x16SLI_STATUS_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19SLI_STATUS_MEETING_TARGET\x10\x01\x12\x16\n" +
 	"\x12SLI_STATUS_WARNING\x10\x02\x12\x17\n" +
-	"\x13SLI_STATUS_CRITICAL\x10\x03*\xdb\x01\n" +
+	"\x13SLI_STATUS_CRITICAL\x10\x03*\x80\x02\n" +
 	"\x16RecommendationCategory\x12'\n" +
 	"#RECOMMENDATION_CATEGORY_UNSPECIFIED\x10\x00\x12 \n" +
 	"\x1cRECOMMENDATION_CATEGORY_COST\x10\x01\x12'\n" +
 	"#RECOMMENDATION_CATEGORY_PERFORMANCE\x10\x02\x12$\n" +
 	" RECOMMENDATION_CATEGORY_SECURITY\x10\x03\x12'\n" +
-	"#RECOMMENDATION_CATEGORY_RELIABILITY\x10\x04*\x9f\x04\n" +
+	"#RECOMMENDATION_CATEGORY_RELIABILITY\x10\x04\x12#\n" +
+	"\x1fRECOMMENDATION_CATEGORY_ANOMALY\x10\x05*\xcb\x04\n" +
 	"\x18RecommendationActionType\x12*\n" +
 	"&RECOMMENDATION_ACTION_TYPE_UNSPECIFIED\x10\x00\x12(\n" +
 	"$RECOMMENDATION_ACTION_TYPE_RIGHTSIZE\x10\x01\x12(\n" +
@@ -5937,7 +5954,8 @@ const file_finfocus_v1_costsource_proto_rawDesc = "" +
 	"#RECOMMENDATION_ACTION_TYPE_SCHEDULE\x10\t\x12'\n" +
 	"#RECOMMENDATION_ACTION_TYPE_REFACTOR\x10\n" +
 	"\x12$\n" +
-	" RECOMMENDATION_ACTION_TYPE_OTHER\x10\v*\xce\x01\n" +
+	" RECOMMENDATION_ACTION_TYPE_OTHER\x10\v\x12*\n" +
+	"&RECOMMENDATION_ACTION_TYPE_INVESTIGATE\x10\f*\xce\x01\n" +
 	"\x16RecommendationPriority\x12'\n" +
 	"#RECOMMENDATION_PRIORITY_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bRECOMMENDATION_PRIORITY_LOW\x10\x01\x12\"\n" +

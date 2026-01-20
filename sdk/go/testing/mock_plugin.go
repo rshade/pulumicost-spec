@@ -869,17 +869,64 @@ type RecommendationsConfig struct {
 }
 
 // SetRecommendationsConfig configures the recommendations response.
+//
+// Thread Safety: This method is NOT safe for concurrent use. All calls to
+// SetRecommendationsConfig must complete before the plugin begins serving requests.
+// Typical usage is to configure the mock during test setup, before calling
+// harness.Start() or benchmark.ResetTimer().
 func (m *MockPlugin) SetRecommendationsConfig(config RecommendationsConfig) {
 	m.RecommendationsConfig = config
 }
 
-// GenerateSampleRecommendations creates realistic test recommendation data.
+// generateAnomalyRecommendation creates a realistic anomaly recommendation with
+// appropriate negative savings (overspend) and descriptive context.
+func generateAnomalyRecommendation(index int, baseInfo *pbc.ResourceRecommendationInfo,
+	confidence float64, priority pbc.RecommendationPriority) *pbc.Recommendation {
+	const (
+		anomalyVariations     = 3
+		anomalyBaseMultiplier = 50.0
+		overspendModulo       = 2
+	)
+
+	isOverspend := index%overspendModulo == 0
+	savings := savingsBase + float64(index)*savingsIncrement
+
+	var description string
+	if isOverspend {
+		savings = -savings
+		anomalyPercentage := (float64(index%anomalyVariations) + 1.0) * anomalyBaseMultiplier
+		description = fmt.Sprintf(
+			"Anomaly %d: Unusual spending pattern detected - %.0f%% above baseline",
+			index+1, anomalyPercentage,
+		)
+	} else {
+		description = fmt.Sprintf("Anomaly %d: Cost anomaly requiring investigation", index+1)
+	}
+
+	return &pbc.Recommendation{
+		Id:          fmt.Sprintf("rec-anomaly-%d", index+1),
+		Category:    pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY,
+		ActionType:  pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE,
+		Priority:    priority,
+		Description: description,
+		Resource:    baseInfo,
+		Impact: &pbc.RecommendationImpact{
+			EstimatedSavings: savings,
+			Currency:         "USD",
+			ProjectionPeriod: "12_months",
+		},
+		ConfidenceScore: &confidence,
+	}
+}
+
+// GenerateSampleRecommendations creates realistic test recommendation data including anomalies.
 func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 	categories := []pbc.RecommendationCategory{
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE,
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_SECURITY,
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_RELIABILITY,
+		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY,
 	}
 
 	actionTypes := []pbc.RecommendationActionType{
@@ -895,6 +942,7 @@ func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_SCHEDULE,            // 9
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_REFACTOR,            // 10
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_OTHER,               // 11
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE,         // 12
 	}
 
 	priorities := []pbc.RecommendationPriority{
@@ -909,21 +957,38 @@ func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 	recs := make([]*pbc.Recommendation, count)
 	for i := range count {
 		confidence := confidenceBase + float64(i%confidenceVariations)*confidenceStep
+		category := categories[i%len(categories)]
+		actionType := actionTypes[i%len(actionTypes)]
+
+		// Create base resource info
+		baseInfo := &pbc.ResourceRecommendationInfo{
+			Id:       fmt.Sprintf("resource-%d", i+1),
+			Provider: providers[i%len(providers)],
+			ResourceType: fmt.Sprintf(
+				"%s:compute/instance:Instance",
+				providers[i%len(providers)],
+			),
+			Region: regions[i%len(regions)],
+			Name:   fmt.Sprintf("instance-%d", i+1),
+		}
+
+		// For anomalies, use helper function to generate complete recommendation
+		if category == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY {
+			recs[i] = generateAnomalyRecommendation(i, baseInfo, confidence, priorities[i%len(priorities)])
+			continue
+		}
+
+		// Non-anomaly recommendations
 		savings := savingsBase + float64(i)*savingsIncrement
+		description := fmt.Sprintf("Recommendation %d: Optimize resource with cost savings", i+1)
 
 		recs[i] = &pbc.Recommendation{
 			Id:          fmt.Sprintf("rec-%d", i+1),
-			Category:    categories[i%len(categories)],
-			ActionType:  actionTypes[i%len(actionTypes)],
+			Category:    category,
+			ActionType:  actionType,
 			Priority:    priorities[i%len(priorities)],
-			Description: fmt.Sprintf("Recommendation %d: Optimize resource with cost savings", i+1),
-			Resource: &pbc.ResourceRecommendationInfo{
-				Id:           fmt.Sprintf("resource-%d", i+1),
-				Provider:     providers[i%len(providers)],
-				ResourceType: fmt.Sprintf("%s:compute/instance:Instance", providers[i%len(providers)]),
-				Region:       regions[i%len(regions)],
-				Name:         fmt.Sprintf("instance-%d", i+1),
-			},
+			Description: description,
+			Resource:    baseInfo,
 			Impact: &pbc.RecommendationImpact{
 				EstimatedSavings: savings,
 				Currency:         "USD",
@@ -1208,44 +1273,64 @@ func applyMockFilter(recs []*pbc.Recommendation, filter *pbc.RecommendationFilte
 	return result
 }
 
+// matchesProviderFilter checks if the recommendation matches the provider filter.
+func matchesProviderFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	if filter.GetProvider() == "" {
+		return true
+	}
+	return rec.GetResource() != nil && rec.GetResource().GetProvider() == filter.GetProvider()
+}
+
+// matchesRegionFilter checks if the recommendation matches the region filter.
+func matchesRegionFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	if filter.GetRegion() == "" {
+		return true
+	}
+	return rec.GetResource() != nil && rec.GetResource().GetRegion() == filter.GetRegion()
+}
+
+// matchesResourceTypeFilter checks if the recommendation matches the resource type filter.
+func matchesResourceTypeFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	if filter.GetResourceType() == "" {
+		return true
+	}
+	return rec.GetResource() != nil && rec.GetResource().GetResourceType() == filter.GetResourceType()
+}
+
+// matchesCategoryFilter checks if the recommendation matches the category filter.
+func matchesCategoryFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	if filter.GetCategory() == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED {
+		return true
+	}
+	return rec.GetCategory() == filter.GetCategory()
+}
+
+// matchesActionTypeFilter checks if the recommendation matches the action type filter.
+func matchesActionTypeFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	if filter.GetActionType() == pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED {
+		return true
+	}
+	return rec.GetActionType() == filter.GetActionType()
+}
+
+// matchesConfidenceScoreFilter checks if the recommendation matches the confidence score filter.
+func matchesConfidenceScoreFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
+	minScore := filter.GetMinConfidenceScore()
+	if minScore <= 0 {
+		return true
+	}
+	recScore := rec.GetConfidenceScore()
+	return recScore > 0 && recScore >= minScore
+}
+
 // matchesMockFilter checks if a recommendation matches the filter criteria.
 func matchesMockFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter) bool {
-	// Check provider filter
-	if filter.GetProvider() != "" {
-		if rec.GetResource() == nil || rec.GetResource().GetProvider() != filter.GetProvider() {
-			return false
-		}
-	}
-
-	// Check region filter
-	if filter.GetRegion() != "" {
-		if rec.GetResource() == nil || rec.GetResource().GetRegion() != filter.GetRegion() {
-			return false
-		}
-	}
-
-	// Check resource_type filter
-	if filter.GetResourceType() != "" {
-		if rec.GetResource() == nil || rec.GetResource().GetResourceType() != filter.GetResourceType() {
-			return false
-		}
-	}
-
-	// Check category filter
-	if filter.GetCategory() != pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_UNSPECIFIED {
-		if rec.GetCategory() != filter.GetCategory() {
-			return false
-		}
-	}
-
-	// Check action_type filter
-	if filter.GetActionType() != pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_UNSPECIFIED {
-		if rec.GetActionType() != filter.GetActionType() {
-			return false
-		}
-	}
-
-	return true
+	return matchesProviderFilter(rec, filter) &&
+		matchesRegionFilter(rec, filter) &&
+		matchesResourceTypeFilter(rec, filter) &&
+		matchesCategoryFilter(rec, filter) &&
+		matchesActionTypeFilter(rec, filter) &&
+		matchesConfidenceScoreFilter(rec, filter)
 }
 
 // mockDefaultPageSize is the default page size for mock pagination.
