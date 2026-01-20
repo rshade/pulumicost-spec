@@ -873,13 +873,14 @@ func (m *MockPlugin) SetRecommendationsConfig(config RecommendationsConfig) {
 	m.RecommendationsConfig = config
 }
 
-// GenerateSampleRecommendations creates realistic test recommendation data.
+// GenerateSampleRecommendations creates realistic test recommendation data including anomalies.
 func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 	categories := []pbc.RecommendationCategory{
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_PERFORMANCE,
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_SECURITY,
 		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_RELIABILITY,
+		pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY,
 	}
 
 	actionTypes := []pbc.RecommendationActionType{
@@ -895,6 +896,7 @@ func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_SCHEDULE,            // 9
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_REFACTOR,            // 10
 		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_OTHER,               // 11
+		pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE,         // 12
 	}
 
 	priorities := []pbc.RecommendationPriority{
@@ -909,14 +911,33 @@ func GenerateSampleRecommendations(count int) []*pbc.Recommendation {
 	recs := make([]*pbc.Recommendation, count)
 	for i := range count {
 		confidence := confidenceBase + float64(i%confidenceVariations)*confidenceStep
+		category := categories[i%len(categories)]
+		actionType := actionTypes[i%len(actionTypes)]
+
+		// For anomalies, use INVESTIGATE action and potentially negative savings (overspend)
+		if category == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY {
+			actionType = pbc.RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE
+		}
+
+		// Anomalies can have negative estimated_savings (overspend)
 		savings := savingsBase + float64(i)*savingsIncrement
+		description := fmt.Sprintf("Recommendation %d: Optimize resource with cost savings", i+1)
+		if category == pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY {
+			// Make anomalies more likely to have negative savings
+			if i%2 == 0 {
+				savings = -(savingsBase + float64(i)*savingsIncrement)
+				description = fmt.Sprintf("Anomaly %d: Unusual spending pattern detected - %.0f%% above baseline", i+1, (float64(i%3)+1)*50)
+			} else {
+				description = fmt.Sprintf("Anomaly %d: Cost anomaly requiring investigation", i+1)
+			}
+		}
 
 		recs[i] = &pbc.Recommendation{
 			Id:          fmt.Sprintf("rec-%d", i+1),
-			Category:    categories[i%len(categories)],
-			ActionType:  actionTypes[i%len(actionTypes)],
+			Category:    category,
+			ActionType:  actionType,
 			Priority:    priorities[i%len(priorities)],
-			Description: fmt.Sprintf("Recommendation %d: Optimize resource with cost savings", i+1),
+			Description: description,
 			Resource: &pbc.ResourceRecommendationInfo{
 				Id:           fmt.Sprintf("resource-%d", i+1),
 				Provider:     providers[i%len(providers)],

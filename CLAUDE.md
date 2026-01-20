@@ -758,6 +758,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod), Protocol Buffers v3, buf v1.32.1 (040-anomaly-detection-recommendations)
+- N/A (stateless enum additions) (040-anomaly-detection-recommendations)
+
 - Go 1.25.5 (per go.mod) + net/http (stdlib), strings (stdlib) - no new dependencies (033-cors-headers-config)
 - N/A (stateless configuration extension) (033-cors-headers-config)
 
@@ -818,6 +821,13 @@ A comprehensive migration guide is available in [MIGRATION.md](./MIGRATION.md) f
 See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable documentation.
 
 ## Recent Changes
+
+- 040-anomaly-detection-recommendations: Added Protocol Buffers v3 enum values for anomaly detection
+  - `RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY = 5`
+  - `RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE = 12`
+  - Enables cost anomaly recommendations alongside optimization recommendations
+  - Test coverage: Comprehensive conformance tests in `sdk/go/testing/anomaly_conformance_test.go`
+  - MockPlugin updated to generate realistic anomalies with INVESTIGATE action and negative savings
 
 - 029-plugin-info-rpc: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc
 - 026-focus-1-3-migration: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1
