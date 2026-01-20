@@ -870,6 +870,13 @@ enum RecommendationCategory {
   RECOMMENDATION_CATEGORY_PERFORMANCE = 2;
   RECOMMENDATION_CATEGORY_SECURITY = 3;
   RECOMMENDATION_CATEGORY_RELIABILITY = 4;
+  // Cost anomaly requiring investigation.
+  // Used for unusual spending patterns detected by cost management services
+  // (AWS Cost Anomaly Detection, Azure Cost Management Anomalies, etc.).
+  // Anomaly recommendations SHOULD use RECOMMENDATION_ACTION_TYPE_INVESTIGATE.
+  // Using other action types is valid but discouraged except when specific
+  // remediation suggestions are available for certain anomaly types.
+  RECOMMENDATION_CATEGORY_ANOMALY = 5;
 }
 
 // RecommendationActionType specifies the type of action recommended.
@@ -901,6 +908,11 @@ enum RecommendationActionType {
   // Use when no other action type accurately describes the recommendation.
   // Include details in Recommendation.metadata or Recommendation.description.
   RECOMMENDATION_ACTION_TYPE_OTHER = 11;
+  // Investigate anomaly or issue requiring human analysis.
+  // No automated remediation is appropriate; the recommendation indicates
+  // something unusual that requires manual investigation.
+  // Commonly paired with RECOMMENDATION_CATEGORY_ANOMALY for cost anomalies.
+  RECOMMENDATION_ACTION_TYPE_INVESTIGATE = 12;
 }
 
 // RecommendationPriority indicates the urgency of a recommendation.

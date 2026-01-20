@@ -202,8 +202,8 @@ func TestActionTypeEnumCount(t *testing.T) {
 		}
 	}
 
-	// After proto changes, we expect 12 action types (0-11)
-	expectedCount := 12
+	// After adding INVESTIGATE action, we expect 13 action types (0-12)
+	expectedCount := 13
 	if knownCount != expectedCount {
 		t.Errorf("Expected %d action types, found %d", expectedCount, knownCount)
 	}
