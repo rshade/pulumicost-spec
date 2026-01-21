@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/rshade/finfocus-spec/compare/finfocus-client-v0.5.0...finfocus-client-v0.6.0) (2026-01-21)
+
+
+### Features
+
+* **proto:** add anomaly category and investigate action ([#332](https://github.com/rshade/finfocus-spec/issues/332)) ([318eeb9](https://github.com/rshade/finfocus-spec/commit/318eeb98ff70d2c560d467d59538a3dcd96b6ef9)), closes [#315](https://github.com/rshade/finfocus-spec/issues/315)
+
+
+### Bug Fixes
+
+* update release workflow for typescript package ([#317](https://github.com/rshade/finfocus-spec/issues/317)) ([d7cdcb5](https://github.com/rshade/finfocus-spec/commit/d7cdcb54c0649208fe386b8105bb42e66065fbd6))
+
 ## [0.5.0](https://github.com/rshade/finfocus-spec/compare/finfocus-client-v0.1.0...finfocus-client-v0.5.0) (2026-01-19)
 
 ### Features
