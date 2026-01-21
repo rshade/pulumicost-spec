@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4](https://github.com/rshade/finfocus-spec/compare/v0.5.3...v0.5.4) (2026-01-21)
+
+
+### Added
+
+* **proto:** add anomaly category and investigate action ([#332](https://github.com/rshade/finfocus-spec/issues/332)) ([318eeb9](https://github.com/rshade/finfocus-spec/commit/318eeb98ff70d2c560d467d59538a3dcd96b6ef9)), closes [#315](https://github.com/rshade/finfocus-spec/issues/315)
+
+
+### Fixed
+
+* update release workflow for typescript package ([#317](https://github.com/rshade/finfocus-spec/issues/317)) ([d7cdcb5](https://github.com/rshade/finfocus-spec/commit/d7cdcb54c0649208fe386b8105bb42e66065fbd6))
+
+
+### Documentation
+
+* adding initial typescript sdk readme ([#333](https://github.com/rshade/finfocus-spec/issues/333)) ([b79343d](https://github.com/rshade/finfocus-spec/commit/b79343dcd7eccfd658622f504bdc310299f1e683))
+
 ## [0.5.3](https://github.com/rshade/finfocus-spec/compare/v0.5.2...v0.5.3) (2026-01-19)
 
 
