@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/rshade/finfocus-spec/sdk/go/jsonld"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestSchemaOrg_MonetaryAmountType(t *testing.T) {

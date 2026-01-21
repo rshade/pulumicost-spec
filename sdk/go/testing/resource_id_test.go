@@ -15,8 +15,9 @@ import (
 	"strings"
 	"testing"
 
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/protobuf/proto"
+
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // =============================================================================

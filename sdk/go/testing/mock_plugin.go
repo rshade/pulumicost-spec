@@ -54,11 +54,14 @@ const (
 	databaseRateMultiplier   = 3.0   // Database resources (SQL Database)
 
 	// Recommendation generation constants.
-	confidenceVariations = 4     // Number of confidence score variations (0.70, 0.775, 0.85, 0.925)
-	confidenceBase       = 0.7   // Base confidence score
-	confidenceStep       = 0.075 // Confidence increment per variation
-	savingsBase          = 50.0  // Base savings amount
-	savingsIncrement     = 25.0  // Savings increment per recommendation
+	confidenceVariations       = 4     // Number of confidence score variations (0.70, 0.775, 0.85, 0.925)
+	confidenceBase             = 0.7   // Base confidence score
+	confidenceStep             = 0.075 // Confidence increment per variation
+	savingsBase                = 50.0  // Base savings amount
+	defaultRecommendationCount = 12    // 12 samples to cover all categories and action types
+	defaultSpotRiskScore       = 0.3   // Default spot interruption risk score
+	defaultPreemptibleRisk     = 0.35  // Default preemptible instance risk score
+	savingsIncrement           = 25.0  // Savings increment per recommendation
 
 	// Mock impact metric base values at 100% utilization.
 	// These are arbitrary values for testing purposes only.
@@ -145,6 +148,15 @@ type MockPlugin struct {
 	ShouldErrorOnDryRun      bool                // Whether DryRun should return an error
 	DryRunDelay              time.Duration       // Delay before responding
 	UnsupportedResourceTypes []string            // Resource types that return resource_type_supported=false
+
+	// Pricing Tier configuration
+	//
+	// Thread Safety: These fields must be set before the plugin begins serving
+	// requests. Modification during request handling is not thread-safe.
+	DefaultPricingCategory           pbc.FocusPricingCategory            // Default pricing category for all responses
+	DefaultSpotInterruptionRiskScore float64                             // Default spot risk score (0.0-1.0)
+	PricingCategoryByResourceType    map[string]pbc.FocusPricingCategory // Per-resource-type overrides
+	SpotRiskScoreByResourceType      map[string]float64                  // Per-resource-type risk score overrides
 }
 
 // NewMockPlugin creates a new mock plugin with default configuration.
@@ -170,10 +182,19 @@ func NewMockPlugin() *MockPlugin {
 		SpecVersion:   "v0.4.11",
 		// DryRun defaults - configuration valid by default
 		DryRunConfigValid: true,
+		// Pricing Tier defaults
+		DefaultPricingCategory:           pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+		DefaultSpotInterruptionRiskScore: 0.0,
+		PricingCategoryByResourceType: map[string]pbc.FocusPricingCategory{
+			"spot":        pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC,
+			"preemptible": pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC,
+		},
+		SpotRiskScoreByResourceType: map[string]float64{
+			"spot":        defaultSpotRiskScore,
+			"preemptible": defaultPreemptibleRisk,
+		},
 	}
 }
-
-const defaultRecommendationCount = 12 // 12 samples to cover all categories and action types
 
 // ConfigurableErrorMockPlugin creates a mock plugin that can be configured to return errors.
 func ConfigurableErrorMockPlugin() *MockPlugin {
@@ -203,6 +224,84 @@ func SlowMockPlugin() *MockPlugin {
 // harness.Start() or benchmark.ResetTimer().
 func (m *MockPlugin) SetFallbackHint(hint pbc.FallbackHint) {
 	m.FallbackHint = hint
+}
+
+// SetPricingCategory sets the default pricing category for all responses.
+//
+// Thread Safety: This method is NOT safe for concurrent use. All calls to
+// SetPricingCategory must complete before the plugin begins serving requests.
+//
+// Example:
+//
+//	plugin := NewMockPlugin()
+//	plugin.SetPricingCategory(pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC)
+func (m *MockPlugin) SetPricingCategory(category pbc.FocusPricingCategory) {
+	m.DefaultPricingCategory = category
+}
+
+// SetSpotRiskScore sets the default spot interruption risk score for all responses.
+// The score must be between 0.0 and 1.0 and must not be NaN or Inf.
+//
+// Thread Safety: This method is NOT safe for concurrent use. All calls to
+// SetSpotRiskScore must complete before the plugin begins serving requests.
+//
+// Example:
+//
+//	plugin := NewMockPlugin()
+//	plugin.SetSpotRiskScore(0.8)  // 80% interruption risk
+//
+// Panics if score is NaN, Inf, or not in the range [0.0, 1.0].
+func (m *MockPlugin) SetSpotRiskScore(score float64) {
+	if math.IsNaN(score) || math.IsInf(score, 0) {
+		panic(fmt.Sprintf("invalid spot risk score: cannot be NaN or Inf, got %f", score))
+	}
+	if score < 0.0 || score > 1.0 {
+		panic(fmt.Sprintf("invalid spot risk score: must be between 0.0 and 1.0, got %f", score))
+	}
+	m.DefaultSpotInterruptionRiskScore = score
+}
+
+// SetPricingCategoryForResourceType sets a resource-type-specific pricing category override.
+//
+// Thread Safety: This method is NOT safe for concurrent use. All calls to
+// SetPricingCategoryForResourceType must complete before the plugin begins serving requests.
+//
+// Example:
+//
+//	plugin := NewMockPlugin()
+//	plugin.SetPricingCategoryForResourceType("spot", pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC)
+//	plugin.SetPricingCategoryForResourceType("reserved", pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_COMMITTED)
+func (m *MockPlugin) SetPricingCategoryForResourceType(resourceType string, category pbc.FocusPricingCategory) {
+	if m.PricingCategoryByResourceType == nil {
+		m.PricingCategoryByResourceType = make(map[string]pbc.FocusPricingCategory)
+	}
+	m.PricingCategoryByResourceType[resourceType] = category
+}
+
+// SetSpotRiskScoreForResourceType sets a resource-type-specific spot risk score override.
+// The score must be between 0.0 and 1.0 and must not be NaN or Inf.
+//
+// Thread Safety: This method is NOT safe for concurrent use. All calls to
+// SetSpotRiskScoreForResourceType must complete before the plugin begins serving requests.
+//
+// Example:
+//
+//	plugin := NewMockPlugin()
+//	plugin.SetSpotRiskScoreForResourceType("spot", 0.8)  // 80% interruption risk for spot instances
+//	plugin.SetSpotRiskScoreForResourceType("preemptible", 0.6)  // 60% for preemptible instances
+//
+// Panics if score is NaN, Inf, or not in the range [0.0, 1.0].
+func (m *MockPlugin) SetSpotRiskScoreForResourceType(resourceType string, score float64) {
+	if math.IsNaN(score) || math.IsInf(score, 0) {
+		panic(fmt.Sprintf("invalid spot risk score: cannot be NaN or Inf, got %f", score))
+	}
+	if score < 0.0 || score > 1.0 {
+		panic(fmt.Sprintf("invalid spot risk score: must be between 0.0 and 1.0, got %f", score))
+	}
+	if m.SpotRiskScoreByResourceType == nil {
+		m.SpotRiskScoreByResourceType = make(map[string]float64)
+	}
+	m.SpotRiskScoreByResourceType[resourceType] = score
 }
 
 // Name returns the plugin name.
@@ -592,6 +691,60 @@ func getImpactMetricValue(kind pbc.MetricKind, utilization float64) (float64, st
 	}
 }
 
+// resolvePricing returns the pricing category and spot risk score for a resource type.
+// It applies resource-type-specific overrides from PricingCategoryByResourceType and
+// SpotRiskScoreByResourceType, falling back to defaults if no override exists.
+func (m *MockPlugin) resolvePricing(resourceType string) (pbc.FocusPricingCategory, float64) {
+	pricingCategory := m.DefaultPricingCategory
+	spotRiskScore := m.DefaultSpotInterruptionRiskScore
+
+	// Check for resource-type-specific overrides
+	if categoryOverride, exists := m.PricingCategoryByResourceType[resourceType]; exists {
+		pricingCategory = categoryOverride
+	}
+	if riskOverride, exists := m.SpotRiskScoreByResourceType[resourceType]; exists {
+		spotRiskScore = riskOverride
+	}
+
+	return pricingCategory, spotRiskScore
+}
+
+// getSimpleResourceKey extracts the simple resource key (e.g., "ec2", "spot") from a ResourceDescriptor.
+// This matches resource types against SupportedResources to find the canonical simple key.
+// It handles Pulumi-style resource descriptors like "aws:ec2/instance:Instance" by extracting
+// the module name and matching against supported resources.
+func (m *MockPlugin) getSimpleResourceKey(resource *pbc.ResourceDescriptor) string {
+	if resource == nil {
+		return ""
+	}
+
+	resourceType := resource.GetResourceType()
+	if resourceType == "" {
+		return ""
+	}
+
+	provider, module, resourceName, err := parseResourceType(resourceType)
+	if err != nil {
+		// Fall back to raw resource type for backwards compatibility
+		return resourceType
+	}
+
+	// Check SupportedResources for provider
+	supportedResources, exists := m.SupportedResources[provider]
+	if !exists {
+		return module // Fall back to module name
+	}
+
+	// Match against supported resources (same logic as EstimateCost)
+	for _, supported := range supportedResources {
+		if module == supported || resourceName == supported || module+"_"+resourceName == supported {
+			return supported
+		}
+	}
+
+	return module // Fall back to module name
+}
+
 // GetProjectedCost returns mock projected cost data.
 func (m *MockPlugin) GetProjectedCost(
 	ctx context.Context,
@@ -625,7 +778,8 @@ func (m *MockPlugin) GetProjectedCost(
 	}
 
 	// Calculate cost based on resource type (keep in sync with GetPricingSpec).
-	multiplier := getRateMultiplier(resource.GetResourceType())
+	simpleResourceType := m.getSimpleResourceKey(resource)
+	multiplier := getRateMultiplier(simpleResourceType)
 
 	// Incorporate utilization into impact modeling (for GreenOps metrics).
 	util := utilization.Get(req)
@@ -635,11 +789,16 @@ func (m *MockPlugin) GetProjectedCost(
 
 	billingDetail := fmt.Sprintf("mock-%s-rate (util:%.2f)", strings.ToLower(resource.GetProvider()), util)
 
+	// Determine pricing category and spot risk score
+	pricingCategory, spotRiskScore := m.resolvePricing(simpleResourceType)
+
 	resp := &pbc.GetProjectedCostResponse{
-		UnitPrice:     unitPrice,
-		Currency:      m.Currency,
-		CostPerMonth:  costPerMonth,
-		BillingDetail: billingDetail,
+		UnitPrice:                 unitPrice,
+		Currency:                  m.Currency,
+		CostPerMonth:              costPerMonth,
+		BillingDetail:             billingDetail,
+		PricingCategory:           pricingCategory,
+		SpotInterruptionRiskScore: spotRiskScore,
 	}
 
 	// Add impact metrics if configured
@@ -820,8 +979,8 @@ func (m *MockPlugin) GetPricingSpec(
 }
 
 // parseResourceType parses a resource type string in format provider:module/resource:Type.
-// Returns (provider, module, resource, typeName, error).
-func parseResourceType(resourceType string) (string, string, string, string, error) {
+// Returns (provider, module, resource, error). The Type component is validated but not returned.
+func parseResourceType(resourceType string) (string, string, string, error) {
 	const (
 		expectedColonParts = 3
 		expectedSlashParts = 2
@@ -829,7 +988,7 @@ func parseResourceType(resourceType string) (string, string, string, string, err
 	// Split into provider, module/resource, and type name
 	parts := strings.SplitN(resourceType, ":", expectedColonParts)
 	if len(parts) != expectedColonParts || parts[0] == "" || parts[1] == "" || parts[2] == "" {
-		return "", "", "", "",
+		return "", "", "",
 			fmt.Errorf(
 				"invalid format: expected provider:module/resource:Type, got %s",
 				resourceType,
@@ -838,12 +997,12 @@ func parseResourceType(resourceType string) (string, string, string, string, err
 
 	provider := parts[0]
 	moduleResource := parts[1]
-	typeName := parts[2]
+	// parts[2] (typeName) is validated in the check above but not returned
 
 	// Split module/resource
 	moduleResourceParts := strings.SplitN(moduleResource, "/", expectedSlashParts)
 	if len(moduleResourceParts) != expectedSlashParts || moduleResourceParts[0] == "" || moduleResourceParts[1] == "" {
-		return "", "", "", "",
+		return "", "", "",
 			fmt.Errorf(
 				"invalid format: expected provider:module/resource:Type, got %s",
 				resourceType,
@@ -853,7 +1012,7 @@ func parseResourceType(resourceType string) (string, string, string, string, err
 	module := moduleResourceParts[0]
 	resource := moduleResourceParts[1]
 
-	return provider, module, resource, typeName, nil
+	return provider, module, resource, nil
 }
 
 // =============================================================================
@@ -1424,7 +1583,7 @@ func (m *MockPlugin) EstimateCost(
 		return nil, status.Error(codes.InvalidArgument, "resource_type is required")
 	}
 
-	provider, module, resource, _, err := parseResourceType(resourceType)
+	provider, module, resource, err := parseResourceType(resourceType)
 	if err != nil {
 		return nil, status.Error(
 			codes.InvalidArgument,
@@ -1485,9 +1644,14 @@ func (m *MockPlugin) EstimateCost(
 	monthlyHours := float64(HoursPerDay * daysPerMonth)
 	monthlyCost := hourlyRate * monthlyHours
 
+	// Determine pricing category and spot risk score
+	pricingCategory, spotRiskScore := m.resolvePricing(simpleResourceType)
+
 	return &pbc.EstimateCostResponse{
-		Currency:    m.Currency,
-		CostMonthly: monthlyCost,
+		Currency:                  m.Currency,
+		CostMonthly:               monthlyCost,
+		PricingCategory:           pricingCategory,
+		SpotInterruptionRiskScore: spotRiskScore,
 	}, nil
 }
 

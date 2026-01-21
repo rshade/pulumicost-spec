@@ -3,8 +3,9 @@ package testing_test
 import (
 	"testing"
 
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/protobuf/proto"
+
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func TestGetActualCostRequest_ArnField(t *testing.T) {

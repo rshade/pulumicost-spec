@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // TestNewPluginLogger_DefaultStderr tests NewPluginLogger with default stderr.

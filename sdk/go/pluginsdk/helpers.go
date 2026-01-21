@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"time"
@@ -1047,4 +1048,175 @@ func CalculateRecommendationSummary(
 	summary.Currency = detectedCurrency
 
 	return summary
+}
+
+// =============================================================================
+// Pricing Tier Field Builders
+// =============================================================================
+
+// EstimateCostResponseOption is a functional option for configuring EstimateCostResponse.
+type EstimateCostResponseOption func(*pbc.EstimateCostResponse)
+
+// WithPricingCategory sets the pricing_category field for EstimateCostResponse.
+//
+// Example:
+//
+//	resp := pluginsdk.NewEstimateCostResponse(
+//	    pluginsdk.WithPricingCategory(pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC),
+//	)
+func WithPricingCategory(category pbc.FocusPricingCategory) EstimateCostResponseOption {
+	return func(resp *pbc.EstimateCostResponse) {
+		resp.PricingCategory = category
+	}
+}
+
+// WithSpotRisk sets the spot_interruption_risk_score field for EstimateCostResponse.
+// The score must be between 0.0 and 1.0.
+//
+// This function performs fail-fast validation and panics for invalid values:
+//   - NaN or Inf values (programming error)
+//   - Values outside [0.0, 1.0] range (programming error)
+//
+// Semantic consistency between score and pricing_category is validated separately
+// by ValidateEstimateCostResponse.
+//
+// Example:
+//
+//	resp := pluginsdk.NewEstimateCostResponse(
+//	    pluginsdk.WithSpotRisk(0.8),  // 80% interruption risk
+//	)
+func WithSpotRisk(score float64) EstimateCostResponseOption {
+	// Fail-fast validation for programming errors
+	if math.IsNaN(score) || math.IsInf(score, 0) {
+		panic(fmt.Sprintf("WithSpotRisk: invalid score (NaN/Inf): %v", score))
+	}
+	// Allow epsilon tolerance for floating-point arithmetic errors
+	if score < -spotRiskEpsilon || score > 1.0+spotRiskEpsilon {
+		panic(fmt.Sprintf("WithSpotRisk: score must be between 0.0 and 1.0, got %f", score))
+	}
+
+	return func(resp *pbc.EstimateCostResponse) {
+		// Clamp score to valid range to handle minor floating-point errors
+		clampedScore := score
+		if clampedScore < 0.0 {
+			clampedScore = 0.0
+		} else if clampedScore > 1.0 {
+			clampedScore = 1.0
+		}
+		resp.SpotInterruptionRiskScore = clampedScore
+	}
+}
+
+// WithEstimateCost sets the basic cost fields for EstimateCostResponse.
+//
+// Example:
+//
+//	resp := pluginsdk.NewEstimateCostResponse(
+//	    pluginsdk.WithEstimateCost("USD", 50.0),
+//	)
+func WithEstimateCost(currency string, costMonthly float64) EstimateCostResponseOption {
+	return func(resp *pbc.EstimateCostResponse) {
+		resp.Currency = currency
+		resp.CostMonthly = costMonthly
+	}
+}
+
+// NewEstimateCostResponse creates an EstimateCostResponse with functional options.
+//
+// Example:
+//
+//	resp := pluginsdk.NewEstimateCostResponse(
+//	    pluginsdk.WithEstimateCost("USD", 50.0),
+//	    pluginsdk.WithPricingCategory(pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC),
+//	    pluginsdk.WithSpotRisk(0.8),
+//	)
+func NewEstimateCostResponse(opts ...EstimateCostResponseOption) *pbc.EstimateCostResponse {
+	resp := &pbc.EstimateCostResponse{}
+	for _, opt := range opts {
+		opt(resp)
+	}
+	return resp
+}
+
+// GetProjectedCostResponseOption is a functional option for configuring GetProjectedCostResponse.
+type GetProjectedCostResponseOption func(*pbc.GetProjectedCostResponse)
+
+// WithProjectedCostPricingCategory sets the pricing_category field for GetProjectedCostResponse.
+//
+// Example:
+//
+//	resp := pluginsdk.NewGetProjectedCostResponse(
+//	    pluginsdk.WithProjectedCostPricingCategory(pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_COMMITTED),
+//	)
+func WithProjectedCostPricingCategory(category pbc.FocusPricingCategory) GetProjectedCostResponseOption {
+	return func(resp *pbc.GetProjectedCostResponse) {
+		resp.PricingCategory = category
+	}
+}
+
+// WithProjectedCostSpotRisk sets the spot_interruption_risk_score field for GetProjectedCostResponse.
+// The score must be between 0.0 and 1.0.
+//
+// This function performs fail-fast validation and panics for invalid values:
+//   - NaN or Inf values (programming error)
+//   - Values outside [0.0, 1.0] range (programming error)
+//
+// Semantic consistency between score and pricing_category is validated separately
+// by ValidateGetProjectedCostResponse.
+//
+// Example:
+//
+//	resp := pluginsdk.NewGetProjectedCostResponse(
+//	    pluginsdk.WithProjectedCostSpotRisk(0.3),  // 30% interruption risk
+//	)
+func WithProjectedCostSpotRisk(score float64) GetProjectedCostResponseOption {
+	// Fail-fast validation for programming errors
+	if math.IsNaN(score) || math.IsInf(score, 0) {
+		panic(fmt.Sprintf("WithProjectedCostSpotRisk: invalid score (NaN/Inf): %v", score))
+	}
+	if score < 0.0 || score > 1.0 {
+		panic(fmt.Sprintf("WithProjectedCostSpotRisk: score must be between 0.0 and 1.0, got %f", score))
+	}
+
+	return func(resp *pbc.GetProjectedCostResponse) {
+		resp.SpotInterruptionRiskScore = score
+	}
+}
+
+// WithProjectedCostDetails sets the basic cost details for GetProjectedCostResponse.
+//
+// Example:
+//
+//	resp := pluginsdk.NewGetProjectedCostResponse(
+//	    pluginsdk.WithProjectedCostDetails(0.05, "USD", 36.50, "spot-instance"),
+//	)
+func WithProjectedCostDetails(
+	unitPrice float64,
+	currency string,
+	costPerMonth float64,
+	billingDetail string,
+) GetProjectedCostResponseOption {
+	return func(resp *pbc.GetProjectedCostResponse) {
+		resp.UnitPrice = unitPrice
+		resp.Currency = currency
+		resp.CostPerMonth = costPerMonth
+		resp.BillingDetail = billingDetail
+	}
+}
+
+// NewGetProjectedCostResponse creates a GetProjectedCostResponse with functional options.
+//
+// Example:
+//
+//	resp := pluginsdk.NewGetProjectedCostResponse(
+//	    pluginsdk.WithProjectedCostDetails(0.05, "USD", 36.50, "spot-instance"),
+//	    pluginsdk.WithProjectedCostPricingCategory(pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC),
+//	    pluginsdk.WithProjectedCostSpotRisk(0.8),
+//	)
+func NewGetProjectedCostResponse(opts ...GetProjectedCostResponseOption) *pbc.GetProjectedCostResponse {
+	resp := &pbc.GetProjectedCostResponse{}
+	for _, opt := range opts {
+		opt(resp)
+	}
+	return resp
 }

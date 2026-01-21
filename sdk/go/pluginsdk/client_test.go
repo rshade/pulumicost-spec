@@ -9,9 +9,10 @@ import (
 
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // waitForServer polls the server until it responds or times out.

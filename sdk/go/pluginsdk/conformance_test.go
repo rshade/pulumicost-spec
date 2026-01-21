@@ -8,9 +8,10 @@ import (
 	"sync"
 	"testing"
 
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // conformanceMockPlugin implements the Plugin interface for conformance testing.

@@ -30,6 +30,8 @@ package pluginsdk
 
 import (
 	"errors"
+	"fmt"
+	"math"
 
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
@@ -61,6 +63,22 @@ var (
 		"end_time must be strictly after start_time (equal timestamps not allowed)",
 	)
 )
+
+// Validation error messages for EstimateCostResponse and GetProjectedCostResponse.
+var (
+	ErrEstimateCostResponseNil      = errors.New("response is required")
+	ErrGetProjectedCostResponseNil  = errors.New("response is required")
+	ErrSpotRiskScoreOutOfRange      = errors.New("spot_interruption_risk_score must be between 0.0 and 1.0")
+	ErrSpotRiskScoreNaN             = errors.New("spot_interruption_risk_score cannot be NaN or Inf")
+	ErrSpotRiskScoreInvalidCategory = errors.New(
+		"spot_interruption_risk_score should only be non-zero when pricing_category is DYNAMIC",
+	)
+)
+
+// spotRiskEpsilon is used for float comparison to handle floating-point representation errors.
+// This small value (1e-9) is chosen to be well below the precision typically meaningful
+// for risk scores while being large enough to catch representation errors.
+const spotRiskEpsilon = 1e-9
 
 // ValidateProjectedCostRequest validates a GetProjectedCostRequest for required fields.
 // This function is designed for use in both:
@@ -213,4 +231,130 @@ func ValidateActualCostRequest(req *pbc.GetActualCostRequest) error {
 	}
 
 	return nil
+}
+
+// validateSpotRiskScore validates the spot_interruption_risk_score field.
+// Returns nil if score is effectively 0.0 (proto3 default) or a valid non-zero value.
+//
+// Validation checks (fail-fast):
+//  1. NaN/Inf check (always performed for safety)
+//  2. Fast path: skip further validation if score is effectively zero
+//  3. Range check [0.0, 1.0] with epsilon tolerance
+//  4. Semantic check: score > 0 requires DYNAMIC pricing category
+//
+// Float Comparison: Uses epsilon tolerance (1e-9) to handle floating-point representation
+// errors that may occur from arithmetic operations.
+//
+// Performance: Zero allocations on the happy path.
+func validateSpotRiskScore(score float64, category pbc.FocusPricingCategory) error {
+	// Check for invalid float values first (NaN/Inf are more severe)
+	// This check must come before epsilon comparison since NaN comparisons behave unexpectedly
+	if math.IsNaN(score) || math.IsInf(score, 0) {
+		return fmt.Errorf("%w: got %v", ErrSpotRiskScoreNaN, score)
+	}
+
+	// Fast path: proto3 default (or effectively zero) is valid
+	// Uses epsilon tolerance to handle floating-point representation errors
+	if math.Abs(score) < spotRiskEpsilon {
+		return nil
+	}
+
+	// Check range with epsilon tolerance for upper bound
+	if score < -spotRiskEpsilon || score > 1.0+spotRiskEpsilon {
+		return fmt.Errorf("%w: got %f", ErrSpotRiskScoreOutOfRange, score)
+	}
+
+	// Semantic validation: enforce category/risk consistency
+	if category != pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC {
+		return fmt.Errorf("%w: got score=%f with category=%s",
+			ErrSpotRiskScoreInvalidCategory, score, category.String())
+	}
+
+	return nil
+}
+
+// ValidateEstimateCostResponse validates an EstimateCostResponse for correctness.
+// This function is designed for use in plugins before returning responses.
+//
+// Validation order (fail-fast):
+//  1. Response nil check
+//  2. Spot risk score validation (structural + semantic)
+//
+// Semantic rule enforced: spot_interruption_risk_score must only be non-zero
+// when pricing_category is FOCUS_PRICING_CATEGORY_DYNAMIC.
+//
+// Performance: Zero allocations on the happy path (valid response returns nil).
+// Error paths allocate for the error message.
+//
+// Returns nil if the response is valid, or an error describing the first validation failure.
+func ValidateEstimateCostResponse(resp *pbc.EstimateCostResponse) error {
+	if resp == nil {
+		return ErrEstimateCostResponseNil
+	}
+
+	if err := validateSpotRiskScore(resp.GetSpotInterruptionRiskScore(), resp.GetPricingCategory()); err != nil {
+		return fmt.Errorf("EstimateCostResponse: %w", err)
+	}
+
+	return nil
+}
+
+// ValidateGetProjectedCostResponse validates a GetProjectedCostResponse for correctness.
+// This function is designed for use in plugins before returning responses.
+//
+// Validation order (fail-fast):
+//  1. Response nil check
+//  2. Spot risk score validation (structural + semantic)
+//
+// Semantic rule enforced: spot_interruption_risk_score must only be non-zero
+// when pricing_category is FOCUS_PRICING_CATEGORY_DYNAMIC.
+//
+// Performance: Zero allocations on the happy path (valid response returns nil).
+// Error paths allocate for the error message.
+//
+// Returns nil if the response is valid, or an error describing the first validation failure.
+func ValidateGetProjectedCostResponse(resp *pbc.GetProjectedCostResponse) error {
+	if resp == nil {
+		return ErrGetProjectedCostResponseNil
+	}
+
+	if err := validateSpotRiskScore(resp.GetSpotInterruptionRiskScore(), resp.GetPricingCategory()); err != nil {
+		return fmt.Errorf("GetProjectedCostResponse: %w", err)
+	}
+
+	return nil
+}
+
+// CheckSpotRiskConsistency checks semantic consistency between pricing_category and spot_interruption_risk_score.
+// This is a warning-level validation that plugins can use for self-validation.
+//
+// Returns a slice of warning messages. Empty slice means no issues.
+//
+// Semantic rules checked:
+//  1. spot_interruption_risk_score > 0 requires pricing_category = DYNAMIC
+//  2. pricing_category = DYNAMIC with score = 0 may indicate missing risk data
+//
+// The second check is advisory - zero risk score with DYNAMIC pricing is valid
+// (e.g., for dynamic pricing with no interruption risk), but plugins should
+// confirm this is intentional rather than a data gap.
+func CheckSpotRiskConsistency(category pbc.FocusPricingCategory, score float64) []string {
+	var warnings []string
+
+	// Check: non-zero risk score requires DYNAMIC pricing
+	if score > spotRiskEpsilon && category != pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC {
+		warnings = append(warnings,
+			fmt.Sprintf("spot_interruption_risk_score > 0.0 (%.4f) but pricing_category is %s, not DYNAMIC",
+				score, category.String()))
+	}
+
+	// Check: DYNAMIC pricing with zero risk score may indicate missing data
+	// This is advisory - zero risk is valid but unusual for spot/dynamic resources
+	if category == pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC &&
+		math.Abs(score) < spotRiskEpsilon {
+		warnings = append(warnings,
+			"pricing_category is DYNAMIC but spot_interruption_risk_score is 0.0 "+
+				"(risk data may be unavailable or resource has unusually low interruption risk)")
+	}
+
+	return warnings
 }

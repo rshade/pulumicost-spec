@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // ============================================================================

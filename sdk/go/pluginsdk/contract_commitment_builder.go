@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/rshade/finfocus-spec/sdk/go/currency"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // ContractCommitmentBuilder handles the construction of FOCUS 1.3 ContractCommitment records.

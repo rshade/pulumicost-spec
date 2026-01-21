@@ -9,9 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // FOCUS 1.2 Column Definitions for schema completeness verification.

@@ -6,8 +6,9 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // Deprecation warning rate-limiters to prevent log spam in high-volume plugins.

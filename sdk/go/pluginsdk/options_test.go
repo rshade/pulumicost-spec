@@ -3,8 +3,9 @@ package pluginsdk_test
 import (
 	"testing"
 
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // T015: Test WithAllowedHeaders builder method.

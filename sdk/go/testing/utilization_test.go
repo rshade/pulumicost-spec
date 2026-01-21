@@ -5,9 +5,10 @@ import (
 	"strings"
 	"testing"
 
+	"google.golang.org/protobuf/proto"
+
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	plugintesting "github.com/rshade/finfocus-spec/sdk/go/testing"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestUtilizationPrecedence(t *testing.T) {

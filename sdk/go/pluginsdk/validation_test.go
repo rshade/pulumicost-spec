@@ -6,10 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 func TestValidateProjectedCostRequest(t *testing.T) {
