@@ -110,7 +110,7 @@ func (m BypassMechanism) String() string {
 	return string(m)
 }
 
-// IsValidBypassMechanism checks if the given string represents a valid bypass mechanism.
+// IsValidBypassMechanism reports whether m matches one of the defined BypassMechanism values.
 func IsValidBypassMechanism(m string) bool {
 	mechanism := BypassMechanism(m)
 	for _, valid := range allBypassMechanisms {
@@ -192,7 +192,8 @@ func WithOperator(operator string) BypassOption {
 }
 
 // WithSeverity sets the severity level for the bypass.
-// Validation of the severity value is deferred until ValidateBypassMetadata is called.
+// WithSeverity returns a BypassOption that sets the BypassMetadata Severity to the provided value.
+// The option does not validate the severity value.
 func WithSeverity(severity BypassSeverity) BypassOption {
 	return func(m *BypassMetadata) {
 		m.Severity = severity
@@ -200,7 +201,8 @@ func WithSeverity(severity BypassSeverity) BypassOption {
 }
 
 // WithMechanism sets the mechanism type for the bypass.
-// Validation of the mechanism value is deferred until ValidateBypassMetadata is called.
+// WithMechanism returns a BypassOption that sets the Mechanism field on a BypassMetadata.
+// No validation of the provided mechanism is performed by this option.
 func WithMechanism(mechanism BypassMechanism) BypassOption {
 	return func(m *BypassMetadata) {
 		m.Mechanism = mechanism
