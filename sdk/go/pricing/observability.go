@@ -213,9 +213,10 @@ const (
 
 // ValidationResult represents the result of validating observability data.
 type ValidationResult struct {
-	Valid    bool
-	Errors   []string
-	Warnings []string
+	Valid    bool             `json:"valid"`
+	Errors   []string         `json:"errors,omitempty"`
+	Warnings []string         `json:"warnings,omitempty"`
+	Bypasses []BypassMetadata `json:"bypasses,omitempty"`
 }
 
 // ValidateMetricName checks if a metric name follows standard conventions.

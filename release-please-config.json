@@ -45,7 +45,9 @@
     },
     "sdk/typescript/packages/client": {
       "release-type": "node",
-      "package-name": "@rshade/finfocus-client"
+      "package-name": "@rshade/finfocus-client",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true
     }
   }
 }
