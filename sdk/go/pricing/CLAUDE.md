@@ -39,6 +39,95 @@ cloud providers.
 - `ValidProvider(string) bool` - Validates provider strings
 - `GetAllProviders() []Provider` - Returns all valid providers
 
+### Validation Bypass Metadata (`bypass.go`)
+
+**Purpose**: Audit trail support for when validation policies are intentionally bypassed (e.g., `--yolo` flag).
+
+**Enums** (zero-allocation validation pattern):
+
+- **`BypassSeverity`**: `warning`, `error`, `critical` - Risk level classification
+- **`BypassMechanism`**: `flag`, `env_var`, `config`, `programmatic` - How bypass was triggered
+
+**Core Types**:
+
+```go
+// BypassMetadata records a single validation bypass event
+type BypassMetadata struct {
+    Timestamp      time.Time       `json:"timestamp"`
+    ValidationName string          `json:"validation_name"`
+    OriginalError  string          `json:"original_error"`
+    Reason         string          `json:"reason,omitempty"`     // Max 500 chars
+    Operator       string          `json:"operator,omitempty"`
+    Severity       BypassSeverity  `json:"severity"`
+    Mechanism      BypassMechanism `json:"mechanism"`
+    Truncated      bool            `json:"truncated,omitempty"`  // Set when reason truncated
+}
+
+// ValidationResult (in observability.go) includes bypass support
+type ValidationResult struct {
+    Valid    bool             `json:"valid"`
+    Errors   []string         `json:"errors,omitempty"`
+    Warnings []string         `json:"warnings,omitempty"`
+    Bypasses []BypassMetadata `json:"bypasses,omitempty"`
+}
+```
+
+**Constructor (recommended)**:
+
+```go
+// Builder pattern with functional options
+bypass := pricing.NewBypassMetadata(
+    "budget_limit",
+    "Cost exceeds budget by $500",
+    pricing.WithReason("Emergency deployment approved"),
+    pricing.WithOperator("OPERATOR_PLACEHOLDER"),
+    pricing.WithSeverity(pricing.BypassSeverityError),
+    pricing.WithMechanism(pricing.BypassMechanismFlag),
+)
+```
+
+**Key Functions**:
+
+| Function | Description |
+|----------|-------------|
+| `NewBypassMetadata(name, error, opts...)` | Constructor with defaults and functional options |
+| `WithReason(string)` | Set reason (auto-truncates to 500 chars) |
+| `WithOperator(string)` | Set operator ID (defaults to "unknown") |
+| `WithSeverity(BypassSeverity)` | Set severity level |
+| `WithMechanism(BypassMechanism)` | Set bypass mechanism |
+| `ValidateBypassMetadata(BypassMetadata)` | Validate bypass metadata struct |
+| `IsValidBypassSeverity(string)` | Validate severity string |
+| `IsValidBypassMechanism(string)` | Validate mechanism string |
+| `AllBypassSeverities()` | Get all valid severities |
+| `AllBypassMechanisms()` | Get all valid mechanisms |
+
+**CLI Display Functions**:
+
+| Function | Description |
+|----------|-------------|
+| `FormatBypassSummary([]BypassMetadata)` | Summary: "Bypassed validations: 2 error, 1 warning" |
+| `FormatBypassDetail(BypassMetadata)` | Detailed multi-line format for single bypass |
+| `CountBypassesBySeverity([]BypassMetadata)` | Count bypasses by severity level |
+| `HasBypasses(ValidationResult)` | Check if result has any bypasses |
+
+**Filter Functions** (for historical query):
+
+| Function | Description |
+|----------|-------------|
+| `FilterByTimeRange(bypasses, start, end)` | Filter by timestamp range (inclusive) |
+| `FilterByOperator(bypasses, operator)` | Filter by operator identity |
+| `FilterBySeverity(bypasses, severity)` | Filter by severity level |
+| `FilterByMechanism(bypasses, mechanism)` | Filter by bypass mechanism |
+
+**Performance** (zero-allocation pattern):
+
+- Enum validation: <10 ns/op, 0 allocs/op
+- Follows registry package optimization pattern
+- Package-level slice variables for validation
+
+**Retention Policy**: The SDK provides data structures only. Callers are responsible for implementing
+90-day minimum retention for compliance (quarterly review cycles).
+
 ### JSON Schema Validation (`validate.go`)
 
 **Embedded Schema System**:
@@ -247,6 +336,34 @@ go test -run TestAllBillingModesCompleteness
 go test -run TestValidProvider
 go test -run TestProviderString
 go test -run TestAllProvidersCompleteness
+```
+
+### Bypass Metadata Testing
+
+```bash
+# Enum validation tests
+go test -run TestBypassSeverity
+go test -run TestBypassMechanism
+
+# Constructor and options tests
+go test -run TestNewBypassMetadata
+go test -run TestBypassOption
+
+# Validation tests
+go test -run TestValidateBypassMetadata
+
+# CLI formatting tests
+go test -run TestFormatBypass
+
+# Filter function tests
+go test -run TestFilterBy
+
+# Benchmarks (zero-allocation verification)
+go test -bench=BenchmarkBypass -benchmem
+
+# Conformance tests (in testing package)
+go test -run TestBypassMetadata_JSONConformance ../testing/
+go test -run TestBypassMetadata_CrossServiceBoundary ../testing/
 ```
 
 ## Key Design Decisions

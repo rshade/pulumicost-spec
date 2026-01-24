@@ -758,6 +758,9 @@ cd schemas && /init            # JSON Schema validation
 
 ## Active Technologies
 
+- Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`) (034-validation-bypass-metadata)
+- N/A (stateless struct extension; retention is caller's responsibility) (034-validation-bypass-metadata)
+
 - Go 1.25.5 (per go.mod), Protocol Buffers v3, buf v1.32.1 (040-anomaly-detection-recommendations)
 - N/A (stateless enum additions) (040-anomaly-detection-recommendations)
 
@@ -822,6 +825,8 @@ See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable doc
 
 ## Recent Changes
 
+- 034-validation-bypass-metadata: Added Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`)
+
 - 040-anomaly-detection-recommendations: Added Protocol Buffers v3 enum values for anomaly detection
   - `RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY = 5`
   - `RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE = 12`
@@ -830,4 +835,3 @@ See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable doc
   - MockPlugin updated to generate realistic anomalies with INVESTIGATE action and negative savings
 
 - 029-plugin-info-rpc: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc
-- 026-focus-1-3-migration: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1
