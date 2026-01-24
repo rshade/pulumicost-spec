@@ -12,11 +12,12 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1/pbcconnect"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // connectTestPlugin implements the pluginsdk.Plugin interface for connect testing.

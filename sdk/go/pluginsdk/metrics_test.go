@@ -11,12 +11,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 // ============================================================================

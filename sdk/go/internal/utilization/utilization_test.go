@@ -4,9 +4,10 @@ import (
 	"math"
 	"testing"
 
+	"google.golang.org/protobuf/proto"
+
 	"github.com/rshade/finfocus-spec/sdk/go/internal/utilization"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestGet_Precedence(t *testing.T) {

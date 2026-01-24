@@ -10,9 +10,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
+
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // ============================================================================

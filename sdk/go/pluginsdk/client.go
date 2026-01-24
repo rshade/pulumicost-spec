@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1/pbcconnect"
 )

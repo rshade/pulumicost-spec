@@ -3,9 +3,10 @@ package pluginsdk_test
 import (
 	"testing"
 
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 )
 
 func TestValidationError_Error(t *testing.T) {

@@ -8,11 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // mockPlugin implements pluginsdk.Plugin for testing.

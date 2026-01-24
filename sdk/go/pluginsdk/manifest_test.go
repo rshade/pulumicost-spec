@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 //nolint:gocognit // Test complexity is acceptable for comprehensive table-driven test

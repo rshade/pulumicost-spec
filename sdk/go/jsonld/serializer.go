@@ -6,8 +6,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
 // ValidationError represents a validation failure during serialization.

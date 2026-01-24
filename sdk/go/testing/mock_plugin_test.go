@@ -1,6 +1,7 @@
 package testing_test
 
 import (
+	"math"
 	"testing"
 
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
@@ -305,5 +306,261 @@ func TestCalculateMockSummary(t *testing.T) {
 				tt.expected.GetSavingsByActionType(),
 			)
 		})
+	}
+}
+
+func TestSetSpotRiskScore_ValidValues(t *testing.T) {
+	tests := []struct {
+		name  string
+		score float64
+	}{
+		{"zero_risk", 0.0},
+		{"low_risk", 0.25},
+		{"medium_risk", 0.5},
+		{"high_risk", 0.75},
+		{"max_risk", 1.0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			plugin := pktesting.NewMockPlugin()
+			// Should not panic for valid values
+			plugin.SetSpotRiskScore(tt.score)
+			if plugin.DefaultSpotInterruptionRiskScore != tt.score {
+				t.Errorf("DefaultSpotInterruptionRiskScore = %f, want %f",
+					plugin.DefaultSpotInterruptionRiskScore, tt.score)
+			}
+		})
+	}
+}
+
+func TestSetSpotRiskScore_InvalidValues(t *testing.T) {
+	tests := []struct {
+		name  string
+		score float64
+	}{
+		{"negative", -0.1},
+		{"below_zero", -1.0},
+		{"above_one", 1.1},
+		{"too_high", 2.0},
+		{"nan", math.NaN()},
+		{"positive_inf", math.Inf(1)},
+		{"negative_inf", math.Inf(-1)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			plugin := pktesting.NewMockPlugin()
+			defer func() {
+				if r := recover(); r == nil {
+					t.Errorf("SetSpotRiskScore(%f) did not panic", tt.score)
+				}
+			}()
+			plugin.SetSpotRiskScore(tt.score)
+		})
+	}
+}
+
+func TestSetSpotRiskScoreForResourceType_ValidValues(t *testing.T) {
+	tests := []struct {
+		name         string
+		resourceType string
+		score        float64
+	}{
+		{"spot_zero", "spot", 0.0},
+		{"spot_low", "spot", 0.3},
+		{"preemptible_medium", "preemptible", 0.5},
+		{"reserved_high", "reserved", 0.8},
+		{"on_demand_max", "on-demand", 1.0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			plugin := pktesting.NewMockPlugin()
+			// Should not panic for valid values
+			plugin.SetSpotRiskScoreForResourceType(tt.resourceType, tt.score)
+			if plugin.SpotRiskScoreByResourceType[tt.resourceType] != tt.score {
+				t.Errorf("SpotRiskScoreByResourceType[%s] = %f, want %f",
+					tt.resourceType, plugin.SpotRiskScoreByResourceType[tt.resourceType], tt.score)
+			}
+		})
+	}
+}
+
+func TestSetSpotRiskScoreForResourceType_InvalidValues(t *testing.T) {
+	tests := []struct {
+		name         string
+		resourceType string
+		score        float64
+	}{
+		{"negative", "spot", -0.1},
+		{"below_zero", "preemptible", -1.0},
+		{"above_one", "spot", 1.1},
+		{"too_high", "reserved", 5.0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			plugin := pktesting.NewMockPlugin()
+			defer func() {
+				if r := recover(); r == nil {
+					t.Errorf("SetSpotRiskScoreForResourceType(%s, %f) did not panic",
+						tt.resourceType, tt.score)
+				}
+			}()
+			plugin.SetSpotRiskScoreForResourceType(tt.resourceType, tt.score)
+		})
+	}
+}
+
+// TestGetProjectedCostPricingOverrides verifies that pricing overrides configured with
+// simple resource keys (e.g., "ec2") are correctly applied when GetProjectedCost is called
+// with full Pulumi-style resource descriptors (e.g., "aws:ec2/instance:Instance").
+func TestGetProjectedCostPricingOverrides(t *testing.T) {
+	tests := []struct {
+		name                  string
+		simpleResourceKey     string
+		fullResourceType      string
+		provider              string
+		pricingCategory       pbc.FocusPricingCategory
+		spotRiskScore         float64
+		expectPricingCategory pbc.FocusPricingCategory
+		expectSpotRiskScore   float64
+	}{
+		{
+			name:                  "ec2_pricing_override",
+			simpleResourceKey:     "ec2",
+			fullResourceType:      "aws:ec2/instance:Instance",
+			provider:              "aws",
+			pricingCategory:       pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_COMMITTED,
+			spotRiskScore:         0.0, // T043: non-zero spot risk only valid with DYNAMIC pricing
+			expectPricingCategory: pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_COMMITTED,
+			expectSpotRiskScore:   0.0,
+		},
+		{
+			name:                  "spot_pricing_override",
+			simpleResourceKey:     "spot",
+			fullResourceType:      "aws:spot/spotInstance:SpotInstance",
+			provider:              "aws",
+			pricingCategory:       pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC,
+			spotRiskScore:         0.85,
+			expectPricingCategory: pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC,
+			expectSpotRiskScore:   0.85,
+		},
+		{
+			name:                  "s3_pricing_override",
+			simpleResourceKey:     "s3",
+			fullResourceType:      "aws:s3/bucket:Bucket",
+			provider:              "aws",
+			pricingCategory:       pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+			spotRiskScore:         0.0,
+			expectPricingCategory: pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+			expectSpotRiskScore:   0.0,
+		},
+		{
+			name:                  "lambda_pricing_override",
+			simpleResourceKey:     "lambda",
+			fullResourceType:      "aws:lambda/function:Function",
+			provider:              "aws",
+			pricingCategory:       pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+			spotRiskScore:         0.0, // T043: non-zero spot risk only valid with DYNAMIC pricing
+			expectPricingCategory: pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+			expectSpotRiskScore:   0.0,
+		},
+		{
+			name:                  "vm_azure_pricing_override",
+			simpleResourceKey:     "vm",
+			fullResourceType:      "azure:vm/virtualMachine:VirtualMachine",
+			provider:              "azure",
+			pricingCategory:       pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_COMMITTED,
+			spotRiskScore:         0.0, // T043: non-zero spot risk only valid with DYNAMIC pricing
+			expectPricingCategory: pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_COMMITTED,
+			expectSpotRiskScore:   0.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create mock plugin and configure pricing overrides
+			plugin := pktesting.NewMockPlugin()
+			plugin.SetPricingCategoryForResourceType(tt.simpleResourceKey, tt.pricingCategory)
+			plugin.SetSpotRiskScoreForResourceType(tt.simpleResourceKey, tt.spotRiskScore)
+
+			// Create and start test harness
+			harness := pktesting.NewTestHarness(plugin)
+			harness.Start(t)
+			defer harness.Stop()
+
+			client := harness.Client()
+
+			// Create resource descriptor with full Pulumi-style resource type
+			resource := &pbc.ResourceDescriptor{
+				Provider:     tt.provider,
+				ResourceType: tt.fullResourceType,
+				Sku:          "test-sku",
+				Region:       "us-east-1",
+			}
+
+			// Call GetProjectedCost
+			resp, err := client.GetProjectedCost(t.Context(), &pbc.GetProjectedCostRequest{
+				Resource: resource,
+			})
+			if err != nil {
+				t.Fatalf("GetProjectedCost() failed: %v", err)
+			}
+
+			// Verify pricing category override was applied
+			if resp.GetPricingCategory() != tt.expectPricingCategory {
+				t.Errorf("PricingCategory = %v, want %v",
+					resp.GetPricingCategory(), tt.expectPricingCategory)
+			}
+
+			// Verify spot risk score override was applied
+			if resp.GetSpotInterruptionRiskScore() != tt.expectSpotRiskScore {
+				t.Errorf("SpotInterruptionRiskScore = %f, want %f",
+					resp.GetSpotInterruptionRiskScore(), tt.expectSpotRiskScore)
+			}
+		})
+	}
+}
+
+// TestGetSimpleResourceKeyExtraction verifies the helper method correctly extracts
+// simple resource keys from full Pulumi-style resource descriptors.
+func TestGetSimpleResourceKeyExtraction(t *testing.T) {
+	plugin := pktesting.NewMockPlugin()
+
+	// Test that setting pricing for "ec2" affects full descriptor "aws:ec2/instance:Instance"
+	// Use DYNAMIC pricing to comply with T043 (spot risk only valid with DYNAMIC)
+	plugin.SetPricingCategoryForResourceType("ec2", pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC)
+	plugin.SetSpotRiskScoreForResourceType("ec2", 0.75)
+
+	harness := pktesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+
+	// Test with full Pulumi-style resource type
+	resource := &pbc.ResourceDescriptor{
+		Provider:     "aws",
+		ResourceType: "aws:ec2/instance:Instance",
+		Sku:          "t3.micro",
+		Region:       "us-west-2",
+	}
+
+	resp, err := client.GetProjectedCost(t.Context(), &pbc.GetProjectedCostRequest{
+		Resource: resource,
+	})
+	if err != nil {
+		t.Fatalf("GetProjectedCost() failed: %v", err)
+	}
+
+	// The overrides should be applied because getSimpleResourceKey extracts "ec2"
+	if resp.GetPricingCategory() != pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC {
+		t.Errorf("Expected DYNAMIC pricing category, got %v", resp.GetPricingCategory())
+	}
+
+	if resp.GetSpotInterruptionRiskScore() != 0.75 {
+		t.Errorf("Expected spot risk score 0.75, got %f", resp.GetSpotInterruptionRiskScore())
 	}
 }

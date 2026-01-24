@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/rshade/finfocus-spec/sdk/go/pricing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/rshade/finfocus-spec/sdk/go/pricing"
 )
 
 // contextKey is the type for context keys to avoid collisions.
