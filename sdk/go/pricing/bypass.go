@@ -110,7 +110,7 @@ func (m BypassMechanism) String() string {
 	return string(m)
 }
 
-// IsValidBypassMechanism reports whether m matches one of the defined BypassMechanism values.
+// IsValidBypassMechanism checks if the given string represents a valid bypass mechanism.
 func IsValidBypassMechanism(m string) bool {
 	mechanism := BypassMechanism(m)
 	for _, valid := range allBypassMechanisms {
@@ -147,7 +147,8 @@ type BypassMetadata struct {
 type BypassOption func(*BypassMetadata)
 
 // NewBypassMetadata creates a new BypassMetadata with required fields and optional configuration.
-// been produced (avoid embedding sensitive data in originalError).
+// The timestamp is automatically set to the current UTC time.
+// WARNING: Avoid embedding sensitive data (credentials, API keys) in originalError.
 func NewBypassMetadata(validationName, originalError string, opts ...BypassOption) BypassMetadata {
 	m := BypassMetadata{
 		Timestamp:      time.Now().UTC(),
@@ -165,12 +166,9 @@ func NewBypassMetadata(validationName, originalError string, opts ...BypassOptio
 	return m
 }
 
-// WithReason sets the bypass reason, truncating to 500 characters (runes) if necessary.
-// WithReason returns a BypassOption that sets the metadata Reason and marks it as truncated when necessary.
-//
-// The provided reason is stored on the BypassMetadata. If the reason exceeds MaxReasonLength characters it
-// is truncated to fit and "..." is appended; in that case Truncated is set to true. Truncation is performed
-// safely on runes to preserve UTF-8 correctness.
+// WithReason sets the bypass reason, truncating to MaxReasonLength (500) characters if necessary.
+// If the reason exceeds MaxReasonLength it is truncated and "..." is appended; Truncated is set to true.
+// Truncation is performed safely on runes to preserve UTF-8 correctness.
 func WithReason(reason string) BypassOption {
 	return func(m *BypassMetadata) {
 		runes := []rune(reason)
@@ -183,8 +181,8 @@ func WithReason(reason string) BypassOption {
 	}
 }
 
-// WithOperator returns a BypassOption that sets the Operator field on a BypassMetadata
-// to the provided operator if the string is non-empty.
+// WithOperator sets the operator identifier for the bypass.
+// If operator is empty, the default ("unknown") is preserved.
 func WithOperator(operator string) BypassOption {
 	return func(m *BypassMetadata) {
 		if operator != "" {
@@ -194,8 +192,7 @@ func WithOperator(operator string) BypassOption {
 }
 
 // WithSeverity sets the severity level for the bypass.
-// WithSeverity returns a BypassOption that sets the BypassMetadata Severity to the provided value.
-// The option does not validate the severity value.
+// Validation of the severity value is deferred until ValidateBypassMetadata is called.
 func WithSeverity(severity BypassSeverity) BypassOption {
 	return func(m *BypassMetadata) {
 		m.Severity = severity
@@ -203,8 +200,7 @@ func WithSeverity(severity BypassSeverity) BypassOption {
 }
 
 // WithMechanism sets the mechanism type for the bypass.
-// WithMechanism returns a BypassOption that sets the Mechanism field on a BypassMetadata.
-// No validation of the provided mechanism is performed by this option.
+// Validation of the mechanism value is deferred until ValidateBypassMetadata is called.
 func WithMechanism(mechanism BypassMechanism) BypassOption {
 	return func(m *BypassMetadata) {
 		m.Mechanism = mechanism
@@ -213,8 +209,7 @@ func WithMechanism(mechanism BypassMechanism) BypassOption {
 
 // ValidateBypassMetadata validates a BypassMetadata and returns an error describing any violations.
 // It ensures Timestamp is not zero, ValidationName and OriginalError are non-empty, and that Severity
-// and Mechanism are one of the allowed values. If one or more checks fail, the returned error
-// aggregates all violation messages joined by "; ".
+// and Mechanism are valid enum values. Multiple violations are joined by "; ".
 func ValidateBypassMetadata(m BypassMetadata) error {
 	var errs []string
 
@@ -250,8 +245,7 @@ func HasBypasses(r ValidationResult) bool {
 	return len(r.Bypasses) > 0
 }
 
-// CountBypassesBySeverity counts bypass metadata entries by their severity.
-// It returns a map from BypassSeverity to the number of occurrences for each severity.
+// CountBypassesBySeverity returns a map from BypassSeverity to the count of occurrences.
 func CountBypassesBySeverity(bypasses []BypassMetadata) map[BypassSeverity]int {
 	counts := make(map[BypassSeverity]int)
 	for _, b := range bypasses {
@@ -260,9 +254,8 @@ func CountBypassesBySeverity(bypasses []BypassMetadata) map[BypassSeverity]int {
 	return counts
 }
 
-// FormatBypassSummary builds a short human-readable summary of bypass counts by severity for CLI output.
-// It returns an empty string if the provided slice has no bypasses.
-// The summary has the form "Bypassed validations: X critical, Y error, Z warning" and includes only severities with non-zero counts.
+// FormatBypassSummary returns a human-readable summary for CLI output.
+// Format: "Bypassed validations: X critical, Y error, Z warning" (empty string if no bypasses).
 func FormatBypassSummary(bypasses []BypassMetadata) string {
 	if len(bypasses) == 0 {
 		return ""
@@ -284,11 +277,8 @@ func FormatBypassSummary(bypasses []BypassMetadata) string {
 	return fmt.Sprintf("Bypassed validations: %s", strings.Join(parts, ", "))
 }
 
-// FormatBypassDetail formats a single BypassMetadata into a multi-line,
-// human-readable detail suitable for CLI output.
-// The output includes a header with uppercased severity and validation name,
-// the original error, an optional reason if present, the operator, the mechanism,
-// and a timestamp formatted as RFC3339.
+// FormatBypassDetail formats a single BypassMetadata into a multi-line CLI output.
+// Includes: [SEVERITY] validation_name, original error, reason (if set), operator, mechanism, and RFC3339 timestamp.
 func FormatBypassDetail(b BypassMetadata) string {
 	var sb strings.Builder
 
@@ -326,8 +316,7 @@ func (m BypassMetadata) MarshalZerologObject(e *zerolog.Event) {
 	}
 }
 
-// FilterByTimeRange returns the subset of bypass metadata whose Timestamp falls within the inclusive time range defined by start and end.
-// The original slice order is preserved in the returned slice.
+// FilterByTimeRange returns bypasses with Timestamp within [start, end] (inclusive).
 func FilterByTimeRange(bypasses []BypassMetadata, start, end time.Time) []BypassMetadata {
 	var result []BypassMetadata
 	for _, b := range bypasses {
@@ -339,7 +328,7 @@ func FilterByTimeRange(bypasses []BypassMetadata, start, end time.Time) []Bypass
 	return result
 }
 
-// FilterByOperator filters bypass metadata and returns entries whose Operator equals the provided operator.
+// FilterByOperator returns bypasses with matching Operator field.
 func FilterByOperator(bypasses []BypassMetadata, operator string) []BypassMetadata {
 	var result []BypassMetadata
 	for _, b := range bypasses {
@@ -350,7 +339,7 @@ func FilterByOperator(bypasses []BypassMetadata, operator string) []BypassMetada
 	return result
 }
 
-// FilterBySeverity returns all BypassMetadata entries whose Severity matches the provided severity.
+// FilterBySeverity returns bypasses with matching Severity level.
 func FilterBySeverity(bypasses []BypassMetadata, severity BypassSeverity) []BypassMetadata {
 	var result []BypassMetadata
 	for _, b := range bypasses {
@@ -361,7 +350,7 @@ func FilterBySeverity(bypasses []BypassMetadata, severity BypassSeverity) []Bypa
 	return result
 }
 
-// FilterByMechanism filters the provided bypass metadata to those whose Mechanism equals the specified mechanism.
+// FilterByMechanism returns bypasses with matching Mechanism type.
 func FilterByMechanism(bypasses []BypassMetadata, mechanism BypassMechanism) []BypassMetadata {
 	var result []BypassMetadata
 	for _, b := range bypasses {
