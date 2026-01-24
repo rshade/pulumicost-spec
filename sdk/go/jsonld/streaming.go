@@ -2,7 +2,9 @@ package jsonld
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"sync"
@@ -32,7 +34,40 @@ func (e *StreamError) Unwrap() error {
 type StreamResult struct {
 	RecordsWritten int
 	Errors         []*StreamError
+	// CorruptedOnCancel is set to true if context cancellation occurred after
+	// records were written. In this case, the output MUST be treated as invalid
+	// JSON - it may contain a partially written record followed by the closing
+	// bracket.
+	//
+	// Callers MUST either:
+	//   1. Discard the output entirely and retry the operation, OR
+	//   2. Validate output with json.Valid() before any use, OR
+	//   3. Use a transactional write pattern (write to temp file, rename on success)
+	//
+	// Do NOT assume the output is usable when this flag is true.
+	CorruptedOnCancel bool
 }
+
+// StreamLimits configures optional limits for streaming serialization.
+// Zero values mean unlimited (no limit enforced).
+type StreamLimits struct {
+	// MaxRecords is the maximum number of records to serialize.
+	// When exceeded, serialization stops and returns ErrMaxRecordsExceeded.
+	// 0 = unlimited (default).
+	MaxRecords int
+	// MaxRecordSize is the maximum size in bytes for a single serialized record.
+	// When exceeded, the record is skipped and an error is added to StreamResult.Errors.
+	// 0 = unlimited (default).
+	MaxRecordSize int
+}
+
+// Stream limit sentinel errors.
+var (
+	// ErrMaxRecordsExceeded is returned when the max records limit is reached.
+	ErrMaxRecordsExceeded = errors.New("max records limit exceeded")
+	// ErrRecordTooLarge is returned when a single record exceeds the size limit.
+	ErrRecordTooLarge = errors.New("record size exceeds limit")
+)
 
 // HasErrors returns true if any errors occurred during streaming.
 func (r *StreamResult) HasErrors() bool {
@@ -70,7 +105,12 @@ func putBuffer(buf *bytes.Buffer) {
 		// Don't pool very large buffers
 		return
 	}
-	buf.Reset() // Reset before pooling (defensive programming)
+	// Defense-in-depth: Reset buffer before returning to pool.
+	// While getBuffer() also resets on retrieval, this ensures the pool never
+	// contains dirty buffers even if getBuffer() has a bug that skips Reset().
+	// This prevents data corruption where previous JSON content could leak
+	// into subsequent serialization operations.
+	buf.Reset()
 	bufferPool.Put(buf)
 }
 
@@ -78,6 +118,23 @@ func putBuffer(buf *bytes.Buffer) {
 //
 // The output format is a JSON array: [record1, record2, ...]
 // Memory usage is bounded - only one record is held in memory at a time.
+//
+// Context Cancellation:
+//   - The context is checked on each iteration of the loop
+//   - When cancelled, returns ctx.Err() with partial results in StreamResult
+//   - RecordsWritten reflects records successfully written before cancellation
+//   - Cancellation latency: <1ms (checked every iteration via select)
+//   - On cancellation, the closing bracket is written to attempt valid JSON output
+//   - CRITICAL: If cancellation occurs during a write syscall, the output MUST be
+//     treated as invalid JSON. Check StreamResult.CorruptedOnCancel and either:
+//     (a) discard output and retry, (b) validate with json.Valid(), or
+//     (c) use transactional writes (temp file + rename on success).
+//
+// Thread Safety:
+//   - The Serializer is safe for concurrent use - each SerializeStream call uses
+//     pooled buffers from a sync.Pool and writes to its own io.Writer
+//   - Multiple goroutines can call SerializeStream concurrently on the same
+//     Serializer instance without external synchronization
 //
 // Error Handling:
 //   - Returns immediately if the opening bracket cannot be written
@@ -87,7 +144,13 @@ func putBuffer(buf *bytes.Buffer) {
 //     output when the writer recovers (e.g., temporary network issues)
 //   - Returns immediately if the closing bracket cannot be written
 //   - Call StreamResult.HasErrors() to check if any errors occurred
-func (s *Serializer) SerializeStream(records <-chan *pbc.FocusCostRecord, w io.Writer) (*StreamResult, error) {
+//
+//nolint:gocognit // Complexity is inherent to streaming pattern with context cancellation
+func (s *Serializer) SerializeStream(
+	ctx context.Context,
+	records <-chan *pbc.FocusCostRecord,
+	w io.Writer,
+) (*StreamResult, error) {
 	result := &StreamResult{
 		Errors: make([]*StreamError, 0),
 	}
@@ -99,88 +162,137 @@ func (s *Serializer) SerializeStream(records <-chan *pbc.FocusCostRecord, w io.W
 
 	index := 0
 	first := true
+	limits := s.options.StreamLimits
 
-	for record := range records {
-		// Get a buffer from the pool
-		buf := getBuffer()
+	for {
+		select {
+		case <-ctx.Done():
+			// Context cancelled - set corruption flag if any records were written
+			// (cancellation during write may leave partial record in output)
+			if result.RecordsWritten > 0 {
+				result.CorruptedOnCancel = true
+			}
+			// Write closing bracket and return
+			if _, err := w.Write([]byte("\n]")); err != nil {
+				return result, fmt.Errorf("failed to write closing bracket on cancellation: %w", err)
+			}
+			return result, ctx.Err()
+		case record, ok := <-records:
+			if !ok {
+				// Channel closed, we're done
+				if _, err := w.Write([]byte("\n]")); err != nil {
+					return result, fmt.Errorf("failed to write closing bracket: %w", err)
+				}
+				return result, nil
+			}
 
-		// Serialize the record
-		data, err := s.Serialize(record)
-		if err != nil {
-			result.Errors = append(result.Errors, &StreamError{
-				Index:   index,
-				Message: "serialization failed",
-				Err:     err,
-			})
-			putBuffer(buf)
-			index++
-			continue
-		}
+			// Check MaxRecords limit before processing
+			if limits.MaxRecords > 0 && result.RecordsWritten >= limits.MaxRecords {
+				// Write closing bracket and return limit error
+				if _, err := w.Write([]byte("\n]")); err != nil {
+					return result, fmt.Errorf("failed to write closing bracket: %w", err)
+				}
+				return result, ErrMaxRecordsExceeded
+			}
 
-		// Write separator if not first record
-		if !first {
-			buf.WriteString(",\n")
-		}
-		first = false
+			// Get a buffer from the pool
+			buf := getBuffer()
 
-		// Indent the record for readability in streaming output
-		if s.options.PrettyPrint {
-			var indented bytes.Buffer
-			if indentErr := json.Indent(&indented, data, "  ", "  "); indentErr == nil {
-				buf.WriteString("  ")
-				buf.Write(indented.Bytes())
+			// Serialize the record
+			data, err := s.Serialize(record)
+			if err != nil {
+				result.Errors = append(result.Errors, &StreamError{
+					Index:   index,
+					Message: "serialization failed",
+					Err:     err,
+				})
+				putBuffer(buf)
+				index++
+				continue
+			}
+
+			// Check MaxRecordSize limit after serialization
+			if limits.MaxRecordSize > 0 && len(data) > limits.MaxRecordSize {
+				result.Errors = append(result.Errors, &StreamError{
+					Index:   index,
+					Message: fmt.Sprintf("record size %d exceeds limit %d", len(data), limits.MaxRecordSize),
+					Err:     ErrRecordTooLarge,
+				})
+				putBuffer(buf)
+				index++
+				continue
+			}
+
+			// Write separator if not first record
+			if !first {
+				buf.WriteString(",\n")
+			}
+			first = false
+
+			// Indent the record for readability in streaming output
+			if s.options.PrettyPrint {
+				var indented bytes.Buffer
+				if indentErr := json.Indent(&indented, data, "  ", "  "); indentErr == nil {
+					buf.Write(indented.Bytes())
+				} else {
+					buf.Write(data)
+				}
 			} else {
 				buf.Write(data)
 			}
-		} else {
-			buf.Write(data)
-		}
 
-		// Write to output
-		if _, writeErr := w.Write(buf.Bytes()); writeErr != nil {
-			result.Errors = append(result.Errors, &StreamError{
-				Index:   index,
-				Message: "write failed",
-				Err:     writeErr,
-			})
+			// Write to output
+			if _, writeErr := w.Write(buf.Bytes()); writeErr != nil {
+				result.Errors = append(result.Errors, &StreamError{
+					Index:   index,
+					Message: "write failed",
+					Err:     writeErr,
+				})
+				putBuffer(buf)
+				index++
+				continue
+			}
+
 			putBuffer(buf)
+			result.RecordsWritten++
 			index++
-			continue
 		}
-
-		putBuffer(buf)
-		result.RecordsWritten++
-		index++
 	}
-
-	// Write closing bracket
-	if _, err := w.Write([]byte("\n]")); err != nil {
-		return result, fmt.Errorf("failed to write closing bracket: %w", err)
-	}
-
-	return result, nil
 }
 
 // SerializeSlice serializes a slice of FocusCostRecords to JSON-LD array.
 //
 // This is a convenience method that creates a channel from the slice
 // and calls SerializeStream.
-func (s *Serializer) SerializeSlice(records []*pbc.FocusCostRecord, w io.Writer) (*StreamResult, error) {
+//
+// Context cancellation is supported - if the context is cancelled during
+// serialization, partial results will be returned along with ctx.Err().
+func (s *Serializer) SerializeSlice(
+	ctx context.Context,
+	records []*pbc.FocusCostRecord,
+	w io.Writer,
+) (*StreamResult, error) {
 	ch := make(chan *pbc.FocusCostRecord, len(records))
 	for _, r := range records {
 		ch <- r
 	}
 	close(ch)
-	return s.SerializeStream(ch, w)
+	return s.SerializeStream(ctx, ch, w)
 }
 
 // SerializeBatch serializes multiple records and returns the complete JSON-LD array.
 //
 // Unlike SerializeStream, this method buffers all output in memory.
 // Use SerializeStream for very large datasets.
-func (s *Serializer) SerializeBatch(records []*pbc.FocusCostRecord) ([]byte, *StreamResult, error) {
+//
+// Context cancellation is supported - if the context is cancelled during
+// serialization, partial results will be returned along with ctx.Err().
+func (s *Serializer) SerializeBatch(
+	ctx context.Context,
+	records []*pbc.FocusCostRecord,
+) ([]byte, *StreamResult, error) {
 	var buf bytes.Buffer
-	result, err := s.SerializeSlice(records, &buf)
+	result, err := s.SerializeSlice(ctx, records, &buf)
 	if err != nil {
 		return nil, result, err
 	}

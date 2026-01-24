@@ -2,9 +2,12 @@ package jsonld_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
+	"sync"
 	"testing"
+	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -29,7 +32,7 @@ func TestSerializeStream_BasicBatch(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	result, err := serializer.SerializeSlice(records, &buf)
+	result, err := serializer.SerializeSlice(context.Background(), records, &buf)
 	if err != nil {
 		t.Fatalf("SerializeSlice() failed: %v", err)
 	}
@@ -72,7 +75,7 @@ func TestSerializeStream_LargeBatch(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	result, err := serializer.SerializeSlice(records, &buf)
+	result, err := serializer.SerializeSlice(context.Background(), records, &buf)
 	if err != nil {
 		t.Fatalf("SerializeSlice() failed: %v", err)
 	}
@@ -117,7 +120,7 @@ func TestSerializeStream_ChannelInput(t *testing.T) {
 	close(ch)
 
 	var buf bytes.Buffer
-	result, err := serializer.SerializeStream(ch, &buf)
+	result, err := serializer.SerializeStream(context.Background(), ch, &buf)
 	if err != nil {
 		t.Fatalf("SerializeStream() failed: %v", err)
 	}
@@ -153,7 +156,7 @@ func TestSerializeBatch(t *testing.T) {
 		},
 	}
 
-	data, result, err := serializer.SerializeBatch(records)
+	data, result, err := serializer.SerializeBatch(context.Background(), records)
 	if err != nil {
 		t.Fatalf("SerializeBatch() failed: %v", err)
 	}
@@ -190,7 +193,7 @@ func TestSerializeStream_EmptyInput(t *testing.T) {
 	close(ch) // Empty channel
 
 	var buf bytes.Buffer
-	result, err := serializer.SerializeStream(ch, &buf)
+	result, err := serializer.SerializeStream(context.Background(), ch, &buf)
 	if err != nil {
 		t.Fatalf("SerializeStream() failed: %v", err)
 	}
@@ -323,6 +326,152 @@ func TestStreamError_Unwrap(t *testing.T) {
 	}
 }
 
+func TestSerializeStream_ContextCancellation(t *testing.T) {
+	serializer := jsonld.NewSerializer()
+
+	// Use a buffered channel to allow producer and consumer to run concurrently
+	// without blocking each other
+	ch := make(chan *pbc.FocusCostRecord, 10)
+
+	// Create a context that we can cancel
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel() // Ensure cleanup
+
+	// Result channel to collect SerializeStream output
+	type streamResult struct {
+		result *jsonld.StreamResult
+		err    error
+		buf    bytes.Buffer
+	}
+	done := make(chan streamResult, 1)
+
+	// Start consumer goroutine (SerializeStream)
+	go func() {
+		var sr streamResult
+		sr.result, sr.err = serializer.SerializeStream(ctx, ch, &sr.buf)
+		done <- sr
+	}()
+
+	// Channel to signal when first record has been sent (deterministic sync)
+	firstSent := make(chan struct{})
+	var firstSentOnce sync.Once
+
+	// Start producer goroutine
+	producerDone := make(chan struct{})
+	go func() {
+		defer close(producerDone)
+		defer close(ch)
+		for i := range 10 {
+			// Check if context is cancelled before sending
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+			select {
+			case ch <- &pbc.FocusCostRecord{
+				BillingAccountId: "123456789012",
+				ChargePeriodStart: &timestamppb.Timestamp{
+					Seconds: int64(1735689600 + i*86400),
+				},
+				ServiceName:     "Amazon EC2",
+				BilledCost:      float64(100 + i),
+				BillingCurrency: "USD",
+			}:
+				// Signal that first record was sent (only once)
+				firstSentOnce.Do(func() { close(firstSent) })
+			case <-ctx.Done():
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}()
+
+	// Wait deterministically for first record to be sent before cancelling
+	<-firstSent
+
+	// Cancel the context to trigger mid-stream cancellation
+	cancel()
+
+	// Wait for SerializeStream to complete
+	sr := <-done
+
+	// Wait for producer to exit (cleanup)
+	<-producerDone
+
+	// Should return context.Canceled error
+	if !errors.Is(sr.err, context.Canceled) {
+		t.Errorf("Expected context.Canceled error, got %v", sr.err)
+	}
+
+	// Should have written some records (at least 1-2 depending on timing)
+	if sr.result.RecordsWritten == 0 {
+		t.Log("Warning: no records were written before cancellation")
+	}
+
+	// Output should still be valid JSON (with closing bracket)
+	var parsed []interface{}
+	if unmarshalErr := json.Unmarshal(sr.buf.Bytes(), &parsed); unmarshalErr != nil {
+		t.Errorf("Output is not valid JSON array after cancellation: %v", unmarshalErr)
+	}
+}
+
+func TestSerializeStream_ContextTimeout(t *testing.T) {
+	serializer := jsonld.NewSerializer()
+
+	// Use small buffered channel to reduce contention
+	ch := make(chan *pbc.FocusCostRecord, 2)
+	producerDone := make(chan struct{}) // Synchronization signal
+
+	// Create a context with a short timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+
+	// Start producer goroutine that's slow
+	go func() {
+		defer close(producerDone)
+		defer close(ch)
+		for i := range 10 {
+			record := &pbc.FocusCostRecord{
+				BillingAccountId: "123456789012",
+				ChargePeriodStart: &timestamppb.Timestamp{
+					Seconds: int64(1735689600 + i*86400),
+				},
+				ServiceName:     "Amazon EC2",
+				BilledCost:      float64(100 + i),
+				BillingCurrency: "USD",
+			}
+			// Use select to make send respect context cancellation
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- record:
+			}
+			time.Sleep(20 * time.Millisecond)
+		}
+	}()
+
+	var buf bytes.Buffer
+	result, err := serializer.SerializeStream(ctx, ch, &buf)
+
+	// Wait for producer to exit cleanly (prevents goroutine leak)
+	<-producerDone
+
+	// Should return context.DeadlineExceeded error
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("Expected context.DeadlineExceeded error, got %v", err)
+	}
+
+	// Should have written some records
+	t.Logf("Records written before timeout: %d", result.RecordsWritten)
+
+	// Output should still be valid JSON
+	var parsed []interface{}
+	if unmarshalErr := json.Unmarshal(buf.Bytes(), &parsed); unmarshalErr != nil {
+		t.Errorf("Output is not valid JSON array after timeout: %v", unmarshalErr)
+	}
+}
+
 func TestSerializeStream_PrettyPrint(t *testing.T) {
 	serializer := jsonld.NewSerializer(jsonld.WithPrettyPrint(true))
 
@@ -336,7 +485,7 @@ func TestSerializeStream_PrettyPrint(t *testing.T) {
 		},
 	}
 
-	data, _, err := serializer.SerializeBatch(records)
+	data, _, err := serializer.SerializeBatch(context.Background(), records)
 	if err != nil {
 		t.Fatalf("SerializeBatch() failed: %v", err)
 	}
@@ -351,5 +500,264 @@ func TestSerializeStream_PrettyPrint(t *testing.T) {
 	var parsed []interface{}
 	if unmarshalErr := json.Unmarshal([]byte(output), &parsed); unmarshalErr != nil {
 		t.Errorf("Output is not valid JSON: %v", unmarshalErr)
+	}
+}
+
+func TestSerializerConcurrentUse(t *testing.T) {
+	t.Parallel()
+
+	// Verify thread-safety of Serializer - multiple goroutines can use the same
+	// Serializer instance concurrently without external synchronization.
+	serializer := jsonld.NewSerializer()
+	const numGoroutines = 10
+	const recordsPerGoroutine = 100
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, numGoroutines)
+
+	for i := range numGoroutines {
+		wg.Add(1)
+		go func(goroutineID int) {
+			defer wg.Done()
+
+			// Each goroutine serializes its own set of records
+			records := make([]*pbc.FocusCostRecord, recordsPerGoroutine)
+			for j := range recordsPerGoroutine {
+				records[j] = &pbc.FocusCostRecord{
+					BillingAccountId: "123456789012",
+					ChargePeriodStart: &timestamppb.Timestamp{
+						Seconds: int64(1735689600 + goroutineID*1000 + j),
+					},
+					ServiceName:     "Amazon EC2",
+					BilledCost:      float64(goroutineID*100 + j),
+					BillingCurrency: "USD",
+				}
+			}
+
+			var buf bytes.Buffer
+			result, err := serializer.SerializeSlice(context.Background(), records, &buf)
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			if result.RecordsWritten != recordsPerGoroutine {
+				errChan <- errors.New("incorrect record count")
+				return
+			}
+
+			// Verify output is valid JSON
+			var parsed []interface{}
+			if unmarshalErr := json.Unmarshal(buf.Bytes(), &parsed); unmarshalErr != nil {
+				errChan <- unmarshalErr
+				return
+			}
+
+			if len(parsed) != recordsPerGoroutine {
+				errChan <- errors.New("incorrect parsed record count")
+				return
+			}
+		}(i)
+	}
+
+	wg.Wait()
+	close(errChan)
+
+	for err := range errChan {
+		t.Errorf("concurrent serialization error: %v", err)
+	}
+}
+
+func TestSerializeStream_ImmediateCancellation(t *testing.T) {
+	serializer := jsonld.NewSerializer()
+
+	// Create an already-cancelled context
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel immediately
+
+	// Use an UNBUFFERED channel that blocks on send - this ensures the context
+	// cancellation is detected before any records can be read
+	ch := make(chan *pbc.FocusCostRecord)
+	// Don't send any records - just close the channel after a delay
+	go func() {
+		// Small delay to ensure SerializeStream has time to check context first
+		time.Sleep(10 * time.Millisecond)
+		close(ch)
+	}()
+
+	var buf bytes.Buffer
+	result, err := serializer.SerializeStream(ctx, ch, &buf)
+
+	// Should return context.Canceled error
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("Expected context.Canceled error, got %v", err)
+	}
+
+	// Should have written 0 records
+	if result.RecordsWritten != 0 {
+		t.Errorf("Expected 0 records written, got %d", result.RecordsWritten)
+	}
+
+	// CorruptedOnCancel should be false (no records written before cancel)
+	if result.CorruptedOnCancel {
+		t.Error("Expected CorruptedOnCancel to be false for immediate cancellation")
+	}
+
+	// Output should be valid JSON (empty array)
+	var parsed []interface{}
+	if unmarshalErr := json.Unmarshal(buf.Bytes(), &parsed); unmarshalErr != nil {
+		t.Errorf("Output is not valid JSON array: %v", unmarshalErr)
+	}
+
+	if len(parsed) != 0 {
+		t.Errorf("Expected empty array, got %d elements", len(parsed))
+	}
+}
+
+func TestSerializeStream_CorruptedOnCancel(t *testing.T) {
+	serializer := jsonld.NewSerializer()
+
+	// Test that CorruptedOnCancel is set when records were written before cancel
+	ctx, cancel := context.WithCancel(context.Background())
+	ch := make(chan *pbc.FocusCostRecord, 10)
+
+	// Channel for synchronizing
+	recordSent := make(chan struct{})
+
+	go func() {
+		defer close(ch)
+		// Send first record
+		ch <- &pbc.FocusCostRecord{
+			BillingAccountId:  "123456789012",
+			ChargePeriodStart: &timestamppb.Timestamp{Seconds: 1735689600},
+			ServiceName:       "Amazon EC2",
+			BilledCost:        100.0,
+			BillingCurrency:   "USD",
+		}
+		close(recordSent)
+		// Wait a bit then cancel
+		time.Sleep(10 * time.Millisecond)
+		cancel()
+		// Send more records that may or may not be processed
+		for i := range 5 {
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- &pbc.FocusCostRecord{
+				BillingAccountId:  "123456789012",
+				ChargePeriodStart: &timestamppb.Timestamp{Seconds: int64(1735689600 + (i+1)*86400)},
+				ServiceName:       "Amazon EC2",
+				BilledCost:        float64(100 + i + 1),
+				BillingCurrency:   "USD",
+			}:
+			}
+			time.Sleep(20 * time.Millisecond)
+		}
+	}()
+
+	// Wait for first record to be sent
+	<-recordSent
+
+	var buf bytes.Buffer
+	result, err := serializer.SerializeStream(ctx, ch, &buf)
+
+	// Should return context.Canceled error
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("Expected context.Canceled error, got %v", err)
+	}
+
+	// At least one record should have been written
+	if result.RecordsWritten == 0 {
+		t.Skip("No records written before cancellation - timing-dependent test")
+	}
+
+	// CorruptedOnCancel should be true (records were written before cancel)
+	if !result.CorruptedOnCancel {
+		t.Error("Expected CorruptedOnCancel to be true when records were written before cancel")
+	}
+}
+
+func TestSerializeStream_MaxRecordsLimit(t *testing.T) {
+	serializer := jsonld.NewSerializer(jsonld.WithStreamLimits(jsonld.StreamLimits{
+		MaxRecords: 5,
+	}))
+
+	// Create 10 records but limit to 5
+	records := make([]*pbc.FocusCostRecord, 10)
+	for i := range 10 {
+		records[i] = &pbc.FocusCostRecord{
+			BillingAccountId:  "123456789012",
+			ChargePeriodStart: &timestamppb.Timestamp{Seconds: int64(1735689600 + i*86400)},
+			ServiceName:       "Amazon EC2",
+			BilledCost:        float64(100 + i),
+			BillingCurrency:   "USD",
+		}
+	}
+
+	var buf bytes.Buffer
+	result, err := serializer.SerializeSlice(context.Background(), records, &buf)
+
+	// Should return max records exceeded error
+	if !errors.Is(err, jsonld.ErrMaxRecordsExceeded) {
+		t.Errorf("Expected ErrMaxRecordsExceeded, got %v", err)
+	}
+
+	// Should have written exactly 5 records
+	if result.RecordsWritten != 5 {
+		t.Errorf("Expected 5 records written, got %d", result.RecordsWritten)
+	}
+
+	// Output should still be valid JSON
+	var parsed []interface{}
+	if unmarshalErr := json.Unmarshal(buf.Bytes(), &parsed); unmarshalErr != nil {
+		t.Errorf("Output is not valid JSON array: %v", unmarshalErr)
+	}
+
+	if len(parsed) != 5 {
+		t.Errorf("Expected 5 records in output, got %d", len(parsed))
+	}
+}
+
+func TestSerializeStream_MaxRecordSizeLimit(t *testing.T) {
+	// Use a very small size limit to trigger the error
+	serializer := jsonld.NewSerializer(jsonld.WithStreamLimits(jsonld.StreamLimits{
+		MaxRecordSize: 100, // Very small - typical record is ~300+ bytes
+	}))
+
+	records := []*pbc.FocusCostRecord{
+		{
+			BillingAccountId:  "123456789012",
+			ChargePeriodStart: &timestamppb.Timestamp{Seconds: 1735689600},
+			ServiceName:       "Amazon EC2 with a very long service name to exceed the limit",
+			BilledCost:        100.0,
+			BillingCurrency:   "USD",
+		},
+	}
+
+	var buf bytes.Buffer
+	result, err := serializer.SerializeSlice(context.Background(), records, &buf)
+
+	// Should complete without fatal error
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	// Should have written 0 records (all exceeded size)
+	if result.RecordsWritten != 0 {
+		t.Errorf("Expected 0 records written, got %d", result.RecordsWritten)
+	}
+
+	// Should have 1 error for the oversized record
+	if !result.HasErrors() {
+		t.Error("Expected errors for oversized record")
+	}
+
+	if len(result.Errors) != 1 {
+		t.Errorf("Expected 1 error, got %d", len(result.Errors))
+	}
+
+	// Check the error is ErrRecordTooLarge
+	if !errors.Is(result.Errors[0].Err, jsonld.ErrRecordTooLarge) {
+		t.Errorf("Expected ErrRecordTooLarge, got %v", result.Errors[0].Err)
 	}
 }

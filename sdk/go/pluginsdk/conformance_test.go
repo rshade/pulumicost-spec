@@ -735,9 +735,9 @@ func TestInferCapabilitiesNilPlugin(t *testing.T) {
 // Benchmark Tests
 // =============================================================================
 
-// BenchmarkInferCapabilities measures the performance of capability discovery.
-// This verifies that type assertions are zero-allocation and slice operations
-// are efficient.
+// BenchmarkInferCapabilitiesDirect measures the performance of capability discovery
+// by calling inferCapabilities() directly. This verifies that type assertions are
+// zero-allocation and slice operations are efficient.
 //
 // Expected performance for plugins with all optional interfaces:
 // - < 100 ns/op: Type assertions and slice operations are fast
@@ -745,7 +745,10 @@ func TestInferCapabilitiesNilPlugin(t *testing.T) {
 //
 // These benchmarks establish performance contracts that can be validated in CI
 // to prevent regressions in capability discovery performance.
-func BenchmarkInferCapabilities(b *testing.B) {
+//
+// Note: This differs from BenchmarkInferCapabilitiesRPC in plugin_info_benchmark_test.go
+// which measures the full GetPluginInfo RPC flow including server overhead.
+func BenchmarkInferCapabilitiesDirect(b *testing.B) {
 	plugin := &capabilityTestPlugin{name: "benchmark-plugin"}
 
 	b.ReportAllocs()

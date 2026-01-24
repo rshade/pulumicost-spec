@@ -11,7 +11,12 @@
 //   - [github.com/rshade/finfocus-spec/sdk/go/testing.IsValidSemVer]
 package semver
 
-import "regexp"
+import (
+	"errors"
+	"fmt"
+	"regexp"
+	"strings"
+)
 
 // Regex is a precompiled regular expression for validating semantic versions.
 // Matches: v1.2.3, v0.0.1, v10.20.30, etc.
@@ -41,4 +46,47 @@ func IsValid(version string) bool {
 		return false
 	}
 	return Regex.MatchString(version)
+}
+
+// Sentinel errors for semantic version validation.
+// These allow callers to programmatically identify specific validation failures.
+var (
+	// ErrEmptyVersion is returned when the version string is empty.
+	ErrEmptyVersion = errors.New("version is empty")
+
+	// ErrMissingVPrefix is returned when the version doesn't start with 'v'.
+	ErrMissingVPrefix = errors.New("version must start with 'v'")
+
+	// ErrInvalidFormat is returned when the version doesn't match vMAJOR.MINOR.PATCH format.
+	ErrInvalidFormat = errors.New("version does not match semantic versioning format vMAJOR.MINOR.PATCH")
+)
+
+// Validate returns an error with a contextual message if the version is invalid.
+// This function provides more detailed error messages than IsValid, making it
+// suitable for user-facing error reporting.
+//
+// Returned errors wrap sentinel errors for programmatic handling:
+//   - [ErrEmptyVersion]: version string is empty
+//   - [ErrMissingVPrefix]: version doesn't start with 'v' (wraps with version value)
+//   - [ErrInvalidFormat]: version doesn't match vMAJOR.MINOR.PATCH (wraps with version value)
+//
+// Example:
+//
+//	if err := semver.Validate("1.0.0"); err != nil {
+//	    if errors.Is(err, semver.ErrMissingVPrefix) {
+//	        // Handle missing 'v' prefix specifically
+//	    }
+//	    // err.Error() = "version must start with 'v': \"1.0.0\""
+//	}
+func Validate(version string) error {
+	if version == "" {
+		return ErrEmptyVersion
+	}
+	if !strings.HasPrefix(version, "v") {
+		return fmt.Errorf("%w: %q", ErrMissingVPrefix, version)
+	}
+	if !Regex.MatchString(version) {
+		return fmt.Errorf("%w: %q", ErrInvalidFormat, version)
+	}
+	return nil
 }

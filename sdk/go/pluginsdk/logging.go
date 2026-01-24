@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -25,9 +26,15 @@ const TraceIDMetadataKey = "x-finfocus-trace-id"
 
 // Log file configuration constants.
 const (
-	// LogFilePermissions is the file permission mode for created log files (rw-r--r--).
-	// Note: If log files may contain sensitive information (API keys, resource details),
-	// consider using 0640 and running plugins under a dedicated user account.
+	// LogFilePermissions is the default file permission mode for created log files (rw-r--r--).
+	// WARNING: Default permissions allow world-readable logs. If your plugin logs
+	// resource ARNs, account IDs, or cost data that could be considered sensitive,
+	// set FINFOCUS_LOG_FILE_PERMISSIONS (or PULUMICOST_LOG_FILE_PERMISSIONS) to
+	// a more restrictive value like "0640" and run plugins under a dedicated service account.
+	//
+	// To override at runtime, set the FINFOCUS_LOG_FILE_PERMISSIONS environment variable
+	// to an octal string (e.g., "0640", "0600"). The value is parsed using strconv.ParseInt
+	// with base 8. Invalid values log a warning and fall back to this default.
 	LogFilePermissions = 0644
 
 	// LogFileFlags are the flags used when opening log files for writing.
@@ -75,6 +82,69 @@ var (
 	logWriter     io.Writer
 )
 
+// GetLogFilePermissions returns the file permissions for log files.
+//
+// It reads from environment variables with the following fallback chain:
+//   - FINFOCUS_LOG_FILE_PERMISSIONS
+//   - PULUMICOST_LOG_FILE_PERMISSIONS (deprecated)
+//
+// The value must be an octal string (e.g., "0640", "0600", "0644").
+// If the environment variable is not set or contains an invalid value,
+// returns the default LogFilePermissions (0644).
+//
+// Invalid values (non-octal, out of range) log a warning to stderr
+// and return the default permissions.
+//
+// Example:
+//
+//	// Set in environment: FINFOCUS_LOG_FILE_PERMISSIONS=0640
+//	perms := pluginsdk.GetLogFilePermissions()
+//	// perms == 0640 (os.FileMode)
+func GetLogFilePermissions() os.FileMode {
+	// Try primary env var first, then fallback - track which one provided the value
+	var permStr, envVarName string
+
+	permStr = os.Getenv("FINFOCUS_LOG_FILE_PERMISSIONS")
+	if permStr != "" {
+		envVarName = "FINFOCUS_LOG_FILE_PERMISSIONS"
+	} else {
+		permStr = os.Getenv("PULUMICOST_LOG_FILE_PERMISSIONS")
+		if permStr != "" {
+			envVarName = "PULUMICOST_LOG_FILE_PERMISSIONS"
+		}
+	}
+
+	// Return default if not set
+	if permStr == "" {
+		return LogFilePermissions
+	}
+
+	// Parse octal string
+	parsed, err := strconv.ParseInt(permStr, 8, 32)
+	if err != nil {
+		warnLogger := zerolog.New(os.Stderr).With().Timestamp().Logger()
+		warnLogger.Warn().
+			Str("env_var", envVarName).
+			Str("value", permStr).
+			Err(err).
+			Msgf("invalid %s (expected octal like '0640'), using default", envVarName)
+		return LogFilePermissions
+	}
+
+	// Validate range (0000 to 0777)
+	if parsed < 0 || parsed > 0777 {
+		warnLogger := zerolog.New(os.Stderr).With().Timestamp().Logger()
+		warnLogger.Warn().
+			Str("env_var", envVarName).
+			Str("value", permStr).
+			Int64("parsed", parsed).
+			Msgf("%s out of range (0000-0777), using default", envVarName)
+		return LogFilePermissions
+	}
+
+	return os.FileMode(parsed)
+}
+
 // NewLogWriter returns an io.Writer configured based on the FINFOCUS_LOG_FILE
 // environment variable. The file is opened once on first call and reused for
 // subsequent calls (singleton pattern). The file remains open for the lifetime
@@ -116,8 +186,8 @@ func NewLogWriter() io.Writer {
 			return
 		}
 
-		// Attempt to open/create the log file
-		file, err := os.OpenFile(logFile, LogFileFlags, LogFilePermissions)
+		// Attempt to open/create the log file with configurable permissions
+		file, err := os.OpenFile(logFile, LogFileFlags, GetLogFilePermissions())
 		if err != nil {
 			// Check if it's a directory error for better error message
 			if info, statErr := os.Stat(logFile); statErr == nil && info.IsDir() {

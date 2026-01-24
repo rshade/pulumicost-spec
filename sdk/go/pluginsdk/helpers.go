@@ -1090,8 +1090,9 @@ func WithSpotRisk(score float64) EstimateCostResponseOption {
 	if math.IsNaN(score) || math.IsInf(score, 0) {
 		panic(fmt.Sprintf("WithSpotRisk: invalid score (NaN/Inf): %v", score))
 	}
-	// Allow epsilon tolerance for floating-point arithmetic errors
-	if score < -spotRiskEpsilon || score > 1.0+spotRiskEpsilon {
+	// Allow epsilon tolerance on lower bound only (handles float errors near 0)
+	// Upper bound is strict 1.0 - probability cannot exceed 100%
+	if score < -spotRiskEpsilon || score > 1.0 {
 		panic(fmt.Sprintf("WithSpotRisk: score must be between 0.0 and 1.0, got %f", score))
 	}
 
@@ -1204,6 +1205,69 @@ func WithProjectedCostDetails(
 	}
 }
 
+// WithPredictionInterval sets the prediction interval fields for GetProjectedCostResponse.
+//
+// This sets the lower and upper bounds of a prediction interval along with the
+// confidence level.
+//
+// Fail-fast validation (panics on programming errors):
+//   - NaN or Inf values for lower, upper, or confidence
+//   - Negative lower bound (lower < 0)
+//   - Invalid interval structure (lower > upper)
+//   - Confidence out of range (confidence <= 0 || confidence > 1.0)
+//
+// Deferred validation (checked by ValidateGetProjectedCostResponse):
+//   - cost_per_month consistency (cost must be within [lower, upper])
+//   - Both bounds must be set together (not just one)
+//
+// IMPORTANT: Callers MUST call ValidateGetProjectedCostResponse() on the final
+// response to validate cost-within-interval constraints.
+//
+// Example:
+//
+//	resp := pluginsdk.NewGetProjectedCostResponse(
+//	    pluginsdk.WithProjectedCostDetails(0.05, "USD", 36.50, "spot-instance"),
+//	    pluginsdk.WithPredictionInterval(30.0, 45.0, 0.95),  // 95% CI: [$30, $45]
+//	)
+//	if err := pluginsdk.ValidateGetProjectedCostResponse(resp); err != nil {
+//	    return nil, status.Errorf(codes.InvalidArgument, "invalid response: %v", err)
+//	}
+func WithPredictionInterval(lower, upper, confidence float64) GetProjectedCostResponseOption {
+	// Fail-fast validation for programming errors
+
+	// Check for NaN/Inf values
+	if math.IsNaN(lower) || math.IsInf(lower, 0) {
+		panic(fmt.Sprintf("WithPredictionInterval: lower bound is NaN/Inf: %v", lower))
+	}
+	if math.IsNaN(upper) || math.IsInf(upper, 0) {
+		panic(fmt.Sprintf("WithPredictionInterval: upper bound is NaN/Inf: %v", upper))
+	}
+	if math.IsNaN(confidence) || math.IsInf(confidence, 0) {
+		panic(fmt.Sprintf("WithPredictionInterval: confidence is NaN/Inf: %v", confidence))
+	}
+
+	// Check for negative lower bound
+	if lower < 0 {
+		panic(fmt.Sprintf("WithPredictionInterval: lower bound cannot be negative: %f", lower))
+	}
+
+	// Check for structural invalidity (lower > upper)
+	if lower > upper {
+		panic(fmt.Sprintf("WithPredictionInterval: lower bound (%f) > upper bound (%f)", lower, upper))
+	}
+
+	// Check confidence range (must be in range (0.0, 1.0])
+	if confidence <= 0 || confidence > 1.0 {
+		panic(fmt.Sprintf("WithPredictionInterval: confidence must be in (0.0, 1.0], got %f", confidence))
+	}
+
+	return func(resp *pbc.GetProjectedCostResponse) {
+		resp.PredictionIntervalLower = &lower
+		resp.PredictionIntervalUpper = &upper
+		resp.ConfidenceLevel = &confidence
+	}
+}
+
 // NewGetProjectedCostResponse creates a GetProjectedCostResponse with functional options.
 //
 // Example:
@@ -1212,6 +1276,13 @@ func WithProjectedCostDetails(
 //	    pluginsdk.WithProjectedCostDetails(0.05, "USD", 36.50, "spot-instance"),
 //	    pluginsdk.WithProjectedCostPricingCategory(pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC),
 //	    pluginsdk.WithProjectedCostSpotRisk(0.8),
+//	)
+//
+// Example with prediction interval:
+//
+//	resp := pluginsdk.NewGetProjectedCostResponse(
+//	    pluginsdk.WithProjectedCostDetails(0.05, "USD", 36.50, "spot-instance"),
+//	    pluginsdk.WithPredictionInterval(30.0, 45.0, 0.95),  // 95% CI
 //	)
 func NewGetProjectedCostResponse(opts ...GetProjectedCostResponseOption) *pbc.GetProjectedCostResponse {
 	resp := &pbc.GetProjectedCostResponse{}

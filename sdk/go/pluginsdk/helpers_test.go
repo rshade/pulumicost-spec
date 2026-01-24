@@ -2,8 +2,11 @@ package pluginsdk_test
 
 import (
 	"context"
+	"math"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
@@ -1797,4 +1800,327 @@ func FuzzResourceDescriptorID(f *testing.F) {
 			t.Errorf("ID mismatch: got %q, want %q", desc.GetId(), id)
 		}
 	})
+}
+
+// =============================================================================
+// Prediction Interval Tests
+// =============================================================================
+
+// TestWithPredictionInterval tests the WithPredictionInterval functional option.
+func TestWithPredictionInterval(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name               string
+		lower              float64
+		upper              float64
+		confidence         float64
+		expectedLower      float64
+		expectedUpper      float64
+		expectedConfidence float64
+	}{
+		{
+			name:               "typical 95% confidence interval",
+			lower:              30.0,
+			upper:              50.0,
+			confidence:         0.95,
+			expectedLower:      30.0,
+			expectedUpper:      50.0,
+			expectedConfidence: 0.95,
+		},
+		{
+			name:               "90% confidence interval",
+			lower:              32.0,
+			upper:              48.0,
+			confidence:         0.90,
+			expectedLower:      32.0,
+			expectedUpper:      48.0,
+			expectedConfidence: 0.90,
+		},
+		{
+			name:               "99% confidence interval",
+			lower:              25.0,
+			upper:              55.0,
+			confidence:         0.99,
+			expectedLower:      25.0,
+			expectedUpper:      55.0,
+			expectedConfidence: 0.99,
+		},
+		{
+			name:               "zero lower bound",
+			lower:              0.0,
+			upper:              100.0,
+			confidence:         0.95,
+			expectedLower:      0.0,
+			expectedUpper:      100.0,
+			expectedConfidence: 0.95,
+		},
+		{
+			name:               "equal bounds (point estimate)",
+			lower:              42.0,
+			upper:              42.0,
+			confidence:         1.0,
+			expectedLower:      42.0,
+			expectedUpper:      42.0,
+			expectedConfidence: 1.0,
+		},
+		// Note: Invalid confidence values (0, negative, >1.0) now panic at construction
+		// time rather than being passed through. See TestWithPredictionIntervalPanics.
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			resp := pluginsdk.NewGetProjectedCostResponse(
+				pluginsdk.WithPredictionInterval(tc.lower, tc.upper, tc.confidence),
+			)
+
+			if resp.GetPredictionIntervalLower() != tc.expectedLower {
+				t.Errorf("expected lower %f, got %f", tc.expectedLower, resp.GetPredictionIntervalLower())
+			}
+			if resp.GetPredictionIntervalUpper() != tc.expectedUpper {
+				t.Errorf("expected upper %f, got %f", tc.expectedUpper, resp.GetPredictionIntervalUpper())
+			}
+			if resp.GetConfidenceLevel() != tc.expectedConfidence {
+				t.Errorf("expected confidence %f, got %f", tc.expectedConfidence, resp.GetConfidenceLevel())
+			}
+		})
+	}
+}
+
+// TestWithPredictionIntervalPanics tests that WithPredictionInterval panics for programming errors.
+// This is consistent with WithSpotRisk which also uses fail-fast validation via panics.
+func TestWithPredictionIntervalPanics(t *testing.T) {
+	t.Parallel()
+
+	t.Run("panics_on_lower_nan", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: lower bound is NaN/Inf: NaN",
+			func() { pluginsdk.WithPredictionInterval(math.NaN(), 50.0, 0.95) },
+		)
+	})
+
+	t.Run("panics_on_lower_positive_inf", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: lower bound is NaN/Inf: +Inf",
+			func() { pluginsdk.WithPredictionInterval(math.Inf(1), 50.0, 0.95) },
+		)
+	})
+
+	t.Run("panics_on_lower_negative_inf", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: lower bound is NaN/Inf: -Inf",
+			func() { pluginsdk.WithPredictionInterval(math.Inf(-1), 50.0, 0.95) },
+		)
+	})
+
+	t.Run("panics_on_upper_nan", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: upper bound is NaN/Inf: NaN",
+			func() { pluginsdk.WithPredictionInterval(30.0, math.NaN(), 0.95) },
+		)
+	})
+
+	t.Run("panics_on_upper_positive_inf", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: upper bound is NaN/Inf: +Inf",
+			func() { pluginsdk.WithPredictionInterval(30.0, math.Inf(1), 0.95) },
+		)
+	})
+
+	t.Run("panics_on_upper_negative_inf", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: upper bound is NaN/Inf: -Inf",
+			func() { pluginsdk.WithPredictionInterval(30.0, math.Inf(-1), 0.95) },
+		)
+	})
+
+	t.Run("panics_on_confidence_nan", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: confidence is NaN/Inf: NaN",
+			func() { pluginsdk.WithPredictionInterval(30.0, 50.0, math.NaN()) },
+		)
+	})
+
+	t.Run("panics_on_confidence_positive_inf", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: confidence is NaN/Inf: +Inf",
+			func() { pluginsdk.WithPredictionInterval(30.0, 50.0, math.Inf(1)) },
+		)
+	})
+
+	t.Run("panics_on_confidence_negative_inf", func(t *testing.T) {
+		t.Parallel()
+		assert.PanicsWithValue(t,
+			"WithPredictionInterval: confidence is NaN/Inf: -Inf",
+			func() { pluginsdk.WithPredictionInterval(30.0, 50.0, math.Inf(-1)) },
+		)
+	})
+
+	t.Run("panics_on_negative_lower", func(t *testing.T) {
+		t.Parallel()
+		assert.Panics(t, func() { pluginsdk.WithPredictionInterval(-10.0, 50.0, 0.95) })
+	})
+
+	t.Run("panics_on_lower_greater_than_upper", func(t *testing.T) {
+		t.Parallel()
+		assert.Panics(t, func() { pluginsdk.WithPredictionInterval(60.0, 50.0, 0.95) })
+	})
+
+	t.Run("panics_on_confidence_zero", func(t *testing.T) {
+		t.Parallel()
+		assert.Panics(t, func() { pluginsdk.WithPredictionInterval(30.0, 50.0, 0.0) })
+	})
+
+	t.Run("panics_on_confidence_negative", func(t *testing.T) {
+		t.Parallel()
+		assert.Panics(t, func() { pluginsdk.WithPredictionInterval(30.0, 50.0, -0.5) })
+	})
+
+	t.Run("panics_on_confidence_greater_than_one", func(t *testing.T) {
+		t.Parallel()
+		assert.Panics(t, func() { pluginsdk.WithPredictionInterval(30.0, 50.0, 1.5) })
+	})
+
+	t.Run("does_not_panic_on_valid_values", func(t *testing.T) {
+		t.Parallel()
+		validCases := []struct {
+			name                     string
+			lower, upper, confidence float64
+		}{
+			{"zero-width interval", 0.0, 0.0, 0.95},
+			{"zero lower bound", 0.0, 100.0, 0.99},
+			{"typical interval", 30.0, 50.0, 0.5},
+			{"zero-width at confidence 1.0", 30.0, 30.0, 1.0},
+			{"small confidence", 0.0001, 100.0, 0.0001},
+		}
+		for _, tc := range validCases {
+			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+				assert.NotPanics(t, func() {
+					pluginsdk.WithPredictionInterval(tc.lower, tc.upper, tc.confidence)
+				})
+			})
+		}
+	})
+}
+
+// TestWithPredictionIntervalCombinedWithOtherOptions tests combining prediction interval with other options.
+func TestWithPredictionIntervalCombinedWithOtherOptions(t *testing.T) {
+	t.Parallel()
+
+	resp := pluginsdk.NewGetProjectedCostResponse(
+		pluginsdk.WithProjectedCostDetails(0.05, "USD", 36.50, "spot-instance"),
+		pluginsdk.WithPredictionInterval(30.0, 45.0, 0.95),
+	)
+
+	// Check base details
+	if resp.GetUnitPrice() != 0.05 {
+		t.Errorf("expected unit price 0.05, got %f", resp.GetUnitPrice())
+	}
+	if resp.GetCurrency() != "USD" {
+		t.Errorf("expected currency USD, got %s", resp.GetCurrency())
+	}
+	if resp.GetCostPerMonth() != 36.50 {
+		t.Errorf("expected cost per month 36.50, got %f", resp.GetCostPerMonth())
+	}
+	if resp.GetBillingDetail() != "spot-instance" {
+		t.Errorf("expected billing detail 'spot-instance', got %s", resp.GetBillingDetail())
+	}
+
+	// Check prediction interval
+	if resp.GetPredictionIntervalLower() != 30.0 {
+		t.Errorf("expected lower 30.0, got %f", resp.GetPredictionIntervalLower())
+	}
+	if resp.GetPredictionIntervalUpper() != 45.0 {
+		t.Errorf("expected upper 45.0, got %f", resp.GetPredictionIntervalUpper())
+	}
+	if resp.GetConfidenceLevel() != 0.95 {
+		t.Errorf("expected confidence 0.95, got %f", resp.GetConfidenceLevel())
+	}
+}
+
+// TestValidateMismatchedPredictionIntervalBounds tests that having only one bound set is caught by validation.
+func TestValidateMismatchedPredictionIntervalBounds(t *testing.T) {
+	t.Parallel()
+
+	t.Run("lower set, upper missing", func(t *testing.T) {
+		t.Parallel()
+		// Manually create a response with only lower bound set
+		lower := 30.0
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            40.0,
+			BillingDetail:           "test",
+			PredictionIntervalLower: &lower,
+			// PredictionIntervalUpper is nil
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		if err == nil {
+			t.Error("expected validation error for mismatched bounds but got none")
+		} else if !strings.Contains(err.Error(), "prediction_interval_lower is set but prediction_interval_upper is missing") {
+			t.Errorf("expected error about mismatched bounds, got %q", err.Error())
+		}
+	})
+
+	t.Run("upper set, lower missing", func(t *testing.T) {
+		t.Parallel()
+		// Manually create a response with only upper bound set
+		upper := 50.0
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            40.0,
+			BillingDetail:           "test",
+			PredictionIntervalUpper: &upper,
+			// PredictionIntervalLower is nil
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		if err == nil {
+			t.Error("expected validation error for mismatched bounds but got none")
+		} else if !strings.Contains(err.Error(), "prediction_interval_upper is set but prediction_interval_lower is missing") {
+			t.Errorf("expected error about mismatched bounds, got %q", err.Error())
+		}
+	})
+}
+
+// TestValidateCostPerMonthNaNInf tests that NaN/Inf in cost_per_month is caught by validation.
+func TestValidateCostPerMonthNaNInf(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name         string
+		costPerMonth float64
+	}{
+		{"NaN cost_per_month", math.NaN()},
+		{"+Inf cost_per_month", math.Inf(1)},
+		{"-Inf cost_per_month", math.Inf(-1)},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			resp := &pbc.GetProjectedCostResponse{
+				UnitPrice:     0.05,
+				Currency:      "USD",
+				CostPerMonth:  tc.costPerMonth,
+				BillingDetail: "test",
+			}
+			err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+			if err == nil {
+				t.Errorf("expected validation error for %s but got none", tc.name)
+			} else if !strings.Contains(err.Error(), "cost_per_month is NaN/Inf") {
+				t.Errorf("expected error about NaN/Inf cost_per_month, got %q", err.Error())
+			}
+		})
+	}
 }
