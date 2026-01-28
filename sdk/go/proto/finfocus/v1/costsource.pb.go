@@ -1481,8 +1481,45 @@ type GetProjectedCostResponse struct {
 	//
 	// Validation: Use pluginsdk.ValidateGetProjectedCostResponse() to verify all constraints.
 	SpotInterruptionRiskScore float64 `protobuf:"fixed64,9,opt,name=spot_interruption_risk_score,json=spotInterruptionRiskScore,proto3" json:"spot_interruption_risk_score,omitempty"`
-	unknownFields             protoimpl.UnknownFields
-	sizeCache                 protoimpl.SizeCache
+	// prediction_interval_lower is the lower bound of the prediction interval.
+	// For example, if using a 95% confidence interval, this would be the 2.5th percentile.
+	//
+	// Constraints:
+	//   - If set, MUST be non-negative
+	//   - If set, MUST be <= cost_per_month (the point estimate)
+	//   - MUST NOT be NaN or Inf
+	//   - If set, prediction_interval_upper MUST also be set
+	//   - If set without confidence_level, implies 95% confidence (0.95)
+	//
+	// When unset (nil), no prediction interval is available.
+	// A value of 0.0 is valid and indicates the lower bound is zero.
+	PredictionIntervalLower *float64 `protobuf:"fixed64,10,opt,name=prediction_interval_lower,json=predictionIntervalLower,proto3,oneof" json:"prediction_interval_lower,omitempty"`
+	// prediction_interval_upper is the upper bound of the prediction interval.
+	// For example, if using a 95% confidence interval, this would be the 97.5th percentile.
+	//
+	// Constraints:
+	//   - If set, MUST be non-negative
+	//   - If set, MUST be >= cost_per_month (the point estimate)
+	//   - MUST NOT be NaN or Inf
+	//   - If set, prediction_interval_lower MUST also be set
+	//   - If set without confidence_level, implies 95% confidence (0.95)
+	//
+	// When unset (nil), no prediction interval is available.
+	PredictionIntervalUpper *float64 `protobuf:"fixed64,11,opt,name=prediction_interval_upper,json=predictionIntervalUpper,proto3,oneof" json:"prediction_interval_upper,omitempty"`
+	// confidence_level specifies the confidence level for the prediction interval.
+	// Expressed as a value between 0.0 and 1.0 (exclusive of 0.0, inclusive of 1.0).
+	//
+	// Constraints:
+	//   - MUST be in range (0.0, 1.0] (greater than 0.0, less than or equal to 1.0)
+	//   - MUST NOT be NaN or Inf
+	//   - Typical values: 0.90 (90%), 0.95 (95%), 0.99 (99%)
+	//
+	// When unset with prediction intervals set, callers should interpret the confidence
+	// as 0.95 (95% confidence). The SDK validates but does not populate this default.
+	// When set without prediction intervals, the value is ignored.
+	ConfidenceLevel *float64 `protobuf:"fixed64,12,opt,name=confidence_level,json=confidenceLevel,proto3,oneof" json:"confidence_level,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetProjectedCostResponse) Reset() {
@@ -1574,6 +1611,27 @@ func (x *GetProjectedCostResponse) GetPricingCategory() FocusPricingCategory {
 func (x *GetProjectedCostResponse) GetSpotInterruptionRiskScore() float64 {
 	if x != nil {
 		return x.SpotInterruptionRiskScore
+	}
+	return 0
+}
+
+func (x *GetProjectedCostResponse) GetPredictionIntervalLower() float64 {
+	if x != nil && x.PredictionIntervalLower != nil {
+		return *x.PredictionIntervalLower
+	}
+	return 0
+}
+
+func (x *GetProjectedCostResponse) GetPredictionIntervalUpper() float64 {
+	if x != nil && x.PredictionIntervalUpper != nil {
+		return *x.PredictionIntervalUpper
+	}
+	return 0
+}
+
+func (x *GetProjectedCostResponse) GetConfidenceLevel() float64 {
+	if x != nil && x.ConfidenceLevel != nil {
+		return *x.ConfidenceLevel
 	}
 	return 0
 }
@@ -5627,7 +5685,7 @@ const file_finfocus_v1_costsource_proto_rawDesc = "" +
 	"\vgrowth_rate\x18\x04 \x01(\x01H\x00R\n" +
 	"growthRate\x88\x01\x01\x12\x17\n" +
 	"\adry_run\x18\x05 \x01(\bR\x06dryRunB\x0e\n" +
-	"\f_growth_rate\"\xf0\x03\n" +
+	"\f_growth_rate\"\xf3\x05\n" +
 	"\x18GetProjectedCostResponse\x12\x1d\n" +
 	"\n" +
 	"unit_price\x18\x01 \x01(\x01R\tunitPrice\x12\x1a\n" +
@@ -5639,7 +5697,14 @@ const file_finfocus_v1_costsource_proto_rawDesc = "" +
 	"growthType\x12A\n" +
 	"\x0edry_run_result\x18\a \x01(\v2\x1b.finfocus.v1.DryRunResponseR\fdryRunResult\x12L\n" +
 	"\x10pricing_category\x18\b \x01(\x0e2!.finfocus.v1.FocusPricingCategoryR\x0fpricingCategory\x12?\n" +
-	"\x1cspot_interruption_risk_score\x18\t \x01(\x01R\x19spotInterruptionRiskScore\"T\n" +
+	"\x1cspot_interruption_risk_score\x18\t \x01(\x01R\x19spotInterruptionRiskScore\x12?\n" +
+	"\x19prediction_interval_lower\x18\n" +
+	" \x01(\x01H\x00R\x17predictionIntervalLower\x88\x01\x01\x12?\n" +
+	"\x19prediction_interval_upper\x18\v \x01(\x01H\x01R\x17predictionIntervalUpper\x88\x01\x01\x12.\n" +
+	"\x10confidence_level\x18\f \x01(\x01H\x02R\x0fconfidenceLevel\x88\x01\x01B\x1c\n" +
+	"\x1a_prediction_interval_lowerB\x1c\n" +
+	"\x1a_prediction_interval_upperB\x13\n" +
+	"\x11_confidence_level\"T\n" +
 	"\x15GetPricingSpecRequest\x12;\n" +
 	"\bresource\x18\x01 \x01(\v2\x1f.finfocus.v1.ResourceDescriptorR\bresource\"F\n" +
 	"\x16GetPricingSpecResponse\x12,\n" +
@@ -6377,6 +6442,7 @@ func file_finfocus_v1_costsource_proto_init() {
 	file_finfocus_v1_budget_proto_init()
 	file_finfocus_v1_enums_proto_init()
 	file_finfocus_v1_costsource_proto_msgTypes[7].OneofWrappers = []any{}
+	file_finfocus_v1_costsource_proto_msgTypes[8].OneofWrappers = []any{}
 	file_finfocus_v1_costsource_proto_msgTypes[11].OneofWrappers = []any{}
 	file_finfocus_v1_costsource_proto_msgTypes[16].OneofWrappers = []any{}
 	file_finfocus_v1_costsource_proto_msgTypes[35].OneofWrappers = []any{

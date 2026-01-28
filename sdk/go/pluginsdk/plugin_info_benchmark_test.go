@@ -8,9 +8,13 @@ import (
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
 
-// BenchmarkInferCapabilities benchmarks the capability inference logic
-// by measuring GetPluginInfo performance with auto-discovery enabled.
-func BenchmarkInferCapabilities(b *testing.B) {
+// BenchmarkInferCapabilitiesRPC benchmarks the capability inference logic
+// by measuring GetPluginInfo RPC performance with auto-discovery enabled.
+// This tests the full RPC flow including server overhead.
+//
+// Note: This differs from BenchmarkInferCapabilitiesDirect in conformance_test.go
+// which measures the inferCapabilities() function directly without RPC overhead.
+func BenchmarkInferCapabilitiesRPC(b *testing.B) {
 	// Create a plugin that implements multiple interfaces for realistic benchmarking
 	plugin := &benchmarkCapabilityPlugin{
 		name: "benchmark-plugin",

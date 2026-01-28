@@ -10,7 +10,17 @@ const capabilityTrue = "true"
 // legacyCapabilityNames maps PluginCapability enums to their legacy string names.
 // This map is the single source of truth for enum-to-legacy conversions.
 //
-//nolint:exhaustive,gochecknoglobals // Only capabilities with legacy equivalents are mapped
+// Exhaustive Nolint Rationale:
+// This map intentionally excludes PLUGIN_CAPABILITY_UNSPECIFIED (value 0) because
+// it is the protobuf default sentinel value, not a real capability. All other
+// PluginCapability values (1-11) MUST be included in this map.
+//
+// When adding new capabilities to the proto definition:
+// 1. Add a corresponding entry to this map with a "supports_" prefix
+// 2. Update IsValidCapability bounds in plugin_info.go (maxValidCapability constant)
+// 3. Add capability inference in inferCapabilities() if auto-detectable
+//
+//nolint:exhaustive,gochecknoglobals // UNSPECIFIED intentionally excluded (protobuf default)
 var legacyCapabilityNames = map[pbc.PluginCapability]string{
 	pbc.PluginCapability_PLUGIN_CAPABILITY_RECOMMENDATIONS:         "supports_recommendations",
 	pbc.PluginCapability_PLUGIN_CAPABILITY_DRY_RUN:                 "supports_dry_run",

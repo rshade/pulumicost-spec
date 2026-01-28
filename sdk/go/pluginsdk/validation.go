@@ -73,6 +73,12 @@ var (
 	ErrSpotRiskScoreInvalidCategory = errors.New(
 		"spot_interruption_risk_score should only be non-zero when pricing_category is DYNAMIC",
 	)
+	ErrPredictionIntervalLowerMissing = errors.New(
+		"GetProjectedCostResponse: prediction_interval_upper is set but prediction_interval_lower is missing",
+	)
+	ErrPredictionIntervalUpperMissing = errors.New(
+		"GetProjectedCostResponse: prediction_interval_lower is set but prediction_interval_upper is missing",
+	)
 )
 
 // spotRiskEpsilon is used for float comparison to handle floating-point representation errors.
@@ -259,8 +265,9 @@ func validateSpotRiskScore(score float64, category pbc.FocusPricingCategory) err
 		return nil
 	}
 
-	// Check range with epsilon tolerance for upper bound
-	if score < -spotRiskEpsilon || score > 1.0+spotRiskEpsilon {
+	// Check range: epsilon tolerance only on lower bound (handles float errors near 0)
+	// Upper bound is strict 1.0 - probability cannot exceed 100%
+	if score < -spotRiskEpsilon || score > 1.0 {
 		return fmt.Errorf("%w: got %f", ErrSpotRiskScoreOutOfRange, score)
 	}
 
@@ -268,6 +275,113 @@ func validateSpotRiskScore(score float64, category pbc.FocusPricingCategory) err
 	if category != pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC {
 		return fmt.Errorf("%w: got score=%f with category=%s",
 			ErrSpotRiskScoreInvalidCategory, score, category.String())
+	}
+
+	return nil
+}
+
+// validateConfidenceLevel validates the confidence_level field if set.
+// Returns nil if confidence is nil (not set) or a valid value in range (0.0, 1.0].
+func validateConfidenceLevel(confidence *float64) error {
+	if confidence == nil {
+		return nil
+	}
+
+	val := *confidence
+	if math.IsNaN(val) || math.IsInf(val, 0) {
+		return fmt.Errorf("GetProjectedCostResponse: confidence_level is NaN/Inf: %v", val)
+	}
+	if val <= 0 || val > 1.0 {
+		return fmt.Errorf(
+			"GetProjectedCostResponse: confidence_level must be in range (0.0, 1.0], got %f",
+			val,
+		)
+	}
+	return nil
+}
+
+// validatePredictionInterval validates the prediction interval bounds for consistency.
+// This helper reduces cognitive complexity of ValidateGetProjectedCostResponse.
+//
+// Returns nil if:
+//   - Both bounds are unset (valid)
+//   - Both bounds are set and satisfy all constraints
+//
+// Validation checks:
+//  1. Both bounds must be present or both absent
+//  2. Bounds must be finite (not NaN/Inf)
+//  3. Lower bound must be non-negative
+//  4. lower <= costPerMonth <= upper
+//  5. lower <= upper
+func validatePredictionInterval(
+	lower, upper *float64,
+	costPerMonth float64,
+) error {
+	lowerSet := lower != nil
+	upperSet := upper != nil
+
+	// Check that both bounds are either present or absent
+	if lowerSet != upperSet {
+		if lowerSet {
+			return ErrPredictionIntervalUpperMissing
+		}
+		return ErrPredictionIntervalLowerMissing
+	}
+
+	// If neither bound is set, validation passes
+	if !lowerSet {
+		return nil
+	}
+
+	// Both bounds are set - validate them
+	lowerVal := *lower
+	upperVal := *upper
+
+	// Validate bounds are finite (type safety before any value checks)
+	if math.IsNaN(lowerVal) || math.IsInf(lowerVal, 0) {
+		return fmt.Errorf("GetProjectedCostResponse: prediction_interval_lower is NaN/Inf: %v", lowerVal)
+	}
+	if math.IsNaN(upperVal) || math.IsInf(upperVal, 0) {
+		return fmt.Errorf("GetProjectedCostResponse: prediction_interval_upper is NaN/Inf: %v", upperVal)
+	}
+
+	// Validate structural validity FIRST (lower <= upper)
+	// Structural checks before value constraints ensures consistent error messages
+	// regardless of which value constraint would also fail
+	if lowerVal > upperVal {
+		return fmt.Errorf(
+			"GetProjectedCostResponse: prediction_interval_lower (%f) > prediction_interval_upper (%f)",
+			lowerVal,
+			upperVal,
+		)
+	}
+
+	// Validate lower bound is non-negative (value constraint after structural)
+	if lowerVal < 0 {
+		return fmt.Errorf("GetProjectedCostResponse: prediction_interval_lower cannot be negative: %f", lowerVal)
+	}
+
+	// Zero-width interval (lower == upper) requires cost_per_month to equal the bounds
+	// A zero-width interval [x, x] implies zero uncertainty, meaning the point estimate
+	// must exactly match the bounds. This provides clearer error messages for edge cases
+	// like [42, 42] with cost=50 instead of a generic "upper < cost" message.
+	// This check comes after lower <= upper since zero-width requires lower == upper.
+	if lowerVal == upperVal && lowerVal != costPerMonth {
+		return fmt.Errorf(
+			"GetProjectedCostResponse: zero-width prediction interval [%f, %f] "+
+				"requires cost_per_month to equal bounds, got %f",
+			lowerVal, upperVal, costPerMonth,
+		)
+	}
+
+	// Validate cost is within the interval bounds
+	if lowerVal > costPerMonth {
+		return fmt.Errorf("GetProjectedCostResponse: prediction_interval_lower (%f) > cost_per_month (%f)",
+			lowerVal, costPerMonth)
+	}
+	if upperVal < costPerMonth {
+		return fmt.Errorf("GetProjectedCostResponse: prediction_interval_upper (%f) < cost_per_month (%f)",
+			upperVal, costPerMonth)
 	}
 
 	return nil
@@ -292,8 +406,9 @@ func ValidateEstimateCostResponse(resp *pbc.EstimateCostResponse) error {
 		return ErrEstimateCostResponseNil
 	}
 
+	// Return sentinel errors directly (they already contain context)
 	if err := validateSpotRiskScore(resp.GetSpotInterruptionRiskScore(), resp.GetPricingCategory()); err != nil {
-		return fmt.Errorf("EstimateCostResponse: %w", err)
+		return err
 	}
 
 	return nil
@@ -304,10 +419,17 @@ func ValidateEstimateCostResponse(resp *pbc.EstimateCostResponse) error {
 //
 // Validation order (fail-fast):
 //  1. Response nil check
-//  2. Spot risk score validation (structural + semantic)
+//  2. CostPerMonth non-negative check
+//  3. Prediction interval consistency (if set)
+//  4. Confidence level range validation (if set)
+//  5. Spot risk score validation (structural + semantic)
 //
-// Semantic rule enforced: spot_interruption_risk_score must only be non-zero
-// when pricing_category is FOCUS_PRICING_CATEGORY_DYNAMIC.
+// Semantic rules enforced:
+//   - spot_interruption_risk_score must only be non-zero when pricing_category is FOCUS_PRICING_CATEGORY_DYNAMIC
+//   - prediction_interval_lower must be <= cost_per_month
+//   - prediction_interval_upper must be >= cost_per_month
+//   - prediction_interval_lower must be <= prediction_interval_upper
+//   - confidence_level must be in range (0.0, 1.0] if set
 //
 // Performance: Zero allocations on the happy path (valid response returns nil).
 // Error paths allocate for the error message.
@@ -318,8 +440,32 @@ func ValidateGetProjectedCostResponse(resp *pbc.GetProjectedCostResponse) error 
 		return ErrGetProjectedCostResponseNil
 	}
 
+	// Validate cost_per_month is finite and non-negative
+	costPerMonth := resp.GetCostPerMonth()
+	if math.IsNaN(costPerMonth) || math.IsInf(costPerMonth, 0) {
+		return fmt.Errorf("GetProjectedCostResponse: cost_per_month is NaN/Inf: %v", costPerMonth)
+	}
+	if costPerMonth < 0 {
+		return fmt.Errorf("GetProjectedCostResponse: cost_per_month cannot be negative: %f", costPerMonth)
+	}
+
+	// Validate prediction interval using extracted helper (reduces cognitive complexity)
+	if err := validatePredictionInterval(
+		resp.PredictionIntervalLower,
+		resp.PredictionIntervalUpper,
+		costPerMonth,
+	); err != nil {
+		return err
+	}
+
+	// Validate confidence level if set
+	if err := validateConfidenceLevel(resp.ConfidenceLevel); err != nil {
+		return err
+	}
+
+	// Return sentinel errors directly (they already contain context)
 	if err := validateSpotRiskScore(resp.GetSpotInterruptionRiskScore(), resp.GetPricingCategory()); err != nil {
-		return fmt.Errorf("GetProjectedCostResponse: %w", err)
+		return err
 	}
 
 	return nil

@@ -891,3 +891,151 @@ func BenchmarkNewLogWriter_Stderr(b *testing.B) {
 		_ = pluginsdk.NewLogWriter()
 	}
 }
+
+// =============================================================================
+// GetLogFilePermissions Tests
+// =============================================================================
+
+// TestGetLogFilePermissions_ValidOctal tests parsing of valid octal permission strings.
+func TestGetLogFilePermissions_ValidOctal(t *testing.T) {
+	testCases := []struct {
+		name     string
+		value    string
+		expected os.FileMode
+	}{
+		{"0644 (default)", "0644", 0644},
+		{"0640 (restrictive)", "0640", 0640},
+		{"0600 (owner only)", "0600", 0600},
+		{"0755 (executable)", "0755", 0755},
+		{"0777 (all permissions)", "0777", 0777},
+		{"0000 (no permissions)", "0000", 0000},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", tc.value)
+			t.Setenv("PULUMICOST_LOG_FILE_PERMISSIONS", "") // Clear fallback
+
+			got := pluginsdk.GetLogFilePermissions()
+			if got != tc.expected {
+				t.Errorf("GetLogFilePermissions() = %o, want %o", got, tc.expected)
+			}
+		})
+	}
+}
+
+// TestGetLogFilePermissions_EnvNotSet tests default is returned when env var is not set.
+func TestGetLogFilePermissions_EnvNotSet(t *testing.T) {
+	t.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", "")
+	t.Setenv("PULUMICOST_LOG_FILE_PERMISSIONS", "")
+
+	got := pluginsdk.GetLogFilePermissions()
+	if got != pluginsdk.LogFilePermissions {
+		t.Errorf("GetLogFilePermissions() = %o, want default %o", got, pluginsdk.LogFilePermissions)
+	}
+}
+
+// TestGetLogFilePermissions_FallbackToPulumicost tests fallback to PULUMICOST_LOG_FILE_PERMISSIONS.
+func TestGetLogFilePermissions_FallbackToPulumicost(t *testing.T) {
+	t.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", "")
+	t.Setenv("PULUMICOST_LOG_FILE_PERMISSIONS", "0640")
+
+	got := pluginsdk.GetLogFilePermissions()
+	if got != 0640 {
+		t.Errorf("GetLogFilePermissions() = %o, want %o (fallback)", got, os.FileMode(0640))
+	}
+}
+
+// TestGetLogFilePermissions_PrimaryOverridesFallback tests that FINFOCUS takes precedence.
+func TestGetLogFilePermissions_PrimaryOverridesFallback(t *testing.T) {
+	t.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", "0600")
+	t.Setenv("PULUMICOST_LOG_FILE_PERMISSIONS", "0777")
+
+	got := pluginsdk.GetLogFilePermissions()
+	if got != 0600 {
+		t.Errorf("GetLogFilePermissions() = %o, want %o (primary should take precedence)", got, os.FileMode(0600))
+	}
+}
+
+// TestGetLogFilePermissions_InvalidStrings tests that invalid strings return default.
+func TestGetLogFilePermissions_InvalidStrings(t *testing.T) {
+	testCases := []struct {
+		name  string
+		value string
+	}{
+		{"non-octal digit", "0689"},   // 8 and 9 are not valid octal digits
+		{"invalid digits", "0abc"},    // Letters are not valid octal digits
+		{"text", "rwxr-xr-x"},         // Not a number
+		{"empty after trim", "   "},   // Would be empty after trim
+		{"negative", "-0644"},         // Negative value
+		{"float", "0.644"},            // Float value
+		{"hex", "0x1A4"},              // Hex value (not valid for base 8 parsing)
+		{"with prefix", "octal:0644"}, // Invalid format
+		{"too large", "1000"},         // Out of 0-0777 range (octal 1000 = 512 decimal)
+		{"way too large", "9999"},     // Contains 9, not valid octal
+		{"binary", "0b111"},           // Binary notation (not octal)
+		{"unicode non-digit", "０６４"},  // Full-width unicode digits (not ASCII)
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", tc.value)
+			t.Setenv("PULUMICOST_LOG_FILE_PERMISSIONS", "")
+
+			got := pluginsdk.GetLogFilePermissions()
+			if got != pluginsdk.LogFilePermissions {
+				t.Errorf("GetLogFilePermissions(%q) = %o, want default %o for invalid input",
+					tc.value, got, pluginsdk.LogFilePermissions)
+			}
+		})
+	}
+}
+
+// TestGetLogFilePermissions_IntegrationWithNewLogWriter tests that permissions are used by NewLogWriter.
+func TestGetLogFilePermissions_IntegrationWithNewLogWriter(t *testing.T) {
+	pluginsdk.ResetLogWriter()
+	defer pluginsdk.ResetLogWriter()
+
+	tmpFile := filepath.Join(t.TempDir(), "perm-test.log")
+	t.Setenv("FINFOCUS_LOG_FILE", tmpFile)
+	t.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", "0640")
+
+	writer := pluginsdk.NewLogWriter()
+
+	// Write something to trigger file creation
+	logger := zerolog.New(writer).With().Timestamp().Logger()
+	logger.Info().Msg("test")
+
+	// Check file permissions
+	info, err := os.Stat(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to stat log file: %v", err)
+	}
+
+	expectedPerm := os.FileMode(0640)
+	actualPerm := info.Mode().Perm()
+	if actualPerm != expectedPerm {
+		t.Errorf("Log file permissions = %o, want %o", actualPerm, expectedPerm)
+	}
+}
+
+// BenchmarkGetLogFilePermissions_Default measures performance when no env var is set.
+func BenchmarkGetLogFilePermissions_Default(b *testing.B) {
+	b.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", "")
+	b.Setenv("PULUMICOST_LOG_FILE_PERMISSIONS", "")
+	b.ResetTimer()
+	b.ReportAllocs()
+	for b.Loop() {
+		pluginsdk.GetLogFilePermissions()
+	}
+}
+
+// BenchmarkGetLogFilePermissions_Configured measures performance with env var set.
+func BenchmarkGetLogFilePermissions_Configured(b *testing.B) {
+	b.Setenv("FINFOCUS_LOG_FILE_PERMISSIONS", "0640")
+	b.ResetTimer()
+	b.ReportAllocs()
+	for b.Loop() {
+		pluginsdk.GetLogFilePermissions()
+	}
+}

@@ -277,6 +277,174 @@ func TestValidateGetProjectedCostResponse(t *testing.T) {
 		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
 		assert.ErrorIs(t, err, pluginsdk.ErrSpotRiskScoreInvalidCategory)
 	})
+
+	// Zero-width interval validation tests
+	t.Run("invalid_zero_width_interval_with_nonzero_cost", func(t *testing.T) {
+		lower := 0.0
+		upper := 0.0
+		confidence := 0.95
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            100.0, // Non-zero cost doesn't match bounds
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+			ConfidenceLevel:         &confidence,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "zero-width prediction interval")
+		assert.Contains(t, err.Error(), "requires cost_per_month to equal bounds")
+	})
+
+	t.Run("valid_zero_width_interval_with_zero_cost", func(t *testing.T) {
+		lower := 0.0
+		upper := 0.0
+		confidence := 0.95
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.0,
+			Currency:                "USD",
+			CostPerMonth:            0.0, // Zero cost matches zero-width bounds
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+			ConfidenceLevel:         &confidence,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		assert.NoError(t, err, "zero-width interval with matching cost should be valid")
+	})
+
+	t.Run("valid_zero_width_interval_with_matching_nonzero_cost", func(t *testing.T) {
+		lower := 42.0
+		upper := 42.0
+		confidence := 0.95
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            42.0, // Cost equals bounds - valid
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+			ConfidenceLevel:         &confidence,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		assert.NoError(t, err, "zero-width interval [42, 42] with cost=42 should be valid")
+	})
+
+	t.Run("invalid_zero_width_interval_cost_mismatch", func(t *testing.T) {
+		lower := 42.0
+		upper := 42.0
+		confidence := 0.95
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            50.0, // Cost doesn't match bounds
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+			ConfidenceLevel:         &confidence,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "zero-width prediction interval")
+		assert.Contains(t, err.Error(), "[42")
+		assert.Contains(t, err.Error(), "requires cost_per_month to equal bounds")
+		assert.Contains(t, err.Error(), "50")
+	})
+
+	// NaN/Inf tests for prediction interval bounds
+	t.Run("invalid_prediction_interval_lower_nan", func(t *testing.T) {
+		lower := math.NaN()
+		upper := 100.0
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            50.0,
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "prediction_interval_lower")
+		assert.Contains(t, err.Error(), "NaN")
+	})
+
+	t.Run("invalid_prediction_interval_upper_nan", func(t *testing.T) {
+		lower := 10.0
+		upper := math.NaN()
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            50.0,
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "prediction_interval_upper")
+		assert.Contains(t, err.Error(), "NaN")
+	})
+
+	t.Run("invalid_prediction_interval_lower_positive_inf", func(t *testing.T) {
+		lower := math.Inf(1)
+		upper := 100.0
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            50.0,
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "prediction_interval_lower")
+		assert.Contains(t, err.Error(), "Inf")
+	})
+
+	t.Run("invalid_prediction_interval_upper_positive_inf", func(t *testing.T) {
+		lower := 10.0
+		upper := math.Inf(1)
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            50.0,
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "prediction_interval_upper")
+		assert.Contains(t, err.Error(), "Inf")
+	})
+
+	t.Run("invalid_prediction_interval_lower_negative_inf", func(t *testing.T) {
+		lower := math.Inf(-1)
+		upper := 100.0
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            50.0,
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "prediction_interval_lower")
+		assert.Contains(t, err.Error(), "Inf")
+	})
+
+	t.Run("invalid_prediction_interval_upper_negative_inf", func(t *testing.T) {
+		lower := 10.0
+		upper := math.Inf(-1)
+		resp := &pbc.GetProjectedCostResponse{
+			UnitPrice:               0.05,
+			Currency:                "USD",
+			CostPerMonth:            50.0,
+			PredictionIntervalLower: &lower,
+			PredictionIntervalUpper: &upper,
+		}
+		err := pluginsdk.ValidateGetProjectedCostResponse(resp)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "prediction_interval_upper")
+		assert.Contains(t, err.Error(), "Inf")
+	})
 }
 
 func TestCheckSpotRiskConsistency(t *testing.T) {
@@ -396,16 +564,17 @@ func TestSpotRiskScoreEdgeCases(t *testing.T) {
 		assert.NoError(t, err, "values very close to 1.0 should be valid")
 	})
 
-	t.Run("float_precision_just_over_one", func(t *testing.T) {
-		// 1.0 + small epsilon should be valid due to epsilon tolerance
+	t.Run("float_precision_just_over_one_invalid", func(t *testing.T) {
+		// 1.0 + small epsilon should now be INVALID - probability cannot exceed 100%
+		// Upper bound is strict 1.0 (epsilon tolerance only applies to lower bound)
 		resp := &pbc.EstimateCostResponse{
 			Currency:                  "USD",
 			CostMonthly:               50.0,
 			PricingCategory:           pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC,
-			SpotInterruptionRiskScore: 1.0 + 1e-10, // Just over 1.0 but within epsilon
+			SpotInterruptionRiskScore: 1.0 + 1e-10, // Just over 1.0 - should be invalid
 		}
 		err := pluginsdk.ValidateEstimateCostResponse(resp)
-		assert.NoError(t, err, "values just over 1.0 within epsilon should be valid")
+		assert.ErrorIs(t, err, pluginsdk.ErrSpotRiskScoreOutOfRange, "values over 1.0 should be invalid")
 	})
 
 	t.Run("clearly_over_one", func(t *testing.T) {
@@ -541,4 +710,78 @@ func TestErrorMessagesIncludeValue(t *testing.T) {
 		assert.Contains(t, err.Error(), "0.8")
 		assert.Contains(t, err.Error(), "STANDARD")
 	})
+}
+
+// Benchmarks for response validation functions.
+
+// BenchmarkValidateEstimateCostResponse_Valid benchmarks the happy path validation.
+func BenchmarkValidateEstimateCostResponse_Valid(b *testing.B) {
+	resp := &pbc.EstimateCostResponse{
+		Currency:                  "USD",
+		CostMonthly:               50.0,
+		PricingCategory:           pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_DYNAMIC,
+		SpotInterruptionRiskScore: 0.8,
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.ValidateEstimateCostResponse(resp)
+	}
+}
+
+// BenchmarkValidateGetProjectedCostResponse_Valid benchmarks the happy path for the
+// more complex GetProjectedCostResponse validation which includes prediction interval
+// and confidence level checks.
+func BenchmarkValidateGetProjectedCostResponse_Valid(b *testing.B) {
+	resp := &pbc.GetProjectedCostResponse{
+		UnitPrice:                 0.05,
+		Currency:                  "USD",
+		CostPerMonth:              36.50,
+		PricingCategory:           pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+		SpotInterruptionRiskScore: 0.0,
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.ValidateGetProjectedCostResponse(resp)
+	}
+}
+
+// BenchmarkValidateGetProjectedCostResponse_WithPredictionInterval benchmarks validation
+// with all optional fields set (prediction interval + confidence level).
+func BenchmarkValidateGetProjectedCostResponse_WithPredictionInterval(b *testing.B) {
+	lower := 30.0
+	upper := 45.0
+	confidence := 0.95
+	resp := &pbc.GetProjectedCostResponse{
+		UnitPrice:               0.05,
+		Currency:                "USD",
+		CostPerMonth:            36.50,
+		PredictionIntervalLower: &lower,
+		PredictionIntervalUpper: &upper,
+		ConfidenceLevel:         &confidence,
+		PricingCategory:         pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.ValidateGetProjectedCostResponse(resp)
+	}
+}
+
+// BenchmarkValidateGetProjectedCostResponse_Invalid_NaN benchmarks the error path
+// for NaN detection which uses math.IsNaN.
+func BenchmarkValidateGetProjectedCostResponse_Invalid_NaN(b *testing.B) {
+	resp := &pbc.GetProjectedCostResponse{
+		UnitPrice:                 0.05,
+		Currency:                  "USD",
+		CostPerMonth:              math.NaN(),
+		PricingCategory:           pbc.FocusPricingCategory_FOCUS_PRICING_CATEGORY_STANDARD,
+		SpotInterruptionRiskScore: 0.0,
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for range b.N {
+		_ = pluginsdk.ValidateGetProjectedCostResponse(resp)
+	}
 }

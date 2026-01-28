@@ -2,6 +2,7 @@ package jsonld_test
 
 import (
 	"bytes"
+	"context"
 	"testing"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -86,7 +87,7 @@ func BenchmarkSerializeBatch_100(b *testing.B) {
 	b.ReportAllocs()
 
 	for range b.N {
-		_, _, err := serializer.SerializeBatch(records)
+		_, _, err := serializer.SerializeBatch(context.Background(), records)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -105,7 +106,7 @@ func BenchmarkSerializeBatch_1000(b *testing.B) {
 	b.ReportAllocs()
 
 	for range b.N {
-		_, _, err := serializer.SerializeBatch(records)
+		_, _, err := serializer.SerializeBatch(context.Background(), records)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -124,7 +125,7 @@ func BenchmarkSerializeBatch_10000(b *testing.B) {
 	b.ReportAllocs()
 
 	for range b.N {
-		_, _, err := serializer.SerializeBatch(records)
+		_, _, err := serializer.SerializeBatch(context.Background(), records)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -144,7 +145,7 @@ func BenchmarkSerializeStream_10000(b *testing.B) {
 
 	for range b.N {
 		var buf bytes.Buffer
-		_, err := serializer.SerializeSlice(records, &buf)
+		_, err := serializer.SerializeSlice(context.Background(), records, &buf)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -165,7 +166,7 @@ func BenchmarkSerializeStream_Memory(b *testing.B) {
 	for range b.N {
 		var buf bytes.Buffer
 		buf.Grow(1024 * 1024) // Pre-allocate 1MB to reduce reallocation
-		_, err := serializer.SerializeSlice(records, &buf)
+		_, err := serializer.SerializeSlice(context.Background(), records, &buf)
 		if err != nil {
 			b.Fatal(err)
 		}

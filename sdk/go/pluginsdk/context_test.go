@@ -95,3 +95,64 @@ func TestContextRemainingTime(t *testing.T) {
 		})
 	}
 }
+
+func TestContextRemainingTime_UnexpiredDeadline(t *testing.T) {
+	t.Parallel()
+
+	// Create a context with a deadline 10 seconds in the future
+	timeout := 10 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	// Get the remaining time
+	got := pluginsdk.ContextRemainingTime(ctx)
+
+	// Verify remaining time is positive
+	if got <= 0 {
+		t.Errorf("expected positive duration for unexpired deadline, got %v", got)
+	}
+
+	// Verify remaining time is less than or equal to the original timeout
+	// (allowing for slight timing variations)
+	if got > timeout+time.Second {
+		t.Errorf("duration %v should not exceed original timeout %v", got, timeout)
+	}
+
+	// Verify remaining time is reasonably close to the original timeout
+	// (should be within 1 second of timeout since we just created the context)
+	if got < timeout-time.Second {
+		t.Errorf("expected duration close to %v, got %v (too much time passed)", timeout, got)
+	}
+}
+
+func TestContextRemainingTime_ShortDeadline(t *testing.T) {
+	t.Parallel()
+
+	// Test with a very short deadline
+	timeout := 100 * time.Millisecond
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	// Get the remaining time immediately
+	got := pluginsdk.ContextRemainingTime(ctx)
+
+	// Allow small tolerance for timing variations (e.g., context creation overhead)
+	tolerance := 10 * time.Millisecond
+
+	// Should be positive and less than or equal to timeout (with tolerance)
+	if got <= 0 {
+		t.Errorf("expected positive duration, got %v", got)
+	}
+	if got > timeout+tolerance {
+		t.Errorf("expected duration <= %v (with %v tolerance), got %v", timeout, tolerance, got)
+	}
+
+	// Wait deterministically for deadline to expire using context's Done channel
+	<-ctx.Done()
+
+	// After expiration, should return zero
+	gotAfterExpiry := pluginsdk.ContextRemainingTime(ctx)
+	if gotAfterExpiry != 0 {
+		t.Errorf("expected zero duration after deadline expiry, got %v", gotAfterExpiry)
+	}
+}

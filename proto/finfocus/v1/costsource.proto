@@ -373,6 +373,46 @@ message GetProjectedCostResponse {
   //
   // Validation: Use pluginsdk.ValidateGetProjectedCostResponse() to verify all constraints.
   double spot_interruption_risk_score = 9;
+
+  // prediction_interval_lower is the lower bound of the prediction interval.
+  // For example, if using a 95% confidence interval, this would be the 2.5th percentile.
+  //
+  // Constraints:
+  //  - If set, MUST be non-negative
+  //  - If set, MUST be <= cost_per_month (the point estimate)
+  //  - MUST NOT be NaN or Inf
+  //  - If set, prediction_interval_upper MUST also be set
+  //  - If set without confidence_level, implies 95% confidence (0.95)
+  //
+  // When unset (nil), no prediction interval is available.
+  // A value of 0.0 is valid and indicates the lower bound is zero.
+  optional double prediction_interval_lower = 10;
+
+  // prediction_interval_upper is the upper bound of the prediction interval.
+  // For example, if using a 95% confidence interval, this would be the 97.5th percentile.
+  //
+  // Constraints:
+  //  - If set, MUST be non-negative
+  //  - If set, MUST be >= cost_per_month (the point estimate)
+  //  - MUST NOT be NaN or Inf
+  //  - If set, prediction_interval_lower MUST also be set
+  //  - If set without confidence_level, implies 95% confidence (0.95)
+  //
+  // When unset (nil), no prediction interval is available.
+  optional double prediction_interval_upper = 11;
+
+  // confidence_level specifies the confidence level for the prediction interval.
+  // Expressed as a value between 0.0 and 1.0 (exclusive of 0.0, inclusive of 1.0).
+  //
+  // Constraints:
+  //  - MUST be in range (0.0, 1.0] (greater than 0.0, less than or equal to 1.0)
+  //  - MUST NOT be NaN or Inf
+  //  - Typical values: 0.90 (90%), 0.95 (95%), 0.99 (99%)
+  //
+  // When unset with prediction intervals set, callers should interpret the confidence
+  // as 0.95 (95% confidence). The SDK validates but does not populate this default.
+  // When set without prediction intervals, the value is ignored.
+  optional double confidence_level = 12;
 }
 
 // GetPricingSpecRequest contains the resource descriptor for pricing specification.

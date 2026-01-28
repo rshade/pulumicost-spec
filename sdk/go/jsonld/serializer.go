@@ -34,6 +34,9 @@ type SerializerOptions struct {
 	DateFormat        string
 	UserIDField       string
 	IDPrefix          string
+	// StreamLimits configures optional limits for streaming serialization.
+	// Zero values mean unlimited (no limit enforced).
+	StreamLimits StreamLimits
 }
 
 // DefaultSerializerOptions returns sensible defaults for serialization.
@@ -171,6 +174,21 @@ func WithDeprecated(include bool) SerializerOption {
 func WithPrettyPrint(pretty bool) SerializerOption {
 	return func(s *Serializer) {
 		s.options.PrettyPrint = pretty
+	}
+}
+
+// WithStreamLimits configures limits for streaming serialization.
+// This helps prevent DoS attacks from unbounded input.
+//
+// Example:
+//
+//	s := jsonld.NewSerializer(jsonld.WithStreamLimits(jsonld.StreamLimits{
+//	    MaxRecords:    10000,  // Limit to 10K records
+//	    MaxRecordSize: 65536,  // Max 64KB per record
+//	}))
+func WithStreamLimits(limits StreamLimits) SerializerOption {
+	return func(s *Serializer) {
+		s.options.StreamLimits = limits
 	}
 }
 
