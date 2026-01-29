@@ -844,3 +844,55 @@ func TestDryRunSimulationParameters(t *testing.T) {
 			resp2.GetConfigurationErrors())
 	}
 }
+
+// =============================================================================
+// T040: DryRun with usage_profile simulation parameter (FR-007)
+// =============================================================================
+
+// TestDryRunWithUsageProfile validates that DryRun accepts usage_profile as a
+// simulation parameter and returns valid responses for each profile value.
+// FR-007: Plugins SHOULD document profile-specific behavior in DryRun responses.
+func TestDryRunWithUsageProfile(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	profiles := []string{"dev", "prod", "burst", "unspecified"}
+
+	for _, profile := range profiles {
+		t.Run("profile_"+profile, func(t *testing.T) {
+			req := &pbc.DryRunRequest{
+				Resource: &pbc.ResourceDescriptor{
+					Provider:     "aws",
+					ResourceType: "ec2",
+					Region:       "us-east-1",
+				},
+				SimulationParameters: map[string]string{
+					"usage_profile": profile,
+				},
+			}
+
+			resp, err := harness.Client().DryRun(ctx, req)
+			if err != nil {
+				t.Fatalf("DryRun with usage_profile=%s failed: %v", profile, err)
+			}
+
+			if !resp.GetResourceTypeSupported() {
+				t.Errorf("Expected resource_type_supported=true for profile %s", profile)
+			}
+
+			if len(resp.GetFieldMappings()) == 0 {
+				t.Errorf("Expected non-empty field_mappings for profile %s", profile)
+			}
+
+			if !resp.GetConfigurationValid() {
+				t.Errorf("usage_profile=%s should not cause config errors: %v",
+					profile, resp.GetConfigurationErrors())
+			}
+		})
+	}
+}

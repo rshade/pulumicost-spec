@@ -150,6 +150,9 @@ Examples of foundational tasks (adjust based on your project):
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] TXXX [P] Documentation updates in docs/
+- [ ] TXXX [P] Verify godoc coverage is >80% for new packages
+- [ ] TXXX [P] Validate README code examples compile and match exported symbols
+- [ ] TXXX [P] Ensure all new packages with 3+ exports have a README.md
 - [ ] TXXX [P] Verify FinFocus naming alignment and identity transition
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories

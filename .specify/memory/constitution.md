@@ -1,16 +1,16 @@
 <!--
-Sync Impact Report - Constitution v1.4.0
+Sync Impact Report - Constitution v1.5.0
 =======================================
-Version Change: 1.3.2 → 1.4.0
+Version Change: 1.4.0 → 1.5.0
 Modified Principles: None
 Added Sections:
-  - Section XIII (Multi-Language SDK Synchronization): New principle requiring
-    TypeScript SDK updates when new RPCs are added
+  - Section XIV (Documentation Integrity): New principle preventing documentation drift
+    via automated validation and process rules.
 Removed Sections: None
 Templates Requiring Updates:
-  - ✅ .specify/templates/plan-template.md - Added TypeScript SDK checkpoint
-  - ✅ .specify/templates/spec-template.md - No changes required (already aligned)
-  - ✅ .specify/templates/tasks-template.md - Added TypeScript SDK task examples
+  - ✅ .specify/templates/plan-template.md - Added Documentation Integrity checkpoint
+  - ✅ .specify/templates/spec-template.md - No changes required
+  - ✅ .specify/templates/tasks-template.md - Added explicit documentation verification tasks
 Follow-up TODOs: None
 -->
 
@@ -173,6 +173,25 @@ All language SDKs (Go, TypeScript) MUST be kept in sync when gRPC service defini
 developer experience across Go, TypeScript, and future languages. Fragmented SDK support leads to ecosystem
 fragmentation and developer confusion.
 
+### XIV. Documentation Integrity (Anti-Drift)
+
+Documentation MUST remain synchronized with implementation and MUST be verifiable:
+
+- **Godoc Coverage**: All exported functions, types, and methods in Go SDK packages MUST have godoc
+  comments. CI MUST verify 80%+ documentation coverage.
+- **README ↔ Code Sync**: Code examples in README files MUST compile. Function signatures, type
+  names, and method names in documentation MUST match exported symbols exactly.
+- **Semantic Versioning for Docs**: When a documented API changes, the corresponding documentation
+  MUST be updated in the same PR.
+- **Package Completeness**: Every SDK package with 3+ exported symbols MUST have a README.md.
+- **Doc Validation in CI**: A documentation linter MUST run in CI checking markdown link validity,
+  code block syntax, and function signature accuracy.
+- **Spec Status Tracking**: Specifications in `specs/` MUST have status indicators. Specs missing
+  `plan.md` and `tasks.md` for >30 days SHOULD be archived or completed.
+
+**Rationale**: Documentation drift erodes developer trust. Automated validation prevents drift
+without requiring constant manual vigilance.
+
 ## Governance
 
 ### Amendment Process
@@ -192,7 +211,7 @@ All PRs MUST verify:
 - **Spec Consumes**: No complex pricing logic added to the spec/SDK.
 - **Test-first protocol**: Conformance tests written and passed.
 - **Backward compatibility**: buf breaking check passes.
-- **Documentation complete**: Updated root docs and examples.
+- **Documentation complete**: Updated root docs and examples, verifying >80% godoc coverage and README sync.
 - **SDK synchronization**: All SDKs (Go, TypeScript) updated for proto changes.
 
 ### Runtime Development Guidance
@@ -200,4 +219,4 @@ All PRs MUST verify:
 For day-to-day development guidance, refer to `CLAUDE.md` or `GEMINI.md` in the repository root. The
 constitution defines non-negotiable principles; these files provide practical workflow tips.
 
-**Version**: 1.4.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-16
+**Version**: 1.5.0 | **Ratified**: 2025-08-11 | **Last Amended**: 2026-01-27

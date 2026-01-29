@@ -491,6 +491,43 @@ func (b *FocusRecordBuilder) WithContractApplied(
 	return b
 }
 
+// WithProfileDefaults applies usage profile-based defaults to fields that haven't been set.
+// This is a convenience method for plugins implementing profile-aware cost estimation.
+//
+// The method only sets defaults for fields that are currently unset (zero values):
+//   - PROD: No changes (standard assumptions apply)
+//   - DEV: Sets extended_columns["usage_profile"] = "dev" for tracking
+//   - BURST: Sets extended_columns["usage_profile"] = "burst" for tracking
+//   - UNSPECIFIED: No changes
+//
+// Plugins should call this after setting other fields but before Build().
+// This method does NOT modify cost values - that logic belongs in the plugin's
+// cost calculation based on the profile-specific hours (see DefaultMonthlyHours).
+//
+// Example:
+//
+//	builder.WithIdentity("AWS", accountID, accountName).
+//	    WithResource(resourceID, name, resourceType).
+//	    WithProfileDefaults(req.GetUsageProfile()).
+//	    Build()
+func (b *FocusRecordBuilder) WithProfileDefaults(profile pbc.UsageProfile) *FocusRecordBuilder {
+	// Normalize unknown profiles to UNSPECIFIED
+	normalizedProfile := NormalizeUsageProfile(profile)
+
+	// Set extended column to track which profile was applied
+	profileStr := UsageProfileString(normalizedProfile)
+	if profileStr != "unspecified" {
+		if b.record.ExtendedColumns == nil {
+			b.record.ExtendedColumns = make(map[string]string)
+		}
+		if _, exists := b.record.GetExtendedColumns()["usage_profile"]; !exists {
+			b.record.ExtendedColumns["usage_profile"] = profileStr
+		}
+	}
+
+	return b
+}
+
 // Build validates and returns the constructed FocusCostRecord.
 // FOCUS 1.3 deprecation warnings are logged when deprecated fields are used
 // alongside their replacement fields.

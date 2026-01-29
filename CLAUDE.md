@@ -756,7 +756,31 @@ cd schemas && /init            # JSON Schema validation
   `ServeConfig.Listener`) rather than relying on `Port` and `listenOnLoopback` to avoid race
   conditions and ensure predictable port binding.
 
+### Usage Profile SDK Pattern (042-usage-profile-context)
+
+The `pluginsdk` package provides helpers for the `UsageProfile` enum (DEV, PROD, BURST):
+
+- **Zero-allocation validation**: `IsValidUsageProfile()` using package-level slice (follows registry pattern)
+- **Forward compatibility**: `NormalizeUsageProfile()` treats unknown values as UNSPECIFIED + logs warning
+- **Default hours**: `DefaultMonthlyHours(profile)` returns 730/160/200 by profile
+- **Builder integration**: `WithProfileDefaults(profile)` on `FocusRecordBuilder`
+- **TypeScript parity**: `sdk/typescript/packages/client/src/utils/usage-profile.ts` mirrors Go helpers
+
+Key files:
+
+- `sdk/go/pluginsdk/usage_profile.go` - Go SDK helpers
+- `sdk/go/testing/usage_profile_conformance_test.go` - Conformance tests
+- `sdk/typescript/packages/client/src/utils/usage-profile.ts` - TypeScript helpers
+
+Pattern for subtests sharing a gRPC harness: Do NOT use `t.Parallel()` on subtests that
+share a `TestHarness` — the deferred `harness.Stop()` can close the connection before
+parallel subtests complete.
+
 ## Active Technologies
+
+- Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf,
+  google.golang.org/grpc, zerolog (042-usage-profile-context)
+- N/A (stateless proto definitions and SDK helpers) (042-usage-profile-context)
 
 - Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`) (034-validation-bypass-metadata)
 - N/A (stateless struct extension; retention is caller's responsibility) (034-validation-bypass-metadata)
@@ -825,6 +849,9 @@ See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable doc
 
 ## Recent Changes
 
+- 042-usage-profile-context: Added Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1,
+  google.golang.org/protobuf, google.golang.org/grpc, zerolog
+
 - 034-validation-bypass-metadata: Added Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`)
 
 - 040-anomaly-detection-recommendations: Added Protocol Buffers v3 enum values for anomaly detection
@@ -833,5 +860,3 @@ See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable doc
   - Enables cost anomaly recommendations alongside optimization recommendations
   - Test coverage: Comprehensive conformance tests in `sdk/go/testing/anomaly_conformance_test.go`
   - MockPlugin updated to generate realistic anomalies with INVESTIGATE action and negative savings
-
-- 029-plugin-info-rpc: Added Go 1.25.5 (per go.mod) + google.golang.org/protobuf, google.golang.org/grpc
