@@ -156,10 +156,21 @@ centered around the FinOps Foundation's FOCUS standard.
 - [x] **Bypass Metadata Security**
   ([#340](https://github.com/rshade/finfocus-spec/issues/340)) -
   Added bypass metadata security and performance enhancements.
+- [x] **Documentation Drift Audit**
+  ([#346](https://github.com/rshade/finfocus-spec/issues/346),
+  [#347](https://github.com/rshade/finfocus-spec/issues/347),
+  [#348](https://github.com/rshade/finfocus-spec/issues/348)) -
+  Comprehensive audit of SDK READMEs and root README for documentation accuracy.
 
 ---
 
-## [Immediate Focus] (Q1 2026)
+## [Immediate Focus] (Q2 2026)
+
+### Protocol Enhancements
+
+- [ ] **Pagination for GetActualCost RPC**
+  ([#353](https://github.com/rshade/finfocus-spec/issues/353)) -
+  Add `page_size`/`page_token` pagination to enable 10,000+ record retrieval without memory exhaustion.
 
 ### SDK Enhancements
 
@@ -175,16 +186,6 @@ centered around the FinOps Foundation's FOCUS standard.
 - [ ] **Extract ResourceDescriptor Test Helper**
   ([#204](https://github.com/rshade/finfocus-spec/issues/204)) -
   Refactor test helper for ResourceDescriptor creation.
-
-### Documentation
-
-- [ ] **Documentation Drift Audit**
-  ([#347](https://github.com/rshade/finfocus-spec/issues/347),
-  [#348](https://github.com/rshade/finfocus-spec/issues/348)) -
-  Comprehensive audit of SDK READMEs and root README for documentation accuracy.
-- [ ] **Document FilterByOperator Semantics**
-  ([#346](https://github.com/rshade/finfocus-spec/issues/346)) -
-  Document exact match semantics for FilterByOperator in pricing package.
 
 ### Stability & Maintenance
 
@@ -207,12 +208,12 @@ centered around the FinOps Foundation's FOCUS standard.
 - [ ] **Authorization Middleware (OIDC/IAM)**
   ([#195](https://github.com/rshade/finfocus-spec/issues/195)) -
   Standardizing how plugins receive and validate identity without violating "Stateless" boundaries.
-- [ ] **Streaming Actual Cost (Streaming RPCs)**
-  ([#197](https://github.com/rshade/finfocus-spec/issues/197)) -
-  Evaluating the need for `StreamActualCost` for real-time anomaly detection.
 
 ### Completed Research
 
+- [x] **Streaming Actual Cost (Streaming RPCs)**
+  ([#197](https://github.com/rshade/finfocus-spec/issues/197)) -
+  Superseded by pagination approach ([#353](https://github.com/rshade/finfocus-spec/issues/353)). Jan 2026.
 - [x] **Standardized Recommendation Reasoning Metadata**
   ([#192](https://github.com/rshade/finfocus-spec/issues/192)) - Closed Jan 2026.
 - [x] **Cross-Language SDKs (Python/TS)**
