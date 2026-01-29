@@ -348,9 +348,13 @@ harness.Start(t)
 defer harness.Stop()
 
 // Run conformance tests
-result := plugintesting.RunStandardConformanceTests(t, plugin)
-if result.FailedTests > 0 {
-    t.Errorf("Plugin failed conformance: %s", result.Summary)
+result, err := plugintesting.RunStandardConformance(plugin)
+if err != nil {
+    t.Fatalf("conformance tests failed to run: %v", err)
+}
+if !result.Passed() {
+    t.Errorf("Plugin failed conformance: %d/%d tests failed",
+        result.Summary.Failed, result.Summary.Total)
 }
 ```
 
@@ -778,6 +782,8 @@ parallel subtests complete.
 
 ## Active Technologies
 
+- Markdown documentation (no code changes) + N/A (documentation only) (043-docs-drift-audit)
+
 - Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf,
   google.golang.org/grpc, zerolog (042-usage-profile-context)
 - N/A (stateless proto definitions and SDK helpers) (042-usage-profile-context)
@@ -849,12 +855,13 @@ See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable doc
 
 ## Recent Changes
 
+- 043-docs-drift-audit: Added Markdown documentation (no code changes) + N/A (documentation only)
+
 - 042-usage-profile-context: Added Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1,
   google.golang.org/protobuf, google.golang.org/grpc, zerolog
 
 - 034-validation-bypass-metadata: Added Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`)
 
-- 040-anomaly-detection-recommendations: Added Protocol Buffers v3 enum values for anomaly detection
   - `RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY = 5`
   - `RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE = 12`
   - Enables cost anomaly recommendations alongside optimization recommendations

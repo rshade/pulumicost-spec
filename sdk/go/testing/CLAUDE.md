@@ -299,11 +299,15 @@ func TestPluginConformance(t *testing.T) {
     plugin := &MyPluginImpl{}
 
     // Run standard conformance tests
-    result := plugintesting.RunStandardConformanceTests(t, plugin)
-    plugintesting.PrintConformanceReport(t, result)
+    result, err := plugintesting.RunStandardConformance(plugin)
+    if err != nil {
+        t.Fatalf("conformance tests failed to run: %v", err)
+    }
+    plugintesting.PrintReportTo(result, os.Stdout)
 
-    if result.FailedTests > 0 {
-        t.Errorf("Plugin failed conformance: %s", result.Summary)
+    if !result.Passed() {
+        t.Errorf("Plugin failed conformance: %d/%d tests failed",
+            result.Summary.Failed, result.Summary.Total)
     }
 }
 ```

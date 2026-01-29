@@ -183,6 +183,16 @@ func WithReason(reason string) BypassOption {
 
 // WithOperator sets the operator identifier for the bypass.
 // If operator is empty, the default ("unknown") is preserved.
+//
+// For consistent matching with FilterByOperator, normalize the operator
+// identifier at write time. Recommended normalization:
+//
+//	operator := strings.ToLower(strings.TrimSpace(rawOperator))
+//	bypass := NewBypassMetadata(..., WithOperator(operator))
+//
+// This enables predictable exact-match filtering later:
+//
+//	filtered := FilterByOperator(bypasses, "admin") // matches "admin", not "Admin" or " admin "
 func WithOperator(operator string) BypassOption {
 	return func(m *BypassMetadata) {
 		if operator != "" {
@@ -330,7 +340,20 @@ func FilterByTimeRange(bypasses []BypassMetadata, start, end time.Time) []Bypass
 	return result
 }
 
-// FilterByOperator returns bypasses with matching Operator field.
+// FilterByOperator returns bypass records matching the given operator exactly.
+//
+// Match semantics:
+//   - Case-sensitive: "admin" != "Admin"
+//   - Whitespace-sensitive: "admin " != "admin"
+//   - No wildcard or pattern matching
+//
+// For case-insensitive matching, normalize operator identifiers before
+// storing in BypassMetadata:
+//
+//	operator := strings.ToLower(strings.TrimSpace(rawOperator))
+//	metadata := NewBypassMetadata(..., WithOperator(operator))
+//
+// This design ensures predictable, fast filtering without regex overhead.
 func FilterByOperator(bypasses []BypassMetadata, operator string) []BypassMetadata {
 	var result []BypassMetadata
 	for _, b := range bypasses {

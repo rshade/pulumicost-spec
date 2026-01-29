@@ -16,6 +16,7 @@ package pricing_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -936,4 +937,33 @@ func TestCountBypassesBySeverity(t *testing.T) {
 	if counts[pricing.BypassSeverityCritical] != 1 {
 		t.Errorf("Critical count = %d, want 1", counts[pricing.BypassSeverityCritical])
 	}
+}
+
+// Example_operatorNormalization demonstrates the recommended pattern for
+// normalizing operator identifiers to ensure consistent exact-match filtering.
+func Example_operatorNormalization() {
+	// Raw operator input from user or system (may have mixed case, whitespace)
+	rawOperator := "  Admin@Example.COM  "
+
+	// Normalize at write time for consistent filtering later
+	normalizedOperator := strings.ToLower(strings.TrimSpace(rawOperator))
+
+	// Create bypass metadata with normalized operator
+	bypass := pricing.NewBypassMetadata(
+		"budget_limit",
+		"Cost exceeds budget",
+		pricing.WithReason("Emergency deployment"),
+		pricing.WithOperator(normalizedOperator),
+	)
+
+	// Later, when filtering for audit queries, use the same normalized form
+	bypasses := []pricing.BypassMetadata{bypass}
+	filtered := pricing.FilterByOperator(bypasses, "admin@example.com")
+
+	fmt.Printf("Normalized operator: %s\n", bypass.Operator)
+	fmt.Printf("Found %d matching bypass(es)\n", len(filtered))
+
+	// Output:
+	// Normalized operator: admin@example.com
+	// Found 1 matching bypass(es)
 }
