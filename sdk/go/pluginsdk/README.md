@@ -1211,6 +1211,76 @@ err := pluginsdk.NoDataError("resource-id")
 // Returns: "no cost data available for resource resource-id"
 ```
 
+## Response Builders and Validation
+
+### NewActualCostResponse
+
+Create `GetActualCostResponse` using functional options for explicit control:
+
+```go
+import (
+    "github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
+    pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
+)
+
+// Plugin found cost data - signal no fallback needed
+resp := pluginsdk.NewActualCostResponse(
+    pluginsdk.WithResults(results),
+    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_NONE),
+)
+
+// Plugin has no data - recommend trying other plugins
+resp := pluginsdk.NewActualCostResponse(
+    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_RECOMMENDED),
+)
+
+// Plugin cannot handle this resource type at all
+resp := pluginsdk.NewActualCostResponse(
+    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_REQUIRED),
+)
+```
+
+### FallbackHint Enum
+
+The `FallbackHint` enum signals to the core system whether it should query other plugins:
+
+| Value | Description |
+|-------|-------------|
+| `FALLBACK_HINT_UNSPECIFIED` (0) | Default. Treated as "no fallback needed" |
+| `FALLBACK_HINT_NONE` (1) | Plugin has data; do not attempt fallback |
+| `FALLBACK_HINT_RECOMMENDED` (2) | Plugin has no data; core SHOULD try other plugins |
+| `FALLBACK_HINT_REQUIRED` (3) | Plugin cannot handle request; core MUST try fallback |
+
+**Important**: For actual errors (API failures, network timeouts), return a gRPC error instead
+of using a fallback hint. Hints are for "no data" scenarios, not system failures.
+
+### Validation Helpers
+
+Validate responses before returning:
+
+```go
+// Validate actual cost response
+resp := pluginsdk.NewActualCostResponse(
+    pluginsdk.WithResults(results),
+    pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_NONE),
+)
+if err := pluginsdk.ValidateActualCostResponse(resp); err != nil {
+    return nil, status.Errorf(codes.Internal, "invalid response: %v", err)
+}
+
+// Validate recommendations
+if err := pluginsdk.ValidateRecommendation(rec); err != nil {
+    return nil, status.Errorf(codes.Internal, "invalid recommendation: %v", err)
+}
+```
+
+Available validation functions:
+
+- `ValidateActualCostResponse(resp)` - Validates results are non-nil with non-negative costs
+- `ValidateRecommendation(rec)` - Validates recommendation has all required fields
+- `ValidateResourceRecommendationInfo(res)` - Validates resource info fields
+- `ValidateRecommendationImpact(impact)` - Validates impact with ISO 4217 currency
+
 ## FOCUS 1.2 Cost Records
 
 The SDK includes a comprehensive `FocusRecordBuilder` for constructing FinOps FOCUS 1.2 compliant cost records.

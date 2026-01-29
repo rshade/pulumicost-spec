@@ -91,7 +91,7 @@ func TestPluginConformance(t *testing.T) {
     // Print detailed report
     plugintesting.PrintReportTo(result, os.Stdout)
 
-    if result.FailedCount > 0 {
+    if !result.Passed() {
         t.Errorf("Plugin failed conformance tests")
     }
 }
@@ -101,11 +101,15 @@ func TestPluginConformanceSimple(t *testing.T) {
     plugin := &MyPluginImpl{}
 
     // Run standard conformance (includes Basic + Standard tests)
-    result := plugintesting.RunStandardConformance(plugin)
+    result, err := plugintesting.RunStandardConformance(plugin)
+    if err != nil {
+        t.Fatalf("conformance tests failed to run: %v", err)
+    }
     plugintesting.PrintReportTo(result, os.Stdout)
 
-    if result.FailedCount > 0 {
-        t.Errorf("Plugin failed conformance: %s", result.Summary)
+    if !result.Passed() {
+        t.Errorf("Plugin failed conformance: %d/%d tests failed",
+            result.Summary.Failed, result.Summary.Total)
     }
 }
 ```
@@ -168,9 +172,12 @@ result := suite.Run(plugin, plugintesting.ConformanceLevelStandard)
 
 ```go
 // Run all tests at specific level
-result := plugintesting.RunBasicConformance(plugin)
-result := plugintesting.RunStandardConformance(plugin)
-result := plugintesting.RunAdvancedConformance(plugin)
+result, err := plugintesting.RunBasicConformance(plugin)
+result, err := plugintesting.RunStandardConformance(plugin)
+result, err := plugintesting.RunAdvancedConformance(plugin)
+if err != nil {
+    t.Fatalf("conformance tests failed to run: %v", err)
+}
 ```
 
 ### Test Harness
@@ -296,15 +303,20 @@ The `ConformanceResult` contains detailed test execution information:
 
 ```go
 type ConformanceResult struct {
-    PluginName   string          // Name of the tested plugin
-    Level        ConformanceLevel // Tested conformance level
-    PassedCount  int             // Number of passed tests
-    FailedCount  int             // Number of failed tests
-    SkippedCount int             // Number of skipped tests
-    TotalTests   int             // Total number of tests
-    Duration     time.Duration   // Total execution time
-    Results      []TestResult    // Individual test results
-    Summary      string          // Human-readable summary
+    Version          string                           // Report schema version
+    Timestamp        time.Time                        // When suite was executed
+    PluginName       string                           // Name from plugin's Name() RPC
+    LevelAchieved    ConformanceLevel                 // Highest level passed
+    Summary          ResultSummary                    // Aggregate test counts
+    Categories       map[TestCategory]*CategoryResult // Results by category
+    Duration         time.Duration                    // Total execution time
+}
+
+type ResultSummary struct {
+    Total   int // Total tests executed
+    Passed  int // Tests that passed
+    Failed  int // Tests that failed
+    Skipped int // Tests skipped
 }
 
 type TestResult struct {
@@ -449,14 +461,18 @@ func TestConformance(t *testing.T) {
     plugin := &MyPluginImpl{}
 
     // Choose conformance level
-    result := plugintesting.RunBasicConformance(plugin)
-    // result := plugintesting.RunStandardConformance(plugin)
-    // result := plugintesting.RunAdvancedConformance(plugin)
+    result, err := plugintesting.RunBasicConformance(plugin)
+    // result, err := plugintesting.RunStandardConformance(plugin)
+    // result, err := plugintesting.RunAdvancedConformance(plugin)
+    if err != nil {
+        t.Fatalf("conformance tests failed to run: %v", err)
+    }
 
     plugintesting.PrintReportTo(result, os.Stdout)
 
-    if result.FailedCount > 0 {
-        t.Fatalf("Plugin failed conformance: %s", result.Summary)
+    if !result.Passed() {
+        t.Fatalf("Plugin failed conformance: %d/%d tests failed",
+            result.Summary.Failed, result.Summary.Total)
     }
 }
 ```
@@ -1196,13 +1212,17 @@ func TestMyPluginConformance(t *testing.T) {
     plugin := internal.NewMyPlugin()
 
     // Run full conformance suite at Standard level
-    result := plugintesting.RunStandardConformance(plugin)
+    result, err := plugintesting.RunStandardConformance(plugin)
+    if err != nil {
+        t.Fatalf("conformance tests failed to run: %v", err)
+    }
 
     // Print detailed report
     plugintesting.PrintReportTo(result, os.Stdout)
 
-    if result.FailedCount > 0 {
-        t.Errorf("Plugin failed conformance: %s", result.Summary)
+    if !result.Passed() {
+        t.Errorf("Plugin failed conformance: %d/%d tests failed",
+            result.Summary.Failed, result.Summary.Total)
     }
 }
 
@@ -1214,10 +1234,14 @@ func TestMyPluginCustomConformance(t *testing.T) {
     plugintesting.RegisterSpecValidationTests(suite)
     plugintesting.RegisterRPCCorrectnessTests(suite)
 
-    result := suite.Run(plugin, plugintesting.ConformanceLevelBasic)
+    result, err := suite.Run(plugin, plugintesting.ConformanceLevelBasic)
+    if err != nil {
+        t.Fatalf("conformance tests failed to run: %v", err)
+    }
 
-    if result.FailedCount > 0 {
-        t.Errorf("Plugin failed: %d/%d tests failed", result.FailedCount, result.TotalTests)
+    if !result.Passed() {
+        t.Errorf("Plugin failed: %d/%d tests failed",
+            result.Summary.Failed, result.Summary.Total)
     }
 }
 

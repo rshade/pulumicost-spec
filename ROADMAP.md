@@ -128,48 +128,71 @@ centered around the FinOps Foundation's FOCUS standard.
   [#300](https://github.com/rshade/finfocus-spec/issues/300),
   [#301](https://github.com/rshade/finfocus-spec/issues/301)) -
   Fixed DryRunHandler interface, proto field consistency, backward compatibility patterns, docs, and slice performance.
+- [x] **TypeScript SDK Publishing Enhancements**
+  ([#313](https://github.com/rshade/finfocus-spec/issues/313)) -
+  Additional publishing enhancements from PR #312 review.
+- [x] **Cost Anomaly Detection Support**
+  ([#315](https://github.com/rshade/finfocus-spec/issues/315)) -
+  Added ANOMALY category and INVESTIGATE action for cost anomaly detection in recommendations.
+- [x] **Prediction Interval Fields**
+  ([#314](https://github.com/rshade/finfocus-spec/issues/314)) -
+  Added confidence intervals to GetProjectedCostResponse for uncertainty quantification.
+- [x] **Unclear Exhaustive Nolint Directive**
+  ([#298](https://github.com/rshade/finfocus-spec/issues/298)) -
+  Clarified the nolint directive in legacyCapabilityMap.
+- [x] **Log File Security Warning**
+  ([#284](https://github.com/rshade/finfocus-spec/issues/284)) -
+  Improved security guidance for log file handling.
+- [x] **Pricing Tier Intelligence** ([#217](https://github.com/rshade/finfocus-spec/issues/217)) -
+  Added `PricingTier` enum and `SpotRisk` enum for interruption probability.
+- [x] **Usage Profiles** ([#218](https://github.com/rshade/finfocus-spec/issues/218)) -
+  Added `UsageProfile` context for environment-aware recommendations.
+- [x] **Float Validation Harmonization**
+  ([#336](https://github.com/rshade/finfocus-spec/issues/336)) -
+  Harmonized float validation patterns for spot risk score.
+- [x] **TypeScript SDK Documentation**
+  ([#334](https://github.com/rshade/finfocus-spec/issues/334)) -
+  TypeScript SDK documentation improvements from technical review.
+- [x] **Bypass Metadata Security**
+  ([#340](https://github.com/rshade/finfocus-spec/issues/340)) -
+  Added bypass metadata security and performance enhancements.
 
 ---
 
 ## [Immediate Focus] (Q1 2026)
 
-### TypeScript SDK
+### SDK Enhancements
 
-- [ ] **TypeScript SDK Publishing Enhancements**
-  ([#313](https://github.com/rshade/finfocus-spec/issues/313)) -
-  Additional publishing enhancements from PR #312 review.
+- [ ] **Make CapabilitiesToLegacyMetadataWithWarnings Default**
+  ([#345](https://github.com/rshade/finfocus-spec/issues/345)) -
+  Improve backward compatibility defaults for capability discovery.
+- [ ] **Add StreamResult.ValidateOutputJSON() Helper**
+  ([#344](https://github.com/rshade/finfocus-spec/issues/344)) -
+  Helper method for JSON-LD output validation.
+- [ ] **Integrate ValidationError Type**
+  ([#210](https://github.com/rshade/finfocus-spec/issues/210)) -
+  Integrate ValidationError type with validation implementation.
+- [ ] **Extract ResourceDescriptor Test Helper**
+  ([#204](https://github.com/rshade/finfocus-spec/issues/204)) -
+  Refactor test helper for ResourceDescriptor creation.
 
-### Protocol Enhancements
+### Documentation
 
-- [ ] **Cost Anomaly Detection Support**
-  ([#315](https://github.com/rshade/finfocus-spec/issues/315)) -
-  Add ANOMALY category and INVESTIGATE action for cost anomaly detection in recommendations.
-- [ ] **Prediction Interval Fields**
-  ([#314](https://github.com/rshade/finfocus-spec/issues/314)) -
-  Add confidence intervals to GetProjectedCostResponse for uncertainty quantification.
+- [ ] **Documentation Drift Audit**
+  ([#347](https://github.com/rshade/finfocus-spec/issues/347),
+  [#348](https://github.com/rshade/finfocus-spec/issues/348)) -
+  Comprehensive audit of SDK READMEs and root README for documentation accuracy.
+- [ ] **Document FilterByOperator Semantics**
+  ([#346](https://github.com/rshade/finfocus-spec/issues/346)) -
+  Document exact match semantics for FilterByOperator in pricing package.
 
 ### Stability & Maintenance
 
 - [ ] **Dependency Management** ([#13](https://github.com/rshade/finfocus-spec/issues/13)) -
   Automated tracking and updating of core proto and SDK dependencies.
-
-### Documentation
-
-- [ ] **Unclear Exhaustive Nolint Directive**
-  ([#298](https://github.com/rshade/finfocus-spec/issues/298)) -
-  Clarify the nolint directive in legacyCapabilityMap.
-- [ ] **Strengthen Log File Security Warning**
-  ([#284](https://github.com/rshade/finfocus-spec/issues/284)) -
-  Improve security guidance for log file handling (good first issue).
-
-### Planned Features
-
-- [ ] **Pricing Tier Intelligence** ([#217](https://github.com/rshade/finfocus-spec/issues/217))
-  - Define `PricingTier` enum (`STANDARD`, `SPOT`, `RESERVED`)
-  - Define `SpotRisk` enum (`LOW`, `MEDIUM`, `HIGH`) for interruption probability
-- [ ] **Usage Profiles** ([#218](https://github.com/rshade/finfocus-spec/issues/218))
-  - Add `UsageProfile` context to requests to allow plugins to adjust recommendations
-    based on environment (e.g., Dev vs Prod)
+- [ ] **Upgrade golangci-lint**
+  ([#350](https://github.com/rshade/finfocus-spec/issues/350)) -
+  Upgrade from v2.6.2 to v2.8.0.
 
 ---
 
@@ -179,28 +202,30 @@ centered around the FinOps Foundation's FOCUS standard.
 
 - [ ] **Standardized Cost Allocation Lineage Metadata**
   ([#191](https://github.com/rshade/finfocus-spec/issues/191))
-- [ ] **Standardized Recommendation Reasoning Metadata**
-  ([#192](https://github.com/rshade/finfocus-spec/issues/192))
 - [ ] **Distributed Tracing Propagation (Contextual Visibility)**
   ([#193](https://github.com/rshade/finfocus-spec/issues/193))
 - [ ] **Authorization Middleware (OIDC/IAM)**
   ([#195](https://github.com/rshade/finfocus-spec/issues/195)) -
   Standardizing how plugins receive and validate identity without violating "Stateless" boundaries.
-- [ ] **Cross-Language SDKs (Python/TS)**
-  ([#196](https://github.com/rshade/finfocus-spec/issues/196)) -
-  To be initiated after Go SDK reaches v1.0 stability and a critical mass of plugins exist.
 - [ ] **Streaming Actual Cost (Streaming RPCs)**
   ([#197](https://github.com/rshade/finfocus-spec/issues/197)) -
   Evaluating the need for `StreamActualCost` for real-time anomaly detection.
 
-### SDK Developer Experience
+### Completed Research
+
+- [x] **Standardized Recommendation Reasoning Metadata**
+  ([#192](https://github.com/rshade/finfocus-spec/issues/192)) - Closed Jan 2026.
+- [x] **Cross-Language SDKs (Python/TS)**
+  ([#196](https://github.com/rshade/finfocus-spec/issues/196)) -
+  TypeScript SDK delivered; Python SDK remains future work.
+- [x] **Standardized Recommendation Reasoning** ([#188](https://github.com/rshade/finfocus-spec/issues/188)) -
+  Closed Jan 2026.
+- [x] **Validation Bypass Protocol** ([#216](https://github.com/rshade/finfocus-spec/issues/216)) -
+  Added `BypassReason` and `OverrideMetadata` to `ValidationResult` for governance auditing.
 
 ### Proposed for Discussion (Discovery)
 
-- [ ] **Standardized Recommendation Reasoning** ([#188](https://github.com/rshade/finfocus-spec/issues/188))
 - [ ] **Multi-Currency Segregation Pattern** ([#190](https://github.com/rshade/finfocus-spec/issues/190))
-- [ ] **Validation Bypass Protocol** ([#216](https://github.com/rshade/finfocus-spec/issues/216)) -
-  Add `BypassReason` and `OverrideMetadata` to `ValidationResult` for governance auditing.
 - [ ] **Per-Request Credential Passing** ([#220](https://github.com/rshade/finfocus-spec/issues/220)) -
   Multi-tenant optimization allowing per-request cloud credentials.
 - [ ] **Batch RPC for Multi-Resource Queries** ([#221](https://github.com/rshade/finfocus-spec/issues/221)) -

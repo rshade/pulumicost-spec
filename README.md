@@ -1,4 +1,4 @@
-# FinFocus Specification v0.5.0
+# FinFocus Specification v0.5.4
 
 ## Focusing your finances left
 
@@ -14,7 +14,7 @@ This specification enables consistent cost data retrieval across AWS, Azure, GCP
 
 ## Overview
 
-FinFocus Specification v0.5.0 is a complete, enterprise-ready protocol for
+FinFocus Specification v0.5.4 is a complete, enterprise-ready protocol for
 standardizing cloud cost data retrieval. It provides:
 
 ### Core Features
@@ -62,7 +62,7 @@ finfocus-spec/
 │  ├─ registry/                   # Plugin registry domain types (8 enum types)
 │  └─ testing/                    # Complete testing framework with conformance
 ├─ examples/                      # Cross-vendor examples
-│  ├─ specs/                      # 10 comprehensive pricing examples
+│  ├─ specs/                      # 9 comprehensive pricing examples
 │  └─ requests/                   # Sample gRPC request payloads
 ├─ docs/                          # Comprehensive documentation
 │  ├─ PLUGIN_MIGRATION_GUIDE.md   # Migration guide for breaking changes
@@ -77,7 +77,7 @@ finfocus-spec/
 
 ### Core Components
 
-- **[gRPC Service](proto/finfocus/v1/costsource.proto)**: CostSourceService with 8 RPC methods
+- **[gRPC Service](proto/finfocus/v1/costsource.proto)**: CostSourceService with 11 RPC methods
 - **[JSON Schema](schemas/pricing_spec.schema.json)**: Comprehensive validation supporting all major cloud providers
 - **[Go SDK](sdk/go/)**: Production-ready SDK with automatic protobuf generation
 - **[Plugin SDK](sdk/go/pluginsdk/)**: Serve(), environment handling, logging, metrics, FOCUS builder
@@ -273,9 +273,11 @@ func (k *kubecostPlugin) GetActualCost(ctx context.Context, req *pbc.GetActualCo
         },
     }
 
-    return &pbc.GetActualCostResponse{
-        Results: results,
-    }, nil
+    // Use pluginsdk helper for consistent response construction
+    return pluginsdk.NewActualCostResponse(
+        pluginsdk.WithResults(results),
+        pluginsdk.WithFallbackHint(pbc.FallbackHint_FALLBACK_HINT_NONE),
+    ), nil
 }
 
 // GetProjectedCost calculates projected costs
@@ -657,7 +659,7 @@ See [Testing Framework Documentation](sdk/go/testing/README.md) for complete det
 
 ## Examples
 
-The specification includes 8 comprehensive examples demonstrating all major cloud providers and billing models:
+The specification includes 9 comprehensive examples demonstrating all major cloud providers and billing models:
 
 ### Cloud Provider Examples
 
@@ -666,6 +668,7 @@ The specification includes 8 comprehensive examples demonstrating all major clou
 - **[EC2 t3.micro](examples/specs/aws-ec2-t3-micro.json)**: On-demand instance pricing
 - **[S3 Tiered Storage](examples/specs/aws-s3-tiered-pricing.json)**: Volume-based tiered pricing
 - **[Lambda Functions](examples/specs/aws-lambda-per-invocation.json)**: Serverless execution pricing
+- **[Lambda@Edge (Not Implemented)](examples/specs/aws-lambda-not-implemented.json)**: Edge case handling
 
 #### Azure (Microsoft Azure)
 
@@ -696,13 +699,14 @@ See [Examples Documentation](examples/README.md) for detailed explanations.
 
 ### gRPC Service Interface
 
-The CostSourceService provides 8 RPC methods for comprehensive cost management:
+The CostSourceService provides 11 RPC methods for comprehensive cost management:
 
 ```protobuf
 service CostSourceService {
   // Core Plugin Information
   rpc Name(NameRequest) returns (NameResponse);                              // Plugin identification
   rpc Supports(SupportsRequest) returns (SupportsResponse);                  // Resource support check
+  rpc GetPluginInfo(GetPluginInfoRequest) returns (GetPluginInfoResponse);   // Plugin metadata
 
   // Cost Data Retrieval
   rpc GetActualCost(GetActualCostRequest) returns (GetActualCostResponse);   // Historical costs (FOCUS 1.2)
@@ -711,9 +715,11 @@ service CostSourceService {
 
   // Pre-Deployment Analysis
   rpc EstimateCost(EstimateCostRequest) returns (EstimateCostResponse);      // "What-if" cost estimation
+  rpc DryRun(DryRunRequest) returns (DryRunResponse);                        // Field mapping introspection
 
   // Cost Optimization
-  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse); // Cost optimization advice
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse); // Cost optimization
+  rpc DismissRecommendation(DismissRecommendationRequest) returns (DismissRecommendationResponse);
   rpc GetBudgets(GetBudgetsRequest) returns (GetBudgetsResponse);            // Budget tracking and alerts
 }
 ```
@@ -731,6 +737,8 @@ The [pricing specification schema](schemas/pricing_spec.schema.json) validates:
 
 - **[Generated Proto](sdk/go/proto/)**: Auto-generated from protobuf definitions
 - **[Plugin SDK](sdk/go/pluginsdk/)**: Serve(), environment handling, logging, metrics, FOCUS builder
+  - **[Response Builders](sdk/go/pluginsdk/README.md#response-builders-and-validation)**:
+    NewActualCostResponse, FallbackHint, validation helpers
   - **[Mapping](sdk/go/pluginsdk/mapping/)**: Property extraction helpers for AWS, Azure, GCP
 - **[Pricing](sdk/go/pricing/)**: Domain types, validation, 44+ billing mode constants
 - **[Currency](sdk/go/currency/)**: ISO 4217 validation (180+ currencies, zero-allocation)
@@ -829,7 +837,7 @@ Semantic versioning for proto changes:
 - **MINOR**: Backward-compatible additions
 - **PATCH**: Bug fixes, documentation updates
 
-Current version: **v0.4.7** (production-ready)
+Current version: **v0.5.4** (production-ready)
 
 ## License
 
@@ -855,4 +863,4 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
-**FinFocus Specification v0.4.7** - Production-ready protocol for cloud cost source plugins
+**FinFocus Specification v0.5.4** - Production-ready protocol for cloud cost source plugins
