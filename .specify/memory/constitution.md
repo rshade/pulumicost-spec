@@ -177,14 +177,20 @@ fragmentation and developer confusion.
 
 Documentation MUST remain synchronized with implementation and MUST be verifiable:
 
-- **Godoc Coverage**: All exported functions, types, and methods in Go SDK packages MUST have godoc comments. CI MUST verify 80%+ documentation coverage.
-- **README ↔ Code Sync**: Code examples in README files MUST compile. Function signatures, type names, and method names in documentation MUST match exported symbols exactly.
-- **Semantic Versioning for Docs**: When a documented API changes, the corresponding documentation MUST be updated in the same PR.
+- **Godoc Coverage**: All exported functions, types, and methods in Go SDK packages MUST have godoc
+  comments. CI MUST verify 80%+ documentation coverage.
+- **README ↔ Code Sync**: Code examples in README files MUST compile. Function signatures, type
+  names, and method names in documentation MUST match exported symbols exactly.
+- **Semantic Versioning for Docs**: When a documented API changes, the corresponding documentation
+  MUST be updated in the same PR.
 - **Package Completeness**: Every SDK package with 3+ exported symbols MUST have a README.md.
-- **Doc Validation in CI**: A documentation linter MUST run in CI checking markdown link validity, code block syntax, and function signature accuracy.
-- **Spec Status Tracking**: Specifications in `specs/` MUST have status indicators. Specs missing `plan.md` and `tasks.md` for >30 days SHOULD be archived or completed.
+- **Doc Validation in CI**: A documentation linter MUST run in CI checking markdown link validity,
+  code block syntax, and function signature accuracy.
+- **Spec Status Tracking**: Specifications in `specs/` MUST have status indicators. Specs missing
+  `plan.md` and `tasks.md` for >30 days SHOULD be archived or completed.
 
-**Rationale**: Documentation drift erodes developer trust. Automated validation prevents drift without requiring constant manual vigilance.
+**Rationale**: Documentation drift erodes developer trust. Automated validation prevents drift
+without requiring constant manual vigilance.
 
 ## Governance
 
