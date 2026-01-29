@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.1](https://github.com/rshade/finfocus-spec/compare/finfocus-client-v0.6.0...finfocus-client-v0.6.1) (2026-01-29)
+
+
+### Features
+
+* **proto:** add pricing tier and risk score fields ([#335](https://github.com/rshade/finfocus-spec/issues/335)) ([890f230](https://github.com/rshade/finfocus-spec/commit/890f230a77cb598066ce187e85fcf87e1ebda8b8)), closes [#217](https://github.com/rshade/finfocus-spec/issues/217)
+* **proto:** add usage profile enum for workload context signaling ([#349](https://github.com/rshade/finfocus-spec/issues/349)) ([ae82f64](https://github.com/rshade/finfocus-spec/commit/ae82f647590dde04d18a610c3bd3297bef7979c3))
+* **sdk:** implement github issues audit plan for [#247](https://github.com/rshade/finfocus-spec/issues/247)-340 ([#341](https://github.com/rshade/finfocus-spec/issues/341)) ([8b5b97d](https://github.com/rshade/finfocus-spec/commit/8b5b97d903ccd1e1f95e975a41e34b2340e7341f))
+
 ## [0.6.0](https://github.com/rshade/finfocus-spec/compare/finfocus-client-v0.5.0...finfocus-client-v0.6.0) (2026-01-21)
 
 
