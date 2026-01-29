@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5](https://github.com/rshade/finfocus-spec/compare/v0.5.4...v0.5.5) (2026-01-29)
+
+
+### Added
+
+* **pricing:** add validation bypass metadata for audit trails ([#338](https://github.com/rshade/finfocus-spec/issues/338)) ([5abd98c](https://github.com/rshade/finfocus-spec/commit/5abd98c812868566b63a58eac89593bd83746091))
+* **proto:** add pricing tier and risk score fields ([#335](https://github.com/rshade/finfocus-spec/issues/335)) ([890f230](https://github.com/rshade/finfocus-spec/commit/890f230a77cb598066ce187e85fcf87e1ebda8b8)), closes [#217](https://github.com/rshade/finfocus-spec/issues/217)
+* **proto:** add usage profile enum for workload context signaling ([#349](https://github.com/rshade/finfocus-spec/issues/349)) ([ae82f64](https://github.com/rshade/finfocus-spec/commit/ae82f647590dde04d18a610c3bd3297bef7979c3))
+* **sdk:** implement github issues audit plan for [#247](https://github.com/rshade/finfocus-spec/issues/247)-340 ([#341](https://github.com/rshade/finfocus-spec/issues/341)) ([8b5b97d](https://github.com/rshade/finfocus-spec/commit/8b5b97d903ccd1e1f95e975a41e34b2340e7341f))
+
+
+### Documentation
+
+* **sdk:** fix documentation drift across readme and sdk packages ([#352](https://github.com/rshade/finfocus-spec/issues/352)) ([7e759b4](https://github.com/rshade/finfocus-spec/commit/7e759b423d03f2b702b978716778a4e889c8b75c)), closes [#346](https://github.com/rshade/finfocus-spec/issues/346) [#347](https://github.com/rshade/finfocus-spec/issues/347) [#348](https://github.com/rshade/finfocus-spec/issues/348)
+
 ## [0.5.4](https://github.com/rshade/finfocus-spec/compare/v0.5.3...v0.5.4) (2026-01-21)
 
 
