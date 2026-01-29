@@ -498,7 +498,8 @@ func (b *FocusRecordBuilder) WithContractApplied(
 //   - PROD: No changes (standard assumptions apply)
 //   - DEV: Sets extended_columns["usage_profile"] = "dev" for tracking
 //   - BURST: Sets extended_columns["usage_profile"] = "burst" for tracking
-//   - UNSPECIFIED: No changes
+//   - UNSPECIFIED: No changes (intentionally excluded from extended_columns to distinguish
+//     between "no profile specified" vs "explicitly profiled workload")
 //
 // Plugins should call this after setting other fields but before Build().
 // This method does NOT modify cost values - that logic belongs in the plugin's

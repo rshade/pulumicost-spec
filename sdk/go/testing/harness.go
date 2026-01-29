@@ -121,7 +121,7 @@ func NewTestHarness(impl pbc.CostSourceServiceServer) *TestHarness {
 }
 
 // Start initializes the client connection to the test server.
-func (h *TestHarness) Start(t *testing.T) {
+func (h *TestHarness) Start(t testing.TB) {
 	//nolint:staticcheck // grpc.NewClient doesn't work with bufconn
 	conn, err := grpc.DialContext(context.Background(), "bufnet",
 		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {

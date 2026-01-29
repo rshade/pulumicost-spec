@@ -67,17 +67,17 @@ var usageProfileParseMap = map[string]pbc.UsageProfile{
 	"burst":       pbc.UsageProfile_USAGE_PROFILE_BURST,
 }
 
-// AllUsageProfiles returns all valid UsageProfile enum values.
-// This returns the pre-allocated package-level slice for zero-allocation access.
+// AllUsageProfiles returns the pre-allocated slice of all valid UsageProfile values
+// (UNSPECIFIED, PROD, DEV, BURST) for zero-allocation access. The returned slice must
+// not be modified.
 func AllUsageProfiles() []pbc.UsageProfile {
 	return allUsageProfiles
 }
 
-// IsValidUsageProfile checks if the given profile is a known UsageProfile value.
-// Returns true for UNSPECIFIED, PROD, DEV, and BURST.
+// IsValidUsageProfile reports whether profile is one of the known UsageProfile values
+// (UNSPECIFIED, PROD, DEV, BURST). It performs a membership check against a preallocated
+// package-level slice for efficient, zero-allocation validation.
 // Returns false for unknown/future profile values.
-//
-// Performance: <15 ns/op, 0 allocs/op using package-level slice iteration.
 func IsValidUsageProfile(profile pbc.UsageProfile) bool {
 	for _, valid := range allUsageProfiles {
 		if profile == valid {
@@ -87,14 +87,15 @@ func IsValidUsageProfile(profile pbc.UsageProfile) bool {
 	return false
 }
 
-// ParseUsageProfile converts a string to the corresponding UsageProfile enum value.
+// ParseUsageProfile converts s to the corresponding pbc.UsageProfile.
 // Supports case-insensitive matching and common variants:
 //   - "dev", "development" → USAGE_PROFILE_DEV
 //   - "prod", "production" → USAGE_PROFILE_PROD
 //   - "burst" → USAGE_PROFILE_BURST
 //   - "unspecified", "" → USAGE_PROFILE_UNSPECIFIED
 //
-// Returns an error for unrecognized strings.
+// If s is empty, returns USAGE_PROFILE_UNSPECIFIED with no error.
+// If s is unrecognized, returns USAGE_PROFILE_UNSPECIFIED and an error.
 func ParseUsageProfile(s string) (pbc.UsageProfile, error) {
 	if s == "" {
 		return pbc.UsageProfile_USAGE_PROFILE_UNSPECIFIED, nil
@@ -106,14 +107,12 @@ func ParseUsageProfile(s string) (pbc.UsageProfile, error) {
 	}
 
 	return pbc.UsageProfile_USAGE_PROFILE_UNSPECIFIED,
-		fmt.Errorf("unknown usage profile: %q", s)
+		fmt.Errorf("unknown usage profile %q (valid: dev, prod, burst, unspecified)", s)
 }
 
-// UsageProfileString returns a lowercase string representation of the profile.
-// For known profiles: "unspecified", "prod", "dev", "burst".
-// For unknown profiles: "unknown(<value>)".
-//
-// This is useful for logging and human-readable output.
+// UsageProfileString returns the lowercase string representation of the given UsageProfile.
+// For known profiles: "unspecified", "prod", "dev", or "burst".
+// For unknown values: "unknown(<numeric>)" where <numeric> is the profile's integer value.
 func UsageProfileString(profile pbc.UsageProfile) string {
 	if str, ok := usageProfileStringMap[profile]; ok {
 		return str
@@ -125,12 +124,11 @@ func UsageProfileString(profile pbc.UsageProfile) string {
 // if the profile is unknown/future. This enables forward compatibility when
 // plugins receive profile values from newer spec versions.
 //
-// Logs a warning at INFO level when normalizing an unknown value.
+// Logs a warning at WARN level when normalizing an unknown value.
 //
 // Example:
 //
 //	profile := pluginsdk.NormalizeUsageProfile(req.GetUsageProfile())
-//	// profile is guaranteed to be a known value
 func NormalizeUsageProfile(profile pbc.UsageProfile) pbc.UsageProfile {
 	if IsValidUsageProfile(profile) {
 		return profile
@@ -153,14 +151,14 @@ const (
 	HoursBurst = 200
 )
 
-// DefaultMonthlyHours returns the default monthly usage hours for a profile.
-// This is a convenience helper showing typical hour assumptions:
-//   - PROD: 730 hours (24/7 operation, 365 days / 12 months * 24 hours)
-//   - DEV: 160 hours (~8 hours/day, 5 days/week, ~20 business days)
-//   - BURST: 200 hours (plugin discretion for batch/load-test scenarios)
-//   - UNSPECIFIED: 730 hours (defaults to production assumptions)
+// DefaultMonthlyHours returns the default monthly hours for the given UsageProfile:
+//   - PROD: HoursProd (730) - 24/7 operation
+//   - DEV: HoursDev (160) - ~8 hours/day, 5 days/week
+//   - BURST: HoursBurst (200) - plugin discretion for batch/load-test scenarios
+//   - UNSPECIFIED: HoursProd (730) - defaults to production assumptions
 //
-// Plugins have discretion to use different values based on their resource types.
+// Unknown or future profiles also default to HoursProd for forward compatibility.
+// Plugins may use different values based on their resource types.
 func DefaultMonthlyHours(profile pbc.UsageProfile) float64 {
 	switch profile {
 	case pbc.UsageProfile_USAGE_PROFILE_PROD:
@@ -172,7 +170,10 @@ func DefaultMonthlyHours(profile pbc.UsageProfile) float64 {
 	case pbc.UsageProfile_USAGE_PROFILE_UNSPECIFIED:
 		return HoursProd
 	default:
-		// Unknown profiles - use production assumptions
+		// Log unknown profiles for forward compatibility debugging
+		log.Debug().
+			Int32("usage_profile", int32(profile)).
+			Msg("Unknown usage profile in DefaultMonthlyHours, using production hours")
 		return HoursProd
 	}
 }

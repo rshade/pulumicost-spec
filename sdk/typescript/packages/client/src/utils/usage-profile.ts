@@ -14,15 +14,18 @@ const HOURS_DEV = 160;
 const HOURS_BURST = 200;
 
 /**
- * Returns all valid UsageProfile enum values.
+ * Get all valid UsageProfile enum values.
+ *
+ * @returns An array containing every known `UsageProfile` value
  */
 export function getAllUsageProfiles(): ReadonlyArray<UsageProfile> {
   return allUsageProfiles;
 }
 
 /**
- * Checks if the given value is a known UsageProfile enum value.
- * Returns true for UNSPECIFIED, PROD, DEV, and BURST.
+ * Determines whether the provided value is one of the known UsageProfile enum values.
+ *
+ * @returns `true` if the profile is `UNSPECIFIED`, `PROD`, `DEV`, or `BURST`, `false` otherwise.
  */
 export function isValidUsageProfile(profile: UsageProfile): boolean {
   return allUsageProfiles.includes(profile);
@@ -39,14 +42,13 @@ const parseMap: ReadonlyMap<string, UsageProfile> = new Map([
 ]);
 
 /**
- * Parses a string into a UsageProfile enum value.
- * Supports case-insensitive matching and common variants:
- *   - "dev", "development" → DEV
- *   - "prod", "production" → PROD
- *   - "burst" → BURST
- *   - "unspecified", "" → UNSPECIFIED
+ * Parse a string into a UsageProfile enum value.
  *
- * @throws Error for unrecognized strings.
+ * Accepts case-insensitive inputs and common variants: the empty string maps to `UNSPECIFIED`; `"dev"` or `"development"` map to `DEV`; `"prod"` or `"production"` map to `PROD`; `"burst"` maps to `BURST`.
+ *
+ * @param s - The input string to parse.
+ * @returns The corresponding `UsageProfile` enum value.
+ * @throws Error if `s` is not a recognized usage profile (error message: `unknown usage profile: "<input>"`).
  */
 export function parseUsageProfile(s: string): UsageProfile {
   if (s === "") {
@@ -70,33 +72,40 @@ const stringMap: ReadonlyMap<UsageProfile, string> = new Map([
 ]);
 
 /**
- * Returns a lowercase string representation of the profile.
- * For known profiles: "unspecified", "prod", "dev", "burst".
- * For unknown profiles: "unknown(<value>)".
+ * Get the lowercase display string for a usage profile.
+ *
+ * @returns `"unspecified"`, `"prod"`, `"dev"`, or `"burst"` for known profiles; otherwise `unknown(<profile>)`
  */
 export function usageProfileString(profile: UsageProfile): string {
   return stringMap.get(profile) ?? `unknown(${profile})`;
 }
 
 /**
- * Returns the profile if it's a known value, or UNSPECIFIED for unknown values.
- * Enables forward compatibility when receiving profile values from newer spec versions.
+ * Normalize a UsageProfile to a known enum value.
+ *
+ * Returns `profile` when it is one of the recognized UsageProfile values; otherwise returns `UsageProfile.UNSPECIFIED`, enabling forward compatibility with newer spec values.
+ *
+ * @returns `profile` if it is a known UsageProfile; `UsageProfile.UNSPECIFIED` otherwise.
  */
 export function normalizeUsageProfile(profile: UsageProfile): UsageProfile {
   if (isValidUsageProfile(profile)) {
     return profile;
   }
+  console.warn(`Unknown usage profile (${profile}), treating as UNSPECIFIED`);
   return UsageProfile.UNSPECIFIED;
 }
 
 /**
- * Returns the default monthly usage hours for a profile.
- *   - PROD: 730 hours (24/7 operation)
- *   - DEV: 160 hours (~8 hours/day, 5 days/week)
- *   - BURST: 200 hours (plugin discretion)
- *   - UNSPECIFIED: 730 hours (defaults to production)
+ * Get the default monthly usage hours for a usage profile.
  *
- * Plugins have discretion to use different values based on their resource types.
+ * Mapping:
+ * - PROD => 730
+ * - DEV => 160
+ * - BURST => 200
+ * - UNSPECIFIED => 730 (defaults to production)
+ *
+ * @param profile - The usage profile to evaluate
+ * @returns The default number of hours per month for the specified profile
  */
 export function defaultMonthlyHours(profile: UsageProfile): number {
   switch (profile) {

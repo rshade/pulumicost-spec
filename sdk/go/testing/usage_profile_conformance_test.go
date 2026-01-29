@@ -16,6 +16,8 @@ import (
 // IMPORTANT: Do NOT use t.Parallel() in subtests below.
 // They share a single gRPC harness that will be closed on function exit.
 // See: CLAUDE.md pattern for subtests sharing TestHarness.
+//
+//nolint:gocognit // Table-driven test with RPC method switch; complexity is inherent
 func TestUsageProfileConformance(t *testing.T) {
 	plugin := plugintesting.NewMockPlugin()
 	harness := plugintesting.NewTestHarness(plugin)
@@ -25,141 +27,121 @@ func TestUsageProfileConformance(t *testing.T) {
 	client := harness.Client()
 	ctx := context.Background()
 
-	t.Run("GetProjectedCost_UNSPECIFIED_profile", func(t *testing.T) {
-		req := &pbc.GetProjectedCostRequest{
-			Resource: &pbc.ResourceDescriptor{
-				Provider:     "aws",
-				ResourceType: "ec2",
-				Region:       "us-east-1",
-			},
-			UsageProfile: pbc.UsageProfile_USAGE_PROFILE_UNSPECIFIED,
-		}
+	tests := []struct {
+		name           string
+		rpcMethod      string // "GetProjectedCost" or "GetRecommendations"
+		usageProfile   pbc.UsageProfile
+		provider       string
+		resourceType   string
+		region         string
+		filterCategory pbc.RecommendationCategory
+		checkCategory  bool
+	}{
+		// GetProjectedCost tests
+		{
+			name:         "GetProjectedCost_UNSPECIFIED_profile",
+			rpcMethod:    "GetProjectedCost",
+			usageProfile: pbc.UsageProfile_USAGE_PROFILE_UNSPECIFIED,
+			provider:     "aws",
+			resourceType: "ec2",
+			region:       "us-east-1",
+		},
+		{
+			name:         "GetProjectedCost_PROD_profile",
+			rpcMethod:    "GetProjectedCost",
+			usageProfile: pbc.UsageProfile_USAGE_PROFILE_PROD,
+			provider:     "aws",
+			resourceType: "ec2",
+			region:       "us-east-1",
+		},
+		{
+			name:         "GetProjectedCost_DEV_profile",
+			rpcMethod:    "GetProjectedCost",
+			usageProfile: pbc.UsageProfile_USAGE_PROFILE_DEV,
+			provider:     "aws",
+			resourceType: "ec2",
+			region:       "us-east-1",
+		},
+		{
+			name:         "GetProjectedCost_BURST_profile",
+			rpcMethod:    "GetProjectedCost",
+			usageProfile: pbc.UsageProfile_USAGE_PROFILE_BURST,
+			provider:     "aws",
+			resourceType: "ec2",
+			region:       "us-east-1",
+		},
+		{
+			name:         "GetProjectedCost_unknown_profile_treated_as_UNSPECIFIED",
+			rpcMethod:    "GetProjectedCost",
+			usageProfile: pbc.UsageProfile(999), // Unknown future value
+			provider:     "aws",
+			resourceType: "ec2",
+			region:       "us-east-1",
+		},
+		// GetRecommendations tests
+		{
+			name:         "GetRecommendations_with_usage_profile",
+			rpcMethod:    "GetRecommendations",
+			usageProfile: pbc.UsageProfile_USAGE_PROFILE_DEV,
+			provider:     "aws",
+		},
+		{
+			name:           "GetRecommendations_with_filter_and_profile",
+			rpcMethod:      "GetRecommendations",
+			usageProfile:   pbc.UsageProfile_USAGE_PROFILE_PROD,
+			provider:       "aws",
+			filterCategory: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
+			checkCategory:  true,
+		},
+	}
 
-		resp, err := client.GetProjectedCost(ctx, req)
-		if err != nil {
-			t.Fatalf("GetProjectedCost with UNSPECIFIED profile failed: %v", err)
-		}
-		if resp.GetCostPerMonth() <= 0 {
-			t.Errorf("Expected positive cost for UNSPECIFIED profile, got %f", resp.GetCostPerMonth())
-		}
-	})
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			switch tc.rpcMethod {
+			case "GetProjectedCost":
+				req := &pbc.GetProjectedCostRequest{
+					Resource: &pbc.ResourceDescriptor{
+						Provider:     tc.provider,
+						ResourceType: tc.resourceType,
+						Region:       tc.region,
+					},
+					UsageProfile: tc.usageProfile,
+				}
+				resp, err := client.GetProjectedCost(ctx, req)
+				if err != nil {
+					t.Fatalf("GetProjectedCost failed: %v", err)
+				}
+				if resp.GetCostPerMonth() <= 0 {
+					t.Errorf("Expected positive cost, got %f", resp.GetCostPerMonth())
+				}
 
-	t.Run("GetProjectedCost_PROD_profile", func(t *testing.T) {
-		req := &pbc.GetProjectedCostRequest{
-			Resource: &pbc.ResourceDescriptor{
-				Provider:     "aws",
-				ResourceType: "ec2",
-				Region:       "us-east-1",
-			},
-			UsageProfile: pbc.UsageProfile_USAGE_PROFILE_PROD,
-		}
-
-		resp, err := client.GetProjectedCost(ctx, req)
-		if err != nil {
-			t.Fatalf("GetProjectedCost with PROD profile failed: %v", err)
-		}
-		if resp.GetCostPerMonth() <= 0 {
-			t.Errorf("Expected positive cost for PROD profile, got %f", resp.GetCostPerMonth())
-		}
-	})
-
-	t.Run("GetProjectedCost_DEV_profile", func(t *testing.T) {
-		req := &pbc.GetProjectedCostRequest{
-			Resource: &pbc.ResourceDescriptor{
-				Provider:     "aws",
-				ResourceType: "ec2",
-				Region:       "us-east-1",
-			},
-			UsageProfile: pbc.UsageProfile_USAGE_PROFILE_DEV,
-		}
-
-		resp, err := client.GetProjectedCost(ctx, req)
-		if err != nil {
-			t.Fatalf("GetProjectedCost with DEV profile failed: %v", err)
-		}
-		if resp.GetCostPerMonth() <= 0 {
-			t.Errorf("Expected positive cost for DEV profile, got %f", resp.GetCostPerMonth())
-		}
-	})
-
-	t.Run("GetProjectedCost_BURST_profile", func(t *testing.T) {
-		req := &pbc.GetProjectedCostRequest{
-			Resource: &pbc.ResourceDescriptor{
-				Provider:     "aws",
-				ResourceType: "ec2",
-				Region:       "us-east-1",
-			},
-			UsageProfile: pbc.UsageProfile_USAGE_PROFILE_BURST,
-		}
-
-		resp, err := client.GetProjectedCost(ctx, req)
-		if err != nil {
-			t.Fatalf("GetProjectedCost with BURST profile failed: %v", err)
-		}
-		if resp.GetCostPerMonth() <= 0 {
-			t.Errorf("Expected positive cost for BURST profile, got %f", resp.GetCostPerMonth())
-		}
-	})
-
-	t.Run("GetProjectedCost_unknown_profile_treated_as_UNSPECIFIED", func(t *testing.T) {
-		req := &pbc.GetProjectedCostRequest{
-			Resource: &pbc.ResourceDescriptor{
-				Provider:     "aws",
-				ResourceType: "ec2",
-				Region:       "us-east-1",
-			},
-			UsageProfile: pbc.UsageProfile(999), // Unknown future value
-		}
-
-		// Plugin MUST treat unknown values as UNSPECIFIED (graceful degradation)
-		resp, err := client.GetProjectedCost(ctx, req)
-		if err != nil {
-			t.Fatalf("GetProjectedCost with unknown profile should succeed: %v", err)
-		}
-		if resp.GetCostPerMonth() <= 0 {
-			t.Errorf("Expected positive cost for unknown profile, got %f", resp.GetCostPerMonth())
-		}
-	})
-
-	t.Run("GetRecommendations_with_usage_profile", func(t *testing.T) {
-		req := &pbc.GetRecommendationsRequest{
-			Filter: &pbc.RecommendationFilter{
-				Provider: "aws",
-			},
-			UsageProfile: pbc.UsageProfile_USAGE_PROFILE_DEV,
-		}
-
-		resp, err := client.GetRecommendations(ctx, req)
-		if err != nil {
-			t.Fatalf("GetRecommendations with DEV profile failed: %v", err)
-		}
-		// Verify response is valid (recommendations may be empty but response should succeed)
-		if resp.GetSummary() == nil {
-			t.Error("Expected non-nil summary in recommendations response")
-		}
-	})
-
-	t.Run("GetRecommendations_with_filter_and_profile", func(t *testing.T) {
-		req := &pbc.GetRecommendationsRequest{
-			UsageProfile: pbc.UsageProfile_USAGE_PROFILE_PROD,
-			Filter: &pbc.RecommendationFilter{
-				Provider: "aws",
-				Category: pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST,
-			},
-		}
-
-		resp, err := client.GetRecommendations(ctx, req)
-		if err != nil {
-			t.Fatalf("GetRecommendations with PROD profile and filter failed: %v", err)
-		}
-		// Verify all returned recommendations match the filter category
-		for _, rec := range resp.GetRecommendations() {
-			if rec.GetCategory() != pbc.RecommendationCategory_RECOMMENDATION_CATEGORY_COST {
-				t.Errorf("Recommendation category mismatch: got %v, want COST",
-					rec.GetCategory())
+			case "GetRecommendations":
+				filter := &pbc.RecommendationFilter{Provider: tc.provider}
+				if tc.checkCategory {
+					filter.Category = tc.filterCategory
+				}
+				req := &pbc.GetRecommendationsRequest{
+					Filter:       filter,
+					UsageProfile: tc.usageProfile,
+				}
+				resp, err := client.GetRecommendations(ctx, req)
+				if err != nil {
+					t.Fatalf("GetRecommendations failed: %v", err)
+				}
+				if resp.GetSummary() == nil {
+					t.Error("Expected non-nil summary")
+				}
+				if tc.checkCategory {
+					for _, rec := range resp.GetRecommendations() {
+						if rec.GetCategory() != tc.filterCategory {
+							t.Errorf("Category mismatch: got %v, want %v",
+								rec.GetCategory(), tc.filterCategory)
+						}
+					}
+				}
 			}
-		}
-	})
+		})
+	}
 }
 
 // TestUsageProfileFieldPresence validates that usage_profile field is correctly
@@ -316,7 +298,7 @@ func TestOldPluginReceivesProfileRequests(t *testing.T) {
 func BenchmarkGetProjectedCost_WithProfile(b *testing.B) {
 	plugin := plugintesting.NewMockPlugin()
 	harness := plugintesting.NewTestHarness(plugin)
-	harness.Start(&testing.T{})
+	harness.Start(b)
 	defer harness.Stop()
 
 	client := harness.Client()
@@ -359,7 +341,7 @@ func BenchmarkGetProjectedCost_WithProfile(b *testing.B) {
 func BenchmarkGetRecommendations_WithProfile(b *testing.B) {
 	plugin := plugintesting.NewMockPlugin()
 	harness := plugintesting.NewTestHarness(plugin)
-	harness.Start(&testing.T{})
+	harness.Start(b)
 	defer harness.Stop()
 
 	client := harness.Client()

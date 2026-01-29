@@ -778,7 +778,8 @@ parallel subtests complete.
 
 ## Active Technologies
 
-- Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf, google.golang.org/grpc, zerolog (042-usage-profile-context)
+- Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf,
+  google.golang.org/grpc, zerolog (042-usage-profile-context)
 - N/A (stateless proto definitions and SDK helpers) (042-usage-profile-context)
 
 - Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`) (034-validation-bypass-metadata)
@@ -848,7 +849,8 @@ See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable doc
 
 ## Recent Changes
 
-- 042-usage-profile-context: Added Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf, google.golang.org/grpc, zerolog
+- 042-usage-profile-context: Added Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1,
+  google.golang.org/protobuf, google.golang.org/grpc, zerolog
 
 - 034-validation-bypass-metadata: Added Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`)
 

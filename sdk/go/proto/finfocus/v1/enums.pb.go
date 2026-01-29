@@ -782,7 +782,8 @@ func (PluginCapability) EnumDescriptor() ([]byte, []int) {
 //
 // Plugin Implementation Guidelines:
 //   - MUST treat unknown values as UNSPECIFIED (graceful degradation)
-//   - SHOULD log at INFO level when applying profile-specific behavior
+//   - SHOULD log at WARN level when unknown values are normalized
+//   - SHOULD log at INFO level when profile-specific behavior is applied
 //   - SHOULD document profile-specific behavior in plugin documentation
 //   - MAY use profile to influence recommendation priorities
 type UsageProfile int32
