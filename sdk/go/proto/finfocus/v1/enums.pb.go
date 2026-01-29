@@ -771,6 +771,94 @@ func (PluginCapability) EnumDescriptor() ([]byte, []int) {
 	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{11}
 }
 
+// UsageProfile represents the intended workload context for cost estimation.
+// Plugins use this to apply profile-appropriate defaults to cost calculations
+// and recommendations.
+//
+// Usage:
+//   - Core sets usage_profile in requests based on CLI flags (--profile=dev)
+//   - Plugins apply profile-specific behavior (e.g., reduced utilization for DEV)
+//   - Unknown values are treated as UNSPECIFIED for forward compatibility
+//
+// Plugin Implementation Guidelines:
+//   - MUST treat unknown values as UNSPECIFIED (graceful degradation)
+//   - SHOULD log at WARN level when unknown values are normalized
+//   - SHOULD log at INFO level when profile-specific behavior is applied
+//   - SHOULD document profile-specific behavior in plugin documentation
+//   - MAY use profile to influence recommendation priorities
+type UsageProfile int32
+
+const (
+	// Default value - no preference stated.
+	// Plugins apply their standard estimation behavior.
+	// Backward compatible with requests that don't specify a profile.
+	UsageProfile_USAGE_PROFILE_UNSPECIFIED UsageProfile = 0
+	// Production workload intent.
+	// Plugins should assume:
+	//   - Full-time utilization (730 hours/month for compute)
+	//   - Production-grade instance types
+	//   - High availability and redundancy considerations
+	//   - Longer retention periods for storage
+	UsageProfile_USAGE_PROFILE_PROD UsageProfile = 1
+	// Development workload intent.
+	// Plugins should assume:
+	//   - Reduced utilization (e.g., 160 hours/month for business hours)
+	//   - Burstable/cost-efficient instance types preferred
+	//   - Minimal redundancy requirements
+	//   - Shorter retention periods acceptable
+	UsageProfile_USAGE_PROFILE_DEV UsageProfile = 2
+	// Burst/temporary workload intent.
+	// Plugins should assume:
+	//   - High-intensity, short-duration usage
+	//   - Scale-out architectures
+	//   - Elevated data transfer/network costs
+	//   - Batch processing or load testing scenarios
+	UsageProfile_USAGE_PROFILE_BURST UsageProfile = 3
+)
+
+// Enum value maps for UsageProfile.
+var (
+	UsageProfile_name = map[int32]string{
+		0: "USAGE_PROFILE_UNSPECIFIED",
+		1: "USAGE_PROFILE_PROD",
+		2: "USAGE_PROFILE_DEV",
+		3: "USAGE_PROFILE_BURST",
+	}
+	UsageProfile_value = map[string]int32{
+		"USAGE_PROFILE_UNSPECIFIED": 0,
+		"USAGE_PROFILE_PROD":        1,
+		"USAGE_PROFILE_DEV":         2,
+		"USAGE_PROFILE_BURST":       3,
+	}
+)
+
+func (x UsageProfile) Enum() *UsageProfile {
+	p := new(UsageProfile)
+	*p = x
+	return p
+}
+
+func (x UsageProfile) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (UsageProfile) Descriptor() protoreflect.EnumDescriptor {
+	return file_finfocus_v1_enums_proto_enumTypes[12].Descriptor()
+}
+
+func (UsageProfile) Type() protoreflect.EnumType {
+	return &file_finfocus_v1_enums_proto_enumTypes[12]
+}
+
+func (x UsageProfile) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use UsageProfile.Descriptor instead.
+func (UsageProfile) EnumDescriptor() ([]byte, []int) {
+	return file_finfocus_v1_enums_proto_rawDescGZIP(), []int{12}
+}
+
 var File_finfocus_v1_enums_proto protoreflect.FileDescriptor
 
 const file_finfocus_v1_enums_proto_rawDesc = "" +
@@ -856,7 +944,12 @@ const file_finfocus_v1_enums_proto_rawDesc = "" +
 	"\x1ePLUGIN_CAPABILITY_PRICING_SPEC\x10\t\x12#\n" +
 	"\x1fPLUGIN_CAPABILITY_ESTIMATE_COST\x10\n" +
 	"\x12-\n" +
-	")PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS\x10\vB\xa8\x01\n" +
+	")PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS\x10\v*u\n" +
+	"\fUsageProfile\x12\x1d\n" +
+	"\x19USAGE_PROFILE_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12USAGE_PROFILE_PROD\x10\x01\x12\x15\n" +
+	"\x11USAGE_PROFILE_DEV\x10\x02\x12\x17\n" +
+	"\x13USAGE_PROFILE_BURST\x10\x03B\xa8\x01\n" +
 	"\x0fcom.finfocus.v1B\n" +
 	"EnumsProtoP\x01Z<github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1;pbc\xa2\x02\x03FXX\xaa\x02\vFinfocus.V1\xca\x02\vFinfocus\\V1\xe2\x02\x17Finfocus\\V1\\GPBMetadata\xea\x02\fFinfocus::V1b\x06proto3"
 
@@ -872,7 +965,7 @@ func file_finfocus_v1_enums_proto_rawDescGZIP() []byte {
 	return file_finfocus_v1_enums_proto_rawDescData
 }
 
-var file_finfocus_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 12)
+var file_finfocus_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 13)
 var file_finfocus_v1_enums_proto_goTypes = []any{
 	(FocusServiceCategory)(0),            // 0: finfocus.v1.FocusServiceCategory
 	(FocusChargeCategory)(0),             // 1: finfocus.v1.FocusChargeCategory
@@ -886,6 +979,7 @@ var file_finfocus_v1_enums_proto_goTypes = []any{
 	(GrowthType)(0),                      // 9: finfocus.v1.GrowthType
 	(RecommendationReason)(0),            // 10: finfocus.v1.RecommendationReason
 	(PluginCapability)(0),                // 11: finfocus.v1.PluginCapability
+	(UsageProfile)(0),                    // 12: finfocus.v1.UsageProfile
 }
 var file_finfocus_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -905,7 +999,7 @@ func file_finfocus_v1_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_finfocus_v1_enums_proto_rawDesc), len(file_finfocus_v1_enums_proto_rawDesc)),
-			NumEnums:      12,
+			NumEnums:      13,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

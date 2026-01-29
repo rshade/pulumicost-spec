@@ -1975,6 +1975,50 @@ func (p *MyPlugin) DryRun(ctx context.Context, req *pbc.DryRunRequest) (
 }
 ```
 
+### Profile-Aware DryRun Responses (FR-007)
+
+Plugins SHOULD document profile-specific behavior through DryRun simulation parameters.
+Use the reserved `"usage_profile"` key in `simulation_parameters` to indicate how field
+support varies by workload context:
+
+```go
+// Request DryRun with profile context
+req := &pbc.DryRunRequest{
+    Resource: resource,
+    SimulationParameters: map[string]string{
+        "usage_profile": "prod",
+    },
+}
+
+// In handler, adjust field mappings based on profile
+func (p *MyPlugin) DryRun(ctx context.Context, req *pbc.DryRunRequest) (
+    *pbc.DryRunResponse, error,
+) {
+    params := req.GetSimulationParameters()
+    profile, _ := pluginsdk.ParseUsageProfile(params["usage_profile"])
+
+    mappings := pluginsdk.AllFieldsWithStatus(
+        pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_SUPPORTED,
+    )
+
+    // Profile-dependent field support
+    if profile == pbc.UsageProfile_USAGE_PROFILE_DEV {
+        mappings = pluginsdk.SetFieldStatus(
+            mappings,
+            "commitment_discount_id",
+            pbc.FieldSupportStatus_FIELD_SUPPORT_STATUS_UNSUPPORTED,
+            pluginsdk.WithConditionDescription("Commitments not applicable for DEV"),
+        )
+    }
+
+    return pluginsdk.NewDryRunResponse(
+        pluginsdk.WithFieldMappings(mappings),
+        pluginsdk.WithResourceTypeSupported(true),
+        pluginsdk.WithConfigurationValid(true),
+    ), nil
+}
+```
+
 ### Performance Requirements
 
 DryRun operations should be fast and not make external API calls:

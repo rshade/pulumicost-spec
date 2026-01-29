@@ -184,3 +184,49 @@ enum PluginCapability {
   // Plugin implements DismissRecommendation RPC
   PLUGIN_CAPABILITY_DISMISS_RECOMMENDATIONS = 11;
 }
+
+// UsageProfile represents the intended workload context for cost estimation.
+// Plugins use this to apply profile-appropriate defaults to cost calculations
+// and recommendations.
+//
+// Usage:
+//   - Core sets usage_profile in requests based on CLI flags (--profile=dev)
+//   - Plugins apply profile-specific behavior (e.g., reduced utilization for DEV)
+//   - Unknown values are treated as UNSPECIFIED for forward compatibility
+//
+// Plugin Implementation Guidelines:
+//   - MUST treat unknown values as UNSPECIFIED (graceful degradation)
+//   - SHOULD log at WARN level when unknown values are normalized
+//   - SHOULD log at INFO level when profile-specific behavior is applied
+//   - SHOULD document profile-specific behavior in plugin documentation
+//   - MAY use profile to influence recommendation priorities
+enum UsageProfile {
+  // Default value - no preference stated.
+  // Plugins apply their standard estimation behavior.
+  // Backward compatible with requests that don't specify a profile.
+  USAGE_PROFILE_UNSPECIFIED = 0;
+
+  // Production workload intent.
+  // Plugins should assume:
+  //   - Full-time utilization (730 hours/month for compute)
+  //   - Production-grade instance types
+  //   - High availability and redundancy considerations
+  //   - Longer retention periods for storage
+  USAGE_PROFILE_PROD = 1;
+
+  // Development workload intent.
+  // Plugins should assume:
+  //   - Reduced utilization (e.g., 160 hours/month for business hours)
+  //   - Burstable/cost-efficient instance types preferred
+  //   - Minimal redundancy requirements
+  //   - Shorter retention periods acceptable
+  USAGE_PROFILE_DEV = 2;
+
+  // Burst/temporary workload intent.
+  // Plugins should assume:
+  //   - High-intensity, short-duration usage
+  //   - Scale-out architectures
+  //   - Elevated data transfer/network costs
+  //   - Batch processing or load testing scenarios
+  USAGE_PROFILE_BURST = 3;
+}
