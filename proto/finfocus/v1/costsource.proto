@@ -291,6 +291,17 @@ message GetProjectedCostRequest {
   // Default: false (normal projection behavior).
   // When true, the response will contain dry_run_result instead of cost data.
   bool dry_run = 5;
+
+  // usage_profile signals the intended workload context.
+  // Plugins use this to apply profile-appropriate defaults.
+  // Examples:
+  //   - DEV: Assume 160 hours/month, prefer burstable instances
+  //   - PROD: Assume 730 hours/month, use production instance types
+  //   - BURST: Assume high data transfer, scale-out patterns
+  //
+  // When UNSPECIFIED (default), plugins apply their standard behavior.
+  // Unknown values are treated as UNSPECIFIED for forward compatibility.
+  UsageProfile usage_profile = 6;
 }
 
 // GetProjectedCostResponse contains projected cost information.
@@ -1119,6 +1130,16 @@ message GetRecommendationsRequest {
   //   - Each ResourceDescriptor must have valid provider and resource_type
   //   - Empty target_resources is valid (analyze all resources in scope)
   repeated ResourceDescriptor target_resources = 6;
+
+  // usage_profile provides context for recommendation generation.
+  // Plugins may adjust recommendation priorities based on profile:
+  //   - DEV: Prioritize cost savings over performance
+  //   - PROD: Balance reliability with cost optimization
+  //   - BURST: Focus on scale-out and resource efficiency
+  //
+  // When UNSPECIFIED (default), plugins use their standard prioritization.
+  // Unknown values are treated as UNSPECIFIED for forward compatibility.
+  UsageProfile usage_profile = 7;
 }
 
 // GetRecommendationsResponse contains the recommendations and summary.

@@ -20,3 +20,11 @@ export { FocusRecordBuilder } from "./builders/focus-record.js";
 
 // Utilities
 export { recommendationsIterator } from "./utils/pagination.js";
+export {
+  getAllUsageProfiles,
+  isValidUsageProfile,
+  parseUsageProfile,
+  usageProfileString,
+  normalizeUsageProfile,
+  defaultMonthlyHours,
+} from "./utils/usage-profile.js";
