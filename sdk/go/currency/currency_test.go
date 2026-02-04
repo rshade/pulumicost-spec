@@ -341,3 +341,73 @@ func TestErrCurrencyNotFound(t *testing.T) {
 			currency.ErrCurrencyNotFound.Error(), "currency not found")
 	}
 }
+
+// TestGetCurrency_Symbols tests that the Symbol field is correctly populated for major currencies.
+func TestGetCurrency_Symbols(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		code   string
+		symbol string
+	}{
+		{"USD", "$"},
+		{"EUR", "€"},
+		{"GBP", "£"},
+		{"JPY", "¥"},
+		{"CNY", "¥"},
+		{"INR", "₹"},
+		{"KRW", "₩"},
+		{"THB", "฿"},
+		{"RUB", "₽"},
+		{"BRL", "R$"},
+		{"CAD", "C$"},
+		{"AUD", "A$"},
+		{"HKD", "HK$"},
+		{"SGD", "S$"},
+		{"PLN", "zł"},
+		{"ILS", "₪"},
+		{"TRY", "₺"},
+		{"UAH", "₴"},
+		{"VND", "₫"},
+		// Currencies with empty symbols
+		{"CHF", ""},
+		{"XAU", ""},
+		{"XDR", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.code, func(t *testing.T) {
+			t.Parallel()
+			c, err := currency.GetCurrency(tt.code)
+			if err != nil {
+				t.Fatalf("GetCurrency(%q) returned error: %v", tt.code, err)
+			}
+			if c.Symbol != tt.symbol {
+				t.Errorf("Currency %s Symbol = %q, want %q", tt.code, c.Symbol, tt.symbol)
+			}
+		})
+	}
+}
+
+// TestGetCurrency_ReturnsCopy_Symbol tests that mutating returned currency doesn't affect Symbol field.
+func TestGetCurrency_ReturnsCopy_Symbol(t *testing.T) {
+	t.Parallel()
+
+	c, err := currency.GetCurrency("USD")
+	if err != nil {
+		t.Fatalf("GetCurrency(%q) returned error: %v", "USD", err)
+	}
+
+	// Mutate the Symbol field
+	c.Symbol = "HACKED"
+
+	// Fetch again and ensure canonical data is unchanged
+	canonical, err := currency.GetCurrency("USD")
+	if err != nil {
+		t.Fatalf("GetCurrency(%q) returned error: %v", "USD", err)
+	}
+
+	if canonical.Symbol != "$" {
+		t.Errorf("GetCurrency returned mutable Symbol: got %q, want %q", canonical.Symbol, "$")
+	}
+}
