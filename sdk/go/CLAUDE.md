@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is the **Go SDK** for the FinFocus specification, providing a complete runtime library for implementing and testing
 cost source plugins. The SDK consists of six main packages:
 
-- **`currency/`** - ISO 4217 currency validation and metadata with zero-allocation validation
+- **`currency/`** - ISO 4217 currency validation, metadata, symbols, and amount formatting
 - **`pluginsdk/`** - Plugin development SDK with environment variable handling and gRPC server utilities
   - **`pluginsdk/mapping/`** - Property extraction helpers for AWS, Azure, GCP (SKU, region)
 - **`pricing/`** - Domain types, validation, and billing mode enumerations
@@ -51,15 +51,17 @@ cd ../../ && make test && make lint
 
 ### Package Structure
 
-**`currency/` Package - ISO 4217 Currency Validation**
+**`currency/` Package - ISO 4217 Currency Validation and Formatting**
 
-- `currency.go` - Currency struct, complete ISO 4217 data (180+ currencies), and metadata functions
+- `currency.go` - Currency struct (with Symbol field), complete ISO 4217 data (180+ currencies)
+- `symbol.go` - GetSymbol(), FormatAmount(), FormatAmountNoSymbol() helper functions
 - `validate.go` - Zero-allocation IsValid() function for currency code validation
 - `doc.go` - Comprehensive package documentation with usage examples
 - `currency_test.go` - Table-driven tests covering all validation scenarios
-- `benchmark_test.go` - Performance benchmarks targeting <15 ns/op, 0 allocs/op
-- Performance: <15 ns/op, 0 B/op, 0 allocs/op for validation
-- Pattern: Package-level slice variables for zero-allocation validation (follows registry pattern)
+- `symbol_test.go` - Tests for symbol lookup and amount formatting
+- `benchmark_test.go` - Performance benchmarks for all functions
+- Performance: IsValid() <15 ns/op, GetSymbol() <20 ns/op, FormatAmount() <500 ns/op
+- Pattern: Package-level map for O(1) lookup with zero-allocation validation
 
 **`registry/` Package - Plugin Registry Domain Types**
 
@@ -285,7 +287,7 @@ if err := pricing.ValidatePricingSpec(jsonData); err != nil {
 }
 ```
 
-### Currency Validation
+### Currency Validation and Formatting
 
 ```go
 import "github.com/rshade/finfocus-spec/sdk/go/currency"
@@ -295,16 +297,28 @@ if !currency.IsValid("USD") {
     return errors.New("invalid currency")
 }
 
-// Get currency metadata
+// Get currency metadata (includes Symbol field)
 usd, err := currency.GetCurrency("USD")
 if err != nil {
     return err
 }
-fmt.Printf("%s uses %d decimal places\n", usd.Name, usd.MinorUnits)
+fmt.Printf("%s (%s) uses %d decimal places\n", usd.Name, usd.Symbol, usd.MinorUnits)
+
+// Get currency symbol (falls back to code if no symbol defined)
+symbol := currency.GetSymbol("USD")  // "$"
+symbol = currency.GetSymbol("CHF")   // "CHF" (no symbol, uses code)
+
+// Format monetary amounts with symbol and proper decimals
+formatted := currency.FormatAmount(1234.56, "USD")  // "$1,234.56"
+formatted = currency.FormatAmount(1234.56, "JPY")   // "¥1,235" (0 decimals)
+formatted = currency.FormatAmount(1234.567, "KWD")  // "د.ك1,234.567" (3 decimals)
+
+// Format without symbol
+noSymbol := currency.FormatAmountNoSymbol(1234.56, "USD")  // "1,234.56"
 
 // List all currencies
 for _, c := range currency.AllCurrencies() {
-    fmt.Printf("%s: %s\n", c.Code, c.Name)
+    fmt.Printf("%s: %s (%s)\n", c.Code, c.Name, c.Symbol)
 }
 ```
 

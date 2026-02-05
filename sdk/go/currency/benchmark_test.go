@@ -75,9 +75,88 @@ func BenchmarkAllCurrencies(b *testing.B) {
 
 // Benchmark String() method.
 func BenchmarkCurrency_String(b *testing.B) {
-	c := currency.Currency{Code: "USD", Name: "US Dollar", NumericCode: "840", MinorUnits: 2}
+	c := currency.Currency{Code: "USD", Name: "US Dollar", NumericCode: "840", MinorUnits: 2, Symbol: "$"}
 	b.ReportAllocs()
 	for range b.N {
 		_ = c.String()
 	}
+}
+
+// Benchmark GetSymbol() - targeting <20 ns/op, 0 allocs/op.
+func BenchmarkGetSymbol(b *testing.B) {
+	b.Run("USD", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.GetSymbol("USD")
+		}
+	})
+
+	b.Run("EUR", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.GetSymbol("EUR")
+		}
+	})
+
+	b.Run("CHF_NoSymbol", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.GetSymbol("CHF")
+		}
+	})
+
+	b.Run("Invalid", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.GetSymbol("XYZ")
+		}
+	})
+}
+
+// Benchmark FormatAmount() - targeting <500 ns/op.
+func BenchmarkFormatAmount(b *testing.B) {
+	b.Run("USD_Simple", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.FormatAmount(1234.56, "USD")
+		}
+	})
+
+	b.Run("USD_Large", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.FormatAmount(1234567890.12, "USD")
+		}
+	})
+
+	b.Run("JPY_NoDecimals", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.FormatAmount(123456789, "JPY")
+		}
+	})
+
+	b.Run("KWD_ThreeDecimals", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.FormatAmount(1234.567, "KWD")
+		}
+	})
+}
+
+// Benchmark FormatAmountNoSymbol().
+func BenchmarkFormatAmountNoSymbol(b *testing.B) {
+	b.Run("USD_Simple", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.FormatAmountNoSymbol(1234.56, "USD")
+		}
+	})
+
+	b.Run("USD_Large", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_ = currency.FormatAmountNoSymbol(1234567890.12, "USD")
+		}
+	})
 }
