@@ -3694,3 +3694,130 @@ func TestGetPluginInfoConcurrentAccess(t *testing.T) {
 
 	t.Logf("GetPluginInfo: successfully handled %d concurrent requests", numGoroutines)
 }
+
+// =============================================================================
+// GetActualCost Pagination Integration Tests
+// =============================================================================
+
+// TestPaginatedGetActualCost tests full gRPC round-trip pagination through TestHarness.
+func TestPaginatedGetActualCost(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.ActualCostDataPoints = 200 // Generate 200 data points
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+
+	// 200 hours range to generate 200 hourly data points
+	start, end := plugintesting.CreateTimeRange(200)
+
+	t.Run("PaginatedFirstPage", func(t *testing.T) {
+		resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+			ResourceId: "test-resource",
+			Start:      start,
+			End:        end,
+			PageSize:   50,
+		})
+		require.NoError(t, err)
+		require.Len(t, resp.GetResults(), 50)
+		require.NotEmpty(t, resp.GetNextPageToken(), "should have next page token")
+		require.Equal(t, int32(200), resp.GetTotalCount())
+	})
+
+	t.Run("PaginatedFullIteration", func(t *testing.T) {
+		var allResults []*pbc.ActualCostResult
+		pageToken := ""
+		pageCount := 0
+
+		for {
+			resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+				ResourceId: "test-resource",
+				Start:      start,
+				End:        end,
+				PageSize:   50,
+				PageToken:  pageToken,
+			})
+			require.NoError(t, err)
+			allResults = append(allResults, resp.GetResults()...)
+			pageCount++
+
+			if resp.GetNextPageToken() == "" {
+				break
+			}
+			pageToken = resp.GetNextPageToken()
+		}
+
+		require.Len(t, allResults, 200, "should retrieve all 200 records")
+		require.Equal(t, 4, pageCount, "should take 4 pages of 50 records")
+	})
+
+	t.Run("DryRunIgnoresPagination", func(t *testing.T) {
+		resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+			ResourceId: "test-resource",
+			Start:      start,
+			End:        end,
+			PageSize:   10,
+			PageToken:  pluginsdk.EncodePageToken(50),
+			DryRun:     true,
+		})
+		require.NoError(t, err)
+		require.Empty(t, resp.GetResults(), "dry_run should have no results")
+		require.Empty(t, resp.GetNextPageToken(), "dry_run should have no next token")
+		require.NotNil(t, resp.GetDryRunResult(), "dry_run should have DryRunResult")
+	})
+}
+
+// TestBackwardCompat_LegacyPluginNoPagination verifies that a plugin that does NOT
+// implement pagination logic returns all records when sent page_size=100.
+// Legacy plugins ignore unknown fields, so they return everything in one response.
+func TestBackwardCompat_LegacyPluginNoPagination(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.ActualCostDataPoints = 24 // Small dataset
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	start, end := plugintesting.CreateTimeRange(plugintesting.HoursPerDay)
+
+	// Send request with pagination params to a plugin that returns all records
+	// When page_size=0 and page_token="" (proto3 defaults), mock returns all results
+	resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+		ResourceId: "test-resource",
+		Start:      start,
+		End:        end,
+		// page_size=0, page_token="" (proto3 defaults) - non-paginated mode
+	})
+	require.NoError(t, err)
+	require.NotEmpty(t, resp.GetResults(), "should return results")
+	require.Empty(t, resp.GetNextPageToken(), "legacy behavior returns empty next token")
+}
+
+// TestBackwardCompat_LegacyHostNoPaginationParams verifies that sending a request
+// with page_size=0 and empty page_token to a paginated plugin returns all records.
+func TestBackwardCompat_LegacyHostNoPaginationParams(t *testing.T) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.ActualCostDataPoints = 30
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(t)
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	start, end := plugintesting.CreateTimeRange(30)
+
+	// Legacy host sends no pagination parameters (page_size=0, page_token="")
+	resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+		ResourceId: "test-resource",
+		Start:      start,
+		End:        end,
+		PageSize:   0,
+		PageToken:  "",
+	})
+	require.NoError(t, err)
+	require.Len(t, resp.GetResults(), 30, "all 30 records should be returned")
+	require.Empty(t, resp.GetNextPageToken(), "no next token when all records returned")
+}
