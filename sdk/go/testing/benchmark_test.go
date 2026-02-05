@@ -1174,3 +1174,64 @@ func BenchmarkGetPluginInfo_Concurrent(b *testing.B) {
 		}
 	})
 }
+
+// BenchmarkGetActualCostPaginated benchmarks paginated GetActualCost through TestHarness.
+//
+//nolint:gocognit // Benchmark pagination loop inherently has nested control flow.
+func BenchmarkGetActualCostPaginated(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.ActualCostDataPoints = 1000
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	start, end := plugintesting.CreateTimeRange(1000)
+
+	b.Run("SinglePage", func(b *testing.B) {
+		req := &pbc.GetActualCostRequest{
+			ResourceId: "bench-resource",
+			Start:      start,
+			End:        end,
+			PageSize:   50,
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			_, err := client.GetActualCost(ctx, req)
+			if err != nil {
+				b.Fatalf("GetActualCost() failed: %v", err)
+			}
+		}
+	})
+
+	b.Run("FullIteration", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			pageToken := ""
+			totalRecords := 0
+			for {
+				resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+					ResourceId: "bench-resource",
+					Start:      start,
+					End:        end,
+					PageSize:   100,
+					PageToken:  pageToken,
+				})
+				if err != nil {
+					b.Fatalf("GetActualCost() failed: %v", err)
+				}
+				totalRecords += len(resp.GetResults())
+				if resp.GetNextPageToken() == "" {
+					break
+				}
+				pageToken = resp.GetNextPageToken()
+			}
+			if totalRecords != 1000 {
+				b.Fatalf("expected 1000 records, got %d", totalRecords)
+			}
+		}
+	})
+}

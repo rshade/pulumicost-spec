@@ -66,6 +66,7 @@ const (
 	FieldFilterActionType    = "filter_action_type"
 	FieldPageSize            = "page_size"
 	FieldTotalSavings        = "total_savings"
+	FieldResultCount         = "result_count"
 
 	// GetBudgets-specific fields.
 	FieldIncludeStatus   = "include_status"

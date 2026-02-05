@@ -18,6 +18,7 @@ utilities for plugin development.
 - [Prometheus Metrics](#prometheus-metrics)
 - [Testing Utilities](#testing-utilities)
 - [Error Helpers](#error-helpers)
+- [Pagination Helpers](#pagination-helpers)
 - [FOCUS 1.2 Cost Records](#focus-12-cost-records)
 - [FOCUS 1.3 Extensions](#focus-13-extensions)
 - [Contract Commitment Dataset](#contract-commitment-dataset-focus-13)
@@ -1280,6 +1281,73 @@ Available validation functions:
 - `ValidateRecommendation(rec)` - Validates recommendation has all required fields
 - `ValidateResourceRecommendationInfo(res)` - Validates resource info fields
 - `ValidateRecommendationImpact(impact)` - Validates impact with ISO 4217 currency
+
+## Pagination Helpers
+
+The SDK provides pagination helpers for both `GetRecommendations` and `GetActualCost` RPCs.
+
+### Plugin-Side: PaginateActualCosts
+
+Use `PaginateActualCosts` in your plugin's `GetActualCost` handler to paginate results:
+
+```go
+func (p *MyPlugin) GetActualCost(
+    ctx context.Context,
+    req *pbc.GetActualCostRequest,
+) (*pbc.GetActualCostResponse, error) {
+    allResults, err := p.fetchCostData(ctx, req)
+    if err != nil {
+        return nil, err
+    }
+    page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(
+        allResults, req.PageSize, req.PageToken,
+    )
+    if err != nil {
+        return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+    }
+    return pluginsdk.NewActualCostResponse(
+        pluginsdk.WithResults(page),
+        pluginsdk.WithNextPageToken(nextToken),
+        pluginsdk.WithTotalCount(totalCount),
+    ), nil
+}
+```
+
+Constants:
+
+- `DefaultPageSize = 50` - Used when `page_size` is 0
+- `MaxPageSize = 1000` - Maximum allowed page size (larger values are clamped)
+
+### Host-Side: ActualCostIterator
+
+Use `ActualCostIterator` to consume paginated responses without managing tokens manually:
+
+```go
+iter := pluginsdk.NewActualCostIterator(ctx,
+    func(ctx context.Context, pageToken string, pageSize int32) (*pbc.GetActualCostResponse, error) {
+        return client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+            ResourceId: "i-abc123",
+            PageSize:   pageSize,
+            PageToken:  pageToken,
+        })
+    },
+    100, // page size
+)
+
+for iter.Next() {
+    record := iter.Record()
+    // process record
+}
+if err := iter.Err(); err != nil {
+    // handle error
+}
+fmt.Printf("Total records: %d\n", iter.TotalCount())
+```
+
+### Response Options
+
+- `WithNextPageToken(token)` - Sets the continuation token on the response
+- `WithTotalCount(count)` - Sets the total record count on the response
 
 ## FOCUS 1.2 Cost Records
 

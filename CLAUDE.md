@@ -782,6 +782,11 @@ parallel subtests complete.
 
 ## Active Technologies
 
+- Go 1.25.6 (per go.mod) + Protocol Buffers v3, TypeScript (SDK) +
+  google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1
+  (044-actual-cost-pagination)
+- N/A (stateless pagination with offset-based tokens) (044-actual-cost-pagination)
+
 - Markdown documentation (no code changes) + N/A (documentation only) (043-docs-drift-audit)
 
 - Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf,
@@ -855,14 +860,15 @@ See [sdk/go/CLAUDE.md](./sdk/go/CLAUDE.md) for detailed environment variable doc
 
 ## Recent Changes
 
+- 044-actual-cost-pagination: Added Go 1.25.6 (per go.mod) + Protocol Buffers v3,
+  TypeScript (SDK) + google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1
+
 - 043-docs-drift-audit: Added Markdown documentation (no code changes) + N/A (documentation only)
 
 - 042-usage-profile-context: Added Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1,
   google.golang.org/protobuf, google.golang.org/grpc, zerolog
 
-- 034-validation-bypass-metadata: Added Go 1.25.5 (per go.mod) + Standard library only (`time`, `encoding/json`)
-
-  - `RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY = 5`
+- `RecommendationCategory_RECOMMENDATION_CATEGORY_ANOMALY = 5`
   - `RecommendationActionType_RECOMMENDATION_ACTION_TYPE_INVESTIGATE = 12`
   - Enables cost anomaly recommendations alongside optimization recommendations
   - Test coverage: Comprehensive conformance tests in `sdk/go/testing/anomaly_conformance_test.go`

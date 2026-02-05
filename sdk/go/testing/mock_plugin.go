@@ -634,9 +634,17 @@ func (m *MockPlugin) GetActualCost(
 		results = append(results, result)
 	}
 
+	// Apply pagination if requested
+	page, nextToken, totalCount, err := paginateMockActualCosts(results, req.GetPageSize(), req.GetPageToken())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	return &pbc.GetActualCostResponse{
-		Results:      results,
-		FallbackHint: m.FallbackHint,
+		Results:       page,
+		FallbackHint:  m.FallbackHint,
+		NextPageToken: nextToken,
+		TotalCount:    totalCount,
 	}, nil
 }
 
@@ -1540,6 +1548,61 @@ func paginateMockRecommendations(
 	}
 
 	return page, nextToken, nil
+}
+
+// paginateMockActualCosts applies pagination to actual cost results.
+// Returns the page of results, next page token, total count, and any error.
+// When page_size is 0 and page_token is empty (proto3 defaults), returns all results
+// for backward compatibility with non-paginated plugins.
+func paginateMockActualCosts(
+	results []*pbc.ActualCostResult,
+	pageSize int32,
+	pageToken string,
+) ([]*pbc.ActualCostResult, string, int32, error) {
+	totalCount := int32(len(results)) //nolint:gosec // length will not exceed int32 max
+
+	// Backward compatibility: when both page_size and page_token are defaults,
+	// return all results (non-paginated behavior)
+	if pageSize <= 0 && pageToken == "" {
+		return results, "", totalCount, nil
+	}
+
+	// Use default page size if not specified
+	if pageSize <= 0 {
+		pageSize = mockDefaultPageSize
+	}
+
+	// Decode offset from page token
+	var offset int
+	if pageToken != "" {
+		decoded, err := decodeMockPageToken(pageToken)
+		if err != nil {
+			return nil, "", 0, err
+		}
+		offset = decoded
+	}
+
+	// Handle offset beyond range
+	if offset >= len(results) {
+		return []*pbc.ActualCostResult{}, "", totalCount, nil
+	}
+
+	// Calculate end index
+	end := offset + int(pageSize)
+	if end > len(results) {
+		end = len(results)
+	}
+
+	// Get page slice
+	page := results[offset:end]
+
+	// Generate next token if more results exist
+	var nextToken string
+	if end < len(results) {
+		nextToken = encodeMockPageToken(end)
+	}
+
+	return page, nextToken, totalCount, nil
 }
 
 // encodeMockPageToken encodes an offset as a base64 page token.
