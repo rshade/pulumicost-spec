@@ -362,7 +362,7 @@ func BenchmarkActualCostDataSizes(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			plugin := plugintesting.NewMockPlugin()
-			plugin.ActualCostDataPoints = tc.dataPoints
+			plugin.SetActualCostDataPoints(tc.dataPoints)
 
 			harness := plugintesting.NewTestHarness(plugin)
 			harness.Start(&testing.T{})
@@ -1180,7 +1180,7 @@ func BenchmarkGetPluginInfo_Concurrent(b *testing.B) {
 //nolint:gocognit // Benchmark pagination loop inherently has nested control flow.
 func BenchmarkGetActualCostPaginated(b *testing.B) {
 	plugin := plugintesting.NewMockPlugin()
-	plugin.ActualCostDataPoints = 1000
+	plugin.SetActualCostDataPoints(1000)
 	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()

@@ -32,12 +32,19 @@ export async function* recommendationsIterator(
   } while (nextPageToken);
 }
 
+/** Default page size used when the caller does not specify one. */
+const DEFAULT_PAGE_SIZE = 50;
+
 export async function* actualCostIterator(
   client: CostSourceClient,
   baseRequest: GetActualCostRequest
 ): AsyncGenerator<ActualCostResult, void, unknown> {
   // Clone request to avoid mutating the original
   const request = clone(GetActualCostRequestSchema, baseRequest);
+  // Default pageSize to avoid triggering legacy "return all" server behaviour
+  if (!request.pageSize) {
+    request.pageSize = DEFAULT_PAGE_SIZE;
+  }
   // Preserve caller-supplied pageToken for resuming pagination
   let nextPageToken = request.pageToken ?? "";
 

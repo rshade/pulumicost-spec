@@ -3702,7 +3702,7 @@ func TestGetPluginInfoConcurrentAccess(t *testing.T) {
 // TestPaginatedGetActualCost tests full gRPC round-trip pagination through TestHarness.
 func TestPaginatedGetActualCost(t *testing.T) {
 	plugin := plugintesting.NewMockPlugin()
-	plugin.ActualCostDataPoints = 200 // Generate 200 data points
+	plugin.SetActualCostDataPoints(200) // Generate 200 data points
 	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
@@ -3774,7 +3774,7 @@ func TestPaginatedGetActualCost(t *testing.T) {
 // Legacy plugins ignore unknown fields, so they return everything in one response.
 func TestBackwardCompat_LegacyPluginNoPagination(t *testing.T) {
 	plugin := plugintesting.NewMockPlugin()
-	plugin.ActualCostDataPoints = 24 // Small dataset
+	plugin.SetActualCostDataPoints(24) // Small dataset
 	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()
@@ -3800,7 +3800,7 @@ func TestBackwardCompat_LegacyPluginNoPagination(t *testing.T) {
 // with page_size=0 and empty page_token to a paginated plugin returns all records.
 func TestBackwardCompat_LegacyHostNoPaginationParams(t *testing.T) {
 	plugin := plugintesting.NewMockPlugin()
-	plugin.ActualCostDataPoints = 30
+	plugin.SetActualCostDataPoints(30)
 	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(t)
 	defer harness.Stop()

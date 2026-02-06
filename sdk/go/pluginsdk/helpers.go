@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/rshade/finfocus-spec/sdk/go/currency"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
@@ -1072,9 +1074,18 @@ func PaginateActualCosts(
 		// Clamp totalCount to int32 max to avoid overflow
 		totalCount := int32(total)
 		if total > math.MaxInt32 {
+			log.Warn().
+				Int("total", total).
+				Int32("clamped_to", math.MaxInt32).
+				Msg("total_count clamped to int32 max; actual count exceeds representable range")
 			totalCount = math.MaxInt32
 		}
 		return results, "", totalCount, nil
+	}
+
+	// Reject negative page sizes
+	if pageSize < 0 {
+		return nil, "", 0, fmt.Errorf("page_size must be non-negative, got %d", pageSize)
 	}
 
 	// Determine effective page size
@@ -1099,6 +1110,10 @@ func PaginateActualCosts(
 	// Clamp totalCount to int32 max to avoid overflow
 	totalCount := int32(total)
 	if total > math.MaxInt32 {
+		log.Warn().
+			Int("total", total).
+			Int32("clamped_to", math.MaxInt32).
+			Msg("total_count clamped to int32 max; actual count exceeds representable range")
 		totalCount = math.MaxInt32
 	}
 

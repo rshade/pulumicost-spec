@@ -1315,8 +1315,11 @@ func (p *MyPlugin) GetActualCost(
 
 Constants:
 
-- `DefaultPageSize = 50` - Used when `page_size` is 0
+- `DefaultPageSize = 50` - Used when `page_size` is 0 with a non-empty `page_token`
+  (i.e., when pagination has been explicitly started)
 - `MaxPageSize = 1000` - Maximum allowed page size (larger values are clamped)
+- When both `page_size <= 0` AND `page_token == ""` (proto3 defaults), the helper
+  returns all results for backward compatibility with legacy/unpaginated callers
 
 ### Host-Side: ActualCostIterator
 
