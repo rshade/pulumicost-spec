@@ -2146,7 +2146,7 @@ func testActualCosts(n int) []*pbc.ActualCostResult {
 // When a page_token is provided, page_size=0 should apply the DefaultPageSize.
 func TestPaginateActualCosts_FirstPageDefaultSize(t *testing.T) {
 	results := testActualCosts(100)
-	
+
 	// Legacy behavior: page_size=0 with no page_token returns all results
 	page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(results, 0, "")
 	if err != nil {
@@ -2161,7 +2161,7 @@ func TestPaginateActualCosts_FirstPageDefaultSize(t *testing.T) {
 	if totalCount != 100 {
 		t.Errorf("expected total_count=100, got %d", totalCount)
 	}
-	
+
 	// Modern behavior: page_size=0 with a page_token applies DefaultPageSize
 	token := pluginsdk.EncodePageToken(0)
 	page, nextToken, totalCount, err = pluginsdk.PaginateActualCosts(results, 0, token)
@@ -2340,7 +2340,7 @@ func TestPaginateActualCosts_IntegerOverflowProtection(t *testing.T) {
 	// Note: We can't actually create a slice with >2^31 elements in tests (would require 16+ GB RAM),
 	// but we can verify the logic by checking the implementation handles large counts correctly.
 	// This test documents the expected behavior.
-	
+
 	// Test case 1: Normal size - no clamping
 	results := testActualCosts(1000)
 	_, _, totalCount, err := pluginsdk.PaginateActualCosts(results, 50, "")
@@ -2350,7 +2350,7 @@ func TestPaginateActualCosts_IntegerOverflowProtection(t *testing.T) {
 	if totalCount != 1000 {
 		t.Errorf("expected total_count=1000, got %d", totalCount)
 	}
-	
+
 	// Test case 2: Verify legacy behavior returns all records
 	page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(results, 0, "")
 	if err != nil {
