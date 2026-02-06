@@ -11,6 +11,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -111,7 +112,7 @@ type MockPlugin struct {
 	EstimateCostDelay  time.Duration
 
 	// Data generation configuration
-	ActualCostDataPoints int
+	actualCostDataPoints atomic.Int64
 	BaseHourlyRate       float64
 	Currency             string
 
@@ -161,7 +162,7 @@ type MockPlugin struct {
 
 // NewMockPlugin creates a new mock plugin with default configuration.
 func NewMockPlugin() *MockPlugin {
-	return &MockPlugin{
+	p := &MockPlugin{
 		PluginName:         "mock-test-plugin",
 		SupportedProviders: []string{"aws", "azure", "gcp", "kubernetes"},
 		SupportedResources: map[string][]string{
@@ -170,9 +171,8 @@ func NewMockPlugin() *MockPlugin {
 			"gcp":        {computeEngineResourceType, cloudStorageResourceType, cloudFunctionsResourceType, "compute"},
 			"kubernetes": {namespaceResourceType, "pod", "service"},
 		},
-		ActualCostDataPoints: defaultDataPoints,
-		BaseHourlyRate:       defaultBaseRate,
-		Currency:             "USD",
+		BaseHourlyRate: defaultBaseRate,
+		Currency:       "USD",
 		// Pre-populate with sample recommendations for filtering tests
 		RecommendationsConfig: RecommendationsConfig{
 			Recommendations: GenerateSampleRecommendations(defaultRecommendationCount),
@@ -194,6 +194,8 @@ func NewMockPlugin() *MockPlugin {
 			"preemptible": defaultPreemptibleRisk,
 		},
 	}
+	p.actualCostDataPoints.Store(defaultDataPoints)
+	return p
 }
 
 // ConfigurableErrorMockPlugin creates a mock plugin that can be configured to return errors.
@@ -214,6 +216,13 @@ func SlowMockPlugin() *MockPlugin {
 	plugin.PricingSpecDelay = pricingSpecDelayMs * time.Millisecond
 	plugin.EstimateCostDelay = estimateCostDelayMs * time.Millisecond
 	return plugin
+}
+
+// SetActualCostDataPoints sets the number of data points to generate for GetActualCost responses.
+//
+// Thread Safety: This method uses atomic operations and is safe for concurrent use.
+func (m *MockPlugin) SetActualCostDataPoints(n int) {
+	m.actualCostDataPoints.Store(int64(n))
 }
 
 // SetFallbackHint sets the fallback hint to be returned in GetActualCost responses.
@@ -609,7 +618,7 @@ func (m *MockPlugin) GetActualCost(
 
 	// Generate mock cost data points
 	duration := endTime.Sub(startTime)
-	dataPoints := int(math.Min(float64(m.ActualCostDataPoints), duration.Hours()+1))
+	dataPoints := int(math.Min(float64(m.actualCostDataPoints.Load()), duration.Hours()+1))
 
 	results := make([]*pbc.ActualCostResult, 0, dataPoints)
 
@@ -1559,7 +1568,12 @@ func paginateMockActualCosts(
 	pageSize int32,
 	pageToken string,
 ) ([]*pbc.ActualCostResult, string, int32, error) {
-	totalCount := int32(len(results)) //nolint:gosec // length will not exceed int32 max
+	var totalCount int32
+	if len(results) > math.MaxInt32 {
+		totalCount = math.MaxInt32
+	} else {
+		totalCount = int32(len(results)) //nolint:gosec // safe after bounds check above
+	}
 
 	// Backward compatibility: when both page_size and page_token are defaults,
 	// return all results (non-paginated behavior)

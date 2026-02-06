@@ -1150,6 +1150,10 @@ type GetActualCostRequest struct {
 	// Default: 50 (matches DefaultPageSize). Maximum: 1000 (matches MaxPageSize).
 	// Values <= 0 use the default. Values > 1000 are clamped to 1000.
 	// Ignored when dry_run is true.
+	//
+	// Backward compatibility: when page_size == 0 AND page_token == ""
+	// (both proto3 defaults), servers MAY return all results in a single
+	// response for backward compatibility with non-paginated callers.
 	PageSize int32 `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	// page_token is the continuation token from a previous GetActualCost response.
 	// Empty string requests the first page of results.

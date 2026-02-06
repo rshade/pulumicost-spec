@@ -782,14 +782,14 @@ parallel subtests complete.
 
 ## Active Technologies
 
-- Go 1.25.6 (per go.mod) + Protocol Buffers v3, TypeScript (SDK) +
+- Go 1.25.7 (per go.mod) + Protocol Buffers v3, TypeScript (SDK) +
   google.golang.org/protobuf, google.golang.org/grpc, buf v1.32.1
   (044-actual-cost-pagination)
 - N/A (stateless pagination with offset-based tokens) (044-actual-cost-pagination)
 
 - Markdown documentation (no code changes) + N/A (documentation only) (043-docs-drift-audit)
 
-- Go 1.25.6 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf,
+- Go 1.25.7 (per go.mod) + Protocol Buffers v3, buf v1.32.1, google.golang.org/protobuf,
   google.golang.org/grpc, zerolog (042-usage-profile-context)
 - N/A (stateless proto definitions and SDK helpers) (042-usage-profile-context)
 

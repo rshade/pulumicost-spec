@@ -223,6 +223,10 @@ export type GetActualCostRequest = Message<"finfocus.v1.GetActualCostRequest"> &
    * Values <= 0 use the default. Values > 1000 are clamped to 1000.
    * Ignored when dry_run is true.
    *
+   * Backward compatibility: when page_size == 0 AND page_token == ""
+   * (both proto3 defaults), servers MAY return all results in a single
+   * response for backward compatibility with non-paginated callers.
+   *
    * @generated from field: int32 page_size = 7;
    */
   pageSize: number;

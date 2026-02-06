@@ -362,7 +362,7 @@ func BenchmarkActualCostDataSizes(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			plugin := plugintesting.NewMockPlugin()
-			plugin.ActualCostDataPoints = tc.dataPoints
+			plugin.SetActualCostDataPoints(tc.dataPoints)
 
 			harness := plugintesting.NewTestHarness(plugin)
 			harness.Start(&testing.T{})
@@ -1180,7 +1180,7 @@ func BenchmarkGetPluginInfo_Concurrent(b *testing.B) {
 //nolint:gocognit // Benchmark pagination loop inherently has nested control flow.
 func BenchmarkGetActualCostPaginated(b *testing.B) {
 	plugin := plugintesting.NewMockPlugin()
-	plugin.ActualCostDataPoints = 1000
+	plugin.SetActualCostDataPoints(1000)
 	harness := plugintesting.NewTestHarness(plugin)
 	harness.Start(&testing.T{})
 	defer harness.Stop()
@@ -1207,11 +1207,13 @@ func BenchmarkGetActualCostPaginated(b *testing.B) {
 	})
 
 	b.Run("FullIteration", func(b *testing.B) {
+		const maxIterations = 200 // safety cap to prevent infinite loops
 		b.ReportAllocs()
 		b.ResetTimer()
 		for range b.N {
 			pageToken := ""
 			totalRecords := 0
+			iterations := 0
 			for {
 				resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 					ResourceId: "bench-resource",
@@ -1224,6 +1226,10 @@ func BenchmarkGetActualCostPaginated(b *testing.B) {
 					b.Fatalf("GetActualCost() failed: %v", err)
 				}
 				totalRecords += len(resp.GetResults())
+				iterations++
+				if iterations > maxIterations {
+					b.Fatalf("exceeded %d iterations; possible infinite pagination loop", maxIterations)
+				}
 				if resp.GetNextPageToken() == "" {
 					break
 				}
