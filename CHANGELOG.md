@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6](https://github.com/rshade/finfocus-spec/compare/v0.5.5...v0.5.6) (2026-02-07)
+
+
+### Added
+
+* **currency:** add symbol support and amount formatting ([#357](https://github.com/rshade/finfocus-spec/issues/357)) ([698cbe3](https://github.com/rshade/finfocus-spec/commit/698cbe326ef326499b8c6b4d20d451eb9926c1c0))
+
 ## [0.5.5](https://github.com/rshade/finfocus-spec/compare/v0.5.4...v0.5.5) (2026-01-29)
 
 
