@@ -230,6 +230,15 @@ message GetActualCostRequest {
   // Default: false (normal cost retrieval behavior).
   // When true, the response will contain dry_run_result instead of results.
   bool dry_run = 6;
+  // page_size is the maximum number of cost records to return per page.
+  // Default: 50 (matches DefaultPageSize). Maximum: 1000 (matches MaxPageSize).
+  // Values <= 0 use the default. Values > 1000 are clamped to 1000.
+  // Ignored when dry_run is true.
+  int32 page_size = 7;
+  // page_token is the continuation token from a previous GetActualCost response.
+  // Empty string requests the first page of results.
+  // Ignored when dry_run is true.
+  string page_token = 8;
 }
 
 // GetActualCostResponse contains the list of actual cost results.
@@ -242,6 +251,15 @@ message GetActualCostResponse {
   // was true. Empty/nil when dry_run was false or not set.
   // When populated, results field will be empty.
   DryRunResponse dry_run_result = 3;
+  // next_page_token is the token for retrieving the next page of results.
+  // Non-empty when additional pages are available. Empty when this is the
+  // last page or when all results fit in a single response.
+  string next_page_token = 4;
+  // total_count is the total number of matching cost records across all pages.
+  // Optional: may be 0 if the total is expensive to compute.
+  // When populated by the SDK PaginateActualCosts helper, this is automatically
+  // set to the slice length.
+  int32 total_count = 5;
 }
 
 // GetProjectedCostRequest contains the resource descriptor for projected cost calculation.
