@@ -1,6 +1,6 @@
 module github.com/rshade/finfocus-spec
 
-go 1.25.6
+go 1.25.7
 
 require (
 	connectrpc.com/connect v1.19.1
