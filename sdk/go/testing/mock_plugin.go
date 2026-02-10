@@ -222,6 +222,9 @@ func SlowMockPlugin() *MockPlugin {
 //
 // Thread Safety: This method uses atomic operations and is safe for concurrent use.
 func (m *MockPlugin) SetActualCostDataPoints(n int) {
+	if n < 0 {
+		n = 0
+	}
 	m.actualCostDataPoints.Store(int64(n))
 }
 
@@ -1514,6 +1517,10 @@ func matchesMockFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter
 // We maintain a local constant to avoid circular imports (pluginsdk imports testing).
 const mockDefaultPageSize int32 = 50
 
+// mockMaxPageSize is the maximum page size for mock pagination.
+// NOTE: This intentionally mirrors pluginsdk.MaxPageSize (1000) for consistency.
+const mockMaxPageSize int32 = 1000
+
 // paginateMockRecommendations applies pagination to recommendations.
 // Returns the page of recommendations, next page token, and any error.
 func paginateMockRecommendations(
@@ -1524,6 +1531,9 @@ func paginateMockRecommendations(
 	// Use default page size if not specified
 	if pageSize <= 0 {
 		pageSize = mockDefaultPageSize
+	}
+	if pageSize > mockMaxPageSize {
+		pageSize = mockMaxPageSize
 	}
 
 	// Decode offset from page token
@@ -1568,9 +1578,11 @@ func paginateMockActualCosts(
 	pageSize int32,
 	pageToken string,
 ) ([]*pbc.ActualCostResult, string, int32, error) {
-	totalCount := int32(len(results)) //nolint:gosec // mock data; length capped below
+	var totalCount int32
 	if len(results) > math.MaxInt32 {
 		totalCount = math.MaxInt32
+	} else {
+		totalCount = int32(len(results)) //nolint:gosec // safe after bounds check above
 	}
 
 	// Backward compatibility: when both page_size and page_token are defaults,
@@ -1582,6 +1594,9 @@ func paginateMockActualCosts(
 	// Use default page size if not specified
 	if pageSize <= 0 {
 		pageSize = mockDefaultPageSize
+	}
+	if pageSize > mockMaxPageSize {
+		pageSize = mockMaxPageSize
 	}
 
 	// Decode offset from page token

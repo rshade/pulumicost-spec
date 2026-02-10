@@ -3730,6 +3730,7 @@ func TestPaginatedGetActualCost(t *testing.T) {
 		var allResults []*pbc.ActualCostResult
 		pageToken := ""
 		pageCount := 0
+		const maxPages = 100 // safety cap to prevent infinite loops
 
 		for {
 			resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
@@ -3742,6 +3743,8 @@ func TestPaginatedGetActualCost(t *testing.T) {
 			require.NoError(t, err)
 			allResults = append(allResults, resp.GetResults()...)
 			pageCount++
+			require.LessOrEqual(t, pageCount, maxPages,
+				"exceeded %d pages; possible infinite pagination loop", maxPages)
 
 			if resp.GetNextPageToken() == "" {
 				break
@@ -3770,7 +3773,7 @@ func TestPaginatedGetActualCost(t *testing.T) {
 }
 
 // TestBackwardCompat_LegacyPluginNoPagination verifies that a plugin that does NOT
-// implement pagination logic returns all records when sent page_size=100.
+// implement pagination logic returns all records when sent proto3 default page_size=0.
 // Legacy plugins ignore unknown fields, so they return everything in one response.
 func TestBackwardCompat_LegacyPluginNoPagination(t *testing.T) {
 	plugin := plugintesting.NewMockPlugin()

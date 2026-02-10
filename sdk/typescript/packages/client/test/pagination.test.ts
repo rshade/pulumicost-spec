@@ -176,6 +176,72 @@ describe('actualCostIterator', () => {
     expect(results).toHaveLength(50);
   });
 
+  it('aborts after too many consecutive empty pages', async () => {
+    let callCount = 0;
+    server.use(
+      http.post(
+        'https://plugin-test.example.com/finfocus.v1.CostSourceService/GetActualCost',
+        async () => {
+          callCount++;
+          // Always return empty results with a continuation token
+          return HttpResponse.json({
+            results: [],
+            nextPageToken: Buffer.from(callCount.toString()).toString('base64'),
+            totalCount: 0,
+          });
+        }
+      )
+    );
+
+    const request = create(GetActualCostRequestSchema, {
+      resourceId: 'i-abc123',
+      pageSize: 50,
+    });
+
+    await expect(async () => {
+      for await (const _ of actualCostIterator(client, request)) {
+        // consume
+      }
+    }).rejects.toThrow('Pagination safety: exceeded 10 consecutive empty pages');
+  });
+
+  it('resets empty page counter when results are returned', async () => {
+    let callCount = 0;
+    server.use(
+      http.post(
+        'https://plugin-test.example.com/finfocus.v1.CostSourceService/GetActualCost',
+        async () => {
+          callCount++;
+          // Alternate: 5 empty pages, then 1 page with results, then done
+          if (callCount <= 5) {
+            return HttpResponse.json({
+              results: [],
+              nextPageToken: Buffer.from(callCount.toString()).toString('base64'),
+              totalCount: 10,
+            });
+          }
+          return HttpResponse.json({
+            results: createMockResults(10),
+            nextPageToken: "",
+            totalCount: 10,
+          });
+        }
+      )
+    );
+
+    const request = create(GetActualCostRequestSchema, {
+      resourceId: 'i-abc123',
+      pageSize: 50,
+    });
+
+    const results: unknown[] = [];
+    for await (const result of actualCostIterator(client, request)) {
+      results.push(result);
+    }
+
+    expect(results).toHaveLength(10);
+  });
+
   it('does not mutate the original request', async () => {
     server.use(paginatedActualCostHandler(100, 50));
 

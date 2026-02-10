@@ -251,12 +251,12 @@ func TestActualCostIterator_MaxEmptyPagesExhausted(t *testing.T) {
 	if iter.Err() == nil {
 		t.Fatal("expected error after empty page exhaustion, got nil")
 	}
-	if !errors.Is(iter.Err(), context.Canceled) {
-		// Should be a pagination safety error, not a context error
-		expectedMsg := "pagination safety: exceeded 10 consecutive empty pages with continuation tokens"
-		if iter.Err().Error() != expectedMsg {
-			t.Errorf("expected pagination safety error, got %v", iter.Err())
-		}
+	if errors.Is(iter.Err(), context.Canceled) {
+		t.Fatalf("expected pagination safety error, got context.Canceled")
+	}
+	expectedMsg := "pagination safety: exceeded 10 consecutive empty pages with continuation tokens"
+	if iter.Err().Error() != expectedMsg {
+		t.Errorf("expected pagination safety error %q, got %q", expectedMsg, iter.Err().Error())
 	}
 	if len(collected) != 0 {
 		t.Errorf("expected 0 records, got %d", len(collected))
@@ -279,5 +279,25 @@ func TestActualCostIterator_NilResponse(t *testing.T) {
 	}
 	if iter.Err() == nil {
 		t.Fatal("expected error for nil response, got nil")
+	}
+}
+
+// BenchmarkActualCostIterator_Next benchmarks the common iteration path
+// for performance regression tracking.
+func BenchmarkActualCostIterator_Next(b *testing.B) {
+	allResults := testActualCosts(1000)
+	fetchFn := mockFetchFn(allResults)
+	ctx := context.Background()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		iter := pluginsdk.NewActualCostIterator(ctx, fetchFn, 100)
+		for iter.Next() {
+			_ = iter.Record()
+		}
+		if err := iter.Err(); err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }

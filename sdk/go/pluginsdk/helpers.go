@@ -1068,9 +1068,14 @@ func PaginateActualCosts(
 ) ([]*pbc.ActualCostResult, string, int32, error) {
 	total := len(results)
 
+	// Normalize negative page sizes to 0 (proto contract: <=0 means use default)
+	if pageSize < 0 {
+		pageSize = 0
+	}
+
 	// Handle legacy hosts: if no pagination params are provided, return all results
 	// This maintains backward compatibility with hosts that don't use pagination
-	if pageSize <= 0 && pageToken == "" {
+	if pageSize == 0 && pageToken == "" {
 		// Clamp totalCount to int32 max to avoid overflow
 		totalCount := int32(total)
 		if total > math.MaxInt32 {
@@ -1081,11 +1086,6 @@ func PaginateActualCosts(
 			totalCount = math.MaxInt32
 		}
 		return results, "", totalCount, nil
-	}
-
-	// Reject negative page sizes
-	if pageSize < 0 {
-		return nil, "", 0, fmt.Errorf("page_size must be non-negative, got %d", pageSize)
 	}
 
 	// Determine effective page size

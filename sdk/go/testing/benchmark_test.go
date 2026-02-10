@@ -1207,11 +1207,13 @@ func BenchmarkGetActualCostPaginated(b *testing.B) {
 	})
 
 	b.Run("FullIteration", func(b *testing.B) {
+		const maxIterations = 200 // safety cap to prevent infinite loops
 		b.ReportAllocs()
 		b.ResetTimer()
 		for range b.N {
 			pageToken := ""
 			totalRecords := 0
+			iterations := 0
 			for {
 				resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 					ResourceId: "bench-resource",
@@ -1224,6 +1226,10 @@ func BenchmarkGetActualCostPaginated(b *testing.B) {
 					b.Fatalf("GetActualCost() failed: %v", err)
 				}
 				totalRecords += len(resp.GetResults())
+				iterations++
+				if iterations > maxIterations {
+					b.Fatalf("exceeded %d iterations; possible infinite pagination loop", maxIterations)
+				}
 				if resp.GetNextPageToken() == "" {
 					break
 				}

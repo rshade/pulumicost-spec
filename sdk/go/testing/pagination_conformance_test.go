@@ -221,10 +221,9 @@ func TestPaginationConformance_OversizedPage(t *testing.T) {
 
 	start, end := plugintesting.CreateTimeRange(500)
 
-	pageSizes := []int32{10, 50, 100, 200}
+	pageSizes := []int32{10, 50, 100, 200, 2000}
 
-	for _, ps := range pageSizes {
-		pageSize := ps // capture for closure
+	for _, pageSize := range pageSizes {
 		t.Run(fmt.Sprintf("pageSize=%d", pageSize), func(t *testing.T) {
 			resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
 				ResourceId: "i-abc123",
@@ -233,8 +232,13 @@ func TestPaginationConformance_OversizedPage(t *testing.T) {
 				PageSize:   pageSize,
 			})
 			require.NoError(t, err)
-			require.LessOrEqual(t, int32(len(resp.GetResults())), pageSize,
-				"page should not exceed requested page_size=%d", pageSize)
+			if pageSize <= 1000 {
+				require.LessOrEqual(t, int32(len(resp.GetResults())), pageSize,
+					"page should not exceed requested page_size=%d", pageSize)
+			} else {
+				require.LessOrEqual(t, len(resp.GetResults()), 1000,
+					"page should be clamped to MaxPageSize=1000 for page_size=%d", pageSize)
+			}
 		})
 	}
 }

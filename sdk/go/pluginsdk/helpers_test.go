@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
@@ -2147,35 +2148,40 @@ func testActualCosts(n int) []*pbc.ActualCostResult {
 func TestPaginateActualCosts_FirstPageDefaultSize(t *testing.T) {
 	results := testActualCosts(100)
 
-	// Legacy behavior: page_size=0 with no page_token returns all results
-	page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(results, 0, "")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(page) != 100 {
-		t.Errorf("expected all 100 results for legacy behavior, got %d", len(page))
-	}
-	if nextToken != "" {
-		t.Errorf("expected no next token when all records returned, got %s", nextToken)
-	}
-	if totalCount != 100 {
-		t.Errorf("expected total_count=100, got %d", totalCount)
+	tests := []struct {
+		name          string
+		pageSize      int32
+		pageToken     string
+		wantLen       int
+		wantNextEmpty bool
+		wantTotal     int32
+	}{
+		{
+			name:          "legacy_no_pagination",
+			pageSize:      0,
+			pageToken:     "",
+			wantLen:       100,
+			wantNextEmpty: true,
+			wantTotal:     100,
+		},
+		{
+			name:          "modern_default_page_size",
+			pageSize:      0,
+			pageToken:     pluginsdk.EncodePageToken(0),
+			wantLen:       pluginsdk.DefaultPageSize,
+			wantNextEmpty: false,
+			wantTotal:     100,
+		},
 	}
 
-	// Modern behavior: page_size=0 with a page_token applies DefaultPageSize
-	token := pluginsdk.EncodePageToken(0)
-	page, nextToken, totalCount, err = pluginsdk.PaginateActualCosts(results, 0, token)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(page) != pluginsdk.DefaultPageSize {
-		t.Errorf("expected %d results with page_token, got %d", pluginsdk.DefaultPageSize, len(page))
-	}
-	if nextToken == "" {
-		t.Error("expected next token but got empty")
-	}
-	if totalCount != 100 {
-		t.Errorf("expected total_count=100, got %d", totalCount)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(results, tc.pageSize, tc.pageToken)
+			require.NoError(t, err)
+			require.Len(t, page, tc.wantLen)
+			require.Equal(t, tc.wantNextEmpty, nextToken == "", "nextToken empty mismatch")
+			require.Equal(t, tc.wantTotal, totalCount)
+		})
 	}
 }
 
@@ -2339,59 +2345,84 @@ func TestPaginateActualCosts_FullIteration(t *testing.T) {
 func TestPaginateActualCosts_IntegerOverflowProtection(t *testing.T) {
 	// Note: We can't actually create a slice with >2^31 elements in tests (would require 16+ GB RAM),
 	// but we can verify the logic by checking the implementation handles large counts correctly.
-	// This test documents the expected behavior.
-
-	// Test case 1: Normal size - no clamping
 	results := testActualCosts(1000)
-	_, _, totalCount, err := pluginsdk.PaginateActualCosts(results, 50, "")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if totalCount != 1000 {
-		t.Errorf("expected total_count=1000, got %d", totalCount)
+
+	tests := []struct {
+		name          string
+		pageSize      int32
+		pageToken     string
+		wantLen       int
+		wantNextEmpty bool
+		wantTotal     int32
+	}{
+		{
+			name:          "normal_count_no_clamping",
+			pageSize:      50,
+			pageToken:     "",
+			wantLen:       50,
+			wantNextEmpty: false,
+			wantTotal:     1000,
+		},
+		{
+			name:          "legacy_large_dataset",
+			pageSize:      0,
+			pageToken:     "",
+			wantLen:       1000,
+			wantNextEmpty: true,
+			wantTotal:     1000,
+		},
 	}
 
-	// Test case 2: Verify legacy behavior returns all records
-	page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(results, 0, "")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(page) != 1000 {
-		t.Errorf("expected 1000 results for legacy call, got %d", len(page))
-	}
-	if nextToken != "" {
-		t.Errorf("expected no next token for legacy call, got %s", nextToken)
-	}
-	if totalCount != 1000 {
-		t.Errorf("expected total_count=1000, got %d", totalCount)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(results, tc.pageSize, tc.pageToken)
+			require.NoError(t, err)
+			require.Len(t, page, tc.wantLen)
+			require.Equal(t, tc.wantNextEmpty, nextToken == "", "nextToken empty mismatch")
+			require.Equal(t, tc.wantTotal, totalCount)
+		})
 	}
 }
 
 // TestPaginateActualCosts_NegativePageSize verifies that a negative page_size
-// returns an error instead of silently proceeding.
+// is normalized to the default instead of returning an error (proto contract: <=0 uses default).
 func TestPaginateActualCosts_NegativePageSize(t *testing.T) {
 	results := testActualCosts(100)
 
-	// Negative page_size with a page_token should return an error
-	_, _, _, err := pluginsdk.PaginateActualCosts(results, -1, pluginsdk.EncodePageToken(0))
-	if err == nil {
-		t.Fatal("expected error for negative page_size with page_token, got nil")
-	}
-	expectedMsg := "page_size must be non-negative, got -1"
-	if err.Error() != expectedMsg {
-		t.Errorf("expected error %q, got %q", expectedMsg, err.Error())
+	tests := []struct {
+		name          string
+		pageSize      int32
+		pageToken     string
+		wantLen       int
+		wantNextEmpty bool
+		wantTotal     int32
+	}{
+		{
+			name:          "negative_with_token_normalizes",
+			pageSize:      -1,
+			pageToken:     pluginsdk.EncodePageToken(0),
+			wantLen:       pluginsdk.DefaultPageSize,
+			wantNextEmpty: false,
+			wantTotal:     100,
+		},
+		{
+			name:          "negative_without_token_legacy",
+			pageSize:      -1,
+			pageToken:     "",
+			wantLen:       100,
+			wantNextEmpty: true,
+			wantTotal:     100,
+		},
 	}
 
-	// Negative page_size without page_token hits backward-compat path (returns all results)
-	page, _, totalCount, err := pluginsdk.PaginateActualCosts(results, -1, "")
-	if err != nil {
-		t.Fatalf("unexpected error for negative page_size without page_token: %v", err)
-	}
-	if len(page) != 100 {
-		t.Errorf("expected 100 results in backward-compat mode, got %d", len(page))
-	}
-	if totalCount != 100 {
-		t.Errorf("expected total_count=100, got %d", totalCount)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(results, tc.pageSize, tc.pageToken)
+			require.NoError(t, err)
+			require.Len(t, page, tc.wantLen)
+			require.Equal(t, tc.wantNextEmpty, nextToken == "", "nextToken empty mismatch")
+			require.Equal(t, tc.wantTotal, totalCount)
+		})
 	}
 }
 
