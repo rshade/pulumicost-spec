@@ -975,6 +975,10 @@ func PaginateRecommendations(
 		effectivePageSize = DefaultPageSize
 	}
 	if effectivePageSize > MaxPageSize {
+		log.Warn().
+			Int("requested_page_size", int(pageSize)).
+			Int("max_page_size", MaxPageSize).
+			Msg("page_size exceeded maximum; clamped to MaxPageSize")
 		effectivePageSize = MaxPageSize
 	}
 
@@ -1029,6 +1033,9 @@ func DecodePageToken(token string) (int, error) {
 	}
 	if offset < 0 {
 		return 0, errors.New("page token offset cannot be negative")
+	}
+	if offset > math.MaxInt32 {
+		return 0, errors.New("page token offset exceeds maximum allowed value")
 	}
 	return offset, nil
 }
@@ -1094,6 +1101,10 @@ func PaginateActualCosts(
 		effectivePageSize = DefaultPageSize
 	}
 	if effectivePageSize > MaxPageSize {
+		log.Warn().
+			Int("requested_page_size", int(pageSize)).
+			Int("max_page_size", MaxPageSize).
+			Msg("page_size exceeded maximum; clamped to MaxPageSize")
 		effectivePageSize = MaxPageSize
 	}
 

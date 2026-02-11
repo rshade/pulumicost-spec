@@ -34,6 +34,11 @@ export async function* recommendationsIterator(
   do {
     request.pageToken = nextPageToken;
     const response = await client.getRecommendations(request);
+    if (!response) {
+      throw new Error(
+        `getRecommendations returned null response (pageToken: "${nextPageToken || "initial"}")`
+      );
+    }
 
     if (response.recommendations.length === 0 && response.nextPageToken) {
       emptyPageCount++;
@@ -72,6 +77,11 @@ export async function* actualCostIterator(
   do {
     request.pageToken = nextPageToken;
     const response = await client.getActualCost(request);
+    if (!response) {
+      throw new Error(
+        `getActualCost returned null response (pageToken: "${nextPageToken || "initial"}")`
+      );
+    }
 
     if (response.results.length === 0 && response.nextPageToken) {
       emptyPageCount++;

@@ -2,6 +2,7 @@ package pluginsdk_test
 
 import (
 	"context"
+	"encoding/base64"
 	"math"
 	"strings"
 	"testing"
@@ -718,6 +719,72 @@ func TestEncodeDecodePageToken(t *testing.T) {
 			t.Errorf("expected offset %d, got %d", tc.offset, decoded)
 		}
 	}
+}
+
+// TestDecodePageToken_ErrorCases tests DecodePageToken error handling for various invalid inputs.
+func TestDecodePageToken_ErrorCases(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name        string
+		token       string
+		expectError string
+	}{
+		{
+			name:        "invalid base64",
+			token:       "not-valid-base64!!!",
+			expectError: "malformed page token",
+		},
+		{
+			name:        "non-numeric decoded content",
+			token:       b64encode("abc"),
+			expectError: "invalid page token value",
+		},
+		{
+			name:        "negative offset",
+			token:       b64encode("-1"),
+			expectError: "page token offset cannot be negative",
+		},
+		{
+			name:        "offset exceeds MaxInt32",
+			token:       b64encode("2147483648"), // math.MaxInt32 + 1
+			expectError: "page token offset exceeds maximum allowed value",
+		},
+		{
+			name:        "offset is MaxInt64",
+			token:       b64encode("9223372036854775807"),
+			expectError: "page token offset exceeds maximum allowed value",
+		},
+		{
+			name:        "empty decoded content",
+			token:       b64encode(""),
+			expectError: "invalid page token value",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			_, err := pluginsdk.DecodePageToken(tc.token)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tc.expectError)
+		})
+	}
+}
+
+// TestDecodePageToken_MaxInt32Succeeds verifies that math.MaxInt32 is a valid offset.
+func TestDecodePageToken_MaxInt32Succeeds(t *testing.T) {
+	t.Parallel()
+
+	token := b64encode("2147483647") // math.MaxInt32
+	offset, err := pluginsdk.DecodePageToken(token)
+	require.NoError(t, err)
+	assert.Equal(t, math.MaxInt32, offset)
+}
+
+// b64encode is a test helper for creating base64-encoded page tokens from raw strings.
+func b64encode(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
 }
 
 // =============================================================================

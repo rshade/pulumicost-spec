@@ -260,6 +260,28 @@ describe('actualCostIterator', () => {
     expect(request.pageToken).toBe(originalToken);
   });
 
+  it('throws when server returns null response body', async () => {
+    server.use(
+      http.post(
+        'https://plugin-test.example.com/finfocus.v1.CostSourceService/GetActualCost',
+        async () => {
+          return HttpResponse.json(null);
+        }
+      )
+    );
+
+    const request = create(GetActualCostRequestSchema, {
+      resourceId: 'i-abc123',
+      pageSize: 50,
+    });
+
+    await expect(async () => {
+      for await (const _ of actualCostIterator(client, request)) {
+        // consume
+      }
+    }).rejects.toThrow(); // Transport or null guard catches null response
+  });
+
   it('defaults pageSize to 50 when not specified', async () => {
     // Track what pageSize the server receives
     let receivedPageSize = 0;
@@ -343,5 +365,26 @@ describe('recommendationsIterator', () => {
     }
 
     expect(results).toHaveLength(120);
+  });
+
+  it('throws when server returns null response body', async () => {
+    server.use(
+      http.post(
+        'https://plugin-test.example.com/finfocus.v1.CostSourceService/GetRecommendations',
+        async () => {
+          return HttpResponse.json(null);
+        }
+      )
+    );
+
+    const request = create(GetRecommendationsRequestSchema, {
+      pageSize: 50,
+    });
+
+    await expect(async () => {
+      for await (const _ of recommendationsIterator(client, request)) {
+        // consume
+      }
+    }).rejects.toThrow(); // Transport or null guard catches null response
   });
 });
