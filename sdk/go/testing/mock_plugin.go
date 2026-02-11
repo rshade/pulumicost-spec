@@ -11,6 +11,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -111,7 +112,7 @@ type MockPlugin struct {
 	EstimateCostDelay  time.Duration
 
 	// Data generation configuration
-	ActualCostDataPoints int
+	actualCostDataPoints atomic.Int64
 	BaseHourlyRate       float64
 	Currency             string
 
@@ -161,7 +162,7 @@ type MockPlugin struct {
 
 // NewMockPlugin creates a new mock plugin with default configuration.
 func NewMockPlugin() *MockPlugin {
-	return &MockPlugin{
+	p := &MockPlugin{
 		PluginName:         "mock-test-plugin",
 		SupportedProviders: []string{"aws", "azure", "gcp", "kubernetes"},
 		SupportedResources: map[string][]string{
@@ -170,9 +171,8 @@ func NewMockPlugin() *MockPlugin {
 			"gcp":        {computeEngineResourceType, cloudStorageResourceType, cloudFunctionsResourceType, "compute"},
 			"kubernetes": {namespaceResourceType, "pod", "service"},
 		},
-		ActualCostDataPoints: defaultDataPoints,
-		BaseHourlyRate:       defaultBaseRate,
-		Currency:             "USD",
+		BaseHourlyRate: defaultBaseRate,
+		Currency:       "USD",
 		// Pre-populate with sample recommendations for filtering tests
 		RecommendationsConfig: RecommendationsConfig{
 			Recommendations: GenerateSampleRecommendations(defaultRecommendationCount),
@@ -194,6 +194,8 @@ func NewMockPlugin() *MockPlugin {
 			"preemptible": defaultPreemptibleRisk,
 		},
 	}
+	p.actualCostDataPoints.Store(defaultDataPoints)
+	return p
 }
 
 // ConfigurableErrorMockPlugin creates a mock plugin that can be configured to return errors.
@@ -214,6 +216,16 @@ func SlowMockPlugin() *MockPlugin {
 	plugin.PricingSpecDelay = pricingSpecDelayMs * time.Millisecond
 	plugin.EstimateCostDelay = estimateCostDelayMs * time.Millisecond
 	return plugin
+}
+
+// SetActualCostDataPoints sets the number of data points to generate for GetActualCost responses.
+//
+// Thread Safety: This method uses atomic operations and is safe for concurrent use.
+func (m *MockPlugin) SetActualCostDataPoints(n int) {
+	if n < 0 {
+		n = 0
+	}
+	m.actualCostDataPoints.Store(int64(n))
 }
 
 // SetFallbackHint sets the fallback hint to be returned in GetActualCost responses.
@@ -609,7 +621,7 @@ func (m *MockPlugin) GetActualCost(
 
 	// Generate mock cost data points
 	duration := endTime.Sub(startTime)
-	dataPoints := int(math.Min(float64(m.ActualCostDataPoints), duration.Hours()+1))
+	dataPoints := int(math.Min(float64(m.actualCostDataPoints.Load()), duration.Hours()+1))
 
 	results := make([]*pbc.ActualCostResult, 0, dataPoints)
 
@@ -634,9 +646,17 @@ func (m *MockPlugin) GetActualCost(
 		results = append(results, result)
 	}
 
+	// Apply pagination if requested
+	page, nextToken, totalCount, err := paginateMockActualCosts(results, req.GetPageSize(), req.GetPageToken())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	return &pbc.GetActualCostResponse{
-		Results:      results,
-		FallbackHint: m.FallbackHint,
+		Results:       page,
+		FallbackHint:  m.FallbackHint,
+		NextPageToken: nextToken,
+		TotalCount:    totalCount,
 	}, nil
 }
 
@@ -1497,6 +1517,10 @@ func matchesMockFilter(rec *pbc.Recommendation, filter *pbc.RecommendationFilter
 // We maintain a local constant to avoid circular imports (pluginsdk imports testing).
 const mockDefaultPageSize int32 = 50
 
+// mockMaxPageSize is the maximum page size for mock pagination.
+// NOTE: This intentionally mirrors pluginsdk.MaxPageSize (1000) for consistency.
+const mockMaxPageSize int32 = 1000
+
 // paginateMockRecommendations applies pagination to recommendations.
 // Returns the page of recommendations, next page token, and any error.
 func paginateMockRecommendations(
@@ -1507,6 +1531,9 @@ func paginateMockRecommendations(
 	// Use default page size if not specified
 	if pageSize <= 0 {
 		pageSize = mockDefaultPageSize
+	}
+	if pageSize > mockMaxPageSize {
+		pageSize = mockMaxPageSize
 	}
 
 	// Decode offset from page token
@@ -1540,6 +1567,69 @@ func paginateMockRecommendations(
 	}
 
 	return page, nextToken, nil
+}
+
+// paginateMockActualCosts applies pagination to actual cost results.
+// Returns the page of results, next page token, total count, and any error.
+// When page_size is 0 and page_token is empty (proto3 defaults), returns all results
+// for backward compatibility with non-paginated plugins.
+func paginateMockActualCosts(
+	results []*pbc.ActualCostResult,
+	pageSize int32,
+	pageToken string,
+) ([]*pbc.ActualCostResult, string, int32, error) {
+	var totalCount int32
+	if len(results) > math.MaxInt32 {
+		totalCount = math.MaxInt32
+	} else {
+		totalCount = int32(len(results)) //nolint:gosec // safe after bounds check above
+	}
+
+	// Backward compatibility: when both page_size and page_token are defaults,
+	// return all results (non-paginated behavior)
+	if pageSize <= 0 && pageToken == "" {
+		return results, "", totalCount, nil
+	}
+
+	// Use default page size if not specified
+	if pageSize <= 0 {
+		pageSize = mockDefaultPageSize
+	}
+	if pageSize > mockMaxPageSize {
+		pageSize = mockMaxPageSize
+	}
+
+	// Decode offset from page token
+	var offset int
+	if pageToken != "" {
+		decoded, err := decodeMockPageToken(pageToken)
+		if err != nil {
+			return nil, "", 0, err
+		}
+		offset = decoded
+	}
+
+	// Handle offset beyond range
+	if offset >= len(results) {
+		return []*pbc.ActualCostResult{}, "", totalCount, nil
+	}
+
+	// Calculate end index
+	end := offset + int(pageSize)
+	if end > len(results) {
+		end = len(results)
+	}
+
+	// Get page slice
+	page := results[offset:end]
+
+	// Generate next token if more results exist
+	var nextToken string
+	if end < len(results) {
+		nextToken = encodeMockPageToken(end)
+	}
+
+	return page, nextToken, totalCount, nil
 }
 
 // encodeMockPageToken encodes an offset as a base64 page token.

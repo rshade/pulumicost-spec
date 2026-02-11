@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/rshade/finfocus-spec/sdk/go/currency"
 	pbc "github.com/rshade/finfocus-spec/sdk/go/proto/finfocus/v1"
 )
@@ -168,6 +170,41 @@ type ActualCostResponseOption func(*pbc.GetActualCostResponse)
 func WithFallbackHint(hint pbc.FallbackHint) ActualCostResponseOption {
 	return func(resp *pbc.GetActualCostResponse) {
 		resp.FallbackHint = hint
+	}
+}
+
+// WithNextPageToken sets the next page token on the response.
+//
+// Use this option to include a continuation token when there are more pages
+// of results available. Pass an empty string to indicate the last page.
+//
+// Example - Response with more pages:
+//
+//	resp := pluginsdk.NewActualCostResponse(
+//	    pluginsdk.WithResults(pageResults),
+//	    pluginsdk.WithNextPageToken(nextToken),
+//	)
+func WithNextPageToken(token string) ActualCostResponseOption {
+	return func(resp *pbc.GetActualCostResponse) {
+		resp.NextPageToken = token
+	}
+}
+
+// WithTotalCount sets the total count of matching records on the response.
+//
+// Use this option to report the total number of records across all pages.
+// A value of 0 indicates the total is unknown or expensive to compute.
+//
+// Example:
+//
+//	resp := pluginsdk.NewActualCostResponse(
+//	    pluginsdk.WithResults(pageResults),
+//	    pluginsdk.WithNextPageToken(nextToken),
+//	    pluginsdk.WithTotalCount(int32(len(allResults))),
+//	)
+func WithTotalCount(count int32) ActualCostResponseOption {
+	return func(resp *pbc.GetActualCostResponse) {
+		resp.TotalCount = count
 	}
 }
 
@@ -994,6 +1031,113 @@ func DecodePageToken(token string) (int, error) {
 		return 0, errors.New("page token offset cannot be negative")
 	}
 	return offset, nil
+}
+
+// =============================================================================
+// GetActualCost Pagination Helpers
+// =============================================================================
+
+// PaginateActualCosts applies pagination to a slice of actual cost results.
+// Returns the page of results, next page token (empty if last page), total count, and any error.
+//
+// Page size is clamped to [DefaultPageSize, MaxPageSize]. The total count is
+// automatically set to len(results). Page tokens are base64-encoded offsets
+// compatible with EncodePageToken/DecodePageToken.
+//
+// Example usage in a plugin's GetActualCost handler:
+//
+//	allResults, err := p.fetchCostData(ctx, req)
+//	if err != nil {
+//	    return nil, err
+//	}
+//	page, nextToken, totalCount, err := pluginsdk.PaginateActualCosts(
+//	    allResults, req.PageSize, req.PageToken,
+//	)
+//	if err != nil {
+//	    return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+//	}
+//	return &pbc.GetActualCostResponse{
+//	    Results:       page,
+//	    NextPageToken: nextToken,
+//	    TotalCount:    totalCount,
+//	}, nil
+func PaginateActualCosts(
+	results []*pbc.ActualCostResult,
+	pageSize int32,
+	pageToken string,
+) ([]*pbc.ActualCostResult, string, int32, error) {
+	total := len(results)
+
+	// Normalize negative page sizes to 0 (proto contract: <=0 means use default)
+	if pageSize < 0 {
+		pageSize = 0
+	}
+
+	// Handle legacy hosts: if no pagination params are provided, return all results
+	// This maintains backward compatibility with hosts that don't use pagination
+	if pageSize == 0 && pageToken == "" {
+		// Clamp totalCount to int32 max to avoid overflow
+		totalCount := int32(total)
+		if total > math.MaxInt32 {
+			log.Warn().
+				Int("total", total).
+				Int32("clamped_to", math.MaxInt32).
+				Msg("total_count clamped to int32 max; actual count exceeds representable range")
+			totalCount = math.MaxInt32
+		}
+		return results, "", totalCount, nil
+	}
+
+	// Determine effective page size
+	effectivePageSize := int(pageSize)
+	if effectivePageSize <= 0 {
+		effectivePageSize = DefaultPageSize
+	}
+	if effectivePageSize > MaxPageSize {
+		effectivePageSize = MaxPageSize
+	}
+
+	// Decode offset from page token
+	offset := 0
+	if pageToken != "" {
+		var err error
+		offset, err = DecodePageToken(pageToken)
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("invalid page_token: %w", err)
+		}
+	}
+
+	// Clamp totalCount to int32 max to avoid overflow
+	totalCount := int32(total)
+	if total > math.MaxInt32 {
+		log.Warn().
+			Int("total", total).
+			Int32("clamped_to", math.MaxInt32).
+			Msg("total_count clamped to int32 max; actual count exceeds representable range")
+		totalCount = math.MaxInt32
+	}
+
+	// Handle out-of-bounds offset
+	if offset >= total {
+		return []*pbc.ActualCostResult{}, "", totalCount, nil
+	}
+
+	// Calculate page boundaries
+	end := offset + effectivePageSize
+	if end > total {
+		end = total
+	}
+
+	// Extract page
+	page := results[offset:end]
+
+	// Generate next page token
+	nextToken := ""
+	if end < total {
+		nextToken = EncodePageToken(end)
+	}
+
+	return page, nextToken, totalCount, nil
 }
 
 // =============================================================================

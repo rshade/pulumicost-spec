@@ -362,7 +362,7 @@ func BenchmarkActualCostDataSizes(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			plugin := plugintesting.NewMockPlugin()
-			plugin.ActualCostDataPoints = tc.dataPoints
+			plugin.SetActualCostDataPoints(tc.dataPoints)
 
 			harness := plugintesting.NewTestHarness(plugin)
 			harness.Start(&testing.T{})
@@ -1170,6 +1170,73 @@ func BenchmarkGetPluginInfo_Concurrent(b *testing.B) {
 			_, err := client.GetPluginInfo(ctx, &pbc.GetPluginInfoRequest{})
 			if err != nil {
 				b.Fatalf("GetPluginInfo() failed: %v", err)
+			}
+		}
+	})
+}
+
+// BenchmarkGetActualCostPaginated benchmarks paginated GetActualCost through TestHarness.
+//
+//nolint:gocognit // Benchmark pagination loop inherently has nested control flow.
+func BenchmarkGetActualCostPaginated(b *testing.B) {
+	plugin := plugintesting.NewMockPlugin()
+	plugin.SetActualCostDataPoints(1000)
+	harness := plugintesting.NewTestHarness(plugin)
+	harness.Start(&testing.T{})
+	defer harness.Stop()
+
+	client := harness.Client()
+	ctx := context.Background()
+	start, end := plugintesting.CreateTimeRange(1000)
+
+	b.Run("SinglePage", func(b *testing.B) {
+		req := &pbc.GetActualCostRequest{
+			ResourceId: "bench-resource",
+			Start:      start,
+			End:        end,
+			PageSize:   50,
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			_, err := client.GetActualCost(ctx, req)
+			if err != nil {
+				b.Fatalf("GetActualCost() failed: %v", err)
+			}
+		}
+	})
+
+	b.Run("FullIteration", func(b *testing.B) {
+		const maxIterations = 200 // safety cap to prevent infinite loops
+		b.ReportAllocs()
+		b.ResetTimer()
+		for range b.N {
+			pageToken := ""
+			totalRecords := 0
+			iterations := 0
+			for {
+				resp, err := client.GetActualCost(ctx, &pbc.GetActualCostRequest{
+					ResourceId: "bench-resource",
+					Start:      start,
+					End:        end,
+					PageSize:   100,
+					PageToken:  pageToken,
+				})
+				if err != nil {
+					b.Fatalf("GetActualCost() failed: %v", err)
+				}
+				totalRecords += len(resp.GetResults())
+				iterations++
+				if iterations > maxIterations {
+					b.Fatalf("exceeded %d iterations; possible infinite pagination loop", maxIterations)
+				}
+				if resp.GetNextPageToken() == "" {
+					break
+				}
+				pageToken = resp.GetNextPageToken()
+			}
+			if totalRecords != 1000 {
+				b.Fatalf("expected 1000 records, got %d", totalRecords)
 			}
 		}
 	})

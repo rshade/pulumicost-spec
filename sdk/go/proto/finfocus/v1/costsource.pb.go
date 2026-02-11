@@ -1145,7 +1145,20 @@ type GetActualCostRequest struct {
 	// instead of performing actual cost data retrieval.
 	// Default: false (normal cost retrieval behavior).
 	// When true, the response will contain dry_run_result instead of results.
-	DryRun        bool `protobuf:"varint,6,opt,name=dry_run,json=dryRun,proto3" json:"dry_run,omitempty"`
+	DryRun bool `protobuf:"varint,6,opt,name=dry_run,json=dryRun,proto3" json:"dry_run,omitempty"`
+	// page_size is the maximum number of cost records to return per page.
+	// Default: 50 (matches DefaultPageSize). Maximum: 1000 (matches MaxPageSize).
+	// Values <= 0 use the default. Values > 1000 are clamped to 1000.
+	// Ignored when dry_run is true.
+	//
+	// Backward compatibility: when page_size == 0 AND page_token == ""
+	// (both proto3 defaults), servers MAY return all results in a single
+	// response for backward compatibility with non-paginated callers.
+	PageSize int32 `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// page_token is the continuation token from a previous GetActualCost response.
+	// Empty string requests the first page of results.
+	// Ignored when dry_run is true.
+	PageToken     string `protobuf:"bytes,8,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1222,6 +1235,20 @@ func (x *GetActualCostRequest) GetDryRun() bool {
 	return false
 }
 
+func (x *GetActualCostRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *GetActualCostRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
 // GetActualCostResponse contains the list of actual cost results.
 type GetActualCostResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1232,7 +1259,16 @@ type GetActualCostResponse struct {
 	// dry_run_result contains field mapping information when request.dry_run
 	// was true. Empty/nil when dry_run was false or not set.
 	// When populated, results field will be empty.
-	DryRunResult  *DryRunResponse `protobuf:"bytes,3,opt,name=dry_run_result,json=dryRunResult,proto3" json:"dry_run_result,omitempty"`
+	DryRunResult *DryRunResponse `protobuf:"bytes,3,opt,name=dry_run_result,json=dryRunResult,proto3" json:"dry_run_result,omitempty"`
+	// next_page_token is the token for retrieving the next page of results.
+	// Non-empty when additional pages are available. Empty when this is the
+	// last page or when all results fit in a single response.
+	NextPageToken string `protobuf:"bytes,4,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	// total_count is the total number of matching cost records across all pages.
+	// Optional: may be 0 if the total is expensive to compute.
+	// When populated by the SDK PaginateActualCosts helper, this is automatically
+	// set to the slice length.
+	TotalCount    int32 `protobuf:"varint,5,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1286,6 +1322,20 @@ func (x *GetActualCostResponse) GetDryRunResult() *DryRunResponse {
 		return x.DryRunResult
 	}
 	return nil
+}
+
+func (x *GetActualCostResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+func (x *GetActualCostResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
 }
 
 // GetProjectedCostRequest contains the resource descriptor for projected cost calculation.
@@ -5694,7 +5744,7 @@ const file_finfocus_v1_costsource_proto_rawDesc = "" +
 	"\x11capabilities_enum\x18\x05 \x03(\x0e2\x1d.finfocus.v1.PluginCapabilityR\x10capabilitiesEnum\x1a?\n" +
 	"\x11CapabilitiesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xbc\x02\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\xf8\x02\n" +
 	"\x14GetActualCostRequest\x12\x1f\n" +
 	"\vresource_id\x18\x01 \x01(\tR\n" +
 	"resourceId\x120\n" +
@@ -5702,14 +5752,20 @@ const file_finfocus_v1_costsource_proto_rawDesc = "" +
 	"\x03end\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x03end\x12?\n" +
 	"\x04tags\x18\x04 \x03(\v2+.finfocus.v1.GetActualCostRequest.TagsEntryR\x04tags\x12\x10\n" +
 	"\x03arn\x18\x05 \x01(\tR\x03arn\x12\x17\n" +
-	"\adry_run\x18\x06 \x01(\bR\x06dryRun\x1a7\n" +
+	"\adry_run\x18\x06 \x01(\bR\x06dryRun\x12\x1b\n" +
+	"\tpage_size\x18\a \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\b \x01(\tR\tpageToken\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd3\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x9c\x02\n" +
 	"\x15GetActualCostResponse\x127\n" +
 	"\aresults\x18\x01 \x03(\v2\x1d.finfocus.v1.ActualCostResultR\aresults\x12>\n" +
 	"\rfallback_hint\x18\x02 \x01(\x0e2\x19.finfocus.v1.FallbackHintR\ffallbackHint\x12A\n" +
-	"\x0edry_run_result\x18\x03 \x01(\v2\x1b.finfocus.v1.DryRunResponseR\fdryRunResult\"\xd6\x02\n" +
+	"\x0edry_run_result\x18\x03 \x01(\v2\x1b.finfocus.v1.DryRunResponseR\fdryRunResult\x12&\n" +
+	"\x0fnext_page_token\x18\x04 \x01(\tR\rnextPageToken\x12\x1f\n" +
+	"\vtotal_count\x18\x05 \x01(\x05R\n" +
+	"totalCount\"\xd6\x02\n" +
 	"\x17GetProjectedCostRequest\x12;\n" +
 	"\bresource\x18\x01 \x01(\v2\x1f.finfocus.v1.ResourceDescriptorR\bresource\x125\n" +
 	"\x16utilization_percentage\x18\x02 \x01(\x01R\x15utilizationPercentage\x128\n" +
