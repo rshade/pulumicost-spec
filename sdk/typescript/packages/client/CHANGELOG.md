@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.2](https://github.com/rshade/finfocus-spec/compare/finfocus-client-v0.6.1...finfocus-client-v0.6.2) (2026-02-12)
+
+
+### Features
+
+* **proto:** add pagination support to actual cost retrieval ([#360](https://github.com/rshade/finfocus-spec/issues/360)) ([571a0cd](https://github.com/rshade/finfocus-spec/commit/571a0cdd7c4a822e74dd4a688972bab35fa9afa7)), closes [#353](https://github.com/rshade/finfocus-spec/issues/353)
+
+
+### Bug Fixes
+
+* **pluginsdk:** harden pagination edge cases and observability ([#376](https://github.com/rshade/finfocus-spec/issues/376)) ([60082d8](https://github.com/rshade/finfocus-spec/commit/60082d843e2fb4d4b9dd7d729daadc561c10d32c)), closes [#364](https://github.com/rshade/finfocus-spec/issues/364) [#367](https://github.com/rshade/finfocus-spec/issues/367) [#368](https://github.com/rshade/finfocus-spec/issues/368) [#369](https://github.com/rshade/finfocus-spec/issues/369)
+
 ## [0.6.1](https://github.com/rshade/finfocus-spec/compare/finfocus-client-v0.6.0...finfocus-client-v0.6.1) (2026-01-29)
 
 
