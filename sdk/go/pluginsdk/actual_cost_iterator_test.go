@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/rshade/finfocus-spec/sdk/go/pluginsdk"
@@ -280,6 +281,103 @@ func TestActualCostIterator_NilResponse(t *testing.T) {
 	if iter.Err() == nil {
 		t.Fatal("expected error for nil response, got nil")
 	}
+}
+
+// TestActualCostIterator_InconsistentTotalCount verifies that when a server returns
+// different total_count values across pages (e.g., data changes mid-pagination),
+// the iterator completes without error and TotalCount() reflects the most recent value.
+func TestActualCostIterator_InconsistentTotalCount(t *testing.T) {
+	callCount := 0
+	fetchFn := func(_ context.Context, _ string, _ int32) (*pbc.GetActualCostResponse, error) {
+		callCount++
+		// Return decreasing TotalCount on each page
+		totalCounts := []int32{100, 90, 80}
+		tc := totalCounts[0]
+		if callCount <= len(totalCounts) {
+			tc = totalCounts[callCount-1]
+		}
+
+		// Generate 10 results per page, 3 pages total
+		results := make([]*pbc.ActualCostResult, 10)
+		for i := range results {
+			results[i] = &pbc.ActualCostResult{
+				Cost:   float64((callCount-1)*10 + i + 1),
+				Source: "test",
+			}
+		}
+
+		nextToken := ""
+		if callCount < 3 {
+			nextToken = fmt.Sprintf("page-%d", callCount)
+		}
+
+		return &pbc.GetActualCostResponse{
+			Results:       results,
+			NextPageToken: nextToken,
+			TotalCount:    tc,
+		}, nil
+	}
+
+	iter := pluginsdk.NewActualCostIterator(context.Background(), fetchFn, 10)
+
+	var collected []*pbc.ActualCostResult
+	for iter.Next() {
+		collected = append(collected, iter.Record())
+	}
+
+	if iter.Err() != nil {
+		t.Fatalf("unexpected error: %v", iter.Err())
+	}
+	if len(collected) != 30 {
+		t.Errorf("expected 30 records, got %d", len(collected))
+	}
+	// TotalCount() should return the value from the most recent response (page 3)
+	if iter.TotalCount() != 80 {
+		t.Errorf("expected TotalCount=80 (most recent), got %d", iter.TotalCount())
+	}
+}
+
+// TestActualCostIterator_Int32BoundaryTotalCount verifies that the iterator handles
+// math.MaxInt32 as total_count without panic or overflow.
+func TestActualCostIterator_Int32BoundaryTotalCount(t *testing.T) {
+	fetchFn := func(_ context.Context, _ string, _ int32) (*pbc.GetActualCostResponse, error) {
+		return &pbc.GetActualCostResponse{
+			Results: []*pbc.ActualCostResult{
+				{Cost: 1.0, Source: "test"},
+			},
+			NextPageToken: "",
+			TotalCount:    math.MaxInt32,
+		}, nil
+	}
+
+	iter := pluginsdk.NewActualCostIterator(context.Background(), fetchFn, 50)
+
+	var collected []*pbc.ActualCostResult
+	for iter.Next() {
+		collected = append(collected, iter.Record())
+	}
+
+	if iter.Err() != nil {
+		t.Fatalf("unexpected error: %v", iter.Err())
+	}
+	if len(collected) != 1 {
+		t.Errorf("expected 1 record, got %d", len(collected))
+	}
+	if iter.TotalCount() != math.MaxInt32 {
+		t.Errorf("expected TotalCount=%d, got %d", int32(math.MaxInt32), iter.TotalCount())
+	}
+}
+
+// TestActualCostIterator_ConcurrentAccessRaceDetector documents that ActualCostIterator
+// is NOT thread-safe. Run manually with -race to observe the data race:
+//
+//	go test -race -run TestActualCostIterator_ConcurrentAccessRaceDetector -tags concurrency_test ./sdk/go/pluginsdk/
+//
+// This test is always skipped in normal test runs (including CI with -race) because
+// the race detector causes test failures. It exists purely as documentation and a
+// manual verification tool for the NOT-thread-safe contract.
+func TestActualCostIterator_ConcurrentAccessRaceDetector(t *testing.T) {
+	t.Skip("documentation test: run manually with -race to observe data race on ActualCostIterator")
 }
 
 // BenchmarkActualCostIterator_Next benchmarks the common iteration path
