@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6](https://github.com/rshade/finfocus-spec/compare/v0.5.5...v0.5.6) (2026-02-12)
+
+
+### Added
+
+* **currency:** add symbol support and amount formatting ([#357](https://github.com/rshade/finfocus-spec/issues/357)) ([698cbe3](https://github.com/rshade/finfocus-spec/commit/698cbe326ef326499b8c6b4d20d451eb9926c1c0))
+* **proto:** add pagination support to actual cost retrieval ([#360](https://github.com/rshade/finfocus-spec/issues/360)) ([571a0cd](https://github.com/rshade/finfocus-spec/commit/571a0cdd7c4a822e74dd4a688972bab35fa9afa7)), closes [#353](https://github.com/rshade/finfocus-spec/issues/353)
+
+
+### Fixed
+
+* **pluginsdk:** harden pagination edge cases and observability ([#376](https://github.com/rshade/finfocus-spec/issues/376)) ([60082d8](https://github.com/rshade/finfocus-spec/commit/60082d843e2fb4d4b9dd7d729daadc561c10d32c)), closes [#364](https://github.com/rshade/finfocus-spec/issues/364) [#367](https://github.com/rshade/finfocus-spec/issues/367) [#368](https://github.com/rshade/finfocus-spec/issues/368) [#369](https://github.com/rshade/finfocus-spec/issues/369)
+
 ## [0.5.5](https://github.com/rshade/finfocus-spec/compare/v0.5.4...v0.5.5) (2026-01-29)
 
 
