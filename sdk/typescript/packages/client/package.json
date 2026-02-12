@@ -19,8 +19,8 @@
     "@connectrpc/connect-web": "^2.1.1"
   },
   "devDependencies": {
-    "@bufbuild/protoc-gen-es": "^2.10.2",
-    "msw": "^2.12.7",
+    "@bufbuild/protoc-gen-es": "^2.11.0",
+    "msw": "^2.12.10",
     "tsup": "^8.5.1"
   },
   "files": [
